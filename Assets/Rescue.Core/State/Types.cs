@@ -61,6 +61,7 @@ namespace Rescue.Core.State
         WaterState Water,
         VineState Vine,
         ImmutableArray<TargetState> Targets,
+        LevelConfig LevelConfig,
         RngState RngState,
         int ActionCount,
         bool DockJamUsed,

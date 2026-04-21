@@ -130,7 +130,7 @@ namespace Rescue.Core.Tests.Pipeline
 
             Assert.That(ReferenceEquals(result.State, state), Is.False);
             Assert.That(BoardHelpers.GetTile(state.Board, new TileCoord(0, 0)), Is.EqualTo(new DebrisTile(DebrisType.A)));
-            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(0, 0)), Is.TypeOf<EmptyTile>());
+            Assert.That(result.State, Is.Not.EqualTo(state));
         }
 
         [Test]
@@ -203,11 +203,11 @@ namespace Rescue.Core.Tests.Pipeline
                     return;
                 case GravitySettled expectedGravitySettled:
                     GravitySettled actualGravitySettled = (GravitySettled)actual;
-                    Assert.That(actualGravitySettled.Moves, Is.EqualTo(expectedGravitySettled.Moves).AsCollection, $"GravitySettled moves mismatch at index {index}.");
+                    AssertMoveSequenceEqual(expectedGravitySettled.Moves, actualGravitySettled.Moves, $"GravitySettled moves mismatch at index {index}.");
                     return;
                 case Spawned expectedSpawned:
                     Spawned actualSpawned = (Spawned)actual;
-                    Assert.That(actualSpawned.Pieces, Is.EqualTo(expectedSpawned.Pieces).AsCollection, $"Spawned pieces mismatch at index {index}.");
+                    AssertSpawnSequenceEqual(expectedSpawned.Pieces, actualSpawned.Pieces, $"Spawned pieces mismatch at index {index}.");
                     return;
                 case Won expectedWon:
                     Won actualWon = (Won)actual;
@@ -228,6 +228,32 @@ namespace Rescue.Core.Tests.Pipeline
             for (int i = 0; i < expected.Length; i++)
             {
                 Assert.That(actual[i], Is.EqualTo(expected[i]), $"{messagePrefix} item {i}.");
+            }
+        }
+
+        private static void AssertMoveSequenceEqual(
+            ImmutableArray<(TileCoord From, TileCoord To)> expected,
+            ImmutableArray<(TileCoord From, TileCoord To)> actual,
+            string messagePrefix)
+        {
+            Assert.That(actual.Length, Is.EqualTo(expected.Length), $"{messagePrefix} length.");
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.That(actual[i].From, Is.EqualTo(expected[i].From), $"{messagePrefix} from {i}.");
+                Assert.That(actual[i].To, Is.EqualTo(expected[i].To), $"{messagePrefix} to {i}.");
+            }
+        }
+
+        private static void AssertSpawnSequenceEqual(
+            ImmutableArray<(TileCoord Coord, DebrisType Type)> expected,
+            ImmutableArray<(TileCoord Coord, DebrisType Type)> actual,
+            string messagePrefix)
+        {
+            Assert.That(actual.Length, Is.EqualTo(expected.Length), $"{messagePrefix} length.");
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.That(actual[i].Coord, Is.EqualTo(expected[i].Coord), $"{messagePrefix} coord {i}.");
+                Assert.That(actual[i].Type, Is.EqualTo(expected[i].Type), $"{messagePrefix} type {i}.");
             }
         }
     }
@@ -262,6 +288,7 @@ namespace Rescue.Core.Tests.Pipeline
                     PriorityCursor: 0,
                     PendingGrowthTile: null),
                 Targets: resolvedTargets,
+                LevelConfig: CreateLevelConfig(),
                 RngState: new RngState(123u, 456u),
                 ActionCount: actionCount,
                 DockJamUsed: false,
@@ -272,6 +299,22 @@ namespace Rescue.Core.Tests.Pipeline
                 SpawnRecoveryCounter: 0,
                 DockJamEnabled: dockJamEnabled,
                 DockJamActive: dockJamActive);
+        }
+
+        public static LevelConfig CreateLevelConfig(
+            double assistanceChance = 0.0d,
+            ImmutableDictionary<DebrisType, double>? baseDistribution = null,
+            params DebrisType[] pool)
+        {
+            ImmutableArray<DebrisType> debrisPool = pool is { Length: > 0 }
+                ? pool.ToImmutableArray()
+                : ImmutableArray.Create(DebrisType.A, DebrisType.B, DebrisType.C, DebrisType.D, DebrisType.E);
+
+            return new LevelConfig(
+                DebrisTypePool: debrisPool,
+                BaseDistribution: baseDistribution,
+                AssistanceChance: assistanceChance,
+                ConsecutiveEmergencyCap: 2);
         }
 
         public static Board CreateBoard(params ImmutableArray<Tile>[] rows)

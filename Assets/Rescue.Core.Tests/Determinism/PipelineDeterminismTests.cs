@@ -117,6 +117,7 @@ namespace Rescue.Core.Tests.Determinism
             Assert.That(actual.Vine.PriorityCursor, Is.EqualTo(expected.Vine.PriorityCursor), $"Vine cursor mismatch at {label}.");
             Assert.That(actual.Vine.PendingGrowthTile, Is.EqualTo(expected.Vine.PendingGrowthTile), $"Vine pending tile mismatch at {label}.");
             Assert.That(actual.Targets, Is.EqualTo(expected.Targets).AsCollection, $"Targets mismatch at {label}.");
+            AssertLevelConfigEqual(expected.LevelConfig, actual.LevelConfig, label);
             Assert.That(actual.RngState, Is.EqualTo(expected.RngState), $"RngState mismatch at {label}.");
             Assert.That(actual.ActionCount, Is.EqualTo(expected.ActionCount), $"ActionCount mismatch at {label}.");
             Assert.That(actual.DockJamUsed, Is.EqualTo(expected.DockJamUsed), $"DockJamUsed mismatch at {label}.");
@@ -176,11 +177,11 @@ namespace Rescue.Core.Tests.Determinism
                     return;
                 case GravitySettled expectedGravitySettled:
                     GravitySettled actualGravitySettled = (GravitySettled)actual;
-                    Assert.That(actualGravitySettled.Moves, Is.EqualTo(expectedGravitySettled.Moves).AsCollection, $"GravitySettled moves mismatch at {label}, index {index}.");
+                    AssertMoveSequenceEqual(expectedGravitySettled.Moves, actualGravitySettled.Moves, $"GravitySettled moves mismatch at {label}, index {index}.");
                     return;
                 case Spawned expectedSpawned:
                     Spawned actualSpawned = (Spawned)actual;
-                    Assert.That(actualSpawned.Pieces, Is.EqualTo(expectedSpawned.Pieces).AsCollection, $"Spawned pieces mismatch at {label}, index {index}.");
+                    AssertSpawnSequenceEqual(expectedSpawned.Pieces, actualSpawned.Pieces, $"Spawned pieces mismatch at {label}, index {index}.");
                     return;
                 case Won expectedWon:
                     Won actualWon = (Won)actual;
@@ -225,6 +226,56 @@ namespace Rescue.Core.Tests.Determinism
             for (int i = 0; i < expected.Length; i++)
             {
                 Assert.That(actual[i], Is.EqualTo(expected[i]), $"{messagePrefix} item {i}.");
+            }
+        }
+
+        private static void AssertLevelConfigEqual(LevelConfig expected, LevelConfig actual, string label)
+        {
+            Assert.That(actual.DebrisTypePool.Length, Is.EqualTo(expected.DebrisTypePool.Length), $"LevelConfig pool length mismatch at {label}.");
+            for (int i = 0; i < expected.DebrisTypePool.Length; i++)
+            {
+                Assert.That(actual.DebrisTypePool[i], Is.EqualTo(expected.DebrisTypePool[i]), $"LevelConfig pool item mismatch at {label}, index {i}.");
+            }
+            Assert.That(actual.AssistanceChance, Is.EqualTo(expected.AssistanceChance), $"LevelConfig assistance mismatch at {label}.");
+            Assert.That(actual.ConsecutiveEmergencyCap, Is.EqualTo(expected.ConsecutiveEmergencyCap), $"LevelConfig cap mismatch at {label}.");
+            Assert.That(actual.BaseDistribution?.Count ?? 0, Is.EqualTo(expected.BaseDistribution?.Count ?? 0), $"LevelConfig distribution size mismatch at {label}.");
+
+            if (expected.BaseDistribution is null || actual.BaseDistribution is null)
+            {
+                Assert.That(actual.BaseDistribution is null, Is.EqualTo(expected.BaseDistribution is null), $"LevelConfig distribution null mismatch at {label}.");
+                return;
+            }
+
+            foreach ((DebrisType key, double value) in expected.BaseDistribution)
+            {
+                Assert.That(actual.BaseDistribution.TryGetValue(key, out double actualValue), Is.True, $"LevelConfig missing weight for {key} at {label}.");
+                Assert.That(actualValue, Is.EqualTo(value), $"LevelConfig weight mismatch for {key} at {label}.");
+            }
+        }
+
+        private static void AssertMoveSequenceEqual(
+            ImmutableArray<(TileCoord From, TileCoord To)> expected,
+            ImmutableArray<(TileCoord From, TileCoord To)> actual,
+            string messagePrefix)
+        {
+            Assert.That(actual.Length, Is.EqualTo(expected.Length), $"{messagePrefix} length.");
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.That(actual[i].From, Is.EqualTo(expected[i].From), $"{messagePrefix} from {i}.");
+                Assert.That(actual[i].To, Is.EqualTo(expected[i].To), $"{messagePrefix} to {i}.");
+            }
+        }
+
+        private static void AssertSpawnSequenceEqual(
+            ImmutableArray<(TileCoord Coord, DebrisType Type)> expected,
+            ImmutableArray<(TileCoord Coord, DebrisType Type)> actual,
+            string messagePrefix)
+        {
+            Assert.That(actual.Length, Is.EqualTo(expected.Length), $"{messagePrefix} length.");
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.That(actual[i].Coord, Is.EqualTo(expected[i].Coord), $"{messagePrefix} coord {i}.");
+                Assert.That(actual[i].Type, Is.EqualTo(expected[i].Type), $"{messagePrefix} type {i}.");
             }
         }
     }
