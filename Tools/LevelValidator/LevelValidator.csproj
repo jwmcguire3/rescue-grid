@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>10.0</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="..\..\Assets\Rescue.Core\Compatibility\IsExternalInit.cs" Link="Rescue.Core\Compatibility\IsExternalInit.cs" />
+    <Compile Include="..\..\Assets\Rescue.Core\Rng\SeededRng.cs" Link="Rescue.Core\Rng\SeededRng.cs" />
+    <Compile Include="..\..\Assets\Rescue.Core\State\Types.cs" Link="Rescue.Core\State\Types.cs" />
+    <Compile Include="..\..\Assets\Rescue.Core\State\BoardHelpers.cs" Link="Rescue.Core\State\BoardHelpers.cs" />
+    <Compile Include="..\..\Assets\Rescue.Core\State\DockHelpers.cs" Link="Rescue.Core\State\DockHelpers.cs" />
+    <Compile Include="..\..\Assets\Rescue.Core\State\LevelConfig.cs" Link="Rescue.Core\State\LevelConfig.cs" />
+    <Compile Include="..\..\Assets\Rescue.Content\ContentJson.cs" Link="Rescue.Content\ContentJson.cs" />
+    <Compile Include="..\..\Assets\Rescue.Content\Schema.cs" Link="Rescue.Content\Schema.cs" />
+    <Compile Include="..\..\Assets\Rescue.Content\Validator.cs" Link="Rescue.Content\Validator.cs" />
+    <Compile Include="..\..\Assets\Rescue.Content\Loader.cs" Link="Rescue.Content\Loader.cs" />
+  </ItemGroup>
+</Project>
