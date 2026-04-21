@@ -29,6 +29,8 @@ namespace Rescue.Core.Pipeline
 
     public sealed record DockInserted(ImmutableArray<DebrisType> Pieces, int OccupancyAfterInsert, int OverflowCount) : ActionEvent;
 
+    public sealed record DockOverflowTriggered(int OverflowCount) : ActionEvent;
+
     public sealed record DockCleared(DebrisType Type, int SetsCleared, int OccupancyAfterClear) : ActionEvent;
 
     public sealed record DockWarningChanged(DockWarningLevel Before, DockWarningLevel After) : ActionEvent;

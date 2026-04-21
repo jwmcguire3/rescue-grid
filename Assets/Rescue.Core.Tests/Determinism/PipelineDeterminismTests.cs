@@ -125,6 +125,8 @@ namespace Rescue.Core.Tests.Determinism
             Assert.That(actual.Frozen, Is.EqualTo(expected.Frozen), $"Frozen mismatch at {label}.");
             Assert.That(actual.ConsecutiveEmergencySpawns, Is.EqualTo(expected.ConsecutiveEmergencySpawns), $"ConsecutiveEmergencySpawns mismatch at {label}.");
             Assert.That(actual.SpawnRecoveryCounter, Is.EqualTo(expected.SpawnRecoveryCounter), $"SpawnRecoveryCounter mismatch at {label}.");
+            Assert.That(actual.DockJamEnabled, Is.EqualTo(expected.DockJamEnabled), $"DockJamEnabled mismatch at {label}.");
+            Assert.That(actual.DockJamActive, Is.EqualTo(expected.DockJamActive), $"DockJamActive mismatch at {label}.");
         }
 
         private static void AssertBoardEqual(Board expected, Board actual, string label)
@@ -168,7 +170,7 @@ namespace Rescue.Core.Tests.Determinism
                     return;
                 case DockInserted expectedDockInserted:
                     DockInserted actualDockInserted = (DockInserted)actual;
-                    Assert.That(actualDockInserted.Pieces, Is.EqualTo(expectedDockInserted.Pieces).AsCollection, $"DockInserted pieces mismatch at {label}, index {index}.");
+                    AssertDebrisSequenceEqual(expectedDockInserted.Pieces, actualDockInserted.Pieces, $"DockInserted pieces mismatch at {label}, index {index}.");
                     Assert.That(actualDockInserted.OccupancyAfterInsert, Is.EqualTo(expectedDockInserted.OccupancyAfterInsert), $"DockInserted occupancy mismatch at {label}, index {index}.");
                     Assert.That(actualDockInserted.OverflowCount, Is.EqualTo(expectedDockInserted.OverflowCount), $"DockInserted overflow mismatch at {label}, index {index}.");
                     return;
@@ -211,6 +213,18 @@ namespace Rescue.Core.Tests.Determinism
             for (int i = 0; i < expected.Length; i++)
             {
                 Assert.That(actual[i], Is.EqualTo(expected[i]), $"{messagePrefix} coord {i}.");
+            }
+        }
+
+        private static void AssertDebrisSequenceEqual(
+            ImmutableArray<DebrisType> expected,
+            ImmutableArray<DebrisType> actual,
+            string messagePrefix)
+        {
+            Assert.That(actual.Length, Is.EqualTo(expected.Length), $"{messagePrefix} length.");
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.That(actual[i], Is.EqualTo(expected[i]), $"{messagePrefix} item {i}.");
             }
         }
     }

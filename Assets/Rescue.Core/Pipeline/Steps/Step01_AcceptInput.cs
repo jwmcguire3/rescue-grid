@@ -9,7 +9,7 @@ namespace Rescue.Core.Pipeline.Steps
         public static StepResult Run(GameState state, StepContext context)
         {
             TileCoord tapped = context.Input.TappedCoord;
-            if (state.Frozen)
+            if (state.Frozen && !state.DockJamActive)
             {
                 return Invalid(state, context, InvalidInputReason.Frozen);
             }

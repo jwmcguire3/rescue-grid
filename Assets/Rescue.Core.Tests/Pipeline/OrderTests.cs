@@ -197,7 +197,7 @@ namespace Rescue.Core.Tests.Pipeline
                     return;
                 case DockInserted expectedDockInserted:
                     DockInserted actualDockInserted = (DockInserted)actual;
-                    Assert.That(actualDockInserted.Pieces, Is.EqualTo(expectedDockInserted.Pieces).AsCollection, $"DockInserted pieces mismatch at index {index}.");
+                    AssertDebrisSequenceEqual(expectedDockInserted.Pieces, actualDockInserted.Pieces, $"DockInserted pieces mismatch at index {index}.");
                     Assert.That(actualDockInserted.OccupancyAfterInsert, Is.EqualTo(expectedDockInserted.OccupancyAfterInsert), $"DockInserted occupancy mismatch at index {index}.");
                     Assert.That(actualDockInserted.OverflowCount, Is.EqualTo(expectedDockInserted.OverflowCount), $"DockInserted overflow mismatch at index {index}.");
                     return;
@@ -218,6 +218,18 @@ namespace Rescue.Core.Tests.Pipeline
                     return;
             }
         }
+
+        private static void AssertDebrisSequenceEqual(
+            ImmutableArray<DebrisType> expected,
+            ImmutableArray<DebrisType> actual,
+            string messagePrefix)
+        {
+            Assert.That(actual.Length, Is.EqualTo(expected.Length), $"{messagePrefix} length.");
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.That(actual[i], Is.EqualTo(expected[i]), $"{messagePrefix} item {i}.");
+            }
+        }
     }
 
     internal static class PipelineTestFixtures
@@ -225,7 +237,9 @@ namespace Rescue.Core.Tests.Pipeline
         public static GameState CreateState(
             Board board,
             ImmutableArray<TargetState>? targets = null,
-            int actionCount = 0)
+            int actionCount = 0,
+            bool dockJamEnabled = false,
+            bool dockJamActive = false)
         {
             ImmutableArray<TargetState> resolvedTargets = targets ?? ImmutableArray<TargetState>.Empty;
             return new GameState(
@@ -255,7 +269,9 @@ namespace Rescue.Core.Tests.Pipeline
                 ExtractedTargetOrder: ImmutableArray<string>.Empty,
                 Frozen: false,
                 ConsecutiveEmergencySpawns: 0,
-                SpawnRecoveryCounter: 0);
+                SpawnRecoveryCounter: 0,
+                DockJamEnabled: dockJamEnabled,
+                DockJamActive: dockJamActive);
         }
 
         public static Board CreateBoard(params ImmutableArray<Tile>[] rows)

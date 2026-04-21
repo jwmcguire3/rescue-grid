@@ -52,7 +52,9 @@ namespace Rescue.Core.Tests.State
                 ExtractedTargetOrder: ImmutableArray.Create("target-0"),
                 Frozen: false,
                 ConsecutiveEmergencySpawns: 1,
-                SpawnRecoveryCounter: 2);
+                SpawnRecoveryCounter: 2,
+                DockJamEnabled: true,
+                DockJamActive: false);
 
             TileCoord updatedCoord = coord with { Row = 9 };
             DebrisTile updatedHidden = hiddenDebris with { Type = DebrisType.E };
@@ -137,7 +139,9 @@ namespace Rescue.Core.Tests.State
                 ExtractedTargetOrder: ImmutableArray.Create("target-0"),
                 Frozen: false,
                 ConsecutiveEmergencySpawns: 0,
-                SpawnRecoveryCounter: 0);
+                SpawnRecoveryCounter: 0,
+                DockJamEnabled: false,
+                DockJamActive: false);
 
             // The following operations are the intended mutation pattern: they produce new immutable snapshots.
             ImmutableArray<ImmutableArray<Tile>> updatedTiles = board.Tiles.SetItem(0, board.Tiles[0].SetItem(0, new EmptyTile()));

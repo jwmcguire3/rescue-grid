@@ -68,5 +68,7 @@ namespace Rescue.Core.State
         ImmutableArray<string> ExtractedTargetOrder,
         bool Frozen,
         int ConsecutiveEmergencySpawns,
-        int SpawnRecoveryCounter);
+        int SpawnRecoveryCounter,
+        bool DockJamEnabled = false,
+        bool DockJamActive = false);
 }

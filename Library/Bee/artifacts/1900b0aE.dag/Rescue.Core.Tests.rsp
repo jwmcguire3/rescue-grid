@@ -277,6 +277,8 @@
 "Assets/Rescue.Core.Tests/Pipeline/OrderTests.cs"
 "Assets/Rescue.Core.Tests/Rng/SeededRngTests.cs"
 "Assets/Rescue.Core.Tests/Rules/BlockersTests.cs"
+"Assets/Rescue.Core.Tests/Rules/DockJamTests.cs"
+"Assets/Rescue.Core.Tests/Rules/DockTests.cs"
 "Assets/Rescue.Core.Tests/Rules/GroupsTests.cs"
 "Assets/Rescue.Core.Tests/State/BoardHelpersTests.cs"
 "Assets/Rescue.Core.Tests/State/DockHelpersTests.cs"
