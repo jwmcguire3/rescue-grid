@@ -59,7 +59,7 @@ namespace Rescue.Content.Tests
                     Tiles = new[]
                     {
                         new[] { ".", ".", "." },
-                        new[] { ".", "C1", "." },
+                        new[] { ".", "CR", "." },
                     },
                 },
             };
@@ -80,7 +80,7 @@ namespace Rescue.Content.Tests
                     Tiles = new[]
                     {
                         new[] { "Z", "A", "." },
-                        new[] { ".", "C1", "." },
+                        new[] { ".", "CR", "." },
                         new[] { ".", "T0", "." },
                     },
                 },
@@ -125,9 +125,9 @@ namespace Rescue.Content.Tests
                 {
                     Tiles = new[]
                     {
-                        new[] { "C2", "C2", "C2" },
-                        new[] { "C2", "T0", "C2" },
-                        new[] { "C2", ".", "C2" },
+                        new[] { "CX", "CX", "CX" },
+                        new[] { "CX", "T0", "CX" },
+                        new[] { "CX", ".", "CX" },
                     },
                 },
                 Targets = new[] { new TargetJson { Id = "0", Row = 1, Col = 1 } },

@@ -55,8 +55,8 @@
 
 - `.`: empty tile
 - `A`..`E`: debris tiles
-- `C1`: crate with 1 HP
-- `C2`: reinforced crate with 2 HP
+- `CR`: crate with 1 HP
+- `CX`: reinforced crate with 2 HP (off by default in Phase 1)
 - `I<X>`: ice with hidden debris `X`, for example `IA`
 - `V`: vine blocker
 - `T<id>`: target tile matching an entry in `targets`, for example `T0`

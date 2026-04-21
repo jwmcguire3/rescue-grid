@@ -1220,7 +1220,7 @@ namespace Rescue.Unity.Debugging
                     Tiles = new[]
                     {
                         new[] { "A", "A", "." },
-                        new[] { "B", "C1", "." },
+                        new[] { "B", "CR", "." },
                         new[] { ".", "T0", "." },
                     },
                 },

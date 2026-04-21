@@ -202,12 +202,12 @@ namespace Rescue.Content
                 return new DebrisTile(debrisType);
             }
 
-            if (code == "C1")
+            if (code == "CR")
             {
                 return new BlockerTile(BlockerType.Crate, 1, Hidden: null);
             }
 
-            if (code == "C2")
+            if (code == "CX")
             {
                 return new BlockerTile(BlockerType.Crate, 2, Hidden: null);
             }

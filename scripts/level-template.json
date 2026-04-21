@@ -1,0 +1,45 @@
+{
+  "id": "LTEMPLATE",
+  "name": "Level Template",
+  "board": {
+    "width": 6,
+    "height": 7,
+    "tiles": [
+      [".", "A",  "B",  "C",  ".",  "."],
+      [".", "A",  "B",  ".",  ".",  "."],
+      [".", ".",  "IA", ".",  ".",  "."],
+      [".", "V",  ".",  ".",  ".",  "."],
+      [".", ".",  "CR", ".",  ".",  "."],
+      [".", "CR", "T0", ".",  ".",  "."],
+      [".", ".",  ".",  ".",  ".",  "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 5, "col": 2 }
+  ],
+  "initialFloodedRows": 0,
+  "water": {
+    "riseInterval": 12
+  },
+  "vine": {
+    "growthThreshold": 4,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": true
+  },
+  "assistance": {
+    "chance": 0.70,
+    "consecutiveEmergencyCap": 2
+  },
+  "meta": {
+    "intent": "Template showing every required field. Replace all values before using as a real level.",
+    "expectedPath": "Describe the intended solve path here.",
+    "expectedFailMode": "Describe the common failure mode here.",
+    "whatItProves": "Describe what this level proves about the design.",
+    "notes": "Optional: author notes, deviations from tuning tables, or anything a reviewer needs to know."
+  }
+}

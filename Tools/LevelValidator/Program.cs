@@ -71,13 +71,7 @@ internal static class Program
             return 1;
         }
 
-        Console.WriteLine($"Level: {level.Id} - {level.Name}");
-        Console.WriteLine($"Board: {level.Board.Width}x{level.Board.Height}");
-        Console.WriteLine($"Targets: {level.Targets.Length}");
-        Console.WriteLine($"Flooded rows: {level.InitialFloodedRows}");
-        Console.WriteLine($"Water rise interval: {level.Water.RiseInterval}");
-        Console.WriteLine($"Vine growth threshold: {level.Vine.GrowthThreshold}");
-        Console.WriteLine($"Dock jam enabled: {level.Dock.JamEnabled}");
+        Console.Write(AsciiPreview.Render(level));
         return result.HasErrors ? 1 : 0;
     }
 

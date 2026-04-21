@@ -686,13 +686,13 @@ namespace Rescue.Content
                 return true;
             }
 
-            if (code == "C1")
+            if (code == "CR")
             {
                 cell = new CellInfo(CellKind.Crate, null, null, null, Hp: 1);
                 return true;
             }
 
-            if (code == "C2")
+            if (code == "CX")
             {
                 cell = new CellInfo(CellKind.Crate, null, null, null, Hp: 2);
                 return true;
