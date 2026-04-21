@@ -7,7 +7,6 @@ namespace Rescue.Core.Pipeline.Steps
     {
         public static StepResult Run(GameState state, StepContext context)
         {
-            // TODO(B10): expand win-specific bookkeeping per Phase 1 spec section 1.4.
             bool isWin = true;
             for (int i = 0; i < state.Targets.Length; i++)
             {
@@ -23,10 +22,11 @@ namespace Rescue.Core.Pipeline.Steps
                 return new StepResult(state, context, ImmutableArray<ActionEvent>.Empty);
             }
 
+            GameState updatedState = state with { Frozen = true };
             StepContext updatedContext = context with { IsWin = true };
             ImmutableArray<ActionEvent> events = ImmutableArray.Create<ActionEvent>(
-                new Won(state.ExtractedTargetOrder));
-            return new StepResult(state, updatedContext, events);
+                new Won(updatedState.ExtractedTargetOrder));
+            return new StepResult(updatedState, updatedContext, events);
         }
     }
 }

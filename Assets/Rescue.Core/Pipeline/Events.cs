@@ -45,7 +45,7 @@ namespace Rescue.Core.Pipeline
 
     public sealed record WaterWarning(int ActionsUntilRise, int NextFloodRow) : ActionEvent;
 
-    public sealed record WaterRose(int NewFloodedRows) : ActionEvent;
+    public sealed record WaterRose(int FloodedRow) : ActionEvent;
 
     public sealed record VinePreviewChanged(TileCoord? PendingTile) : ActionEvent;
 

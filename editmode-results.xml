@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<test-run id="2" testcasecount="92" result="Passed" total="92" passed="92" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.2560971">
-  <test-suite type="TestSuite" id="1000" name="rescue-grid" fullname="rescue-grid" runstate="Runnable" testcasecount="92" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.256097" total="92" passed="92" failed="0" inconclusive="0" skipped="0" asserts="0">
+<test-run id="2" testcasecount="101" result="Passed" total="101" passed="101" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.2501432">
+  <test-suite type="TestSuite" id="1000" name="rescue-grid" fullname="rescue-grid" runstate="Runnable" testcasecount="101" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.250143" total="101" passed="101" failed="0" inconclusive="0" skipped="0" asserts="0">
     <properties>
       <property name="platform" value="EditMode" />
     </properties>
-    <test-suite type="Assembly" id="1109" name="Rescue.Core.Tests.dll" fullname="C:/Users/jwmcg/OneDrive/Documents/AI Projects/Live Envirnments/rescue-grid/Library/ScriptAssemblies/Rescue.Core.Tests.dll" runstate="Runnable" testcasecount="92" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.251421" total="92" passed="92" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <test-suite type="Assembly" id="1119" name="Rescue.Core.Tests.dll" fullname="C:/Users/jwmcg/OneDrive/Documents/AI Projects/Live Envirnments/rescue-grid/Library/ScriptAssemblies/Rescue.Core.Tests.dll" runstate="Runnable" testcasecount="101" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.245451" total="101" passed="101" failed="0" inconclusive="0" skipped="0" asserts="0">
       <properties>
-        <property name="_PID" value="27020" />
+        <property name="_PID" value="36944" />
         <property name="_APPDOMAIN" value="Unity Child Domain" />
         <property name="platform" value="EditMode" />
         <property name="EditorOnly" value="True" />
       </properties>
-      <test-suite type="TestSuite" id="1110" name="Rescue" fullname="Rescue" runstate="Runnable" testcasecount="92" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.251247" total="92" passed="92" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <test-suite type="TestSuite" id="1120" name="Rescue" fullname="Rescue" runstate="Runnable" testcasecount="101" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.245258" total="101" passed="101" failed="0" inconclusive="0" skipped="0" asserts="0">
         <properties />
-        <test-suite type="TestSuite" id="1111" name="Core" fullname="Rescue.Core" runstate="Runnable" testcasecount="92" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.251185" total="92" passed="92" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <test-suite type="TestSuite" id="1121" name="Core" fullname="Rescue.Core" runstate="Runnable" testcasecount="101" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.245199" total="101" passed="101" failed="0" inconclusive="0" skipped="0" asserts="0">
           <properties />
-          <test-suite type="TestSuite" id="1112" name="Tests" fullname="Rescue.Core.Tests" runstate="Runnable" testcasecount="92" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.251116" total="92" passed="92" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <test-suite type="TestSuite" id="1122" name="Tests" fullname="Rescue.Core.Tests" runstate="Runnable" testcasecount="101" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.245126" total="101" passed="101" failed="0" inconclusive="0" skipped="0" asserts="0">
             <properties />
-            <test-suite type="TestSuite" id="1118" name="Determinism" fullname="Rescue.Core.Tests.Determinism" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.053949" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <test-suite type="TestSuite" id="1128" name="Determinism" fullname="Rescue.Core.Tests.Determinism" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.044402" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
               <properties />
-              <test-suite type="TestFixture" id="1107" name="PipelineDeterminismTests" fullname="Rescue.Core.Tests.Determinism.PipelineDeterminismTests" classname="Rescue.Core.Tests.Determinism.PipelineDeterminismTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.053462" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <test-suite type="TestFixture" id="1117" name="PipelineDeterminismTests" fullname="Rescue.Core.Tests.Determinism.PipelineDeterminismTests" classname="Rescue.Core.Tests.Determinism.PipelineDeterminismTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.043911" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
                 <properties />
-                <test-case id="1108" name="RepeatedRunsProduceIdenticalFinalStateAndEventStream" fullname="Rescue.Core.Tests.Determinism.PipelineDeterminismTests.RepeatedRunsProduceIdenticalFinalStateAndEventStream" methodname="RepeatedRunsProduceIdenticalFinalStateAndEventStream" classname="Rescue.Core.Tests.Determinism.PipelineDeterminismTests" runstate="Runnable" seed="1362773648" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.046759" asserts="0">
+                <test-case id="1118" name="RepeatedRunsProduceIdenticalFinalStateAndEventStream" fullname="Rescue.Core.Tests.Determinism.PipelineDeterminismTests.RepeatedRunsProduceIdenticalFinalStateAndEventStream" methodname="RepeatedRunsProduceIdenticalFinalStateAndEventStream" classname="Rescue.Core.Tests.Determinism.PipelineDeterminismTests" runstate="Runnable" seed="385866427" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.037060" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
@@ -29,74 +29,80 @@
                 </test-case>
               </test-suite>
             </test-suite>
-            <test-suite type="TestSuite" id="1117" name="Pipeline" fullname="Rescue.Core.Tests.Pipeline" runstate="Runnable" testcasecount="11" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.013769" total="11" passed="11" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <test-suite type="TestSuite" id="1127" name="Pipeline" fullname="Rescue.Core.Tests.Pipeline" runstate="Runnable" testcasecount="12" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.014838" total="12" passed="12" failed="0" inconclusive="0" skipped="0" asserts="0">
               <properties />
-              <test-suite type="TestFixture" id="1094" name="InvalidInputTests" fullname="Rescue.Core.Tests.Pipeline.InvalidInputTests" classname="Rescue.Core.Tests.Pipeline.InvalidInputTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.003676" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <test-suite type="TestFixture" id="1103" name="InvalidInputTests" fullname="Rescue.Core.Tests.Pipeline.InvalidInputTests" classname="Rescue.Core.Tests.Pipeline.InvalidInputTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.003662" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
                 <properties />
-                <test-case id="1096" name="TapOnBlockerIsInvalid" fullname="Rescue.Core.Tests.Pipeline.InvalidInputTests.TapOnBlockerIsInvalid" methodname="TapOnBlockerIsInvalid" classname="Rescue.Core.Tests.Pipeline.InvalidInputTests" runstate="Runnable" seed="1145435947" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.002207" asserts="0">
+                <test-case id="1105" name="TapOnBlockerIsInvalid" fullname="Rescue.Core.Tests.Pipeline.InvalidInputTests.TapOnBlockerIsInvalid" methodname="TapOnBlockerIsInvalid" classname="Rescue.Core.Tests.Pipeline.InvalidInputTests" runstate="Runnable" seed="2118197466" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.002215" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1097" name="TapOnFloodedTileIsInvalid" fullname="Rescue.Core.Tests.Pipeline.InvalidInputTests.TapOnFloodedTileIsInvalid" methodname="TapOnFloodedTileIsInvalid" classname="Rescue.Core.Tests.Pipeline.InvalidInputTests" runstate="Runnable" seed="2046676672" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000229" asserts="0">
+                <test-case id="1106" name="TapOnFloodedTileIsInvalid" fullname="Rescue.Core.Tests.Pipeline.InvalidInputTests.TapOnFloodedTileIsInvalid" methodname="TapOnFloodedTileIsInvalid" classname="Rescue.Core.Tests.Pipeline.InvalidInputTests" runstate="Runnable" seed="2035392200" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000202" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1098" name="TapOnIceIsInvalid" fullname="Rescue.Core.Tests.Pipeline.InvalidInputTests.TapOnIceIsInvalid" methodname="TapOnIceIsInvalid" classname="Rescue.Core.Tests.Pipeline.InvalidInputTests" runstate="Runnable" seed="468519148" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000166" asserts="0">
+                <test-case id="1107" name="TapOnIceIsInvalid" fullname="Rescue.Core.Tests.Pipeline.InvalidInputTests.TapOnIceIsInvalid" methodname="TapOnIceIsInvalid" classname="Rescue.Core.Tests.Pipeline.InvalidInputTests" runstate="Runnable" seed="927647386" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000204" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1095" name="TapOnSingleTileLeavesStateUnchangedAndEmitsInvalidInput" fullname="Rescue.Core.Tests.Pipeline.InvalidInputTests.TapOnSingleTileLeavesStateUnchangedAndEmitsInvalidInput" methodname="TapOnSingleTileLeavesStateUnchangedAndEmitsInvalidInput" classname="Rescue.Core.Tests.Pipeline.InvalidInputTests" runstate="Runnable" seed="2011465351" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000206" asserts="0">
+                <test-case id="1104" name="TapOnSingleTileLeavesStateUnchangedAndEmitsInvalidInput" fullname="Rescue.Core.Tests.Pipeline.InvalidInputTests.TapOnSingleTileLeavesStateUnchangedAndEmitsInvalidInput" methodname="TapOnSingleTileLeavesStateUnchangedAndEmitsInvalidInput" classname="Rescue.Core.Tests.Pipeline.InvalidInputTests" runstate="Runnable" seed="1250633812" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000256" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1099" name="TapOnTargetIsInvalid" fullname="Rescue.Core.Tests.Pipeline.InvalidInputTests.TapOnTargetIsInvalid" methodname="TapOnTargetIsInvalid" classname="Rescue.Core.Tests.Pipeline.InvalidInputTests" runstate="Runnable" seed="766835063" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000238" asserts="0">
+                <test-case id="1108" name="TapOnTargetIsInvalid" fullname="Rescue.Core.Tests.Pipeline.InvalidInputTests.TapOnTargetIsInvalid" methodname="TapOnTargetIsInvalid" classname="Rescue.Core.Tests.Pipeline.InvalidInputTests" runstate="Runnable" seed="366622784" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000206" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
               </test-suite>
-              <test-suite type="TestFixture" id="1100" name="OrderTests" fullname="Rescue.Core.Tests.Pipeline.OrderTests" classname="Rescue.Core.Tests.Pipeline.OrderTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.009572" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <test-suite type="TestFixture" id="1109" name="OrderTests" fullname="Rescue.Core.Tests.Pipeline.OrderTests" classname="Rescue.Core.Tests.Pipeline.OrderTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.010701" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
                 <properties />
-                <test-case id="1104" name="InvalidInputShortCircuitsPipelineAfterStep01" fullname="Rescue.Core.Tests.Pipeline.OrderTests.InvalidInputShortCircuitsPipelineAfterStep01" methodname="InvalidInputShortCircuitsPipelineAfterStep01" classname="Rescue.Core.Tests.Pipeline.OrderTests" runstate="Runnable" seed="1582744525" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000596" asserts="0">
+                <test-case id="1113" name="InvalidInputShortCircuitsPipelineAfterStep01" fullname="Rescue.Core.Tests.Pipeline.OrderTests.InvalidInputShortCircuitsPipelineAfterStep01" methodname="InvalidInputShortCircuitsPipelineAfterStep01" classname="Rescue.Core.Tests.Pipeline.OrderTests" runstate="Runnable" seed="2053362934" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000554" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1102" name="RemoveGroupLeavesTilesEmptyAfterStep02AndBeforeStep03" fullname="Rescue.Core.Tests.Pipeline.OrderTests.RemoveGroupLeavesTilesEmptyAfterStep02AndBeforeStep03" methodname="RemoveGroupLeavesTilesEmptyAfterStep02AndBeforeStep03" classname="Rescue.Core.Tests.Pipeline.OrderTests" runstate="Runnable" seed="760523758" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.003642" asserts="0">
+                <test-case id="1111" name="RemoveGroupLeavesTilesEmptyAfterStep02AndBeforeStep03" fullname="Rescue.Core.Tests.Pipeline.OrderTests.RemoveGroupLeavesTilesEmptyAfterStep02AndBeforeStep03" methodname="RemoveGroupLeavesTilesEmptyAfterStep02AndBeforeStep03" classname="Rescue.Core.Tests.Pipeline.OrderTests" runstate="Runnable" seed="495898823" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.003478" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1106" name="ReturnedEventsMatchPerStepEventsInOrder" fullname="Rescue.Core.Tests.Pipeline.OrderTests.ReturnedEventsMatchPerStepEventsInOrder" methodname="ReturnedEventsMatchPerStepEventsInOrder" classname="Rescue.Core.Tests.Pipeline.OrderTests" runstate="Runnable" seed="1129479303" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.001249" asserts="0">
+                <test-case id="1115" name="ReturnedEventsMatchPerStepEventsInOrder" fullname="Rescue.Core.Tests.Pipeline.OrderTests.ReturnedEventsMatchPerStepEventsInOrder" methodname="ReturnedEventsMatchPerStepEventsInOrder" classname="Rescue.Core.Tests.Pipeline.OrderTests" runstate="Runnable" seed="76697086" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.001112" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1101" name="RunActionInvokesStepsInExactSpecOrder" fullname="Rescue.Core.Tests.Pipeline.OrderTests.RunActionInvokesStepsInExactSpecOrder" methodname="RunActionInvokesStepsInExactSpecOrder" classname="Rescue.Core.Tests.Pipeline.OrderTests" runstate="Runnable" seed="591245676" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000997" asserts="0">
+                <test-case id="1110" name="RunActionInvokesStepsInExactSpecOrder" fullname="Rescue.Core.Tests.Pipeline.OrderTests.RunActionInvokesStepsInExactSpecOrder" methodname="RunActionInvokesStepsInExactSpecOrder" classname="Rescue.Core.Tests.Pipeline.OrderTests" runstate="Runnable" seed="1503203660" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000836" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1105" name="RunActionReturnsNewGameStateInstanceWithoutMutatingInput" fullname="Rescue.Core.Tests.Pipeline.OrderTests.RunActionReturnsNewGameStateInstanceWithoutMutatingInput" methodname="RunActionReturnsNewGameStateInstanceWithoutMutatingInput" classname="Rescue.Core.Tests.Pipeline.OrderTests" runstate="Runnable" seed="1203682719" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.002099" asserts="0">
+                <test-case id="1114" name="RunActionReturnsNewGameStateInstanceWithoutMutatingInput" fullname="Rescue.Core.Tests.Pipeline.OrderTests.RunActionReturnsNewGameStateInstanceWithoutMutatingInput" methodname="RunActionReturnsNewGameStateInstanceWithoutMutatingInput" classname="Rescue.Core.Tests.Pipeline.OrderTests" runstate="Runnable" seed="1053979679" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.001976" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1103" name="SuccessfulRunActionIncrementsActionCountExactlyOnce" fullname="Rescue.Core.Tests.Pipeline.OrderTests.SuccessfulRunActionIncrementsActionCountExactlyOnce" methodname="SuccessfulRunActionIncrementsActionCountExactlyOnce" classname="Rescue.Core.Tests.Pipeline.OrderTests" runstate="Runnable" seed="961843152" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000240" asserts="0">
+                <test-case id="1112" name="SuccessfulRunActionIncrementsActionCountExactlyOnce" fullname="Rescue.Core.Tests.Pipeline.OrderTests.SuccessfulRunActionIncrementsActionCountExactlyOnce" methodname="SuccessfulRunActionIncrementsActionCountExactlyOnce" classname="Rescue.Core.Tests.Pipeline.OrderTests" runstate="Runnable" seed="548287741" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000270" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1116" name="WinShortCircuitsSteps11And12AndSkipsLossCheck" fullname="Rescue.Core.Tests.Pipeline.OrderTests.WinShortCircuitsSteps11And12AndSkipsLossCheck" methodname="WinShortCircuitsSteps11And12AndSkipsLossCheck" classname="Rescue.Core.Tests.Pipeline.OrderTests" runstate="Runnable" seed="591274883" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.001757" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
@@ -104,41 +110,41 @@
                 </test-case>
               </test-suite>
             </test-suite>
-            <test-suite type="TestSuite" id="1116" name="Rng" fullname="Rescue.Core.Tests.Rng" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.063668" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <test-suite type="TestSuite" id="1126" name="Rng" fullname="Rescue.Core.Tests.Rng" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.060765" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
               <properties />
-              <test-suite type="TestFixture" id="1087" name="SeededRngTests" fullname="Rescue.Core.Tests.Rng.SeededRngTests" classname="Rescue.Core.Tests.Rng.SeededRngTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.063499" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <test-suite type="TestFixture" id="1096" name="SeededRngTests" fullname="Rescue.Core.Tests.Rng.SeededRngTests" classname="Rescue.Core.Tests.Rng.SeededRngTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.060602" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
                 <properties />
-                <test-case id="1089" name="CloneProducesIndependentStreamWithoutAdvancingParent" fullname="Rescue.Core.Tests.Rng.SeededRngTests.CloneProducesIndependentStreamWithoutAdvancingParent" methodname="CloneProducesIndependentStreamWithoutAdvancingParent" classname="Rescue.Core.Tests.Rng.SeededRngTests" runstate="Runnable" seed="331269738" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000675" asserts="0">
+                <test-case id="1098" name="CloneProducesIndependentStreamWithoutAdvancingParent" fullname="Rescue.Core.Tests.Rng.SeededRngTests.CloneProducesIndependentStreamWithoutAdvancingParent" methodname="CloneProducesIndependentStreamWithoutAdvancingParent" classname="Rescue.Core.Tests.Rng.SeededRngTests" runstate="Runnable" seed="1597492617" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000656" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1093" name="DeterminismHarnessProducesIdenticalRuns" fullname="Rescue.Core.Tests.Rng.SeededRngTests.DeterminismHarnessProducesIdenticalRuns" methodname="DeterminismHarnessProducesIdenticalRuns" classname="Rescue.Core.Tests.Rng.SeededRngTests" runstate="Runnable" seed="2122713438" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000758" asserts="0">
+                <test-case id="1102" name="DeterminismHarnessProducesIdenticalRuns" fullname="Rescue.Core.Tests.Rng.SeededRngTests.DeterminismHarnessProducesIdenticalRuns" methodname="DeterminismHarnessProducesIdenticalRuns" classname="Rescue.Core.Tests.Rng.SeededRngTests" runstate="Runnable" seed="1147278734" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000741" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1091" name="DifferentSeedsProduceDifferentSequences" fullname="Rescue.Core.Tests.Rng.SeededRngTests.DifferentSeedsProduceDifferentSequences" methodname="DifferentSeedsProduceDifferentSequences" classname="Rescue.Core.Tests.Rng.SeededRngTests" runstate="Runnable" seed="250485816" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000144" asserts="0">
+                <test-case id="1100" name="DifferentSeedsProduceDifferentSequences" fullname="Rescue.Core.Tests.Rng.SeededRngTests.DifferentSeedsProduceDifferentSequences" methodname="DifferentSeedsProduceDifferentSequences" classname="Rescue.Core.Tests.Rng.SeededRngTests" runstate="Runnable" seed="1903259427" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000103" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1088" name="SameSeedProducesSameSequencesAcrossMethods" fullname="Rescue.Core.Tests.Rng.SeededRngTests.SameSeedProducesSameSequencesAcrossMethods" methodname="SameSeedProducesSameSequencesAcrossMethods" classname="Rescue.Core.Tests.Rng.SeededRngTests" runstate="Runnable" seed="1617325219" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.045155" asserts="0">
+                <test-case id="1097" name="SameSeedProducesSameSequencesAcrossMethods" fullname="Rescue.Core.Tests.Rng.SeededRngTests.SameSeedProducesSameSequencesAcrossMethods" methodname="SameSeedProducesSameSequencesAcrossMethods" classname="Rescue.Core.Tests.Rng.SeededRngTests" runstate="Runnable" seed="1807118984" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.042081" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1090" name="StateRoundTripContinuesSequenceFromSavedPoint" fullname="Rescue.Core.Tests.Rng.SeededRngTests.StateRoundTripContinuesSequenceFromSavedPoint" methodname="StateRoundTripContinuesSequenceFromSavedPoint" classname="Rescue.Core.Tests.Rng.SeededRngTests" runstate="Runnable" seed="167076711" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.001105" asserts="0">
+                <test-case id="1099" name="StateRoundTripContinuesSequenceFromSavedPoint" fullname="Rescue.Core.Tests.Rng.SeededRngTests.StateRoundTripContinuesSequenceFromSavedPoint" methodname="StateRoundTripContinuesSequenceFromSavedPoint" classname="Rescue.Core.Tests.Rng.SeededRngTests" runstate="Runnable" seed="184376624" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.001110" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1092" name="WeightedPickMatchesExpectedFrequenciesWithinTolerance" fullname="Rescue.Core.Tests.Rng.SeededRngTests.WeightedPickMatchesExpectedFrequenciesWithinTolerance" methodname="WeightedPickMatchesExpectedFrequenciesWithinTolerance" classname="Rescue.Core.Tests.Rng.SeededRngTests" runstate="Runnable" seed="1743988170" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.014988" asserts="0">
+                <test-case id="1101" name="WeightedPickMatchesExpectedFrequenciesWithinTolerance" fullname="Rescue.Core.Tests.Rng.SeededRngTests.WeightedPickMatchesExpectedFrequenciesWithinTolerance" methodname="WeightedPickMatchesExpectedFrequenciesWithinTolerance" classname="Rescue.Core.Tests.Rng.SeededRngTests" runstate="Runnable" seed="1605788824" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.015304" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
@@ -146,314 +152,365 @@
                 </test-case>
               </test-suite>
             </test-suite>
-            <test-suite type="TestSuite" id="1115" name="Rules" fullname="Rescue.Core.Tests.Rules" runstate="Runnable" testcasecount="49" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.102598" total="49" passed="49" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <test-suite type="TestSuite" id="1125" name="Rules" fullname="Rescue.Core.Tests.Rules" runstate="Runnable" testcasecount="57" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.108294" total="57" passed="57" failed="0" inconclusive="0" skipped="0" asserts="0">
               <properties />
-              <test-suite type="TestFixture" id="1032" name="BlockersTests" fullname="Rescue.Core.Tests.Rules.BlockersTests" classname="Rescue.Core.Tests.Rules.BlockersTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.006397" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <test-suite type="TestFixture" id="1032" name="BlockersTests" fullname="Rescue.Core.Tests.Rules.BlockersTests" classname="Rescue.Core.Tests.Rules.BlockersTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.004884" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
                 <properties />
-                <test-case id="1039" name="BlockerNotAdjacentToAnyClearedTileTakesNoDamage" fullname="Rescue.Core.Tests.Rules.BlockersTests.BlockerNotAdjacentToAnyClearedTileTakesNoDamage" methodname="BlockerNotAdjacentToAnyClearedTileTakesNoDamage" classname="Rescue.Core.Tests.Rules.BlockersTests" runstate="Runnable" seed="647138577" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.001412" asserts="0">
+                <test-case id="1039" name="BlockerNotAdjacentToAnyClearedTileTakesNoDamage" fullname="Rescue.Core.Tests.Rules.BlockersTests.BlockerNotAdjacentToAnyClearedTileTakesNoDamage" methodname="BlockerNotAdjacentToAnyClearedTileTakesNoDamage" classname="Rescue.Core.Tests.Rules.BlockersTests" runstate="Runnable" seed="2124767122" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.001324" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1038" name="ClearedGroupBorderingCrateAndIceDamagesBothOnce" fullname="Rescue.Core.Tests.Rules.BlockersTests.ClearedGroupBorderingCrateAndIceDamagesBothOnce" methodname="ClearedGroupBorderingCrateAndIceDamagesBothOnce" classname="Rescue.Core.Tests.Rules.BlockersTests" runstate="Runnable" seed="1233325232" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.001011" asserts="0">
+                <test-case id="1038" name="ClearedGroupBorderingCrateAndIceDamagesBothOnce" fullname="Rescue.Core.Tests.Rules.BlockersTests.ClearedGroupBorderingCrateAndIceDamagesBothOnce" methodname="ClearedGroupBorderingCrateAndIceDamagesBothOnce" classname="Rescue.Core.Tests.Rules.BlockersTests" runstate="Runnable" seed="1273071570" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.001019" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1033" name="CrateWithOneAdjacentClearBreaks" fullname="Rescue.Core.Tests.Rules.BlockersTests.CrateWithOneAdjacentClearBreaks" methodname="CrateWithOneAdjacentClearBreaks" classname="Rescue.Core.Tests.Rules.BlockersTests" runstate="Runnable" seed="889719935" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000554" asserts="0">
+                <test-case id="1033" name="CrateWithOneAdjacentClearBreaks" fullname="Rescue.Core.Tests.Rules.BlockersTests.CrateWithOneAdjacentClearBreaks" methodname="CrateWithOneAdjacentClearBreaks" classname="Rescue.Core.Tests.Rules.BlockersTests" runstate="Runnable" seed="2060892743" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000525" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1034" name="CrateWithThreeAdjacentClearsInOneActionTakesOneHitNotThree" fullname="Rescue.Core.Tests.Rules.BlockersTests.CrateWithThreeAdjacentClearsInOneActionTakesOneHitNotThree" methodname="CrateWithThreeAdjacentClearsInOneActionTakesOneHitNotThree" classname="Rescue.Core.Tests.Rules.BlockersTests" runstate="Runnable" seed="1972822228" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000386" asserts="0">
+                <test-case id="1034" name="CrateWithThreeAdjacentClearsInOneActionTakesOneHitNotThree" fullname="Rescue.Core.Tests.Rules.BlockersTests.CrateWithThreeAdjacentClearsInOneActionTakesOneHitNotThree" methodname="CrateWithThreeAdjacentClearsInOneActionTakesOneHitNotThree" classname="Rescue.Core.Tests.Rules.BlockersTests" runstate="Runnable" seed="230867120" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000390" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1035" name="IceBreaksAndRevealsDebrisBeneath" fullname="Rescue.Core.Tests.Rules.BlockersTests.IceBreaksAndRevealsDebrisBeneath" methodname="IceBreaksAndRevealsDebrisBeneath" classname="Rescue.Core.Tests.Rules.BlockersTests" runstate="Runnable" seed="644168633" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000348" asserts="0">
+                <test-case id="1035" name="IceBreaksAndRevealsDebrisBeneath" fullname="Rescue.Core.Tests.Rules.BlockersTests.IceBreaksAndRevealsDebrisBeneath" methodname="IceBreaksAndRevealsDebrisBeneath" classname="Rescue.Core.Tests.Rules.BlockersTests" runstate="Runnable" seed="1904287003" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000353" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1037" name="ReinforcedCrateTakesOneHitAndDoesNotBreakOnFirstAction" fullname="Rescue.Core.Tests.Rules.BlockersTests.ReinforcedCrateTakesOneHitAndDoesNotBreakOnFirstAction" methodname="ReinforcedCrateTakesOneHitAndDoesNotBreakOnFirstAction" classname="Rescue.Core.Tests.Rules.BlockersTests" runstate="Runnable" seed="1029648622" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000193" asserts="0">
+                <test-case id="1037" name="ReinforcedCrateTakesOneHitAndDoesNotBreakOnFirstAction" fullname="Rescue.Core.Tests.Rules.BlockersTests.ReinforcedCrateTakesOneHitAndDoesNotBreakOnFirstAction" methodname="ReinforcedCrateTakesOneHitAndDoesNotBreakOnFirstAction" classname="Rescue.Core.Tests.Rules.BlockersTests" runstate="Runnable" seed="2084435142" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000199" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1036" name="VineBreaksAndResetsVineCounter" fullname="Rescue.Core.Tests.Rules.BlockersTests.VineBreaksAndResetsVineCounter" methodname="VineBreaksAndResetsVineCounter" classname="Rescue.Core.Tests.Rules.BlockersTests" runstate="Runnable" seed="259877111" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000318" asserts="0">
+                <test-case id="1036" name="VineBreaksAndResetsVineCounter" fullname="Rescue.Core.Tests.Rules.BlockersTests.VineBreaksAndResetsVineCounter" methodname="VineBreaksAndResetsVineCounter" classname="Rescue.Core.Tests.Rules.BlockersTests" runstate="Runnable" seed="864778824" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000321" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
               </test-suite>
-              <test-suite type="TestFixture" id="1040" name="DockJamTests" fullname="Rescue.Core.Tests.Rules.DockJamTests" classname="Rescue.Core.Tests.Rules.DockJamTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.001981" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <test-suite type="TestFixture" id="1040" name="DockJamTests" fullname="Rescue.Core.Tests.Rules.DockJamTests" classname="Rescue.Core.Tests.Rules.DockJamTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.002007" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
                 <properties />
-                <test-case id="1045" name="DockJamDisabledFirstOverflowBecomesNormalLoss" fullname="Rescue.Core.Tests.Rules.DockJamTests.DockJamDisabledFirstOverflowBecomesNormalLoss" methodname="DockJamDisabledFirstOverflowBecomesNormalLoss" classname="Rescue.Core.Tests.Rules.DockJamTests" runstate="Runnable" seed="381987843" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000534" asserts="0">
+                <test-case id="1045" name="DockJamDisabledFirstOverflowBecomesNormalLoss" fullname="Rescue.Core.Tests.Rules.DockJamTests.DockJamDisabledFirstOverflowBecomesNormalLoss" methodname="DockJamDisabledFirstOverflowBecomesNormalLoss" classname="Rescue.Core.Tests.Rules.DockJamTests" runstate="Runnable" seed="1059076388" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000543" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1041" name="DockJamEnabledFirstOverflowFreezesWithoutImmediateLoss" fullname="Rescue.Core.Tests.Rules.DockJamTests.DockJamEnabledFirstOverflowFreezesWithoutImmediateLoss" methodname="DockJamEnabledFirstOverflowFreezesWithoutImmediateLoss" classname="Rescue.Core.Tests.Rules.DockJamTests" runstate="Runnable" seed="1869254306" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000343" asserts="0">
+                <test-case id="1041" name="DockJamEnabledFirstOverflowFreezesWithoutImmediateLoss" fullname="Rescue.Core.Tests.Rules.DockJamTests.DockJamEnabledFirstOverflowFreezesWithoutImmediateLoss" methodname="DockJamEnabledFirstOverflowFreezesWithoutImmediateLoss" classname="Rescue.Core.Tests.Rules.DockJamTests" runstate="Runnable" seed="685444473" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000343" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1044" name="DockJamFiresOnceOnly" fullname="Rescue.Core.Tests.Rules.DockJamTests.DockJamFiresOnceOnly" methodname="DockJamFiresOnceOnly" classname="Rescue.Core.Tests.Rules.DockJamTests" runstate="Runnable" seed="420465617" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000242" asserts="0">
+                <test-case id="1044" name="DockJamFiresOnceOnly" fullname="Rescue.Core.Tests.Rules.DockJamTests.DockJamFiresOnceOnly" methodname="DockJamFiresOnceOnly" classname="Rescue.Core.Tests.Rules.DockJamTests" runstate="Runnable" seed="35696412" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000260" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1042" name="NextActionThatClearsTripleContinuesPlay" fullname="Rescue.Core.Tests.Rules.DockJamTests.NextActionThatClearsTripleContinuesPlay" methodname="NextActionThatClearsTripleContinuesPlay" classname="Rescue.Core.Tests.Rules.DockJamTests" runstate="Runnable" seed="61307869" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000152" asserts="0">
+                <test-case id="1042" name="NextActionThatClearsTripleContinuesPlay" fullname="Rescue.Core.Tests.Rules.DockJamTests.NextActionThatClearsTripleContinuesPlay" methodname="NextActionThatClearsTripleContinuesPlay" classname="Rescue.Core.Tests.Rules.DockJamTests" runstate="Runnable" seed="2015623096" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000161" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1043" name="NextActionThatDoesNotClearTripleLoses" fullname="Rescue.Core.Tests.Rules.DockJamTests.NextActionThatDoesNotClearTripleLoses" methodname="NextActionThatDoesNotClearTripleLoses" classname="Rescue.Core.Tests.Rules.DockJamTests" runstate="Runnable" seed="236190072" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000194" asserts="0">
+                <test-case id="1043" name="NextActionThatDoesNotClearTripleLoses" fullname="Rescue.Core.Tests.Rules.DockJamTests.NextActionThatDoesNotClearTripleLoses" methodname="NextActionThatDoesNotClearTripleLoses" classname="Rescue.Core.Tests.Rules.DockJamTests" runstate="Runnable" seed="1849030420" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000202" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
               </test-suite>
-              <test-suite type="TestFixture" id="1046" name="DockTests" fullname="Rescue.Core.Tests.Rules.DockTests" classname="Rescue.Core.Tests.Rules.DockTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.002696" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <test-suite type="TestFixture" id="1046" name="DockTests" fullname="Rescue.Core.Tests.Rules.DockTests" classname="Rescue.Core.Tests.Rules.DockTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.003341" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
                 <properties />
-                <test-case id="1051" name="CompactionAfterClearLeavesNoGaps" fullname="Rescue.Core.Tests.Rules.DockTests.CompactionAfterClearLeavesNoGaps" methodname="CompactionAfterClearLeavesNoGaps" classname="Rescue.Core.Tests.Rules.DockTests" runstate="Runnable" seed="911229427" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000406" asserts="0">
+                <test-case id="1051" name="CompactionAfterClearLeavesNoGaps" fullname="Rescue.Core.Tests.Rules.DockTests.CompactionAfterClearLeavesNoGaps" methodname="CompactionAfterClearLeavesNoGaps" classname="Rescue.Core.Tests.Rules.DockTests" runstate="Runnable" seed="1328784337" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000474" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1048" name="InsertFourMatchingPiecesClearsThreeAndLeavesOne" fullname="Rescue.Core.Tests.Rules.DockTests.InsertFourMatchingPiecesClearsThreeAndLeavesOne" methodname="InsertFourMatchingPiecesClearsThreeAndLeavesOne" classname="Rescue.Core.Tests.Rules.DockTests" runstate="Runnable" seed="1945769762" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000255" asserts="0">
+                <test-case id="1048" name="InsertFourMatchingPiecesClearsThreeAndLeavesOne" fullname="Rescue.Core.Tests.Rules.DockTests.InsertFourMatchingPiecesClearsThreeAndLeavesOne" methodname="InsertFourMatchingPiecesClearsThreeAndLeavesOne" classname="Rescue.Core.Tests.Rules.DockTests" runstate="Runnable" seed="1465235375" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000285" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1049" name="InsertSixMatchingPiecesClearsTwoTriples" fullname="Rescue.Core.Tests.Rules.DockTests.InsertSixMatchingPiecesClearsTwoTriples" methodname="InsertSixMatchingPiecesClearsTwoTriples" classname="Rescue.Core.Tests.Rules.DockTests" runstate="Runnable" seed="1195909682" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000266" asserts="0">
+                <test-case id="1049" name="InsertSixMatchingPiecesClearsTwoTriples" fullname="Rescue.Core.Tests.Rules.DockTests.InsertSixMatchingPiecesClearsTwoTriples" methodname="InsertSixMatchingPiecesClearsTwoTriples" classname="Rescue.Core.Tests.Rules.DockTests" runstate="Runnable" seed="629470200" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000392" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1050" name="InsertThatWouldExceedCapacitySetsOverflowFlag" fullname="Rescue.Core.Tests.Rules.DockTests.InsertThatWouldExceedCapacitySetsOverflowFlag" methodname="InsertThatWouldExceedCapacitySetsOverflowFlag" classname="Rescue.Core.Tests.Rules.DockTests" runstate="Runnable" seed="835862480" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000648" asserts="0">
+                <test-case id="1050" name="InsertThatWouldExceedCapacitySetsOverflowFlag" fullname="Rescue.Core.Tests.Rules.DockTests.InsertThatWouldExceedCapacitySetsOverflowFlag" methodname="InsertThatWouldExceedCapacitySetsOverflowFlag" classname="Rescue.Core.Tests.Rules.DockTests" runstate="Runnable" seed="1672202196" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000727" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1047" name="InsertThreeMatchingPiecesIntoEmptyDockClearsImmediately" fullname="Rescue.Core.Tests.Rules.DockTests.InsertThreeMatchingPiecesIntoEmptyDockClearsImmediately" methodname="InsertThreeMatchingPiecesIntoEmptyDockClearsImmediately" classname="Rescue.Core.Tests.Rules.DockTests" runstate="Runnable" seed="2117732374" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000221" asserts="0">
+                <test-case id="1047" name="InsertThreeMatchingPiecesIntoEmptyDockClearsImmediately" fullname="Rescue.Core.Tests.Rules.DockTests.InsertThreeMatchingPiecesIntoEmptyDockClearsImmediately" methodname="InsertThreeMatchingPiecesIntoEmptyDockClearsImmediately" classname="Rescue.Core.Tests.Rules.DockTests" runstate="Runnable" seed="999578226" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000247" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1052" name="WarningLevelChangesEmitAtThresholds" fullname="Rescue.Core.Tests.Rules.DockTests.WarningLevelChangesEmitAtThresholds" methodname="WarningLevelChangesEmitAtThresholds" classname="Rescue.Core.Tests.Rules.DockTests" runstate="Runnable" seed="757085203" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000334" asserts="0">
+                <test-case id="1052" name="WarningLevelChangesEmitAtThresholds" fullname="Rescue.Core.Tests.Rules.DockTests.WarningLevelChangesEmitAtThresholds" methodname="WarningLevelChangesEmitAtThresholds" classname="Rescue.Core.Tests.Rules.DockTests" runstate="Runnable" seed="479571030" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000602" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
               </test-suite>
-              <test-suite type="TestFixture" id="1053" name="GravityTests" fullname="Rescue.Core.Tests.Rules.GravityTests" classname="Rescue.Core.Tests.Rules.GravityTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.001763" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <test-suite type="TestFixture" id="1053" name="ExtractionTests" fullname="Rescue.Core.Tests.Rules.ExtractionTests" classname="Rescue.Core.Tests.Rules.ExtractionTests" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.004318" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
                 <properties />
-                <test-case id="1056" name="FloodedTileActsAsFloorAndDryTilesSettleOnTop" fullname="Rescue.Core.Tests.Rules.GravityTests.FloodedTileActsAsFloorAndDryTilesSettleOnTop" methodname="FloodedTileActsAsFloorAndDryTilesSettleOnTop" classname="Rescue.Core.Tests.Rules.GravityTests" runstate="Runnable" seed="1741125598" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000282" asserts="0">
+                <test-case id="1057" name="CornerTargetExtractsWithTwoOpenSides" fullname="Rescue.Core.Tests.Rules.ExtractionTests.CornerTargetExtractsWithTwoOpenSides" methodname="CornerTargetExtractsWithTwoOpenSides" classname="Rescue.Core.Tests.Rules.ExtractionTests" runstate="Runnable" seed="2016881458" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000439" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1055" name="FullColumnOfDebrisAboveEmptyShiftsDownCorrectly" fullname="Rescue.Core.Tests.Rules.GravityTests.FullColumnOfDebrisAboveEmptyShiftsDownCorrectly" methodname="FullColumnOfDebrisAboveEmptyShiftsDownCorrectly" classname="Rescue.Core.Tests.Rules.GravityTests" runstate="Runnable" seed="45648808" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000587" asserts="0">
+                <test-case id="1056" name="EdgeTargetWithAllExistingSidesOpenExtracts" fullname="Rescue.Core.Tests.Rules.ExtractionTests.EdgeTargetWithAllExistingSidesOpenExtracts" methodname="EdgeTargetWithAllExistingSidesOpenExtracts" classname="Rescue.Core.Tests.Rules.ExtractionTests" runstate="Runnable" seed="582993398" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000296" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1057" name="GravityIsIdempotent" fullname="Rescue.Core.Tests.Rules.GravityTests.GravityIsIdempotent" methodname="GravityIsIdempotent" classname="Rescue.Core.Tests.Rules.GravityTests" runstate="Runnable" seed="1047335165" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000204" asserts="0">
+                <test-case id="1054" name="InteriorTargetWithFourOpenNeighborsExtracts" fullname="Rescue.Core.Tests.Rules.ExtractionTests.InteriorTargetWithFourOpenNeighborsExtracts" methodname="InteriorTargetWithFourOpenNeighborsExtracts" classname="Rescue.Core.Tests.Rules.ExtractionTests" runstate="Runnable" seed="1859572809" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000572" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1054" name="SingleHoleFillsFromAbove" fullname="Rescue.Core.Tests.Rules.GravityTests.SingleHoleFillsFromAbove" methodname="SingleHoleFillsFromAbove" classname="Rescue.Core.Tests.Rules.GravityTests" runstate="Runnable" seed="1776935889" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000265" asserts="0">
+                <test-case id="1055" name="InteriorTargetWithThreeOpenNeighborsDoesNotExtract" fullname="Rescue.Core.Tests.Rules.ExtractionTests.InteriorTargetWithThreeOpenNeighborsDoesNotExtract" methodname="InteriorTargetWithThreeOpenNeighborsDoesNotExtract" classname="Rescue.Core.Tests.Rules.ExtractionTests" runstate="Runnable" seed="1161000768" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000482" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1058" name="TargetBecomesOneClearAwayWhenExactlyOneRequiredNeighborBlocks" fullname="Rescue.Core.Tests.Rules.ExtractionTests.TargetBecomesOneClearAwayWhenExactlyOneRequiredNeighborBlocks" methodname="TargetBecomesOneClearAwayWhenExactlyOneRequiredNeighborBlocks" classname="Rescue.Core.Tests.Rules.ExtractionTests" runstate="Runnable" seed="1566647875" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000287" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1059" name="TargetOneClearAwayFiresOnFalseToTrueTransitionOnly" fullname="Rescue.Core.Tests.Rules.ExtractionTests.TargetOneClearAwayFiresOnFalseToTrueTransitionOnly" methodname="TargetOneClearAwayFiresOnFalseToTrueTransitionOnly" classname="Rescue.Core.Tests.Rules.ExtractionTests" runstate="Runnable" seed="135459223" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000332" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1060" name="WinFiresImmediatelyOnFinalExtraction" fullname="Rescue.Core.Tests.Rules.ExtractionTests.WinFiresImmediatelyOnFinalExtraction" methodname="WinFiresImmediatelyOnFinalExtraction" classname="Rescue.Core.Tests.Rules.ExtractionTests" runstate="Runnable" seed="401481267" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000535" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1061" name="WinSkipsLaterHazardSteps" fullname="Rescue.Core.Tests.Rules.ExtractionTests.WinSkipsLaterHazardSteps" methodname="WinSkipsLaterHazardSteps" classname="Rescue.Core.Tests.Rules.ExtractionTests" runstate="Runnable" seed="135696686" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000670" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
               </test-suite>
-              <test-suite type="TestFixture" id="1058" name="GroupsTests" fullname="Rescue.Core.Tests.Rules.GroupsTests" classname="Rescue.Core.Tests.Rules.GroupsTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.002507" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <test-suite type="TestFixture" id="1062" name="GravityTests" fullname="Rescue.Core.Tests.Rules.GravityTests" classname="Rescue.Core.Tests.Rules.GravityTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.001852" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
                 <properties />
-                <test-case id="1064" name="FindGroupDoesNotIncludeTileHiddenUnderIce" fullname="Rescue.Core.Tests.Rules.GroupsTests.FindGroupDoesNotIncludeTileHiddenUnderIce" methodname="FindGroupDoesNotIncludeTileHiddenUnderIce" classname="Rescue.Core.Tests.Rules.GroupsTests" runstate="Runnable" seed="457728324" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000359" asserts="0">
+                <test-case id="1065" name="FloodedTileActsAsFloorAndDryTilesSettleOnTop" fullname="Rescue.Core.Tests.Rules.GravityTests.FloodedTileActsAsFloorAndDryTilesSettleOnTop" methodname="FloodedTileActsAsFloorAndDryTilesSettleOnTop" classname="Rescue.Core.Tests.Rules.GravityTests" runstate="Runnable" seed="324293015" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000299" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1062" name="FindGroupDoesNotUseDiagonalAdjacency" fullname="Rescue.Core.Tests.Rules.GroupsTests.FindGroupDoesNotUseDiagonalAdjacency" methodname="FindGroupDoesNotUseDiagonalAdjacency" classname="Rescue.Core.Tests.Rules.GroupsTests" runstate="Runnable" seed="1839380612" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000182" asserts="0">
+                <test-case id="1064" name="FullColumnOfDebrisAboveEmptyShiftsDownCorrectly" fullname="Rescue.Core.Tests.Rules.GravityTests.FullColumnOfDebrisAboveEmptyShiftsDownCorrectly" methodname="FullColumnOfDebrisAboveEmptyShiftsDownCorrectly" classname="Rescue.Core.Tests.Rules.GravityTests" runstate="Runnable" seed="767163959" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000582" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1061" name="FindGroupReturnsAllTilesForLShape" fullname="Rescue.Core.Tests.Rules.GroupsTests.FindGroupReturnsAllTilesForLShape" methodname="FindGroupReturnsAllTilesForLShape" classname="Rescue.Core.Tests.Rules.GroupsTests" runstate="Runnable" seed="676442912" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000791" asserts="0">
+                <test-case id="1066" name="GravityIsIdempotent" fullname="Rescue.Core.Tests.Rules.GravityTests.GravityIsIdempotent" methodname="GravityIsIdempotent" classname="Rescue.Core.Tests.Rules.GravityTests" runstate="Runnable" seed="2046465989" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000217" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1060" name="FindGroupReturnsBothTilesForHorizontalPair" fullname="Rescue.Core.Tests.Rules.GroupsTests.FindGroupReturnsBothTilesForHorizontalPair" methodname="FindGroupReturnsBothTilesForHorizontalPair" classname="Rescue.Core.Tests.Rules.GroupsTests" runstate="Runnable" seed="348495248" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000206" asserts="0">
-                  <properties>
-                    <property name="retryIteration" value="0" />
-                    <property name="repeatIteration" value="0" />
-                  </properties>
-                </test-case>
-                <test-case id="1065" name="FindGroupReturnsNullForFloodedTile" fullname="Rescue.Core.Tests.Rules.GroupsTests.FindGroupReturnsNullForFloodedTile" methodname="FindGroupReturnsNullForFloodedTile" classname="Rescue.Core.Tests.Rules.GroupsTests" runstate="Runnable" seed="676664318" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000119" asserts="0">
-                  <properties>
-                    <property name="retryIteration" value="0" />
-                    <property name="repeatIteration" value="0" />
-                  </properties>
-                </test-case>
-                <test-case id="1059" name="FindGroupReturnsNullForSingleTile" fullname="Rescue.Core.Tests.Rules.GroupsTests.FindGroupReturnsNullForSingleTile" methodname="FindGroupReturnsNullForSingleTile" classname="Rescue.Core.Tests.Rules.GroupsTests" runstate="Runnable" seed="1198304936" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000089" asserts="0">
-                  <properties>
-                    <property name="retryIteration" value="0" />
-                    <property name="repeatIteration" value="0" />
-                  </properties>
-                </test-case>
-                <test-case id="1063" name="FindGroupStopsAtDifferentDebrisTypeBoundary" fullname="Rescue.Core.Tests.Rules.GroupsTests.FindGroupStopsAtDifferentDebrisTypeBoundary" methodname="FindGroupStopsAtDifferentDebrisTypeBoundary" classname="Rescue.Core.Tests.Rules.GroupsTests" runstate="Runnable" seed="844565799" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000175" asserts="0">
+                <test-case id="1063" name="SingleHoleFillsFromAbove" fullname="Rescue.Core.Tests.Rules.GravityTests.SingleHoleFillsFromAbove" methodname="SingleHoleFillsFromAbove" classname="Rescue.Core.Tests.Rules.GravityTests" runstate="Runnable" seed="180345661" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000273" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
               </test-suite>
-              <test-suite type="TestFixture" id="1066" name="SpawnTests" fullname="Rescue.Core.Tests.Rules.SpawnTests" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" testcasecount="20" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.086612" total="20" passed="20" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <test-suite type="TestFixture" id="1067" name="GroupsTests" fullname="Rescue.Core.Tests.Rules.GroupsTests" classname="Rescue.Core.Tests.Rules.GroupsTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.002447" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
                 <properties />
-                <test-case id="1068" name="AssistanceChanceOnePrefersTypeWithTwoAlreadyInDock" fullname="Rescue.Core.Tests.Rules.SpawnTests.AssistanceChanceOnePrefersTypeWithTwoAlreadyInDock" methodname="AssistanceChanceOnePrefersTypeWithTwoAlreadyInDock" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="180626886" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.001103" asserts="0">
+                <test-case id="1073" name="FindGroupDoesNotIncludeTileHiddenUnderIce" fullname="Rescue.Core.Tests.Rules.GroupsTests.FindGroupDoesNotIncludeTileHiddenUnderIce" methodname="FindGroupDoesNotIncludeTileHiddenUnderIce" classname="Rescue.Core.Tests.Rules.GroupsTests" runstate="Runnable" seed="927455111" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000296" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1067" name="AssistanceChanceZeroKeepsDistributionNearBaseWeights" fullname="Rescue.Core.Tests.Rules.SpawnTests.AssistanceChanceZeroKeepsDistributionNearBaseWeights" methodname="AssistanceChanceZeroKeepsDistributionNearBaseWeights" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="2137199512" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.004475" asserts="0">
+                <test-case id="1071" name="FindGroupDoesNotUseDiagonalAdjacency" fullname="Rescue.Core.Tests.Rules.GroupsTests.FindGroupDoesNotUseDiagonalAdjacency" methodname="FindGroupDoesNotUseDiagonalAdjacency" classname="Rescue.Core.Tests.Rules.GroupsTests" runstate="Runnable" seed="1679996005" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000120" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1077" name="CandidateGetsReachablePairRouteBonusWhenSpawnCreatesLegalRouteGroup" fullname="Rescue.Core.Tests.Rules.SpawnTests.CandidateGetsReachablePairRouteBonusWhenSpawnCreatesLegalRouteGroup" methodname="CandidateGetsReachablePairRouteBonusWhenSpawnCreatesLegalRouteGroup" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="254575381" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000932" asserts="0">
+                <test-case id="1070" name="FindGroupReturnsAllTilesForLShape" fullname="Rescue.Core.Tests.Rules.GroupsTests.FindGroupReturnsAllTilesForLShape" methodname="FindGroupReturnsAllTilesForLShape" classname="Rescue.Core.Tests.Rules.GroupsTests" runstate="Runnable" seed="264833006" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000795" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1079" name="CandidateGetsRouteAdjacencyBonusWhenFinalTileLandsInSoftRoute" fullname="Rescue.Core.Tests.Rules.SpawnTests.CandidateGetsRouteAdjacencyBonusWhenFinalTileLandsInSoftRoute" methodname="CandidateGetsRouteAdjacencyBonusWhenFinalTileLandsInSoftRoute" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="1573500851" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000346" asserts="0">
+                <test-case id="1069" name="FindGroupReturnsBothTilesForHorizontalPair" fullname="Rescue.Core.Tests.Rules.GroupsTests.FindGroupReturnsBothTilesForHorizontalPair" methodname="FindGroupReturnsBothTilesForHorizontalPair" classname="Rescue.Core.Tests.Rules.GroupsTests" runstate="Runnable" seed="1082271830" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000188" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1081" name="DockBonusStillOutranksRouteAdjacency" fullname="Rescue.Core.Tests.Rules.SpawnTests.DockBonusStillOutranksRouteAdjacency" methodname="DockBonusStillOutranksRouteAdjacency" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="188477450" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000231" asserts="0">
+                <test-case id="1074" name="FindGroupReturnsNullForFloodedTile" fullname="Rescue.Core.Tests.Rules.GroupsTests.FindGroupReturnsNullForFloodedTile" methodname="FindGroupReturnsNullForFloodedTile" classname="Rescue.Core.Tests.Rules.GroupsTests" runstate="Runnable" seed="258489893" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000113" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1069" name="EmergencyTriggerAtDockOccupancyFiveRaisesAssistanceByExactlyTwentyPoints" fullname="Rescue.Core.Tests.Rules.SpawnTests.EmergencyTriggerAtDockOccupancyFiveRaisesAssistanceByExactlyTwentyPoints" methodname="EmergencyTriggerAtDockOccupancyFiveRaisesAssistanceByExactlyTwentyPoints" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="1554639544" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000188" asserts="0">
+                <test-case id="1068" name="FindGroupReturnsNullForSingleTile" fullname="Rescue.Core.Tests.Rules.GroupsTests.FindGroupReturnsNullForSingleTile" methodname="FindGroupReturnsNullForSingleTile" classname="Rescue.Core.Tests.Rules.GroupsTests" runstate="Runnable" seed="955660688" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000085" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1076" name="HardAndSoftRouteRegionsAreBuiltCorrectlyForCornerTarget" fullname="Rescue.Core.Tests.Rules.SpawnTests.HardAndSoftRouteRegionsAreBuiltCorrectlyForCornerTarget" methodname="HardAndSoftRouteRegionsAreBuiltCorrectlyForCornerTarget" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="2057670058" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000404" asserts="0">
+                <test-case id="1072" name="FindGroupStopsAtDifferentDebrisTypeBoundary" fullname="Rescue.Core.Tests.Rules.GroupsTests.FindGroupStopsAtDifferentDebrisTypeBoundary" methodname="FindGroupStopsAtDifferentDebrisTypeBoundary" classname="Rescue.Core.Tests.Rules.GroupsTests" runstate="Runnable" seed="1541381114" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000207" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1075" name="HardAndSoftRouteRegionsAreBuiltCorrectlyForEdgeTarget" fullname="Rescue.Core.Tests.Rules.SpawnTests.HardAndSoftRouteRegionsAreBuiltCorrectlyForEdgeTarget" methodname="HardAndSoftRouteRegionsAreBuiltCorrectlyForEdgeTarget" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="482727910" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000395" asserts="0">
+              </test-suite>
+              <test-suite type="TestFixture" id="1075" name="SpawnTests" fullname="Rescue.Core.Tests.Rules.SpawnTests" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" testcasecount="20" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.088721" total="20" passed="20" failed="0" inconclusive="0" skipped="0" asserts="0">
+                <properties />
+                <test-case id="1077" name="AssistanceChanceOnePrefersTypeWithTwoAlreadyInDock" fullname="Rescue.Core.Tests.Rules.SpawnTests.AssistanceChanceOnePrefersTypeWithTwoAlreadyInDock" methodname="AssistanceChanceOnePrefersTypeWithTwoAlreadyInDock" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="1787308823" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000989" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1074" name="HardAndSoftRouteRegionsAreBuiltCorrectlyForInteriorTarget" fullname="Rescue.Core.Tests.Rules.SpawnTests.HardAndSoftRouteRegionsAreBuiltCorrectlyForInteriorTarget" methodname="HardAndSoftRouteRegionsAreBuiltCorrectlyForInteriorTarget" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="1324420860" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000447" asserts="0">
+                <test-case id="1076" name="AssistanceChanceZeroKeepsDistributionNearBaseWeights" fullname="Rescue.Core.Tests.Rules.SpawnTests.AssistanceChanceZeroKeepsDistributionNearBaseWeights" methodname="AssistanceChanceZeroKeepsDistributionNearBaseWeights" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="1499989585" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.004358" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1078" name="HardRouteQualificationWinsOverSoftOnlyQualification" fullname="Rescue.Core.Tests.Rules.SpawnTests.HardRouteQualificationWinsOverSoftOnlyQualification" methodname="HardRouteQualificationWinsOverSoftOnlyQualification" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="1704520478" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000313" asserts="0">
+                <test-case id="1086" name="CandidateGetsReachablePairRouteBonusWhenSpawnCreatesLegalRouteGroup" fullname="Rescue.Core.Tests.Rules.SpawnTests.CandidateGetsReachablePairRouteBonusWhenSpawnCreatesLegalRouteGroup" methodname="CandidateGetsReachablePairRouteBonusWhenSpawnCreatesLegalRouteGroup" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="1069090225" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000355" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1084" name="LastMoveRescueBoardGetsUsefulRouteBiasWithoutHardForcingSingleAnswer" fullname="Rescue.Core.Tests.Rules.SpawnTests.LastMoveRescueBoardGetsUsefulRouteBiasWithoutHardForcingSingleAnswer" methodname="LastMoveRescueBoardGetsUsefulRouteBiasWithoutHardForcingSingleAnswer" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="405381413" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000199" asserts="0">
+                <test-case id="1088" name="CandidateGetsRouteAdjacencyBonusWhenFinalTileLandsInSoftRoute" fullname="Rescue.Core.Tests.Rules.SpawnTests.CandidateGetsRouteAdjacencyBonusWhenFinalTileLandsInSoftRoute" methodname="CandidateGetsRouteAdjacencyBonusWhenFinalTileLandsInSoftRoute" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="1786113706" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000305" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1085" name="MultiTargetBoardKeepsStableTieBreakingAcrossRepeatedRuns" fullname="Rescue.Core.Tests.Rules.SpawnTests.MultiTargetBoardKeepsStableTieBreakingAcrossRepeatedRuns" methodname="MultiTargetBoardKeepsStableTieBreakingAcrossRepeatedRuns" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="661736907" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000347" asserts="0">
+                <test-case id="1090" name="DockBonusStillOutranksRouteAdjacency" fullname="Rescue.Core.Tests.Rules.SpawnTests.DockBonusStillOutranksRouteAdjacency" methodname="DockBonusStillOutranksRouteAdjacency" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="53689216" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000208" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1073" name="NoUrgentTargetYieldsZeroRouteBonuses" fullname="Rescue.Core.Tests.Rules.SpawnTests.NoUrgentTargetYieldsZeroRouteBonuses" methodname="NoUrgentTargetYieldsZeroRouteBonuses" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="2138019204" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000168" asserts="0">
+                <test-case id="1078" name="EmergencyTriggerAtDockOccupancyFiveRaisesAssistanceByExactlyTwentyPoints" fullname="Rescue.Core.Tests.Rules.SpawnTests.EmergencyTriggerAtDockOccupancyFiveRaisesAssistanceByExactlyTwentyPoints" methodname="EmergencyTriggerAtDockOccupancyFiveRaisesAssistanceByExactlyTwentyPoints" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="603732897" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000183" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1080" name="RouteAdjacencyDoesNotApplyForDiagonalOrNonUrgentTargetProximity" fullname="Rescue.Core.Tests.Rules.SpawnTests.RouteAdjacencyDoesNotApplyForDiagonalOrNonUrgentTargetProximity" methodname="RouteAdjacencyDoesNotApplyForDiagonalOrNonUrgentTargetProximity" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="219622527" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000356" asserts="0">
+                <test-case id="1085" name="HardAndSoftRouteRegionsAreBuiltCorrectlyForCornerTarget" fullname="Rescue.Core.Tests.Rules.SpawnTests.HardAndSoftRouteRegionsAreBuiltCorrectlyForCornerTarget" methodname="HardAndSoftRouteRegionsAreBuiltCorrectlyForCornerTarget" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="909414775" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000382" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1086" name="SameSeedAndStateProduceSameSpawn" fullname="Rescue.Core.Tests.Rules.SpawnTests.SameSeedAndStateProduceSameSpawn" methodname="SameSeedAndStateProduceSameSpawn" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="919348673" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000998" asserts="0">
+                <test-case id="1084" name="HardAndSoftRouteRegionsAreBuiltCorrectlyForEdgeTarget" fullname="Rescue.Core.Tests.Rules.SpawnTests.HardAndSoftRouteRegionsAreBuiltCorrectlyForEdgeTarget" methodname="HardAndSoftRouteRegionsAreBuiltCorrectlyForEdgeTarget" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="561845288" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000367" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1082" name="SingletonRecoveryStillOutranksRouteBasedHelp" fullname="Rescue.Core.Tests.Rules.SpawnTests.SingletonRecoveryStillOutranksRouteBasedHelp" methodname="SingletonRecoveryStillOutranksRouteBasedHelp" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="551182834" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.002440" asserts="0">
+                <test-case id="1083" name="HardAndSoftRouteRegionsAreBuiltCorrectlyForInteriorTarget" fullname="Rescue.Core.Tests.Rules.SpawnTests.HardAndSoftRouteRegionsAreBuiltCorrectlyForInteriorTarget" methodname="HardAndSoftRouteRegionsAreBuiltCorrectlyForInteriorTarget" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="1277318354" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000442" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1071" name="SpawnRecoveryBiasesNextTwoSpawnsTowardCreatingPair" fullname="Rescue.Core.Tests.Rules.SpawnTests.SpawnRecoveryBiasesNextTwoSpawnsTowardCreatingPair" methodname="SpawnRecoveryBiasesNextTwoSpawnsTowardCreatingPair" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="886535784" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.070740" asserts="0">
+                <test-case id="1087" name="HardRouteQualificationWinsOverSoftOnlyQualification" fullname="Rescue.Core.Tests.Rules.SpawnTests.HardRouteQualificationWinsOverSoftOnlyQualification" methodname="HardRouteQualificationWinsOverSoftOnlyQualification" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="1147038821" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000304" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1070" name="ThirdConsecutiveEmergencyRequestFallsBackToNonEmergencyBias" fullname="Rescue.Core.Tests.Rules.SpawnTests.ThirdConsecutiveEmergencyRequestFallsBackToNonEmergencyBias" methodname="ThirdConsecutiveEmergencyRequestFallsBackToNonEmergencyBias" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="1915176433" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000358" asserts="0">
+                <test-case id="1093" name="LastMoveRescueBoardGetsUsefulRouteBiasWithoutHardForcingSingleAnswer" fullname="Rescue.Core.Tests.Rules.SpawnTests.LastMoveRescueBoardGetsUsefulRouteBiasWithoutHardForcingSingleAnswer" methodname="LastMoveRescueBoardGetsUsefulRouteBiasWithoutHardForcingSingleAnswer" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="627800994" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000205" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1083" name="ThreatenedTargetOneRiseFromFloodIsSelectedAsUrgent" fullname="Rescue.Core.Tests.Rules.SpawnTests.ThreatenedTargetOneRiseFromFloodIsSelectedAsUrgent" methodname="ThreatenedTargetOneRiseFromFloodIsSelectedAsUrgent" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="1381848508" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000341" asserts="0">
+                <test-case id="1094" name="MultiTargetBoardKeepsStableTieBreakingAcrossRepeatedRuns" fullname="Rescue.Core.Tests.Rules.SpawnTests.MultiTargetBoardKeepsStableTieBreakingAcrossRepeatedRuns" methodname="MultiTargetBoardKeepsStableTieBreakingAcrossRepeatedRuns" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="1505928850" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000336" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1072" name="UrgentTargetChoosesLowestWaterBlockedAndStableIndexTuple" fullname="Rescue.Core.Tests.Rules.SpawnTests.UrgentTargetChoosesLowestWaterBlockedAndStableIndexTuple" methodname="UrgentTargetChoosesLowestWaterBlockedAndStableIndexTuple" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="1228211999" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000372" asserts="0">
+                <test-case id="1082" name="NoUrgentTargetYieldsZeroRouteBonuses" fullname="Rescue.Core.Tests.Rules.SpawnTests.NoUrgentTargetYieldsZeroRouteBonuses" methodname="NoUrgentTargetYieldsZeroRouteBonuses" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="1016319621" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000178" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1089" name="RouteAdjacencyDoesNotApplyForDiagonalOrNonUrgentTargetProximity" fullname="Rescue.Core.Tests.Rules.SpawnTests.RouteAdjacencyDoesNotApplyForDiagonalOrNonUrgentTargetProximity" methodname="RouteAdjacencyDoesNotApplyForDiagonalOrNonUrgentTargetProximity" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="1422412446" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000290" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1095" name="SameSeedAndStateProduceSameSpawn" fullname="Rescue.Core.Tests.Rules.SpawnTests.SameSeedAndStateProduceSameSpawn" methodname="SameSeedAndStateProduceSameSpawn" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="71014438" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000878" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1091" name="SingletonRecoveryStillOutranksRouteBasedHelp" fullname="Rescue.Core.Tests.Rules.SpawnTests.SingletonRecoveryStillOutranksRouteBasedHelp" methodname="SingletonRecoveryStillOutranksRouteBasedHelp" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="1417540558" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.001805" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1080" name="SpawnRecoveryBiasesNextTwoSpawnsTowardCreatingPair" fullname="Rescue.Core.Tests.Rules.SpawnTests.SpawnRecoveryBiasesNextTwoSpawnsTowardCreatingPair" methodname="SpawnRecoveryBiasesNextTwoSpawnsTowardCreatingPair" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="1360999961" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.072982" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1079" name="ThirdConsecutiveEmergencyRequestFallsBackToNonEmergencyBias" fullname="Rescue.Core.Tests.Rules.SpawnTests.ThirdConsecutiveEmergencyRequestFallsBackToNonEmergencyBias" methodname="ThirdConsecutiveEmergencyRequestFallsBackToNonEmergencyBias" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="1713515199" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000375" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1092" name="ThreatenedTargetOneRiseFromFloodIsSelectedAsUrgent" fullname="Rescue.Core.Tests.Rules.SpawnTests.ThreatenedTargetOneRiseFromFloodIsSelectedAsUrgent" methodname="ThreatenedTargetOneRiseFromFloodIsSelectedAsUrgent" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="310656628" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000355" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1081" name="UrgentTargetChoosesLowestWaterBlockedAndStableIndexTuple" fullname="Rescue.Core.Tests.Rules.SpawnTests.UrgentTargetChoosesLowestWaterBlockedAndStableIndexTuple" methodname="UrgentTargetChoosesLowestWaterBlockedAndStableIndexTuple" classname="Rescue.Core.Tests.Rules.SpawnTests" runstate="Runnable" seed="1344311505" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000367" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
@@ -461,110 +518,110 @@
                 </test-case>
               </test-suite>
             </test-suite>
-            <test-suite type="TestSuite" id="1114" name="State" fullname="Rescue.Core.Tests.State" runstate="Runnable" testcasecount="16" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.008361" total="16" passed="16" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <test-suite type="TestSuite" id="1124" name="State" fullname="Rescue.Core.Tests.State" runstate="Runnable" testcasecount="16" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.009301" total="16" passed="16" failed="0" inconclusive="0" skipped="0" asserts="0">
               <properties />
-              <test-suite type="TestFixture" id="1012" name="BoardHelpersTests" fullname="Rescue.Core.Tests.State.BoardHelpersTests" classname="Rescue.Core.Tests.State.BoardHelpersTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.003789" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <test-suite type="TestFixture" id="1012" name="BoardHelpersTests" fullname="Rescue.Core.Tests.State.BoardHelpersTests" classname="Rescue.Core.Tests.State.BoardHelpersTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.004846" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
                 <properties />
-                <test-case id="1016" name="FindAllReturnsMatchingCoordinates" fullname="Rescue.Core.Tests.State.BoardHelpersTests.FindAllReturnsMatchingCoordinates" methodname="FindAllReturnsMatchingCoordinates" classname="Rescue.Core.Tests.State.BoardHelpersTests" runstate="Runnable" seed="1164917870" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000464" asserts="0">
+                <test-case id="1016" name="FindAllReturnsMatchingCoordinates" fullname="Rescue.Core.Tests.State.BoardHelpersTests.FindAllReturnsMatchingCoordinates" methodname="FindAllReturnsMatchingCoordinates" classname="Rescue.Core.Tests.State.BoardHelpersTests" runstate="Runnable" seed="905948866" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000478" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1017" name="FindAllThrowsWhenPredicateIsNull" fullname="Rescue.Core.Tests.State.BoardHelpersTests.FindAllThrowsWhenPredicateIsNull" methodname="FindAllThrowsWhenPredicateIsNull" classname="Rescue.Core.Tests.State.BoardHelpersTests" runstate="Runnable" seed="1255932132" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.001747" asserts="0">
+                <test-case id="1017" name="FindAllThrowsWhenPredicateIsNull" fullname="Rescue.Core.Tests.State.BoardHelpersTests.FindAllThrowsWhenPredicateIsNull" methodname="FindAllThrowsWhenPredicateIsNull" classname="Rescue.Core.Tests.State.BoardHelpersTests" runstate="Runnable" seed="390835737" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.001653" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1013" name="GetTileReturnsTileAtCoordinate" fullname="Rescue.Core.Tests.State.BoardHelpersTests.GetTileReturnsTileAtCoordinate" methodname="GetTileReturnsTileAtCoordinate" classname="Rescue.Core.Tests.State.BoardHelpersTests" runstate="Runnable" seed="604463421" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000425" asserts="0">
+                <test-case id="1013" name="GetTileReturnsTileAtCoordinate" fullname="Rescue.Core.Tests.State.BoardHelpersTests.GetTileReturnsTileAtCoordinate" methodname="GetTileReturnsTileAtCoordinate" classname="Rescue.Core.Tests.State.BoardHelpersTests" runstate="Runnable" seed="420169082" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000436" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1018" name="InBoundsReturnsExpectedResult" fullname="Rescue.Core.Tests.State.BoardHelpersTests.InBoundsReturnsExpectedResult" methodname="InBoundsReturnsExpectedResult" classname="Rescue.Core.Tests.State.BoardHelpersTests" runstate="Runnable" seed="1232766909" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000156" asserts="0">
+                <test-case id="1018" name="InBoundsReturnsExpectedResult" fullname="Rescue.Core.Tests.State.BoardHelpersTests.InBoundsReturnsExpectedResult" methodname="InBoundsReturnsExpectedResult" classname="Rescue.Core.Tests.State.BoardHelpersTests" runstate="Runnable" seed="987109889" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000155" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1015" name="OrthogonalNeighborsReturnsClippedNeighborsInReadingOrder" fullname="Rescue.Core.Tests.State.BoardHelpersTests.OrthogonalNeighborsReturnsClippedNeighborsInReadingOrder" methodname="OrthogonalNeighborsReturnsClippedNeighborsInReadingOrder" classname="Rescue.Core.Tests.State.BoardHelpersTests" runstate="Runnable" seed="1769617730" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000243" asserts="0">
+                <test-case id="1015" name="OrthogonalNeighborsReturnsClippedNeighborsInReadingOrder" fullname="Rescue.Core.Tests.State.BoardHelpersTests.OrthogonalNeighborsReturnsClippedNeighborsInReadingOrder" methodname="OrthogonalNeighborsReturnsClippedNeighborsInReadingOrder" classname="Rescue.Core.Tests.State.BoardHelpersTests" runstate="Runnable" seed="710160059" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000242" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1014" name="SetTileReturnsUpdatedBoardWithoutChangingOriginal" fullname="Rescue.Core.Tests.State.BoardHelpersTests.SetTileReturnsUpdatedBoardWithoutChangingOriginal" methodname="SetTileReturnsUpdatedBoardWithoutChangingOriginal" classname="Rescue.Core.Tests.State.BoardHelpersTests" runstate="Runnable" seed="178410557" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000191" asserts="0">
+                <test-case id="1014" name="SetTileReturnsUpdatedBoardWithoutChangingOriginal" fullname="Rescue.Core.Tests.State.BoardHelpersTests.SetTileReturnsUpdatedBoardWithoutChangingOriginal" methodname="SetTileReturnsUpdatedBoardWithoutChangingOriginal" classname="Rescue.Core.Tests.State.BoardHelpersTests" runstate="Runnable" seed="1010503234" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000185" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
               </test-suite>
-              <test-suite type="TestFixture" id="1019" name="DockHelpersTests" fullname="Rescue.Core.Tests.State.DockHelpersTests" classname="Rescue.Core.Tests.State.DockHelpersTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.001590" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <test-suite type="TestFixture" id="1019" name="DockHelpersTests" fullname="Rescue.Core.Tests.State.DockHelpersTests" classname="Rescue.Core.Tests.State.DockHelpersTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.001667" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
                 <properties />
-                <test-suite type="ParameterizedMethod" id="1027" name="GetWarningLevelMatchesSpecThresholds" fullname="Rescue.Core.Tests.State.DockHelpersTests.GetWarningLevelMatchesSpecThresholds" classname="Rescue.Core.Tests.State.DockHelpersTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000816" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+                <test-suite type="ParameterizedMethod" id="1027" name="GetWarningLevelMatchesSpecThresholds" fullname="Rescue.Core.Tests.State.DockHelpersTests.GetWarningLevelMatchesSpecThresholds" classname="Rescue.Core.Tests.State.DockHelpersTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000855" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
                   <properties />
-                  <test-case id="1022" name="GetWarningLevelMatchesSpecThresholds(0,Safe)" fullname="Rescue.Core.Tests.State.DockHelpersTests.GetWarningLevelMatchesSpecThresholds(0,Safe)" methodname="GetWarningLevelMatchesSpecThresholds" classname="Rescue.Core.Tests.State.DockHelpersTests" runstate="Runnable" seed="2046925990" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000295" asserts="0">
+                  <test-case id="1022" name="GetWarningLevelMatchesSpecThresholds(0,Safe)" fullname="Rescue.Core.Tests.State.DockHelpersTests.GetWarningLevelMatchesSpecThresholds(0,Safe)" methodname="GetWarningLevelMatchesSpecThresholds" classname="Rescue.Core.Tests.State.DockHelpersTests" runstate="Runnable" seed="756596146" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000296" asserts="0">
                     <properties>
                       <property name="retryIteration" value="0" />
                       <property name="repeatIteration" value="0" />
                     </properties>
                   </test-case>
-                  <test-case id="1023" name="GetWarningLevelMatchesSpecThresholds(4,Safe)" fullname="Rescue.Core.Tests.State.DockHelpersTests.GetWarningLevelMatchesSpecThresholds(4,Safe)" methodname="GetWarningLevelMatchesSpecThresholds" classname="Rescue.Core.Tests.State.DockHelpersTests" runstate="Runnable" seed="386458054" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000054" asserts="0">
+                  <test-case id="1023" name="GetWarningLevelMatchesSpecThresholds(4,Safe)" fullname="Rescue.Core.Tests.State.DockHelpersTests.GetWarningLevelMatchesSpecThresholds(4,Safe)" methodname="GetWarningLevelMatchesSpecThresholds" classname="Rescue.Core.Tests.State.DockHelpersTests" runstate="Runnable" seed="1492161185" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000052" asserts="0">
                     <properties>
                       <property name="retryIteration" value="0" />
                       <property name="repeatIteration" value="0" />
                     </properties>
                   </test-case>
-                  <test-case id="1024" name="GetWarningLevelMatchesSpecThresholds(5,Caution)" fullname="Rescue.Core.Tests.State.DockHelpersTests.GetWarningLevelMatchesSpecThresholds(5,Caution)" methodname="GetWarningLevelMatchesSpecThresholds" classname="Rescue.Core.Tests.State.DockHelpersTests" runstate="Runnable" seed="1427368492" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000034" asserts="0">
+                  <test-case id="1024" name="GetWarningLevelMatchesSpecThresholds(5,Caution)" fullname="Rescue.Core.Tests.State.DockHelpersTests.GetWarningLevelMatchesSpecThresholds(5,Caution)" methodname="GetWarningLevelMatchesSpecThresholds" classname="Rescue.Core.Tests.State.DockHelpersTests" runstate="Runnable" seed="1608003811" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000033" asserts="0">
                     <properties>
                       <property name="retryIteration" value="0" />
                       <property name="repeatIteration" value="0" />
                     </properties>
                   </test-case>
-                  <test-case id="1025" name="GetWarningLevelMatchesSpecThresholds(6,Acute)" fullname="Rescue.Core.Tests.State.DockHelpersTests.GetWarningLevelMatchesSpecThresholds(6,Acute)" methodname="GetWarningLevelMatchesSpecThresholds" classname="Rescue.Core.Tests.State.DockHelpersTests" runstate="Runnable" seed="513465881" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000031" asserts="0">
+                  <test-case id="1025" name="GetWarningLevelMatchesSpecThresholds(6,Acute)" fullname="Rescue.Core.Tests.State.DockHelpersTests.GetWarningLevelMatchesSpecThresholds(6,Acute)" methodname="GetWarningLevelMatchesSpecThresholds" classname="Rescue.Core.Tests.State.DockHelpersTests" runstate="Runnable" seed="764131572" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000054" asserts="0">
                     <properties>
                       <property name="retryIteration" value="0" />
                       <property name="repeatIteration" value="0" />
                     </properties>
                   </test-case>
-                  <test-case id="1026" name="GetWarningLevelMatchesSpecThresholds(7,Fail)" fullname="Rescue.Core.Tests.State.DockHelpersTests.GetWarningLevelMatchesSpecThresholds(7,Fail)" methodname="GetWarningLevelMatchesSpecThresholds" classname="Rescue.Core.Tests.State.DockHelpersTests" runstate="Runnable" seed="310089496" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000031" asserts="0">
+                  <test-case id="1026" name="GetWarningLevelMatchesSpecThresholds(7,Fail)" fullname="Rescue.Core.Tests.State.DockHelpersTests.GetWarningLevelMatchesSpecThresholds(7,Fail)" methodname="GetWarningLevelMatchesSpecThresholds" classname="Rescue.Core.Tests.State.DockHelpersTests" runstate="Runnable" seed="2077476602" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000042" asserts="0">
                     <properties>
                       <property name="retryIteration" value="0" />
                       <property name="repeatIteration" value="0" />
                     </properties>
                   </test-case>
                 </test-suite>
-                <test-case id="1020" name="IsEmptyReturnsTrueOnlyWhenNoSlotsAreOccupied" fullname="Rescue.Core.Tests.State.DockHelpersTests.IsEmptyReturnsTrueOnlyWhenNoSlotsAreOccupied" methodname="IsEmptyReturnsTrueOnlyWhenNoSlotsAreOccupied" classname="Rescue.Core.Tests.State.DockHelpersTests" runstate="Runnable" seed="732276775" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000244" asserts="0">
+                <test-case id="1020" name="IsEmptyReturnsTrueOnlyWhenNoSlotsAreOccupied" fullname="Rescue.Core.Tests.State.DockHelpersTests.IsEmptyReturnsTrueOnlyWhenNoSlotsAreOccupied" methodname="IsEmptyReturnsTrueOnlyWhenNoSlotsAreOccupied" classname="Rescue.Core.Tests.State.DockHelpersTests" runstate="Runnable" seed="496904106" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000257" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1021" name="OccupancyCountsOnlyNonNullSlots" fullname="Rescue.Core.Tests.State.DockHelpersTests.OccupancyCountsOnlyNonNullSlots" methodname="OccupancyCountsOnlyNonNullSlots" classname="Rescue.Core.Tests.State.DockHelpersTests" runstate="Runnable" seed="1950736838" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000125" asserts="0">
+                <test-case id="1021" name="OccupancyCountsOnlyNonNullSlots" fullname="Rescue.Core.Tests.State.DockHelpersTests.OccupancyCountsOnlyNonNullSlots" methodname="OccupancyCountsOnlyNonNullSlots" classname="Rescue.Core.Tests.State.DockHelpersTests" runstate="Runnable" seed="1585229683" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000145" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
               </test-suite>
-              <test-suite type="TestFixture" id="1028" name="ImmutabilityTests" fullname="Rescue.Core.Tests.State.ImmutabilityTests" classname="Rescue.Core.Tests.State.ImmutabilityTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.002621" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <test-suite type="TestFixture" id="1028" name="ImmutabilityTests" fullname="Rescue.Core.Tests.State.ImmutabilityTests" classname="Rescue.Core.Tests.State.ImmutabilityTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.002400" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
                 <properties />
-                <test-case id="1031" name="ImmutableArrayPropertiesExposeImmutableSnapshots" fullname="Rescue.Core.Tests.State.ImmutabilityTests.ImmutableArrayPropertiesExposeImmutableSnapshots" methodname="ImmutableArrayPropertiesExposeImmutableSnapshots" classname="Rescue.Core.Tests.State.ImmutabilityTests" runstate="Runnable" seed="1032372840" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.001081" asserts="0">
+                <test-case id="1031" name="ImmutableArrayPropertiesExposeImmutableSnapshots" fullname="Rescue.Core.Tests.State.ImmutabilityTests.ImmutableArrayPropertiesExposeImmutableSnapshots" methodname="ImmutableArrayPropertiesExposeImmutableSnapshots" classname="Rescue.Core.Tests.State.ImmutabilityTests" runstate="Runnable" seed="970319820" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.001027" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1029" name="RecordWithExpressionsLeaveOriginalInstancesUnchanged" fullname="Rescue.Core.Tests.State.ImmutabilityTests.RecordWithExpressionsLeaveOriginalInstancesUnchanged" methodname="RecordWithExpressionsLeaveOriginalInstancesUnchanged" classname="Rescue.Core.Tests.State.ImmutabilityTests" runstate="Runnable" seed="1012481661" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000795" asserts="0">
+                <test-case id="1029" name="RecordWithExpressionsLeaveOriginalInstancesUnchanged" fullname="Rescue.Core.Tests.State.ImmutabilityTests.RecordWithExpressionsLeaveOriginalInstancesUnchanged" methodname="RecordWithExpressionsLeaveOriginalInstancesUnchanged" classname="Rescue.Core.Tests.State.ImmutabilityTests" runstate="Runnable" seed="2058553855" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000792" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1030" name="SetTileLeavesInputBoardUnchanged" fullname="Rescue.Core.Tests.State.ImmutabilityTests.SetTileLeavesInputBoardUnchanged" methodname="SetTileLeavesInputBoardUnchanged" classname="Rescue.Core.Tests.State.ImmutabilityTests" runstate="Runnable" seed="1785316726" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000318" asserts="0">
+                <test-case id="1030" name="SetTileLeavesInputBoardUnchanged" fullname="Rescue.Core.Tests.State.ImmutabilityTests.SetTileLeavesInputBoardUnchanged" methodname="SetTileLeavesInputBoardUnchanged" classname="Rescue.Core.Tests.State.ImmutabilityTests" runstate="Runnable" seed="341658739" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000203" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
@@ -572,62 +629,62 @@
                 </test-case>
               </test-suite>
             </test-suite>
-            <test-suite type="TestSuite" id="1113" name="Undo" fullname="Rescue.Core.Tests.Undo" runstate="Runnable" testcasecount="9" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.008534" total="9" passed="9" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <test-suite type="TestSuite" id="1123" name="Undo" fullname="Rescue.Core.Tests.Undo" runstate="Runnable" testcasecount="9" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.007292" total="9" passed="9" failed="0" inconclusive="0" skipped="0" asserts="0">
               <properties />
-              <test-suite type="TestFixture" id="1001" name="SnapshotTests" fullname="Rescue.Core.Tests.Undo.SnapshotTests" classname="Rescue.Core.Tests.Undo.SnapshotTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000749" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <test-suite type="TestFixture" id="1001" name="SnapshotTests" fullname="Rescue.Core.Tests.Undo.SnapshotTests" classname="Rescue.Core.Tests.Undo.SnapshotTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000808" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
                 <properties />
-                <test-case id="1003" name="ApplyWithoutInterveningMutationIsNoOp" fullname="Rescue.Core.Tests.Undo.SnapshotTests.ApplyWithoutInterveningMutationIsNoOp" methodname="ApplyWithoutInterveningMutationIsNoOp" classname="Rescue.Core.Tests.Undo.SnapshotTests" runstate="Runnable" seed="666826483" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000181" asserts="0">
+                <test-case id="1003" name="ApplyWithoutInterveningMutationIsNoOp" fullname="Rescue.Core.Tests.Undo.SnapshotTests.ApplyWithoutInterveningMutationIsNoOp" methodname="ApplyWithoutInterveningMutationIsNoOp" classname="Rescue.Core.Tests.Undo.SnapshotTests" runstate="Runnable" seed="1778086353" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000202" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1002" name="TakeThenApplyAfterPipelineMutationRestoresEqualOriginalState" fullname="Rescue.Core.Tests.Undo.SnapshotTests.TakeThenApplyAfterPipelineMutationRestoresEqualOriginalState" methodname="TakeThenApplyAfterPipelineMutationRestoresEqualOriginalState" classname="Rescue.Core.Tests.Undo.SnapshotTests" runstate="Runnable" seed="981155252" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000295" asserts="0">
+                <test-case id="1002" name="TakeThenApplyAfterPipelineMutationRestoresEqualOriginalState" fullname="Rescue.Core.Tests.Undo.SnapshotTests.TakeThenApplyAfterPipelineMutationRestoresEqualOriginalState" methodname="TakeThenApplyAfterPipelineMutationRestoresEqualOriginalState" classname="Rescue.Core.Tests.Undo.SnapshotTests" runstate="Runnable" seed="1371949350" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000312" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
               </test-suite>
-              <test-suite type="TestFixture" id="1004" name="UndoFlowTests" fullname="Rescue.Core.Tests.Undo.UndoFlowTests" classname="Rescue.Core.Tests.Undo.UndoFlowTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.007605" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <test-suite type="TestFixture" id="1004" name="UndoFlowTests" fullname="Rescue.Core.Tests.Undo.UndoFlowTests" classname="Rescue.Core.Tests.Undo.UndoFlowTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.006300" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
                 <properties />
-                <test-case id="1005" name="SnapshotActionUndoRestoresEqualPreActionStateAndConsumesUndo" fullname="Rescue.Core.Tests.Undo.UndoFlowTests.SnapshotActionUndoRestoresEqualPreActionStateAndConsumesUndo" methodname="SnapshotActionUndoRestoresEqualPreActionStateAndConsumesUndo" classname="Rescue.Core.Tests.Undo.UndoFlowTests" runstate="Runnable" seed="698614589" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.001344" asserts="0">
+                <test-case id="1005" name="SnapshotActionUndoRestoresEqualPreActionStateAndConsumesUndo" fullname="Rescue.Core.Tests.Undo.UndoFlowTests.SnapshotActionUndoRestoresEqualPreActionStateAndConsumesUndo" methodname="SnapshotActionUndoRestoresEqualPreActionStateAndConsumesUndo" classname="Rescue.Core.Tests.Undo.UndoFlowTests" runstate="Runnable" seed="1769958520" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.001386" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1011" name="UndoAfterFrozenLossStateRestoresPreLossState" fullname="Rescue.Core.Tests.Undo.UndoFlowTests.UndoAfterFrozenLossStateRestoresPreLossState" methodname="UndoAfterFrozenLossStateRestoresPreLossState" classname="Rescue.Core.Tests.Undo.UndoFlowTests" runstate="Runnable" seed="1415609775" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000293" asserts="0">
+                <test-case id="1011" name="UndoAfterFrozenLossStateRestoresPreLossState" fullname="Rescue.Core.Tests.Undo.UndoFlowTests.UndoAfterFrozenLossStateRestoresPreLossState" methodname="UndoAfterFrozenLossStateRestoresPreLossState" classname="Rescue.Core.Tests.Undo.UndoFlowTests" runstate="Runnable" seed="2060457024" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000301" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1010" name="UndoCannotChainAfterConsumptionEvenIfNewSnapshotExists" fullname="Rescue.Core.Tests.Undo.UndoFlowTests.UndoCannotChainAfterConsumptionEvenIfNewSnapshotExists" methodname="UndoCannotChainAfterConsumptionEvenIfNewSnapshotExists" classname="Rescue.Core.Tests.Undo.UndoFlowTests" runstate="Runnable" seed="809984199" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000197" asserts="0">
+                <test-case id="1010" name="UndoCannotChainAfterConsumptionEvenIfNewSnapshotExists" fullname="Rescue.Core.Tests.Undo.UndoFlowTests.UndoCannotChainAfterConsumptionEvenIfNewSnapshotExists" methodname="UndoCannotChainAfterConsumptionEvenIfNewSnapshotExists" classname="Rescue.Core.Tests.Undo.UndoFlowTests" runstate="Runnable" seed="657787981" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000206" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1006" name="UndoPreservesRngStateForSubsequentActionResolution" fullname="Rescue.Core.Tests.Undo.UndoFlowTests.UndoPreservesRngStateForSubsequentActionResolution" methodname="UndoPreservesRngStateForSubsequentActionResolution" classname="Rescue.Core.Tests.Undo.UndoFlowTests" runstate="Runnable" seed="158045526" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.004093" asserts="0">
+                <test-case id="1006" name="UndoPreservesRngStateForSubsequentActionResolution" fullname="Rescue.Core.Tests.Undo.UndoFlowTests.UndoPreservesRngStateForSubsequentActionResolution" methodname="UndoPreservesRngStateForSubsequentActionResolution" classname="Rescue.Core.Tests.Undo.UndoFlowTests" runstate="Runnable" seed="853786773" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.002678" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1007" name="UndoRestoresExtractedTargetOrderAndUnextractsTargetState" fullname="Rescue.Core.Tests.Undo.UndoFlowTests.UndoRestoresExtractedTargetOrderAndUnextractsTargetState" methodname="UndoRestoresExtractedTargetOrderAndUnextractsTargetState" classname="Rescue.Core.Tests.Undo.UndoFlowTests" runstate="Runnable" seed="1844992724" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000443" asserts="0">
+                <test-case id="1007" name="UndoRestoresExtractedTargetOrderAndUnextractsTargetState" fullname="Rescue.Core.Tests.Undo.UndoFlowTests.UndoRestoresExtractedTargetOrderAndUnextractsTargetState" methodname="UndoRestoresExtractedTargetOrderAndUnextractsTargetState" classname="Rescue.Core.Tests.Undo.UndoFlowTests" runstate="Runnable" seed="1011946460" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000440" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1009" name="UndoRestoresVineStateExactly" fullname="Rescue.Core.Tests.Undo.UndoFlowTests.UndoRestoresVineStateExactly" methodname="UndoRestoresVineStateExactly" classname="Rescue.Core.Tests.Undo.UndoFlowTests" runstate="Runnable" seed="1419662891" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000375" asserts="0">
+                <test-case id="1009" name="UndoRestoresVineStateExactly" fullname="Rescue.Core.Tests.Undo.UndoFlowTests.UndoRestoresVineStateExactly" methodname="UndoRestoresVineStateExactly" classname="Rescue.Core.Tests.Undo.UndoFlowTests" runstate="Runnable" seed="1442495608" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000400" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1008" name="UndoRestoresWaterStateExactly" fullname="Rescue.Core.Tests.Undo.UndoFlowTests.UndoRestoresWaterStateExactly" methodname="UndoRestoresWaterStateExactly" classname="Rescue.Core.Tests.Undo.UndoFlowTests" runstate="Runnable" seed="299264377" result="Passed" start-time="2026-04-21 20:35:07Z" end-time="2026-04-21 20:35:07Z" duration="0.000226" asserts="0">
+                <test-case id="1008" name="UndoRestoresWaterStateExactly" fullname="Rescue.Core.Tests.Undo.UndoFlowTests.UndoRestoresWaterStateExactly" methodname="UndoRestoresWaterStateExactly" classname="Rescue.Core.Tests.Undo.UndoFlowTests" runstate="Runnable" seed="2000223164" result="Passed" start-time="2026-04-21 20:45:28Z" end-time="2026-04-21 20:45:28Z" duration="0.000236" asserts="0">
                   <properties>
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />

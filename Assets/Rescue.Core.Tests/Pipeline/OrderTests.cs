@@ -160,6 +160,56 @@ namespace Rescue.Core.Tests.Pipeline
             AssertActionEventSequenceEqual(fromSteps.ToImmutable(), result.Events);
         }
 
+        [Test]
+        public void WinShortCircuitsSteps11And12AndSkipsLossCheck()
+        {
+            GameState state = PipelineTestFixtures.CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    PipelineTestFixtures.Row(new EmptyTile(), new EmptyTile(), new DebrisTile(DebrisType.B)),
+                    PipelineTestFixtures.Row(new EmptyTile(), new DebrisTile(DebrisType.C), new DebrisTile(DebrisType.D)),
+                    PipelineTestFixtures.DebrisRow(DebrisType.A, DebrisType.A, DebrisType.A)),
+                targets: ImmutableArray.Create(new TargetState("target-1", new TileCoord(0, 0), Extracted: true, OneClearAway: false)))
+                with
+                {
+                    ExtractedTargetOrder = ImmutableArray.Create("target-1"),
+                    Dock = new Dock(
+                        ImmutableArray.Create<DebrisType?>(
+                            DebrisType.B,
+                            DebrisType.C,
+                            DebrisType.D,
+                            DebrisType.E,
+                            DebrisType.B,
+                            null,
+                            null),
+                        Size: 7),
+                };
+
+            List<string> trace = new List<string>();
+            ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(
+                state,
+                new ActionInput(new TileCoord(2, 0)),
+                options: null,
+                observer: step => trace.Add(step.StepName));
+
+            Assert.That(trace, Is.EqualTo(new[]
+            {
+                "Step01_AcceptInput",
+                "Step02_RemoveGroup",
+                "Step03_DamageBlockers",
+                "Step04_ResolveBreaks",
+                "Step05_InsertDock",
+                "Step06_ClearDock",
+                "Step07_Gravity",
+                "Step08_Spawn",
+                "Step09_Extract",
+                "Step10_CheckWin",
+            }));
+            Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.Win));
+            Assert.That(result.State.Frozen, Is.True);
+            Assert.That(result.Events, Has.Some.TypeOf<Won>());
+            Assert.That(result.Events, Has.None.TypeOf<Lost>());
+        }
+
         private static void AssertInvalidInputEvent(
             ImmutableArray<ActionEvent> events,
             TileCoord tappedCoord,
@@ -354,6 +404,11 @@ namespace Rescue.Core.Tests.Pipeline
             }
 
             return row.MoveToImmutable();
+        }
+
+        public static ImmutableArray<Tile> Row(params Tile[] tiles)
+        {
+            return tiles.ToImmutableArray();
         }
     }
 }
