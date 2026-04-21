@@ -284,6 +284,7 @@
 "Assets/Rescue.Core.Tests/Rules/GravityTests.cs"
 "Assets/Rescue.Core.Tests/Rules/GroupsTests.cs"
 "Assets/Rescue.Core.Tests/Rules/SpawnTests.cs"
+"Assets/Rescue.Core.Tests/Rules/VineTests.cs"
 "Assets/Rescue.Core.Tests/Rules/WaterTests.cs"
 "Assets/Rescue.Core.Tests/State/BoardHelpersTests.cs"
 "Assets/Rescue.Core.Tests/State/DockHelpersTests.cs"

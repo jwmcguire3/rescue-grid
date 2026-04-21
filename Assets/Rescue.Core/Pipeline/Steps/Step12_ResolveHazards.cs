@@ -7,34 +7,95 @@ namespace Rescue.Core.Pipeline.Steps
     {
         public static StepResult Run(GameState state, StepContext context)
         {
-            if (!context.WaterRisePending || state.Water.FloodedRows >= state.Board.Height)
-            {
-                return new StepResult(state, context, ImmutableArray<ActionEvent>.Empty);
-            }
+            GameState updatedState = state;
+            StepContext updatedContext = context;
+            ImmutableArray<ActionEvent>.Builder events = ImmutableArray.CreateBuilder<ActionEvent>();
 
-            int floodedRow = state.Board.Height - state.Water.FloodedRows - 1;
-            Board updatedBoard = state.Board;
-            for (int col = 0; col < updatedBoard.Width; col++)
+            if (context.WaterRisePending && updatedState.Water.FloodedRows < updatedState.Board.Height)
             {
-                updatedBoard = BoardHelpers.SetTile(updatedBoard, new TileCoord(floodedRow, col), new FloodedTile());
-            }
-
-            GameState updatedState = state with
-            {
-                Board = updatedBoard,
-                Water = state.Water with
+                int floodedRow = updatedState.Board.Height - updatedState.Water.FloodedRows - 1;
+                Board floodedBoard = updatedState.Board;
+                for (int col = 0; col < floodedBoard.Width; col++)
                 {
-                    FloodedRows = state.Water.FloodedRows + 1,
-                    ActionsUntilRise = state.Water.RiseInterval,
-                },
-            };
-            StepContext updatedContext = context with
+                    floodedBoard = BoardHelpers.SetTile(floodedBoard, new TileCoord(floodedRow, col), new FloodedTile());
+                }
+
+                updatedState = updatedState with
+                {
+                    Board = floodedBoard,
+                    Water = updatedState.Water with
+                    {
+                        FloodedRows = updatedState.Water.FloodedRows + 1,
+                        ActionsUntilRise = updatedState.Water.RiseInterval,
+                    },
+                };
+                updatedContext = updatedContext with
+                {
+                    WaterRisePending = false,
+                };
+                events.Add(new WaterRose(floodedRow));
+            }
+
+            if (updatedContext.VineGrowthPending && updatedState.Vine.PendingGrowthTile is TileCoord pendingTile)
             {
-                WaterRisePending = false,
+                int nextCursor = FindNextCursor(updatedState.Vine, pendingTile);
+                if (IsValidGrowthTile(updatedState.Board, pendingTile))
+                {
+                    Board boardWithVine = BoardHelpers.SetTile(
+                        updatedState.Board,
+                        pendingTile,
+                        new BlockerTile(BlockerType.Vine, 1, Hidden: null));
+                    updatedState = updatedState with
+                    {
+                        Board = boardWithVine,
+                        Vine = updatedState.Vine with
+                        {
+                            ActionsSinceLastClear = 0,
+                            PendingGrowthTile = null,
+                            PriorityCursor = nextCursor,
+                        },
+                    };
+                    events.Add(new VineGrown(pendingTile));
+                }
+                else
+                {
+                    updatedState = updatedState with
+                    {
+                        Vine = updatedState.Vine with
+                        {
+                            PendingGrowthTile = null,
+                        },
+                    };
+                }
+            }
+
+            updatedContext = updatedContext with
+            {
+                VineGrowthPreviewPending = false,
+                VineGrowthPending = false,
             };
-            ImmutableArray<ActionEvent> events = ImmutableArray.Create<ActionEvent>(
-                new WaterRose(floodedRow));
-            return new StepResult(updatedState, updatedContext, events);
+
+            return new StepResult(updatedState, updatedContext, events.ToImmutable());
+        }
+
+        private static int FindNextCursor(VineState vine, TileCoord coord)
+        {
+            int startIndex = vine.PriorityCursor < 0 ? 0 : vine.PriorityCursor;
+            for (int i = startIndex; i < vine.GrowthPriorityList.Length; i++)
+            {
+                if (vine.GrowthPriorityList[i] == coord)
+                {
+                    return i + 1;
+                }
+            }
+
+            return startIndex;
+        }
+
+        private static bool IsValidGrowthTile(Board board, TileCoord coord)
+        {
+            return BoardHelpers.InBounds(board, coord)
+                && BoardHelpers.GetTile(board, coord) is EmptyTile;
         }
     }
 }
