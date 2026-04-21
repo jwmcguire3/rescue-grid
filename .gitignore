@@ -1,0 +1,21 @@
+# Unity generated
+Library/
+Temp/
+Logs/
+Build/
+obj/
+UserSettings/
+
+# Authoring artefacts (disposable output from watch-levels.sh and preview-level.sh)
+Assets/StreamingAssets/Levels/*_validation.log
+Assets/StreamingAssets/Levels/*_preview.txt
+
+# .NET build output
+[Bb]in/
+[Oo]bj/
+*.user
+.vs/
+
+# OS
+.DS_Store
+Thumbs.db

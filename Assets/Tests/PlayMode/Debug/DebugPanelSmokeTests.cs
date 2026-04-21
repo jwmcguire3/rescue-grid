@@ -133,7 +133,7 @@ namespace Rescue.PlayMode.Tests.Debug
                     Tiles = new[]
                     {
                         new[] { "A", "A", "." },
-                        new[] { "B", "C1", "." },
+                        new[] { "B", "CR", "." },
                         new[] { ".", "T0", "." },
                     },
                 },

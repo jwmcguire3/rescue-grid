@@ -18,7 +18,7 @@ namespace Rescue.Content.Tests
                     Tiles = new[]
                     {
                         new[] { "A", "A", "." },
-                        new[] { ".", "C1", "." },
+                        new[] { ".", "CR", "." },
                         new[] { ".", "T0", "." },
                     },
                 },

@@ -16,6 +16,7 @@
     <Compile Include="..\..\Assets\Rescue.Core\State\BoardHelpers.cs" Link="Rescue.Core\State\BoardHelpers.cs" />
     <Compile Include="..\..\Assets\Rescue.Core\State\DockHelpers.cs" Link="Rescue.Core\State\DockHelpers.cs" />
     <Compile Include="..\..\Assets\Rescue.Core\State\LevelConfig.cs" Link="Rescue.Core\State\LevelConfig.cs" />
+    <Compile Include="..\..\Assets\Rescue.Content\AsciiPreview.cs" Link="Rescue.Content\AsciiPreview.cs" />
     <Compile Include="..\..\Assets\Rescue.Content\ContentJson.cs" Link="Rescue.Content\ContentJson.cs" />
     <Compile Include="..\..\Assets\Rescue.Content\Schema.cs" Link="Rescue.Content\Schema.cs" />
     <Compile Include="..\..\Assets\Rescue.Content\Validator.cs" Link="Rescue.Content\Validator.cs" />
