@@ -286,6 +286,7 @@
 "Assets/Rescue.Core/Pipeline/Types.cs"
 "Assets/Rescue.Core/Properties/AssemblyInfo.cs"
 "Assets/Rescue.Core/Rng/SeededRng.cs"
+"Assets/Rescue.Core/Rules/Groups.cs"
 "Assets/Rescue.Core/State/BoardHelpers.cs"
 "Assets/Rescue.Core/State/DockHelpers.cs"
 "Assets/Rescue.Core/State/Types.cs"

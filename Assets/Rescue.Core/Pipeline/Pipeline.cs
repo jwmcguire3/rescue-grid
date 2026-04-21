@@ -73,7 +73,7 @@ namespace Rescue.Core.Pipeline
 
             if (result.Context.IsWin)
             {
-                return new ActionResult(result.State, events.ToImmutable(), ActionOutcome.Win, snapshot);
+                return new ActionResult(IncrementActionCount(result.State), events.ToImmutable(), ActionOutcome.Win, snapshot);
             }
 
             result = RunStep(StepOrder[10], Step11_TickHazards.Run, result, observer, events);
@@ -81,7 +81,7 @@ namespace Rescue.Core.Pipeline
 
             CheckLossResult lossResult = CheckLoss.Run(result.State, result.Context);
             Append(events, lossResult.Events);
-            return new ActionResult(lossResult.State, events.ToImmutable(), lossResult.Outcome, snapshot);
+            return new ActionResult(IncrementActionCount(lossResult.State), events.ToImmutable(), lossResult.Outcome, snapshot);
         }
 
         internal static ImmutableArray<string> GetStepOrder()
@@ -115,6 +115,11 @@ namespace Rescue.Core.Pipeline
         private static void EmitTrace(Action<StepTrace>? observer, string stepName, StepResult result)
         {
             observer?.Invoke(new StepTrace(stepName, result.State, result.Context, result.Events));
+        }
+
+        private static GameState IncrementActionCount(GameState state)
+        {
+            return state with { ActionCount = state.ActionCount + 1 };
         }
     }
 }

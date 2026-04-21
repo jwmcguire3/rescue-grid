@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using System.Collections.Immutable;
+using Rescue.Core.Rules;
 using Rescue.Core.State;
 
 namespace Rescue.Core.Pipeline.Steps
@@ -9,77 +9,61 @@ namespace Rescue.Core.Pipeline.Steps
         public static StepResult Run(GameState state, StepContext context)
         {
             TileCoord tapped = context.Input.TappedCoord;
-            if (state.Frozen || !BoardHelpers.InBounds(state.Board, tapped))
+            if (state.Frozen)
             {
-                return Invalid(state, context);
+                return Invalid(state, context, InvalidInputReason.Frozen);
+            }
+
+            if (!BoardHelpers.InBounds(state.Board, tapped))
+            {
+                return Invalid(state, context, InvalidInputReason.OutOfBounds);
             }
 
             if (IsFlooded(state.Board, state.Water, tapped))
             {
-                return Invalid(state, context);
+                return Invalid(state, context, InvalidInputReason.Flooded);
             }
 
-            if (BoardHelpers.GetTile(state.Board, tapped) is not DebrisTile tappedDebris)
+            Tile tile = BoardHelpers.GetTile(state.Board, tapped);
+            if (!GroupOps.IsExposed(state.Board, tapped))
             {
-                return Invalid(state, context);
+                return Invalid(state, context, GetInvalidReason(tile));
             }
 
-            ImmutableArray<TileCoord> group = FindGroup(state.Board, tapped, tappedDebris.Type, state.Water);
-            if (group.Length < 2)
+            ImmutableArray<TileCoord>? group = GroupOps.FindGroup(state.Board, tapped);
+            if (group is null || tile is not DebrisTile tappedDebris)
             {
-                return Invalid(state, context);
+                return Invalid(state, context, InvalidInputReason.SingleTile);
             }
 
             StepContext updatedContext = context with
             {
                 IsValidInput = true,
                 ValidatedGroupType = tappedDebris.Type,
-                ValidatedGroupCoords = group,
+                ValidatedGroupCoords = group.Value,
             };
 
-            GameState updatedState = state with { ActionCount = state.ActionCount + 1 };
-            return new StepResult(updatedState, updatedContext, ImmutableArray<ActionEvent>.Empty);
+            return new StepResult(state, updatedContext, ImmutableArray<ActionEvent>.Empty);
         }
 
-        private static StepResult Invalid(GameState state, StepContext context)
+        private static StepResult Invalid(GameState state, StepContext context, InvalidInputReason reason)
         {
             ImmutableArray<ActionEvent> events = ImmutableArray.Create<ActionEvent>(
-                new InvalidInput(context.Input.TappedCoord));
+                new InvalidInput(context.Input.TappedCoord, reason));
             return new StepResult(state, context, events);
         }
 
-        private static ImmutableArray<TileCoord> FindGroup(Board board, TileCoord start, DebrisType type, WaterState water)
+        private static InvalidInputReason GetInvalidReason(Tile tile)
         {
-            Queue<TileCoord> frontier = new Queue<TileCoord>();
-            HashSet<TileCoord> visited = new HashSet<TileCoord>();
-            ImmutableArray<TileCoord>.Builder coords = ImmutableArray.CreateBuilder<TileCoord>();
-
-            frontier.Enqueue(start);
-            visited.Add(start);
-
-            while (frontier.Count > 0)
+            return tile switch
             {
-                TileCoord current = frontier.Dequeue();
-                coords.Add(current);
-
-                ImmutableArray<TileCoord> neighbors = BoardHelpers.OrthogonalNeighbors(board, current);
-                for (int i = 0; i < neighbors.Length; i++)
-                {
-                    TileCoord neighbor = neighbors[i];
-                    if (visited.Contains(neighbor) || IsFlooded(board, water, neighbor))
-                    {
-                        continue;
-                    }
-
-                    if (BoardHelpers.GetTile(board, neighbor) is DebrisTile debris && debris.Type == type)
-                    {
-                        visited.Add(neighbor);
-                        frontier.Enqueue(neighbor);
-                    }
-                }
-            }
-
-            return coords.ToImmutable();
+                FloodedTile => InvalidInputReason.Flooded,
+                BlockerTile { Type: BlockerType.Ice } => InvalidInputReason.Ice,
+                BlockerTile => InvalidInputReason.Blocker,
+                TargetTile => InvalidInputReason.Target,
+                EmptyTile => InvalidInputReason.Empty,
+                _ => InvalidInputReason.Empty,
+            };
         }
 
         private static bool IsFlooded(Board board, WaterState water, TileCoord coord)

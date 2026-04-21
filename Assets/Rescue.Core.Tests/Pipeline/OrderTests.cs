@@ -92,6 +92,27 @@ namespace Rescue.Core.Tests.Pipeline
         }
 
         [Test]
+        public void InvalidInputShortCircuitsPipelineAfterStep01()
+        {
+            GameState state = PipelineTestFixtures.CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    PipelineTestFixtures.DebrisRow(DebrisType.A, DebrisType.B)));
+
+            List<string> trace = new List<string>();
+
+            ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                options: null,
+                observer: step => trace.Add(step.StepName));
+
+            Assert.That(trace, Is.EqualTo(new[] { "Step01_AcceptInput" }));
+            Assert.That(result.Events, Is.EqualTo(ImmutableArray.Create<ActionEvent>(
+                new InvalidInput(new TileCoord(0, 0), InvalidInputReason.SingleTile))));
+            Assert.That(result.State.ActionCount, Is.EqualTo(state.ActionCount));
+        }
+
+        [Test]
         public void RunActionReturnsNewGameStateInstanceWithoutMutatingInput()
         {
             Board board = PipelineTestFixtures.CreateBoard(

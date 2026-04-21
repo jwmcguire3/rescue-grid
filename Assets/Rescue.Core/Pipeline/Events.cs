@@ -5,7 +5,19 @@ namespace Rescue.Core.Pipeline
 {
     public abstract record ActionEvent;
 
-    public sealed record InvalidInput(TileCoord TappedCoord) : ActionEvent;
+    public enum InvalidInputReason
+    {
+        Frozen,
+        OutOfBounds,
+        Flooded,
+        Ice,
+        Blocker,
+        Target,
+        Empty,
+        SingleTile,
+    }
+
+    public sealed record InvalidInput(TileCoord TappedCoord, InvalidInputReason Reason) : ActionEvent;
 
     public sealed record GroupRemoved(DebrisType Type, ImmutableArray<TileCoord> Coords) : ActionEvent;
 
