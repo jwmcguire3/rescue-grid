@@ -1,0 +1,17 @@
+{
+  "name": "Rescue.Unity",
+  "rootNamespace": "Rescue.Unity",
+  "references": [
+    "Rescue.Core",
+    "Rescue.Content"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

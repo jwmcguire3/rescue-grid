@@ -1,0 +1,20 @@
+{
+  "name": "Rescue.Unity.EditorTools",
+  "rootNamespace": "Rescue.Unity.EditorTools",
+  "references": [
+    "Rescue.Core",
+    "Rescue.Content",
+    "Rescue.Unity"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

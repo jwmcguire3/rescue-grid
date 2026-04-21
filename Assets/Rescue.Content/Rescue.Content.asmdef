@@ -1,0 +1,16 @@
+{
+  "name": "Rescue.Content",
+  "rootNamespace": "Rescue.Content",
+  "references": [
+    "Rescue.Core"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": true
+}

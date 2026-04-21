@@ -1,0 +1,21 @@
+{
+  "name": "Rescue.Unity.Tests",
+  "rootNamespace": "Rescue.Unity.Tests",
+  "references": [
+    "Rescue.Core",
+    "Rescue.Content",
+    "Rescue.Unity"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false,
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}
