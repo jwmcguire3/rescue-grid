@@ -9,7 +9,7 @@ Core purpose: prove that acting advances danger, thinking is free, and
 rescue order is the central puzzle.
 
 ## Language and tooling
-- C# 9+ with nullable reference types enabled globally.
+- C# 10+ with nullable reference types enabled globally.
 - Unity 6.4 
 - Test runner: Unity Test Framework (NUnit).
   - EditMode tests for anything in Rescue.Core and Rescue.Content.
@@ -17,6 +17,13 @@ rescue order is the central puzzle.
     Unity runtime.
 - CLI test command: `Unity -batchmode -runTests -testPlatform EditMode -projectPath .`
   (wrapped in scripts/test.sh for convenience).
+- Unity compiler language version is pinned via `Assets/csc.rsp`; keep it
+  at C# 10+ unless the project is deliberately migrated and verified.
+- `Assets/csc.rsp` also carries the global nullable setting and any
+  compiler-wide language settings required by Core.
+- `ImmutableArray<T>` support is provided by the checked-in
+  `Assets/Plugins/System.Collections.Immutable.dll` plugin; do not remove
+  it unless Unity package/runtime support is replaced intentionally.
 - Lint: Roslyn analyzers via .editorconfig. Treat warnings as errors in CI.
 
 ## Architecture rules (non-negotiable)

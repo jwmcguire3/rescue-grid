@@ -1,0 +1,3 @@
+-langversion:10.0
+-nullable:enable
+-r:"Assets/Plugins/System.Collections.Immutable.dll"
