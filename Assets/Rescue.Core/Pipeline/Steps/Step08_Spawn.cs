@@ -47,6 +47,8 @@ namespace Rescue.Core.Pipeline.Steps
                     SpawnRecoveryCounter = recoveryCounter,
                 };
 
+                // TODO(B4.5 follow-up): update LastRouteBoostedType/ConsecutiveRouteBoosts here if safeguard state is accepted into scope.
+
                 spawnedPieces.Add((coord, debrisType));
             }
 

@@ -127,15 +127,318 @@ namespace Rescue.Core.Tests.Rules
         }
 
         [Test]
+        public void UrgentTargetChoosesLowestWaterBlockedAndStableIndexTuple()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                Row(new EmptyTile(), new DebrisTile(DebrisType.A), new EmptyTile()),
+                Row(new EmptyTile(), new TargetTile("safer", Extracted: false), new EmptyTile()),
+                Row(new TargetTile("left-most", Extracted: false), new DebrisTile(DebrisType.B), new TargetTile("right-most", Extracted: false)),
+                Row(new EmptyTile(), new EmptyTile(), new EmptyTile()));
+            ImmutableArray<TargetState> targets = ImmutableArray.Create(
+                new TargetState("safer", new TileCoord(1, 1), Extracted: false, OneClearAway: false),
+                new TargetState("right-most", new TileCoord(2, 2), Extracted: false, OneClearAway: false),
+                new TargetState("left-most", new TileCoord(2, 0), Extracted: false, OneClearAway: false));
+            GameState state = CreateSpawnState(board, assistanceChance: 1.0d) with
+            {
+                Targets = targets,
+            };
+
+            UrgentRoute? urgent = SpawnOps.FindUrgentRoute(state);
+
+            Assert.That(urgent.HasValue, Is.True);
+            Assert.That(urgent!.Value.TargetCoord, Is.EqualTo(new TileCoord(2, 0)));
+            Assert.That(urgent.Value.WaterRisesRemaining, Is.EqualTo(1));
+            Assert.That(urgent.Value.BlockedRequiredNeighbors, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void NoUrgentTargetYieldsZeroRouteBonuses()
+        {
+            Board board = BuildSoftRouteBoard();
+            GameState state = CreateSpawnState(board, assistanceChance: 1.0d) with
+            {
+                Targets = ImmutableArray.Create(
+                    new TargetState("done", new TileCoord(1, 3), Extracted: true, OneClearAway: false)),
+            };
+
+            SpawnBias bias = SpawnOps.ComputeSpawnBias(state, state.LevelConfig, new TileCoord(0, 2));
+
+            Assert.That(GetWeight(bias.Weights, DebrisType.A), Is.EqualTo(1.0d));
+            Assert.That(GetWeight(bias.Weights, DebrisType.B), Is.EqualTo(1.0d));
+        }
+
+        [Test]
+        public void HardAndSoftRouteRegionsAreBuiltCorrectlyForInteriorTarget()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                Row(new EmptyTile(), new DebrisTile(DebrisType.A), new EmptyTile(), new EmptyTile()),
+                Row(new DebrisTile(DebrisType.B), new TargetTile("target", Extracted: false), new BlockerTile(BlockerType.Crate, 1, null), new EmptyTile()),
+                Row(new EmptyTile(), new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                Row(new EmptyTile(), new EmptyTile(), new EmptyTile(), new EmptyTile()));
+            GameState state = CreateSpawnState(board, assistanceChance: 1.0d) with
+            {
+                Targets = ImmutableArray.Create(new TargetState("target", new TileCoord(1, 1), Extracted: false, OneClearAway: false)),
+            };
+
+            UrgentRoute route = SpawnOps.FindUrgentRoute(state)!.Value;
+
+            Assert.That(route.HardRouteCells, Is.EqualTo(new[]
+            {
+                new TileCoord(0, 1),
+                new TileCoord(1, 2),
+                new TileCoord(1, 0),
+            }).AsCollection);
+            Assert.That(route.SoftRouteCells, Is.EqualTo(new[]
+            {
+                new TileCoord(0, 0),
+                new TileCoord(0, 2),
+                new TileCoord(1, 1),
+                new TileCoord(1, 3),
+                new TileCoord(2, 0),
+                new TileCoord(2, 2),
+            }).AsCollection);
+        }
+
+        [Test]
+        public void HardAndSoftRouteRegionsAreBuiltCorrectlyForEdgeTarget()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                Row(new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new EmptyTile()),
+                Row(new TargetTile("target", Extracted: false), new BlockerTile(BlockerType.Crate, 1, null), new EmptyTile()),
+                Row(new EmptyTile(), new EmptyTile(), new EmptyTile()));
+            GameState state = CreateSpawnState(board, assistanceChance: 1.0d) with
+            {
+                Targets = ImmutableArray.Create(new TargetState("target", new TileCoord(1, 0), Extracted: false, OneClearAway: false)),
+            };
+
+            UrgentRoute route = SpawnOps.FindUrgentRoute(state)!.Value;
+
+            Assert.That(route.HardRouteCells, Is.EqualTo(new[]
+            {
+                new TileCoord(0, 0),
+                new TileCoord(1, 1),
+            }).AsCollection);
+            Assert.That(route.SoftRouteCells, Is.EqualTo(new[]
+            {
+                new TileCoord(0, 1),
+                new TileCoord(1, 0),
+                new TileCoord(1, 2),
+                new TileCoord(2, 1),
+            }).AsCollection);
+        }
+
+        [Test]
+        public void HardAndSoftRouteRegionsAreBuiltCorrectlyForCornerTarget()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                Row(new TargetTile("target", Extracted: false), new DebrisTile(DebrisType.A), new EmptyTile()),
+                Row(new BlockerTile(BlockerType.Crate, 1, null), new FloodedTile(), new EmptyTile()),
+                Row(new EmptyTile(), new EmptyTile(), new EmptyTile()));
+            GameState state = CreateSpawnState(board, assistanceChance: 1.0d) with
+            {
+                Targets = ImmutableArray.Create(new TargetState("target", new TileCoord(0, 0), Extracted: false, OneClearAway: false)),
+            };
+
+            UrgentRoute route = SpawnOps.FindUrgentRoute(state)!.Value;
+
+            Assert.That(route.HardRouteCells, Is.EqualTo(new[]
+            {
+                new TileCoord(0, 1),
+                new TileCoord(1, 0),
+            }).AsCollection);
+            Assert.That(route.SoftRouteCells, Is.EqualTo(new[]
+            {
+                new TileCoord(0, 0),
+                new TileCoord(0, 2),
+                new TileCoord(2, 0),
+            }).AsCollection);
+        }
+
+        [Test]
+        public void CandidateGetsReachablePairRouteBonusWhenSpawnCreatesLegalRouteGroup()
+        {
+            Board board = BuildHardRoutePairBoard();
+            GameState state = CreateSpawnState(board, assistanceChance: 1.0d) with
+            {
+                Targets = ImmutableArray.Create(new TargetState("target", new TileCoord(1, 2), Extracted: false, OneClearAway: false)),
+            };
+
+            SpawnBias bias = SpawnOps.ComputeSpawnBias(state, state.LevelConfig, new TileCoord(0, 1));
+
+            Assert.That(GetWeight(bias.Weights, DebrisType.B), Is.EqualTo(41.0d));
+            Assert.That(GetWeight(bias.Weights, DebrisType.A), Is.EqualTo(16.0d));
+        }
+
+        [Test]
+        public void HardRouteQualificationWinsOverSoftOnlyQualification()
+        {
+            GameState hardRouteState = CreateSpawnState(BuildHardRoutePairBoard(), assistanceChance: 1.0d) with
+            {
+                Targets = ImmutableArray.Create(new TargetState("target", new TileCoord(1, 2), Extracted: false, OneClearAway: false)),
+            };
+            GameState softRouteState = CreateSpawnState(BuildSoftRouteBoard(), assistanceChance: 1.0d) with
+            {
+                Targets = ImmutableArray.Create(new TargetState("target", new TileCoord(1, 3), Extracted: false, OneClearAway: false)),
+            };
+
+            RouteAssistResult hardResult = SpawnOps.EvaluateRouteAssist(
+                hardRouteState.Board,
+                new TileCoord(0, 1),
+                DebrisType.B,
+                SpawnOps.FindUrgentRoute(hardRouteState)!.Value);
+            RouteAssistResult softResult = SpawnOps.EvaluateRouteAssist(
+                softRouteState.Board,
+                new TileCoord(0, 2),
+                DebrisType.B,
+                SpawnOps.FindUrgentRoute(softRouteState)!.Value);
+
+            Assert.That(hardResult.PairQuality, Is.EqualTo(RoutePairQuality.Hard));
+            Assert.That(softResult.PairQuality, Is.EqualTo(RoutePairQuality.Soft));
+        }
+
+        [Test]
+        public void CandidateGetsRouteAdjacencyBonusWhenFinalTileLandsInSoftRoute()
+        {
+            GameState state = CreateSpawnState(BuildSoftRouteBoard(), assistanceChance: 1.0d) with
+            {
+                Targets = ImmutableArray.Create(new TargetState("target", new TileCoord(1, 3), Extracted: false, OneClearAway: false)),
+            };
+
+            SpawnBias bias = SpawnOps.ComputeSpawnBias(state, state.LevelConfig, new TileCoord(0, 2));
+
+            Assert.That(GetWeight(bias.Weights, DebrisType.A), Is.EqualTo(16.0d));
+            Assert.That(GetWeight(bias.Weights, DebrisType.B), Is.EqualTo(41.0d));
+        }
+
+        [Test]
+        public void RouteAdjacencyDoesNotApplyForDiagonalOrNonUrgentTargetProximity()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                Row(new EmptyTile(), new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                Row(new EmptyTile(), new EmptyTile(), new EmptyTile(), new TargetTile("safe", Extracted: false)),
+                Row(new TargetTile("urgent", Extracted: false), new EmptyTile(), new BlockerTile(BlockerType.Crate, 1, null), new EmptyTile()),
+                Row(new EmptyTile(), new EmptyTile(), new EmptyTile(), new EmptyTile()));
+            ImmutableArray<TargetState> targets = ImmutableArray.Create(
+                new TargetState("safe", new TileCoord(1, 3), Extracted: false, OneClearAway: false),
+                new TargetState("urgent", new TileCoord(2, 0), Extracted: false, OneClearAway: false));
+            GameState state = CreateSpawnState(board, assistanceChance: 1.0d) with
+            {
+                Targets = targets,
+            };
+
+            SpawnBias bias = SpawnOps.ComputeSpawnBias(state, state.LevelConfig, new TileCoord(1, 1));
+
+            Assert.That(GetWeight(bias.Weights, DebrisType.A), Is.EqualTo(1.0d));
+            Assert.That(GetWeight(bias.Weights, DebrisType.B), Is.EqualTo(1.0d));
+        }
+
+        [Test]
+        public void DockBonusStillOutranksRouteAdjacency()
+        {
+            GameState state = CreateSpawnState(
+                BuildSoftRouteBoard(),
+                assistanceChance: 1.0d,
+                dock: new Dock(
+                    ImmutableArray.Create<DebrisType?>(DebrisType.C, DebrisType.C, null, null, null, null, null),
+                    Size: 7)) with
+            {
+                Targets = ImmutableArray.Create(new TargetState("target", new TileCoord(1, 3), Extracted: false, OneClearAway: false)),
+            };
+
+            SpawnBias bias = SpawnOps.ComputeSpawnBias(state, state.LevelConfig, new TileCoord(0, 2));
+
+            Assert.That(GetWeight(bias.Weights, DebrisType.C), Is.GreaterThan(GetWeight(bias.Weights, DebrisType.A)));
+        }
+
+        [Test]
+        public void SingletonRecoveryStillOutranksRouteBasedHelp()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                Row(new DebrisTile(DebrisType.B), new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                Row(new EmptyTile(), new BlockerTile(BlockerType.Crate, 1, null), new TargetTile("target", Extracted: false), new EmptyTile()),
+                Row(new EmptyTile(), new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                Row(new EmptyTile(), new EmptyTile(), new EmptyTile(), new EmptyTile()));
+            GameState state = CreateSpawnState(board, assistanceChance: 1.0d) with
+            {
+                Targets = ImmutableArray.Create(new TargetState("target", new TileCoord(1, 2), Extracted: false, OneClearAway: false)),
+                SpawnRecoveryCounter = 2,
+            };
+
+            SpawnBias bias = SpawnOps.ComputeSpawnBias(state, state.LevelConfig, new TileCoord(0, 1));
+
+            Assert.That(GetWeight(bias.Weights, DebrisType.B), Is.EqualTo(141.0d));
+            Assert.That(GetWeight(bias.Weights, DebrisType.A), Is.EqualTo(16.0d));
+        }
+
+        [Test]
+        public void ThreatenedTargetOneRiseFromFloodIsSelectedAsUrgent()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                Row(new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                Row(new TargetTile("safe", Extracted: false), new EmptyTile(), new EmptyTile()),
+                Row(new TargetTile("urgent", Extracted: false), new DebrisTile(DebrisType.A), new EmptyTile()),
+                Row(new FloodedTile(), new FloodedTile(), new FloodedTile()));
+            ImmutableArray<TargetState> targets = ImmutableArray.Create(
+                new TargetState("safe", new TileCoord(1, 0), Extracted: false, OneClearAway: false),
+                new TargetState("urgent", new TileCoord(2, 0), Extracted: false, OneClearAway: false));
+            GameState state = CreateSpawnState(board, assistanceChance: 1.0d) with
+            {
+                Targets = targets,
+                Water = new WaterState(FloodedRows: 1, ActionsUntilRise: 2, RiseInterval: 2),
+            };
+
+            UrgentRoute route = SpawnOps.FindUrgentRoute(state)!.Value;
+
+            Assert.That(route.TargetCoord, Is.EqualTo(new TileCoord(2, 0)));
+            Assert.That(route.WaterRisesRemaining, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void LastMoveRescueBoardGetsUsefulRouteBiasWithoutHardForcingSingleAnswer()
+        {
+            GameState state = CreateSpawnState(BuildSoftRouteBoard(), assistanceChance: 1.0d) with
+            {
+                Targets = ImmutableArray.Create(new TargetState("target", new TileCoord(1, 3), Extracted: false, OneClearAway: false)),
+            };
+
+            SpawnBias bias = SpawnOps.ComputeSpawnBias(state, state.LevelConfig, new TileCoord(0, 2));
+
+            Assert.That(GetWeight(bias.Weights, DebrisType.B), Is.GreaterThan(GetWeight(bias.Weights, DebrisType.A)));
+            Assert.That(GetWeight(bias.Weights, DebrisType.A), Is.GreaterThan(0.0d));
+            Assert.That(GetWeight(bias.Weights, DebrisType.C), Is.GreaterThan(0.0d));
+        }
+
+        [Test]
+        public void MultiTargetBoardKeepsStableTieBreakingAcrossRepeatedRuns()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                Row(new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                Row(new TargetTile("left", Extracted: false), new EmptyTile(), new TargetTile("right", Extracted: false)),
+                Row(new EmptyTile(), new DebrisTile(DebrisType.A), new EmptyTile()));
+            ImmutableArray<TargetState> targets = ImmutableArray.Create(
+                new TargetState("right", new TileCoord(1, 2), Extracted: false, OneClearAway: false),
+                new TargetState("left", new TileCoord(1, 0), Extracted: false, OneClearAway: false));
+            GameState state = CreateSpawnState(board, assistanceChance: 1.0d) with
+            {
+                Targets = targets,
+            };
+
+            UrgentRoute first = SpawnOps.FindUrgentRoute(state)!.Value;
+            UrgentRoute second = SpawnOps.FindUrgentRoute(state)!.Value;
+
+            Assert.That(first.TargetCoord, Is.EqualTo(new TileCoord(1, 0)));
+            Assert.That(second.TargetCoord, Is.EqualTo(first.TargetCoord));
+        }
+
+        [Test]
         public void SameSeedAndStateProduceSameSpawn()
         {
             GameState state = CreateSpawnState(
-                PipelineTestFixtures.CreateBoard(
-                    ImmutableArray.Create<Tile>(new EmptyTile(), new EmptyTile()),
-                    ImmutableArray.Create<Tile>(new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.B))),
-                assistanceChance: 0.0d)
+                BuildSoftRouteBoard(),
+                assistanceChance: 1.0d)
                 with
                 {
+                    Targets = ImmutableArray.Create(new TargetState("target", new TileCoord(1, 3), Extracted: false, OneClearAway: false)),
                     RngState = new RngState(0x12345678u, 0x9ABCDEF0u),
                 };
             StepContext context = StepContext.Create(state, new ActionInput(new TileCoord(0, 0)));
@@ -168,6 +471,29 @@ namespace Rescue.Core.Tests.Rules
                     DebrisType.D,
                     DebrisType.E),
             };
+        }
+
+        private static Board BuildHardRoutePairBoard()
+        {
+            return PipelineTestFixtures.CreateBoard(
+                Row(new EmptyTile(), new EmptyTile(), new DebrisTile(DebrisType.B), new EmptyTile()),
+                Row(new EmptyTile(), new DebrisTile(DebrisType.B), new TargetTile("target", Extracted: false), new EmptyTile()),
+                Row(new EmptyTile(), new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                Row(new EmptyTile(), new EmptyTile(), new EmptyTile(), new EmptyTile()));
+        }
+
+        private static Board BuildSoftRouteBoard()
+        {
+            return PipelineTestFixtures.CreateBoard(
+                Row(new EmptyTile(), new DebrisTile(DebrisType.B), new EmptyTile(), new EmptyTile()),
+                Row(new EmptyTile(), new EmptyTile(), new BlockerTile(BlockerType.Crate, 1, null), new TargetTile("target", Extracted: false)),
+                Row(new EmptyTile(), new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                Row(new EmptyTile(), new EmptyTile(), new EmptyTile(), new EmptyTile()));
+        }
+
+        private static ImmutableArray<Tile> Row(params Tile[] tiles)
+        {
+            return tiles.ToImmutableArray();
         }
 
         private static Dictionary<DebrisType, int> Sample(

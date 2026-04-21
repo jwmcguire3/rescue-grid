@@ -11,13 +11,42 @@ namespace Rescue.Core.Rules
         double EffectiveAssistanceChance,
         bool IsEmergency);
 
+    internal enum RoutePairQuality
+    {
+        None,
+        Soft,
+        Hard,
+    }
+
+    internal readonly record struct RouteAssistResult(
+        RoutePairQuality PairQuality,
+        bool HasAdjacency);
+
+    internal readonly record struct UrgentRoute(
+        TileCoord TargetCoord,
+        int WaterRisesRemaining,
+        int BlockedRequiredNeighbors,
+        int StableTargetIndex,
+        ImmutableArray<TileCoord> HardRouteCells,
+        ImmutableArray<TileCoord> SoftRouteCells);
+
     public static class SpawnOps
     {
         private const double EmergencyChanceBonus = 0.2d;
-        private const double DockCompletionBonus = 3.0d;
-        private const double RecoveryPairBonus = 4.0d;
+        private const double SingletonRecoveryBonus = 100.0d;
+        private const double DockCompletionBonus = 70.0d;
+        private const double ReachablePairRouteBonus = 40.0d;
+        private const double RouteAdjacencyBonus = 15.0d;
+        // TODO(B4.5 follow-up): add the 45% final probability cap if route-boost state tracking enters scope.
+        // TODO(B4.5 follow-up): add repeated route-boost decay once LastRouteBoostedType/ConsecutiveRouteBoosts exist.
+        // TODO(B4.5 follow-up): add single-savior suppression once route-boost event tracking enters scope.
 
         public static SpawnBias ComputeSpawnBias(GameState state, LevelConfig config)
+        {
+            return ComputeSpawnBias(state, config, spawnCoord: null);
+        }
+
+        internal static SpawnBias ComputeSpawnBias(GameState state, LevelConfig config, TileCoord? spawnCoord)
         {
             if (state is null)
             {
@@ -33,17 +62,18 @@ namespace Rescue.Core.Rules
             Dictionary<DebrisType, double> baseWeights = CreateBaseWeights(pool, config);
             Dictionary<DebrisType, double> assistedWeights = new Dictionary<DebrisType, double>(baseWeights);
 
-            ApplyDockAwareAssistance(state, assistedWeights);
-            ApplyRouteAssistHooks(state, assistedWeights);
-            ApplyRecoveryBias(state, assistedWeights);
+            ApplyAssistanceBonuses(state, pool, assistedWeights, spawnCoord, includeRecoveryBonus: false);
 
             bool isEmergency = IsEmergencyActive(state, config);
             double effectiveAssistanceChance = ClampChance(config.AssistanceChance + (isEmergency ? EmergencyChanceBonus : 0.0d));
 
-            return new SpawnBias(
-                BlendWeights(pool, baseWeights, assistedWeights, effectiveAssistanceChance),
-                effectiveAssistanceChance,
-                isEmergency);
+            ImmutableArray<(DebrisType Type, double Weight)> weights = BlendWeights(pool, baseWeights, assistedWeights, effectiveAssistanceChance);
+            if (spawnCoord.HasValue && state.SpawnRecoveryCounter > 0)
+            {
+                weights = ApplyRecoveryBias(weights, state.Board, spawnCoord.Value);
+            }
+
+            return new SpawnBias(weights, effectiveAssistanceChance, isEmergency);
         }
 
         internal static DebrisType ChooseNextSpawn(GameState state, TileCoord spawnCoord, SeededRng rng)
@@ -53,18 +83,11 @@ namespace Rescue.Core.Rules
                 throw new ArgumentNullException(nameof(rng));
             }
 
-            SpawnBias baseBias = ComputeSpawnBias(state, state.LevelConfig);
-            ImmutableArray<(DebrisType Type, double Weight)> weights = baseBias.Weights;
-
-            if (state.SpawnRecoveryCounter > 0)
+            SpawnBias bias = ComputeSpawnBias(state, state.LevelConfig, spawnCoord);
+            List<(DebrisType item, double weight)> weightedItems = new List<(DebrisType item, double weight)>(bias.Weights.Length);
+            for (int i = 0; i < bias.Weights.Length; i++)
             {
-                weights = ApplySpawnCoordRecoveryBias(weights, state.Board, spawnCoord);
-            }
-
-            List<(DebrisType item, double weight)> weightedItems = new List<(DebrisType item, double weight)>(weights.Length);
-            for (int i = 0; i < weights.Length; i++)
-            {
-                weightedItems.Add((weights[i].Type, weights[i].Weight));
+                weightedItems.Add((bias.Weights[i].Type, bias.Weights[i].Weight));
             }
 
             return rng.WeightedPick(weightedItems);
@@ -87,7 +110,7 @@ namespace Rescue.Core.Rules
                 for (int col = 0; col < board.Width; col++)
                 {
                     TileCoord coord = new TileCoord(row, col);
-                    if (GroupOps.FindGroup(board, coord) is { } group && group.Length >= 2)
+                    if (GroupOps.FindGroup(board, coord) is { Length: >= 2 })
                     {
                         return false;
                     }
@@ -95,6 +118,65 @@ namespace Rescue.Core.Rules
             }
 
             return true;
+        }
+
+        internal static UrgentRoute? FindUrgentRoute(GameState state)
+        {
+            UrgentRoute? best = null;
+            for (int i = 0; i < state.Targets.Length; i++)
+            {
+                TargetState target = state.Targets[i];
+                if (target.Extracted)
+                {
+                    continue;
+                }
+
+                UrgentRoute candidate = new UrgentRoute(
+                    target.Coord,
+                    CountFutureWaterRisesBeforeFlood(state, target.Coord),
+                    CountBlockedRequiredNeighbors(state.Board, target.Coord),
+                    GetStableTargetIndex(state.Board, target.Coord),
+                    BuildHardRouteCells(state.Board, target.Coord),
+                    ImmutableArray<TileCoord>.Empty);
+                ImmutableArray<TileCoord> softRouteCells = BuildSoftRouteCells(state.Board, candidate.HardRouteCells);
+                candidate = candidate with { SoftRouteCells = softRouteCells };
+
+                if (!best.HasValue || CompareUrgency(candidate, best.Value) < 0)
+                {
+                    best = candidate;
+                }
+            }
+
+            return best;
+        }
+
+        internal static RouteAssistResult EvaluateRouteAssist(Board board, TileCoord spawnCoord, DebrisType debrisType, UrgentRoute route)
+        {
+            if (!BoardHelpers.InBounds(board, spawnCoord) || BoardHelpers.GetTile(board, spawnCoord) is not EmptyTile)
+            {
+                return new RouteAssistResult(RoutePairQuality.None, HasAdjacency: false);
+            }
+
+            Board simulatedBoard = BoardHelpers.SetTile(board, spawnCoord, new DebrisTile(debrisType));
+            ImmutableArray<TileCoord>? group = GroupOps.FindGroup(simulatedBoard, spawnCoord);
+            if (group.HasValue)
+            {
+                bool touchesHard = ContainsAny(group.Value, route.HardRouteCells);
+                if (touchesHard)
+                {
+                    return new RouteAssistResult(RoutePairQuality.Hard, HasAdjacency: false);
+                }
+
+                bool touchesSoft = ContainsAny(group.Value, route.SoftRouteCells);
+                if (touchesSoft)
+                {
+                    return new RouteAssistResult(RoutePairQuality.Soft, HasAdjacency: false);
+                }
+            }
+
+            return new RouteAssistResult(
+                RoutePairQuality.None,
+                HasAdjacency: IsRouteAdjacent(spawnCoord, route));
         }
 
         private static ImmutableArray<DebrisType> GetValidatedPool(LevelConfig config)
@@ -155,54 +237,66 @@ namespace Rescue.Core.Rules
             return weight;
         }
 
-        private static void ApplyDockAwareAssistance(GameState state, Dictionary<DebrisType, double> weights)
+        private static void ApplyAssistanceBonuses(
+            GameState state,
+            ImmutableArray<DebrisType> pool,
+            Dictionary<DebrisType, double> weights,
+            TileCoord? spawnCoord,
+            bool includeRecoveryBonus)
         {
-            int[] counts = new int[Enum.GetValues(typeof(DebrisType)).Length];
-            for (int i = 0; i < state.Dock.Slots.Length; i++)
+            int[] dockCounts = CountDockPieces(state.Dock);
+            ImmutableHashSet<DebrisType> recoveryTypes = ImmutableHashSet<DebrisType>.Empty;
+            UrgentRoute? urgentRoute = null;
+            Dictionary<DebrisType, RouteAssistResult>? routeAssist = null;
+
+            if (spawnCoord.HasValue && includeRecoveryBonus)
             {
-                DebrisType? slot = state.Dock.Slots[i];
-                if (slot.HasValue)
+                recoveryTypes = FindPairCompletingTypesAt(state.Board, spawnCoord.Value);
+            }
+
+            if (spawnCoord.HasValue)
+            {
+                urgentRoute = FindUrgentRoute(state);
+            }
+
+            if (spawnCoord.HasValue && urgentRoute.HasValue)
+            {
+                routeAssist = new Dictionary<DebrisType, RouteAssistResult>(pool.Length);
+                for (int i = 0; i < pool.Length; i++)
                 {
-                    counts[(int)slot.Value]++;
+                    DebrisType type = pool[i];
+                    routeAssist[type] = EvaluateRouteAssist(state.Board, spawnCoord.Value, type, urgentRoute.Value);
                 }
             }
 
-            for (int i = 0; i < counts.Length; i++)
+            for (int i = 0; i < pool.Length; i++)
             {
-                if (counts[i] == 2)
+                DebrisType type = pool[i];
+                double bonus = 0.0d;
+
+                if (state.SpawnRecoveryCounter > 0 && recoveryTypes.Contains(type))
                 {
-                    DebrisType type = (DebrisType)i;
-                    if (weights.ContainsKey(type))
+                    bonus += SingletonRecoveryBonus;
+                }
+
+                if (dockCounts[(int)type] == 2)
+                {
+                    bonus += DockCompletionBonus;
+                }
+
+                if (routeAssist is not null && routeAssist.TryGetValue(type, out RouteAssistResult assist))
+                {
+                    if (assist.PairQuality != RoutePairQuality.None)
                     {
-                        weights[type] += DockCompletionBonus;
+                        bonus += ReachablePairRouteBonus;
+                    }
+                    else if (assist.HasAdjacency)
+                    {
+                        bonus += RouteAdjacencyBonus;
                     }
                 }
-            }
-        }
 
-        private static void ApplyRouteAssistHooks(GameState state, Dictionary<DebrisType, double> weights)
-        {
-            _ = state;
-            _ = weights;
-
-            // TODO(B9+): prefer debris types that complete a reachable pair near the urgent route.
-            // TODO(B9+): prefer debris types adjacent to the most urgent target path.
-        }
-
-        private static void ApplyRecoveryBias(GameState state, Dictionary<DebrisType, double> weights)
-        {
-            if (state.SpawnRecoveryCounter <= 0)
-            {
-                return;
-            }
-
-            ImmutableHashSet<DebrisType> pairCompletingTypes = FindPairCompletingTypes(state.Board);
-            foreach (DebrisType type in pairCompletingTypes)
-            {
-                if (weights.ContainsKey(type))
-                {
-                    weights[type] += RecoveryPairBonus;
-                }
+                weights[type] += bonus;
             }
         }
 
@@ -265,30 +359,48 @@ namespace Rescue.Core.Rules
             return chance;
         }
 
-        private static ImmutableHashSet<DebrisType> FindPairCompletingTypes(Board board)
+        private static int[] CountDockPieces(Dock dock)
         {
-            ImmutableHashSet<DebrisType>.Builder types = ImmutableHashSet.CreateBuilder<DebrisType>();
-            for (int row = 0; row < board.Height; row++)
+            int[] counts = new int[Enum.GetValues(typeof(DebrisType)).Length];
+            for (int i = 0; i < dock.Slots.Length; i++)
             {
-                for (int col = 0; col < board.Width; col++)
+                DebrisType? slot = dock.Slots[i];
+                if (slot.HasValue)
                 {
-                    TileCoord coord = new TileCoord(row, col);
-                    if (WouldCreatePairAt(board, coord, out DebrisType? pairType) && pairType.HasValue)
-                    {
-                        types.Add(pairType.Value);
-                    }
+                    counts[(int)slot.Value]++;
+                }
+            }
+
+            return counts;
+        }
+
+        private static ImmutableHashSet<DebrisType> FindPairCompletingTypesAt(Board board, TileCoord coord)
+        {
+            if (!BoardHelpers.InBounds(board, coord) || BoardHelpers.GetTile(board, coord) is not EmptyTile)
+            {
+                return ImmutableHashSet<DebrisType>.Empty;
+            }
+
+            ImmutableHashSet<DebrisType>.Builder types = ImmutableHashSet.CreateBuilder<DebrisType>();
+            ImmutableArray<TileCoord> neighbors = BoardHelpers.OrthogonalNeighbors(board, coord);
+            for (int i = 0; i < neighbors.Length; i++)
+            {
+                if (BoardHelpers.GetTile(board, neighbors[i]) is DebrisTile debris)
+                {
+                    types.Add(debris.Type);
                 }
             }
 
             return types.ToImmutable();
         }
 
-        private static ImmutableArray<(DebrisType Type, double Weight)> ApplySpawnCoordRecoveryBias(
+        private static ImmutableArray<(DebrisType Type, double Weight)> ApplyRecoveryBias(
             ImmutableArray<(DebrisType Type, double Weight)> weights,
             Board board,
             TileCoord spawnCoord)
         {
-            if (!WouldCreatePairAt(board, spawnCoord, out DebrisType? pairType) || !pairType.HasValue)
+            ImmutableHashSet<DebrisType> recoveryTypes = FindPairCompletingTypesAt(board, spawnCoord);
+            if (recoveryTypes.Count == 0)
             {
                 return weights;
             }
@@ -297,38 +409,167 @@ namespace Rescue.Core.Rules
             for (int i = 0; i < weights.Length; i++)
             {
                 (DebrisType Type, double Weight) entry = weights[i];
-                if (entry.Type == pairType.Value)
-                {
-                    updated.Add((entry.Type, entry.Weight + RecoveryPairBonus));
-                }
-                else
-                {
-                    updated.Add(entry);
-                }
+                updated.Add(recoveryTypes.Contains(entry.Type)
+                    ? (entry.Type, entry.Weight + SingletonRecoveryBonus)
+                    : entry);
             }
 
             return updated.ToImmutable();
         }
 
-        private static bool WouldCreatePairAt(Board board, TileCoord coord, out DebrisType? pairType)
+        private static int CompareUrgency(UrgentRoute left, UrgentRoute right)
         {
-            pairType = null;
-            if (!BoardHelpers.InBounds(board, coord) || BoardHelpers.GetTile(board, coord) is not EmptyTile)
+            int waterComparison = left.WaterRisesRemaining.CompareTo(right.WaterRisesRemaining);
+            if (waterComparison != 0)
             {
-                return false;
+                return waterComparison;
             }
 
-            ImmutableArray<TileCoord> neighbors = BoardHelpers.OrthogonalNeighbors(board, coord);
+            int blockedComparison = left.BlockedRequiredNeighbors.CompareTo(right.BlockedRequiredNeighbors);
+            if (blockedComparison != 0)
+            {
+                return blockedComparison;
+            }
+
+            return left.StableTargetIndex.CompareTo(right.StableTargetIndex);
+        }
+
+        private static int CountFutureWaterRisesBeforeFlood(GameState state, TileCoord targetCoord)
+        {
+            int nextFloodRow = state.Board.Height - state.Water.FloodedRows - 1;
+            int risesRemaining = nextFloodRow - targetCoord.Row;
+            return risesRemaining < 0 ? 0 : risesRemaining;
+        }
+
+        private static int CountBlockedRequiredNeighbors(Board board, TileCoord targetCoord)
+        {
+            int count = 0;
+            ImmutableArray<TileCoord> neighbors = BoardHelpers.OrthogonalNeighbors(board, targetCoord);
             for (int i = 0; i < neighbors.Length; i++)
             {
-                if (BoardHelpers.GetTile(board, neighbors[i]) is DebrisTile debris)
+                if (!IsOpenRequiredNeighbor(BoardHelpers.GetTile(board, neighbors[i])))
                 {
-                    pairType = debris.Type;
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private static int GetStableTargetIndex(Board board, TileCoord targetCoord)
+        {
+            return (targetCoord.Row * board.Width) + targetCoord.Col;
+        }
+
+        private static ImmutableArray<TileCoord> BuildHardRouteCells(Board board, TileCoord targetCoord)
+        {
+            ImmutableArray<TileCoord>.Builder hardRoute = ImmutableArray.CreateBuilder<TileCoord>();
+            ImmutableArray<TileCoord> neighbors = BoardHelpers.OrthogonalNeighbors(board, targetCoord);
+            for (int i = 0; i < neighbors.Length; i++)
+            {
+                TileCoord neighbor = neighbors[i];
+                Tile tile = BoardHelpers.GetTile(board, neighbor);
+                if (tile is DebrisTile or BlockerTile)
+                {
+                    hardRoute.Add(neighbor);
+                }
+            }
+
+            return hardRoute.ToImmutable();
+        }
+
+        private static ImmutableArray<TileCoord> BuildSoftRouteCells(Board board, ImmutableArray<TileCoord> hardRouteCells)
+        {
+            HashSet<TileCoord> softRoute = new HashSet<TileCoord>();
+            for (int i = 0; i < hardRouteCells.Length; i++)
+            {
+                ImmutableArray<TileCoord> neighbors = BoardHelpers.OrthogonalNeighbors(board, hardRouteCells[i]);
+                for (int j = 0; j < neighbors.Length; j++)
+                {
+                    TileCoord neighbor = neighbors[j];
+                    Tile tile = BoardHelpers.GetTile(board, neighbor);
+                    if (tile is FloodedTile || ContainsCoord(hardRouteCells, neighbor))
+                    {
+                        continue;
+                    }
+
+                    softRoute.Add(neighbor);
+                }
+            }
+
+            return SortCoords(softRoute, board.Width);
+        }
+
+        private static bool IsOpenRequiredNeighbor(Tile tile)
+        {
+            return tile is EmptyTile;
+        }
+
+        private static bool IsRouteAdjacent(TileCoord coord, UrgentRoute route)
+        {
+            if (ContainsCoord(route.HardRouteCells, coord) || ContainsCoord(route.SoftRouteCells, coord))
+            {
+                return true;
+            }
+
+            for (int i = 0; i < route.HardRouteCells.Length; i++)
+            {
+                if (ManhattanDistance(coord, route.HardRouteCells[i]) == 1)
+                {
                     return true;
                 }
             }
 
             return false;
+        }
+
+        private static int ManhattanDistance(TileCoord left, TileCoord right)
+        {
+            return Math.Abs(left.Row - right.Row) + Math.Abs(left.Col - right.Col);
+        }
+
+        private static bool ContainsAny(ImmutableArray<TileCoord> group, ImmutableArray<TileCoord> routeCells)
+        {
+            for (int i = 0; i < group.Length; i++)
+            {
+                if (ContainsCoord(routeCells, group[i]))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool ContainsCoord(ImmutableArray<TileCoord> coords, TileCoord candidate)
+        {
+            for (int i = 0; i < coords.Length; i++)
+            {
+                if (coords[i] == candidate)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static ImmutableArray<TileCoord> SortCoords(HashSet<TileCoord> coords, int boardWidth)
+        {
+            List<TileCoord> ordered = new List<TileCoord>(coords.Count);
+            foreach (TileCoord coord in coords)
+            {
+                ordered.Add(coord);
+            }
+
+            ordered.Sort((left, right) =>
+            {
+                int leftIndex = (left.Row * boardWidth) + left.Col;
+                int rightIndex = (right.Row * boardWidth) + right.Col;
+                return leftIndex.CompareTo(rightIndex);
+            });
+
+            return ordered.ToImmutableArray();
         }
     }
 }
