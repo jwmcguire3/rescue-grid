@@ -289,6 +289,8 @@
 "Assets/Rescue.Core/State/BoardHelpers.cs"
 "Assets/Rescue.Core/State/DockHelpers.cs"
 "Assets/Rescue.Core/State/Types.cs"
+"Assets/Rescue.Core/Undo/Snapshot.cs"
+"Assets/Rescue.Core/Undo/UndoGuard.cs"
 -langversion:9.0
 /deterministic
 /optimize+

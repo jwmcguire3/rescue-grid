@@ -278,6 +278,8 @@
 "Assets/Rescue.Core.Tests/State/BoardHelpersTests.cs"
 "Assets/Rescue.Core.Tests/State/DockHelpersTests.cs"
 "Assets/Rescue.Core.Tests/State/ImmutabilityTests.cs"
+"Assets/Rescue.Core.Tests/Undo/SnapshotTests.cs"
+"Assets/Rescue.Core.Tests/Undo/UndoFlowTests.cs"
 -langversion:9.0
 /deterministic
 /optimize+

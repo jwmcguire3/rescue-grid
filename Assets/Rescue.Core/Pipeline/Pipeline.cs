@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using Rescue.Core.Pipeline.Steps;
 using Rescue.Core.State;
+using Rescue.Core.Undo;
 
 namespace Rescue.Core.Pipeline
 {
@@ -57,7 +58,7 @@ namespace Rescue.Core.Pipeline
 
             if (effectiveOptions.RecordSnapshot)
             {
-                snapshot = new Snapshot(state);
+                snapshot = SnapshotHelpers.Take(state);
             }
 
             result = RunStep(StepOrder[1], Step02_RemoveGroup.Run, result, observer, events);

@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using Rescue.Core.State;
+using Rescue.Core.Undo;
 
 namespace Rescue.Core.Pipeline
 {
@@ -20,8 +21,6 @@ namespace Rescue.Core.Pipeline
         LossDockOverflow,
         LossWaterOnTarget,
     }
-
-    public sealed record Snapshot(GameState State);
 
     internal sealed record StepResult(
         GameState State,
