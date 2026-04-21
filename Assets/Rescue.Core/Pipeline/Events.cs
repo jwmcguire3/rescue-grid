@@ -55,5 +55,5 @@ namespace Rescue.Core.Pipeline
 
     public sealed record Lost(ActionOutcome Outcome) : ActionEvent;
 
-    public sealed record Won(ImmutableArray<string> ExtractedTargetOrder) : ActionEvent;
+    public sealed record Won(string? FinalExtractedTargetId, int TotalActions, ImmutableArray<string> ExtractedTargetOrder) : ActionEvent;
 }

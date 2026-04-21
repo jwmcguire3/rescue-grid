@@ -21,7 +21,8 @@ namespace Rescue.Core.Pipeline
             "Step09_Extract",
             "Step10_CheckWin",
             "Step11_TickHazards",
-            "Step12_ResolveHazards");
+            "Step12_ResolveHazards",
+            "CheckLoss");
 
         public static ActionResult RunAction(
             GameState state,
@@ -43,7 +44,7 @@ namespace Rescue.Core.Pipeline
             }
 
             RunOptions effectiveOptions = options ?? new RunOptions(RecordSnapshot: true);
-            Snapshot? snapshot = null;
+            Snapshot? snapshot = effectiveOptions.RecordSnapshot ? SnapshotHelpers.Take(state) : null;
             ImmutableArray<ActionEvent>.Builder events = ImmutableArray.CreateBuilder<ActionEvent>();
             StepContext context = StepContext.Create(state, input);
 
@@ -54,11 +55,6 @@ namespace Rescue.Core.Pipeline
             if (!result.Context.IsValidInput)
             {
                 return new ActionResult(result.State, events.ToImmutable(), ActionOutcome.Ok, Snapshot: null);
-            }
-
-            if (effectiveOptions.RecordSnapshot)
-            {
-                snapshot = SnapshotHelpers.Take(state);
             }
 
             result = RunStep(StepOrder[1], Step02_RemoveGroup.Run, result, observer, events);
@@ -80,6 +76,7 @@ namespace Rescue.Core.Pipeline
             result = RunStep(StepOrder[11], Step12_ResolveHazards.Run, result, observer, events);
 
             CheckLossResult lossResult = CheckLoss.Run(result.State, result.Context);
+            EmitTrace(observer, StepOrder[12], lossResult.State, result.Context, lossResult.Events);
             Append(events, lossResult.Events);
             return new ActionResult(IncrementActionCount(lossResult.State), events.ToImmutable(), lossResult.Outcome, snapshot);
         }
@@ -115,6 +112,16 @@ namespace Rescue.Core.Pipeline
         private static void EmitTrace(Action<StepTrace>? observer, string stepName, StepResult result)
         {
             observer?.Invoke(new StepTrace(stepName, result.State, result.Context, result.Events));
+        }
+
+        private static void EmitTrace(
+            Action<StepTrace>? observer,
+            string stepName,
+            GameState state,
+            StepContext context,
+            ImmutableArray<ActionEvent> events)
+        {
+            observer?.Invoke(new StepTrace(stepName, state, context, events));
         }
 
         private static GameState IncrementActionCount(GameState state)

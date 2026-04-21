@@ -262,6 +262,8 @@ namespace Rescue.Core.Tests.Pipeline
                 case Won expectedWon:
                     Won actualWon = (Won)actual;
                     Assert.That(actualWon.ExtractedTargetOrder, Is.EqualTo(expectedWon.ExtractedTargetOrder).AsCollection, $"Won extracted order mismatch at index {index}.");
+                    Assert.That(actualWon.FinalExtractedTargetId, Is.EqualTo(expectedWon.FinalExtractedTargetId), $"Won final target mismatch at index {index}.");
+                    Assert.That(actualWon.TotalActions, Is.EqualTo(expectedWon.TotalActions), $"Won total actions mismatch at index {index}.");
                     return;
                 default:
                     Assert.That(actual, Is.EqualTo(expected), $"Event mismatch at index {index}.");

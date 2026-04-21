@@ -157,6 +157,8 @@ namespace Rescue.Core.Tests.Rules
             Assert.That(winResult.Events.Length, Is.EqualTo(1));
             Assert.That(winResult.Events[0], Is.TypeOf<Won>());
             Won won = (Won)winResult.Events[0];
+            Assert.That(won.FinalExtractedTargetId, Is.EqualTo("target"));
+            Assert.That(won.TotalActions, Is.EqualTo(state.ActionCount + 1));
             Assert.That(won.ExtractedTargetOrder, Is.EqualTo(new[] { "target" }).AsCollection);
         }
 
