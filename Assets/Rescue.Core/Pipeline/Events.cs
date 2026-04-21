@@ -53,6 +53,12 @@ namespace Rescue.Core.Pipeline
 
     public sealed record DockJamTriggered(int OverflowCount) : ActionEvent;
 
+    public sealed record DebugSpawnOverrideApplied(
+        SpawnOverride Override,
+        bool EmergencyRequested,
+        bool EmergencyApplied,
+        double EffectiveAssistanceChance) : ActionEvent;
+
     public sealed record Lost(ActionOutcome Outcome) : ActionEvent;
 
     public sealed record Won(string? FinalExtractedTargetId, int TotalActions, ImmutableArray<string> ExtractedTargetOrder) : ActionEvent;

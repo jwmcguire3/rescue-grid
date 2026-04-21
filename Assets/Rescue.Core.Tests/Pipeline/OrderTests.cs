@@ -350,7 +350,8 @@ namespace Rescue.Core.Tests.Pipeline
                 ConsecutiveEmergencySpawns: 0,
                 SpawnRecoveryCounter: 0,
                 DockJamEnabled: dockJamEnabled,
-                DockJamActive: dockJamActive);
+                DockJamActive: dockJamActive,
+                DebugSpawnOverride: null);
         }
 
         public static LevelConfig CreateLevelConfig(

@@ -3,7 +3,8 @@
   "rootNamespace": "Rescue.Unity",
   "references": [
     "Rescue.Core",
-    "Rescue.Content"
+    "Rescue.Content",
+    "Unity.InputSystem"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

@@ -43,10 +43,19 @@ namespace Rescue.Core.Rules
 
         public static SpawnBias ComputeSpawnBias(GameState state, LevelConfig config)
         {
-            return ComputeSpawnBias(state, config, spawnCoord: null);
+            return ComputeSpawnBias(state, config, state.DebugSpawnOverride, spawnCoord: null);
         }
 
         internal static SpawnBias ComputeSpawnBias(GameState state, LevelConfig config, TileCoord? spawnCoord)
+        {
+            return ComputeSpawnBias(state, config, state.DebugSpawnOverride, spawnCoord);
+        }
+
+        internal static SpawnBias ComputeSpawnBias(
+            GameState state,
+            LevelConfig config,
+            SpawnOverride? spawnOverride,
+            TileCoord? spawnCoord)
         {
             if (state is null)
             {
@@ -64,8 +73,9 @@ namespace Rescue.Core.Rules
 
             ApplyAssistanceBonuses(state, pool, assistedWeights, spawnCoord, includeRecoveryBonus: false);
 
-            bool isEmergency = IsEmergencyActive(state, config);
-            double effectiveAssistanceChance = ClampChance(config.AssistanceChance + (isEmergency ? EmergencyChanceBonus : 0.0d));
+            bool isEmergency = IsEmergencyActive(state, config, spawnOverride);
+            double baseAssistanceChance = spawnOverride?.OverrideAssistanceChance ?? config.AssistanceChance;
+            double effectiveAssistanceChance = ClampChance(baseAssistanceChance + (isEmergency ? EmergencyChanceBonus : 0.0d));
 
             ImmutableArray<(DebrisType Type, double Weight)> weights = BlendWeights(pool, baseWeights, assistedWeights, effectiveAssistanceChance);
             if (spawnCoord.HasValue && state.SpawnRecoveryCounter > 0)
@@ -83,7 +93,7 @@ namespace Rescue.Core.Rules
                 throw new ArgumentNullException(nameof(rng));
             }
 
-            SpawnBias bias = ComputeSpawnBias(state, state.LevelConfig, spawnCoord);
+            SpawnBias bias = ComputeSpawnBias(state, state.LevelConfig, state.DebugSpawnOverride, spawnCoord);
             List<(DebrisType item, double weight)> weightedItems = new List<(DebrisType item, double weight)>(bias.Weights.Length);
             for (int i = 0; i < bias.Weights.Length; i++)
             {
@@ -93,9 +103,9 @@ namespace Rescue.Core.Rules
             return rng.WeightedPick(weightedItems);
         }
 
-        internal static bool IsEmergencyActive(GameState state, LevelConfig config)
+        internal static bool IsEmergencyActive(GameState state, LevelConfig config, SpawnOverride? spawnOverride = null)
         {
-            if (!IsEmergencyRequested(state))
+            if (!IsEmergencyRequested(state, spawnOverride))
             {
                 return false;
             }
@@ -319,8 +329,18 @@ namespace Rescue.Core.Rules
             return blended.ToImmutable();
         }
 
-        private static bool IsEmergencyRequested(GameState state)
+        internal static bool IsEmergencyRequested(GameState state, SpawnOverride? spawnOverride = null)
         {
+            if (spawnOverride?.ForceEmergency == true)
+            {
+                return true;
+            }
+
+            if (spawnOverride?.ForceEmergency == false)
+            {
+                return false;
+            }
+
             return DockHelpers.Occupancy(state.Dock) >= 5 || HasTargetOneWaterRiseFromLoss(state);
         }
 

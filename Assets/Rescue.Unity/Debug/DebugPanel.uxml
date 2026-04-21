@@ -1,0 +1,58 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement name="debug-panel-root" class="debug-panel">
+        <ui:ScrollView name="debug-scroll">
+            <ui:Label text="Rescue Grid Debug" class="debug-title" />
+            <ui:Label name="status-label" text="Ready." class="debug-value" />
+
+            <ui:Label text="Level" class="debug-section" />
+            <ui:DropdownField name="level-selector" label="Level" />
+            <ui:IntegerField name="seed-field" label="Seed" />
+            <ui:Button name="random-seed-button" text="Randomize Seed" />
+
+            <ui:Label text="Step Through" class="debug-section" />
+            <ui:VisualElement class="button-row">
+                <ui:Button name="play-pause-button" text="Play" />
+                <ui:Button name="step-button" text="Step 1 Action" />
+            </ui:VisualElement>
+            <ui:DropdownField name="speed-selector" label="Speed" />
+            <ui:Toggle name="fast-forward-toggle" text="Fast Forward" />
+            <ui:Button name="debug-undo-button" text="Debug Undo" />
+            <ui:Button name="reset-button" text="Reset Level" />
+
+            <ui:Label text="Hazards" class="debug-section" />
+            <ui:Label name="water-actions-value" class="debug-value" />
+            <ui:Label name="water-rise-interval-value" class="debug-value" />
+            <ui:Label name="water-next-row-value" class="debug-value" />
+            <ui:Label name="vine-actions-value" class="debug-value" />
+            <ui:Label name="vine-threshold-value" class="debug-value" />
+            <ui:Label name="vine-pending-value" class="debug-value" />
+
+            <ui:Label text="Dock" class="debug-section" />
+            <ui:Label name="dock-occupancy-value" class="debug-value" />
+            <ui:Label name="dock-warning-value" class="debug-value" />
+            <ui:Label name="dock-contents-value" class="debug-value" />
+            <ui:Label name="dock-jam-used-value" class="debug-value" />
+            <ui:Label name="dock-jam-enabled-value" class="debug-value" />
+
+            <ui:Label text="RNG" class="debug-section" />
+            <ui:Label name="rng-state-value" class="debug-value" />
+            <ui:Button name="copy-rng-button" text="Copy RNG State" />
+
+            <ui:Label text="Spawn Overrides" class="debug-section" />
+            <ui:DropdownField name="assistance-override-field" label="Assist Chance" />
+            <ui:DropdownField name="force-emergency-field" label="Force Emergency" />
+            <ui:Label name="consecutive-emergency-value" class="debug-value" />
+            <ui:Label name="spawn-recovery-value" class="debug-value" />
+
+            <ui:Label text="Overflow" class="debug-section" />
+            <ui:Button name="overflow-button" text="Instant Overflow Test" />
+
+            <ui:Label text="State Export" class="debug-section" />
+            <ui:Button name="copy-state-button" text="Copy State JSON" />
+            <ui:Button name="copy-full-state-button" text="Copy Full GameState JSON" />
+
+            <ui:Label text="Event Log" class="debug-section" />
+            <ui:VisualElement name="event-log-list" />
+        </ui:ScrollView>
+    </ui:VisualElement>
+</ui:UXML>

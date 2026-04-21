@@ -72,7 +72,8 @@ namespace Rescue.Content
                 ConsecutiveEmergencySpawns: 0,
                 SpawnRecoveryCounter: 0,
                 DockJamEnabled: json.Dock.JamEnabled,
-                DockJamActive: false);
+                DockJamActive: false,
+                DebugSpawnOverride: null);
         }
 
         private static ImmutableArray<TileCoord> BuildGrowthPriority(LevelJson json)

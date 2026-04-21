@@ -17,14 +17,25 @@ namespace Rescue.Core.Pipeline.Steps
 
             SeededRng rng = SeededRng.FromState(state.RngState);
             GameState updatedState = state;
+            ImmutableArray<ActionEvent>.Builder events = ImmutableArray.CreateBuilder<ActionEvent>();
             ImmutableArray<(TileCoord Coord, DebrisType Type)>.Builder spawnedPieces = ImmutableArray.CreateBuilder<(TileCoord Coord, DebrisType Type)>(spawnCoords.Length);
+
+            if (state.DebugSpawnOverride is not null)
+            {
+                SpawnBias overrideBias = SpawnOps.ComputeSpawnBias(state, state.LevelConfig, state.DebugSpawnOverride, spawnCoord: null);
+                events.Add(new DebugSpawnOverrideApplied(
+                    state.DebugSpawnOverride,
+                    SpawnOps.IsEmergencyRequested(state, state.DebugSpawnOverride),
+                    overrideBias.IsEmergency,
+                    overrideBias.EffectiveAssistanceChance));
+            }
 
             for (int i = 0; i < spawnCoords.Length; i++)
             {
                 TileCoord coord = spawnCoords[i];
                 bool wasSingletonOnly = SpawnOps.BoardIsSingletonOnly(updatedState.Board);
                 bool usedRecoveryBias = updatedState.SpawnRecoveryCounter > 0;
-                bool emergencyActive = SpawnOps.IsEmergencyActive(updatedState, updatedState.LevelConfig);
+                bool emergencyActive = SpawnOps.IsEmergencyActive(updatedState, updatedState.LevelConfig, updatedState.DebugSpawnOverride);
                 DebrisType debrisType = SpawnOps.ChooseNextSpawn(updatedState, coord, rng);
 
                 Board boardWithSpawn = BoardHelpers.SetTile(updatedState.Board, coord, new DebrisTile(debrisType));
@@ -52,8 +63,8 @@ namespace Rescue.Core.Pipeline.Steps
                 spawnedPieces.Add((coord, debrisType));
             }
 
-            ImmutableArray<ActionEvent> events = ImmutableArray.Create<ActionEvent>(new Spawned(spawnedPieces.ToImmutable()));
-            return new StepResult(updatedState, context, events);
+            events.Add(new Spawned(spawnedPieces.ToImmutable()));
+            return new StepResult(updatedState, context, events.ToImmutable());
         }
 
         private static ImmutableArray<TileCoord> FindSpawnCoords(Board board, WaterState water)

@@ -49,6 +49,10 @@ namespace Rescue.Core.State
         int PriorityCursor,
         TileCoord? PendingGrowthTile);
 
+    public sealed record SpawnOverride(
+        bool? ForceEmergency,
+        double? OverrideAssistanceChance);
+
     public sealed record TargetState(
         string TargetId,
         TileCoord Coord,
@@ -71,5 +75,6 @@ namespace Rescue.Core.State
         int ConsecutiveEmergencySpawns,
         int SpawnRecoveryCounter,
         bool DockJamEnabled = false,
-        bool DockJamActive = false);
+        bool DockJamActive = false,
+        SpawnOverride? DebugSpawnOverride = null);
 }

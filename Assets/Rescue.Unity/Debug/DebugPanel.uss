@@ -1,0 +1,47 @@
+.debug-panel {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 420px;
+    max-height: 920px;
+    padding: 12px;
+    background-color: rgba(18, 26, 36, 0.94);
+    color: rgb(231, 239, 245);
+}
+
+.debug-title {
+    font-size: 18px;
+    unity-font-style: bold;
+    margin-bottom: 8px;
+}
+
+.debug-section {
+    margin-top: 10px;
+    margin-bottom: 4px;
+    font-size: 13px;
+    unity-font-style: bold;
+    color: rgb(255, 207, 86);
+}
+
+.debug-value {
+    margin-bottom: 2px;
+    white-space: normal;
+}
+
+.button-row {
+    flex-direction: row;
+    gap: 6px;
+}
+
+.field-row {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.event-log-entry {
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}

@@ -97,6 +97,50 @@ namespace Rescue.Core.Tests.Rules
         }
 
         [Test]
+        public void ForceEmergencyOverrideAppliesEmergencyBonusWithoutNaturalTrigger()
+        {
+            GameState state = CreateSpawnState(
+                PipelineTestFixtures.CreateBoard(PipelineTestFixtures.EmptyRow(1)),
+                assistanceChance: 0.3d)
+                with
+                {
+                    DebugSpawnOverride = new SpawnOverride(ForceEmergency: true, OverrideAssistanceChance: null),
+                };
+
+            SpawnBias bias = SpawnOps.ComputeSpawnBias(state, state.LevelConfig);
+
+            Assert.That(bias.IsEmergency, Is.True);
+            Assert.That(bias.EffectiveAssistanceChance, Is.EqualTo(0.5d).Within(1e-9));
+        }
+
+        [Test]
+        public void AssistanceChanceOverrideReplacesLevelDefaultBeforeEmergencyBonus()
+        {
+            GameState state = CreateSpawnState(
+                PipelineTestFixtures.CreateBoard(PipelineTestFixtures.EmptyRow(1)),
+                assistanceChance: 0.3d,
+                dock: new Dock(
+                    ImmutableArray.Create<DebrisType?>(
+                        DebrisType.A,
+                        DebrisType.B,
+                        DebrisType.C,
+                        DebrisType.D,
+                        DebrisType.E,
+                        null,
+                        null),
+                    Size: 7))
+                with
+                {
+                    DebugSpawnOverride = new SpawnOverride(ForceEmergency: null, OverrideAssistanceChance: 1.0d),
+                };
+
+            SpawnBias bias = SpawnOps.ComputeSpawnBias(state, state.LevelConfig);
+
+            Assert.That(bias.IsEmergency, Is.True);
+            Assert.That(bias.EffectiveAssistanceChance, Is.EqualTo(1.0d).Within(1e-9));
+        }
+
+        [Test]
         public void SpawnRecoveryBiasesNextTwoSpawnsTowardCreatingPair()
         {
             Board board = PipelineTestFixtures.CreateBoard(
