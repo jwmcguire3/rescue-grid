@@ -45,6 +45,38 @@ namespace Rescue.Core.Rules
             return group.Count >= 2 ? group.ToImmutable() : null;
         }
 
+        public static ImmutableArray<TileCoord> FindAdjacentBlockers(Board board, ImmutableArray<TileCoord> coords)
+        {
+            if (coords.IsDefaultOrEmpty)
+            {
+                return ImmutableArray<TileCoord>.Empty;
+            }
+
+            HashSet<TileCoord> seen = new HashSet<TileCoord>();
+            ImmutableArray<TileCoord>.Builder adjacentBlockers = ImmutableArray.CreateBuilder<TileCoord>();
+
+            for (int i = 0; i < coords.Length; i++)
+            {
+                ImmutableArray<TileCoord> neighbors = BoardHelpers.OrthogonalNeighbors(board, coords[i]);
+                for (int j = 0; j < neighbors.Length; j++)
+                {
+                    TileCoord neighbor = neighbors[j];
+                    if (seen.Contains(neighbor))
+                    {
+                        continue;
+                    }
+
+                    if (BoardHelpers.GetTile(board, neighbor) is BlockerTile)
+                    {
+                        seen.Add(neighbor);
+                        adjacentBlockers.Add(neighbor);
+                    }
+                }
+            }
+
+            return adjacentBlockers.ToImmutable();
+        }
+
         public static bool IsExposed(Board board, TileCoord coord)
         {
             if (!BoardHelpers.InBounds(board, coord))

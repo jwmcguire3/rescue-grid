@@ -57,24 +57,7 @@ function Invoke-UnityTests {
         "-logFile", $logPath
     )
 
-    Push-Location $ProjectPath
-    try {
-        $quotedArguments = foreach ($argument in $arguments) {
-            if ($argument.Contains(" ")) {
-                '"' + $argument + '"'
-            }
-            else {
-                $argument
-            }
-        }
-
-        $commandLine = '"' + $UnityPath + '" ' + ($quotedArguments -join " ")
-        cmd.exe /c $commandLine
-        $exitCode = $LASTEXITCODE
-    }
-    finally {
-        Pop-Location
-    }
+    $exitCode = Invoke-UnityCommand -UnityPath $UnityPath -ProjectPath $ProjectPath -Arguments $arguments
 
     if (-not (Test-Path -LiteralPath $logPath)) {
         throw "Unity did not emit a log for $Platform."
@@ -85,12 +68,52 @@ function Invoke-UnityTests {
     }
 
     if (-not (Test-Path -LiteralPath $resultsPath)) {
-        throw "Unity completed $Platform without emitting $resultsPath. This usually means the invocation exited before the command-line test runner saved results."
+        Write-Warning "Unity completed $Platform without emitting $resultsPath on the first pass. Retrying once after the initial import/compile pass."
+        $exitCode = Invoke-UnityCommand -UnityPath $UnityPath -ProjectPath $ProjectPath -Arguments $arguments
+
+        if (-not (Test-Path -LiteralPath $logPath)) {
+            throw "Unity did not emit a log for $Platform after retry."
+        }
+
+        if ($exitCode -ne 0) {
+            throw "Unity exited with code $exitCode for $Platform on retry. See $logPath."
+        }
+
+        if (-not (Test-Path -LiteralPath $resultsPath)) {
+            throw "Unity completed $Platform without emitting $resultsPath after retry. This usually means the invocation exited before the command-line test runner saved results."
+        }
     }
 
     Write-Host "$Platform complete:"
     Write-Host "  Results: $resultsPath"
     Write-Host "  Log: $logPath"
+}
+
+function Invoke-UnityCommand {
+    param(
+        [string]$UnityPath,
+        [string]$ProjectPath,
+        [string[]]$Arguments
+    )
+
+    Push-Location $ProjectPath
+    try {
+        $quotedArguments = foreach ($argument in $Arguments) {
+            if ($argument.Contains(" ")) {
+                '"' + $argument + '"'
+            }
+            else {
+                $argument
+            }
+        }
+
+        $commandLine = '"' + $UnityPath + '" ' + ($quotedArguments -join " ")
+        cmd.exe /c $commandLine
+        return $LASTEXITCODE
+    }
+    finally {
+        Pop-Location
+    }
 }
 
 $projectPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..")).Path
