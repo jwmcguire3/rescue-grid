@@ -81,7 +81,9 @@ namespace Rescue.Core.Pipeline
             return new ActionResult(IncrementActionCount(lossResult.State), events.ToImmutable(), lossResult.Outcome, snapshot);
         }
 
-        internal static ImmutableArray<string> GetStepOrder()
+        // Exposes the full nominal pipeline order for valid non-win actions.
+        // Short-circuited paths such as invalid input and wins will stop earlier.
+        internal static ImmutableArray<string> GetNonShortCircuitedStepOrder()
         {
             return StepOrder;
         }

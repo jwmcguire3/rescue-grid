@@ -26,7 +26,7 @@ namespace Rescue.Core.Tests.Pipeline
                 options: null,
                 observer: step => trace.Add(step.StepName));
 
-            Assert.That(trace, Is.EqualTo(Rescue.Core.Pipeline.Pipeline.GetStepOrder()));
+            Assert.That(trace, Is.EqualTo(Rescue.Core.Pipeline.Pipeline.GetNonShortCircuitedStepOrder()));
             Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.Ok));
         }
 
