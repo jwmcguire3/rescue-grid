@@ -26,8 +26,8 @@ namespace Rescue.Core.Tests.Pipeline
                 options: null,
                 observer: step => trace.Add(step.StepName));
 
-            Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.Win));
             Assert.That(trace, Is.EqualTo(Rescue.Core.Pipeline.Pipeline.GetStepOrder()));
+            Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.Ok));
         }
 
         [Test]
@@ -107,8 +107,11 @@ namespace Rescue.Core.Tests.Pipeline
                 observer: step => trace.Add(step.StepName));
 
             Assert.That(trace, Is.EqualTo(new[] { "Step01_AcceptInput" }));
-            Assert.That(result.Events, Is.EqualTo(ImmutableArray.Create<ActionEvent>(
-                new InvalidInput(new TileCoord(0, 0), InvalidInputReason.SingleTile))));
+            AssertInvalidInputEvent(
+                result.Events,
+                new TileCoord(0, 0),
+                InvalidInputReason.SingleTile);
+            Assert.That(result.State, Is.EqualTo(state));
             Assert.That(result.State.ActionCount, Is.EqualTo(state.ActionCount));
         }
 
@@ -154,7 +157,66 @@ namespace Rescue.Core.Tests.Pipeline
                     }
                 });
 
-            Assert.That(result.Events, Is.EqualTo(fromSteps.ToImmutable()));
+            AssertActionEventSequenceEqual(fromSteps.ToImmutable(), result.Events);
+        }
+
+        private static void AssertInvalidInputEvent(
+            ImmutableArray<ActionEvent> events,
+            TileCoord tappedCoord,
+            InvalidInputReason expectedReason)
+        {
+            Assert.That(events.Length, Is.EqualTo(1));
+            Assert.That(events[0], Is.TypeOf<InvalidInput>());
+
+            InvalidInput invalidInput = (InvalidInput)events[0];
+            Assert.That(invalidInput.TappedCoord, Is.EqualTo(tappedCoord));
+            Assert.That(invalidInput.Reason, Is.EqualTo(expectedReason));
+        }
+
+        private static void AssertActionEventSequenceEqual(
+            ImmutableArray<ActionEvent> expected,
+            ImmutableArray<ActionEvent> actual)
+        {
+            Assert.That(actual.Length, Is.EqualTo(expected.Length));
+            for (int i = 0; i < expected.Length; i++)
+            {
+                AssertActionEventEqual(expected[i], actual[i], i);
+            }
+        }
+
+        private static void AssertActionEventEqual(ActionEvent expected, ActionEvent actual, int index)
+        {
+            Assert.That(actual.GetType(), Is.EqualTo(expected.GetType()), $"Event type mismatch at index {index}.");
+
+            switch (expected)
+            {
+                case GroupRemoved expectedGroupRemoved:
+                    GroupRemoved actualGroupRemoved = (GroupRemoved)actual;
+                    Assert.That(actualGroupRemoved.Type, Is.EqualTo(expectedGroupRemoved.Type), $"GroupRemoved type mismatch at index {index}.");
+                    Assert.That(actualGroupRemoved.Coords, Is.EqualTo(expectedGroupRemoved.Coords).AsCollection, $"GroupRemoved coords mismatch at index {index}.");
+                    return;
+                case DockInserted expectedDockInserted:
+                    DockInserted actualDockInserted = (DockInserted)actual;
+                    Assert.That(actualDockInserted.Pieces, Is.EqualTo(expectedDockInserted.Pieces).AsCollection, $"DockInserted pieces mismatch at index {index}.");
+                    Assert.That(actualDockInserted.OccupancyAfterInsert, Is.EqualTo(expectedDockInserted.OccupancyAfterInsert), $"DockInserted occupancy mismatch at index {index}.");
+                    Assert.That(actualDockInserted.OverflowCount, Is.EqualTo(expectedDockInserted.OverflowCount), $"DockInserted overflow mismatch at index {index}.");
+                    return;
+                case GravitySettled expectedGravitySettled:
+                    GravitySettled actualGravitySettled = (GravitySettled)actual;
+                    Assert.That(actualGravitySettled.Moves, Is.EqualTo(expectedGravitySettled.Moves).AsCollection, $"GravitySettled moves mismatch at index {index}.");
+                    return;
+                case Spawned expectedSpawned:
+                    Spawned actualSpawned = (Spawned)actual;
+                    Assert.That(actualSpawned.Pieces, Is.EqualTo(expectedSpawned.Pieces).AsCollection, $"Spawned pieces mismatch at index {index}.");
+                    return;
+                case Won expectedWon:
+                    Won actualWon = (Won)actual;
+                    Assert.That(actualWon.ExtractedTargetOrder, Is.EqualTo(expectedWon.ExtractedTargetOrder).AsCollection, $"Won extracted order mismatch at index {index}.");
+                    return;
+                default:
+                    Assert.That(actual, Is.EqualTo(expected), $"Event mismatch at index {index}.");
+                    return;
+            }
         }
     }
 

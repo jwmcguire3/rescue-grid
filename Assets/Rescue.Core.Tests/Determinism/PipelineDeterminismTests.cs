@@ -16,7 +16,7 @@ namespace Rescue.Core.Tests.Determinism
             const uint seed = 424242u;
             IReadOnlyList<ActionInput> inputs = CreateInputSequence();
 
-            DeterminismHarness.AssertIdenticalRuns(
+            IReadOnlyList<PipelineRunState> firstRun = DeterminismHarness.RecordStateStream(
                 seed,
                 inputs,
                 stepFn: static (run, input) =>
@@ -25,6 +25,24 @@ namespace Rescue.Core.Tests.Determinism
                     return run with { State = result.State, Events = run.Events.AddRange(result.Events) };
                 },
                 initialStateFromSeed: CreateInitialRunState);
+
+            IReadOnlyList<PipelineRunState> secondRun = DeterminismHarness.RecordStateStream(
+                seed,
+                inputs,
+                stepFn: static (run, input) =>
+                {
+                    ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(run.State, input);
+                    return run with { State = result.State, Events = run.Events.AddRange(result.Events) };
+                },
+                initialStateFromSeed: CreateInitialRunState);
+
+            Assert.That(secondRun.Count, Is.EqualTo(firstRun.Count));
+
+            for (int i = 0; i < firstRun.Count; i++)
+            {
+                string label = i == 0 ? "initial state" : $"step {i}";
+                AssertRunStatesEqual(firstRun[i], secondRun[i], label);
+            }
         }
 
         private static PipelineRunState CreateInitialRunState(uint seed)
@@ -79,6 +97,121 @@ namespace Rescue.Core.Tests.Determinism
             return inputs;
         }
 
-        private sealed record PipelineRunState(GameState State, ImmutableArray<ActionEvent> Events) : IEquatable<PipelineRunState>;
+        private static void AssertRunStatesEqual(PipelineRunState expected, PipelineRunState actual, string label)
+        {
+            AssertGameStatesEqual(expected.State, actual.State, label);
+            AssertActionEventSequenceEqual(expected.Events, actual.Events, label);
+        }
+
+        private sealed record PipelineRunState(GameState State, ImmutableArray<ActionEvent> Events);
+
+        private static void AssertGameStatesEqual(GameState expected, GameState actual, string label)
+        {
+            AssertBoardEqual(expected.Board, actual.Board, label);
+            Assert.That(actual.Dock.Size, Is.EqualTo(expected.Dock.Size), $"Dock size mismatch at {label}.");
+            AssertNullableDebrisSequenceEqual(expected.Dock.Slots, actual.Dock.Slots, $"Dock slots mismatch at {label}.");
+            Assert.That(actual.Water, Is.EqualTo(expected.Water), $"Water mismatch at {label}.");
+            Assert.That(actual.Vine.ActionsSinceLastClear, Is.EqualTo(expected.Vine.ActionsSinceLastClear), $"Vine action counter mismatch at {label}.");
+            Assert.That(actual.Vine.GrowthThreshold, Is.EqualTo(expected.Vine.GrowthThreshold), $"Vine threshold mismatch at {label}.");
+            Assert.That(actual.Vine.GrowthPriorityList, Is.EqualTo(expected.Vine.GrowthPriorityList).AsCollection, $"Vine growth list mismatch at {label}.");
+            Assert.That(actual.Vine.PriorityCursor, Is.EqualTo(expected.Vine.PriorityCursor), $"Vine cursor mismatch at {label}.");
+            Assert.That(actual.Vine.PendingGrowthTile, Is.EqualTo(expected.Vine.PendingGrowthTile), $"Vine pending tile mismatch at {label}.");
+            Assert.That(actual.Targets, Is.EqualTo(expected.Targets).AsCollection, $"Targets mismatch at {label}.");
+            Assert.That(actual.RngState, Is.EqualTo(expected.RngState), $"RngState mismatch at {label}.");
+            Assert.That(actual.ActionCount, Is.EqualTo(expected.ActionCount), $"ActionCount mismatch at {label}.");
+            Assert.That(actual.DockJamUsed, Is.EqualTo(expected.DockJamUsed), $"DockJamUsed mismatch at {label}.");
+            Assert.That(actual.UndoAvailable, Is.EqualTo(expected.UndoAvailable), $"UndoAvailable mismatch at {label}.");
+            Assert.That(actual.ExtractedTargetOrder, Is.EqualTo(expected.ExtractedTargetOrder).AsCollection, $"Extracted target order mismatch at {label}.");
+            Assert.That(actual.Frozen, Is.EqualTo(expected.Frozen), $"Frozen mismatch at {label}.");
+            Assert.That(actual.ConsecutiveEmergencySpawns, Is.EqualTo(expected.ConsecutiveEmergencySpawns), $"ConsecutiveEmergencySpawns mismatch at {label}.");
+            Assert.That(actual.SpawnRecoveryCounter, Is.EqualTo(expected.SpawnRecoveryCounter), $"SpawnRecoveryCounter mismatch at {label}.");
+        }
+
+        private static void AssertBoardEqual(Board expected, Board actual, string label)
+        {
+            Assert.That(actual.Width, Is.EqualTo(expected.Width), $"Board width mismatch at {label}.");
+            Assert.That(actual.Height, Is.EqualTo(expected.Height), $"Board height mismatch at {label}.");
+            Assert.That(actual.Tiles.Length, Is.EqualTo(expected.Tiles.Length), $"Board row count mismatch at {label}.");
+
+            for (int row = 0; row < expected.Tiles.Length; row++)
+            {
+                Assert.That(actual.Tiles[row].Length, Is.EqualTo(expected.Tiles[row].Length), $"Board row length mismatch at {label}, row {row}.");
+                for (int col = 0; col < expected.Tiles[row].Length; col++)
+                {
+                    Assert.That(actual.Tiles[row][col], Is.EqualTo(expected.Tiles[row][col]), $"Board tile mismatch at {label}, row {row}, col {col}.");
+                }
+            }
+        }
+
+        private static void AssertActionEventSequenceEqual(
+            ImmutableArray<ActionEvent> expected,
+            ImmutableArray<ActionEvent> actual,
+            string label)
+        {
+            Assert.That(actual.Length, Is.EqualTo(expected.Length), $"Event count mismatch at {label}.");
+            for (int i = 0; i < expected.Length; i++)
+            {
+                AssertActionEventEqual(expected[i], actual[i], label, i);
+            }
+        }
+
+        private static void AssertActionEventEqual(ActionEvent expected, ActionEvent actual, string label, int index)
+        {
+            Assert.That(actual.GetType(), Is.EqualTo(expected.GetType()), $"Event type mismatch at {label}, index {index}.");
+
+            switch (expected)
+            {
+                case GroupRemoved expectedGroupRemoved:
+                    GroupRemoved actualGroupRemoved = (GroupRemoved)actual;
+                    Assert.That(actualGroupRemoved.Type, Is.EqualTo(expectedGroupRemoved.Type), $"GroupRemoved type mismatch at {label}, index {index}.");
+                    AssertTileCoordSequenceEqual(expectedGroupRemoved.Coords, actualGroupRemoved.Coords, $"GroupRemoved coords mismatch at {label}, index {index}.");
+                    return;
+                case DockInserted expectedDockInserted:
+                    DockInserted actualDockInserted = (DockInserted)actual;
+                    Assert.That(actualDockInserted.Pieces, Is.EqualTo(expectedDockInserted.Pieces).AsCollection, $"DockInserted pieces mismatch at {label}, index {index}.");
+                    Assert.That(actualDockInserted.OccupancyAfterInsert, Is.EqualTo(expectedDockInserted.OccupancyAfterInsert), $"DockInserted occupancy mismatch at {label}, index {index}.");
+                    Assert.That(actualDockInserted.OverflowCount, Is.EqualTo(expectedDockInserted.OverflowCount), $"DockInserted overflow mismatch at {label}, index {index}.");
+                    return;
+                case GravitySettled expectedGravitySettled:
+                    GravitySettled actualGravitySettled = (GravitySettled)actual;
+                    Assert.That(actualGravitySettled.Moves, Is.EqualTo(expectedGravitySettled.Moves).AsCollection, $"GravitySettled moves mismatch at {label}, index {index}.");
+                    return;
+                case Spawned expectedSpawned:
+                    Spawned actualSpawned = (Spawned)actual;
+                    Assert.That(actualSpawned.Pieces, Is.EqualTo(expectedSpawned.Pieces).AsCollection, $"Spawned pieces mismatch at {label}, index {index}.");
+                    return;
+                case Won expectedWon:
+                    Won actualWon = (Won)actual;
+                    Assert.That(actualWon.ExtractedTargetOrder, Is.EqualTo(expectedWon.ExtractedTargetOrder).AsCollection, $"Won extracted order mismatch at {label}, index {index}.");
+                    return;
+                default:
+                    Assert.That(actual, Is.EqualTo(expected), $"Event mismatch at {label}, index {index}.");
+                    return;
+            }
+        }
+
+        private static void AssertNullableDebrisSequenceEqual(
+            ImmutableArray<DebrisType?> expected,
+            ImmutableArray<DebrisType?> actual,
+            string messagePrefix)
+        {
+            Assert.That(actual.Length, Is.EqualTo(expected.Length), $"{messagePrefix} length.");
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.That(actual[i], Is.EqualTo(expected[i]), $"{messagePrefix} slot {i}.");
+            }
+        }
+
+        private static void AssertTileCoordSequenceEqual(
+            ImmutableArray<TileCoord> expected,
+            ImmutableArray<TileCoord> actual,
+            string messagePrefix)
+        {
+            Assert.That(actual.Length, Is.EqualTo(expected.Length), $"{messagePrefix} length.");
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.That(actual[i], Is.EqualTo(expected[i]), $"{messagePrefix} coord {i}.");
+            }
+        }
     }
 }

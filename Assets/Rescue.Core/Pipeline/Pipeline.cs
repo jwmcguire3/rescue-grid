@@ -42,7 +42,7 @@ namespace Rescue.Core.Pipeline
                 throw new ArgumentNullException(nameof(state));
             }
 
-            RunOptions effectiveOptions = options ?? new RunOptions();
+            RunOptions effectiveOptions = options ?? new RunOptions(RecordSnapshot: true);
             Snapshot? snapshot = null;
             ImmutableArray<ActionEvent>.Builder events = ImmutableArray.CreateBuilder<ActionEvent>();
             StepContext context = StepContext.Create(state, input);

@@ -18,8 +18,10 @@ namespace Rescue.Core.Tests.Pipeline
             ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(state, new Rescue.Core.Pipeline.ActionInput(new TileCoord(0, 0)));
 
             Assert.That(result.State, Is.EqualTo(state));
-            Assert.That(result.Events, Is.EqualTo(ImmutableArray.Create<Rescue.Core.Pipeline.ActionEvent>(
-                new Rescue.Core.Pipeline.InvalidInput(new TileCoord(0, 0), Rescue.Core.Pipeline.InvalidInputReason.SingleTile))));
+            AssertInvalidInputEvent(
+                result.Events,
+                new TileCoord(0, 0),
+                Rescue.Core.Pipeline.InvalidInputReason.SingleTile);
             Assert.That(result.State.ActionCount, Is.EqualTo(state.ActionCount));
         }
 
@@ -86,10 +88,22 @@ namespace Rescue.Core.Tests.Pipeline
                 observer: step => trace.Add(step.StepName));
 
             Assert.That(result.State, Is.EqualTo(state));
-            Assert.That(result.Events, Is.EqualTo(ImmutableArray.Create<Rescue.Core.Pipeline.ActionEvent>(
-                new Rescue.Core.Pipeline.InvalidInput(tappedCoord, expectedReason))));
+            AssertInvalidInputEvent(result.Events, tappedCoord, expectedReason);
             Assert.That(result.State.ActionCount, Is.EqualTo(state.ActionCount));
             Assert.That(trace, Is.EqualTo(new[] { "Step01_AcceptInput" }));
+        }
+
+        private static void AssertInvalidInputEvent(
+            ImmutableArray<Rescue.Core.Pipeline.ActionEvent> events,
+            TileCoord tappedCoord,
+            Rescue.Core.Pipeline.InvalidInputReason expectedReason)
+        {
+            Assert.That(events.Length, Is.EqualTo(1));
+            Assert.That(events[0], Is.TypeOf<Rescue.Core.Pipeline.InvalidInput>());
+
+            Rescue.Core.Pipeline.InvalidInput invalidInput = (Rescue.Core.Pipeline.InvalidInput)events[0];
+            Assert.That(invalidInput.TappedCoord, Is.EqualTo(tappedCoord));
+            Assert.That(invalidInput.Reason, Is.EqualTo(expectedReason));
         }
     }
 }
