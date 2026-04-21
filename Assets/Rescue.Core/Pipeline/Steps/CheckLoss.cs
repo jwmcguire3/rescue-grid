@@ -13,27 +13,42 @@ namespace Rescue.Core.Pipeline.Steps
         public static CheckLossResult Run(GameState state, StepContext context)
         {
             GameState resolvedState = state;
-            if (state.DockJamActive)
+            bool dockJamRecoveryAction = state.DockJamActive;
+            bool clearedTripleThisAction = context.ClearedDockTriplesThisAction > 0;
+
+            if (dockJamRecoveryAction)
             {
-                if (context.ClearedDockTriplesThisAction > 0)
+                resolvedState = state with
                 {
-                    resolvedState = state with
-                    {
-                        Frozen = false,
-                        DockJamActive = false,
-                    };
-                }
-                else
+                    Frozen = !clearedTripleThisAction,
+                    DockJamActive = false,
+                };
+            }
+
+            for (int i = 0; i < resolvedState.Targets.Length; i++)
+            {
+                TargetState target = resolvedState.Targets[i];
+                if (!target.Extracted && IsFloodedTarget(resolvedState.Board, resolvedState.Water, target.Coord))
                 {
-                    ImmutableArray<ActionEvent> jamLossEvents = ImmutableArray.Create<ActionEvent>(
-                        new Lost(ActionOutcome.LossDockOverflow));
-                    return new CheckLossResult(
-                        state with { DockJamActive = false, Frozen = true },
-                        jamLossEvents,
-                        ActionOutcome.LossDockOverflow);
+                    ImmutableArray<ActionEvent> waterLossEvents = ImmutableArray.Create<ActionEvent>(
+                        new Lost(ActionOutcome.LossWaterOnTarget));
+                    return new CheckLossResult(resolvedState, waterLossEvents, ActionOutcome.LossWaterOnTarget);
                 }
             }
-            else if (context.PendingDockOverflowCount > 0)
+
+            if (dockJamRecoveryAction)
+            {
+                if (clearedTripleThisAction)
+                {
+                    return new CheckLossResult(resolvedState, ImmutableArray<ActionEvent>.Empty, ActionOutcome.Ok);
+                }
+
+                ImmutableArray<ActionEvent> jamLossEvents = ImmutableArray.Create<ActionEvent>(
+                    new Lost(ActionOutcome.LossDockOverflow));
+                return new CheckLossResult(resolvedState, jamLossEvents, ActionOutcome.LossDockOverflow);
+            }
+
+            if (context.PendingDockOverflowCount > 0)
             {
                 if (state.DockJamEnabled && !state.DockJamUsed)
                 {
@@ -53,17 +68,6 @@ namespace Rescue.Core.Pipeline.Steps
                 ImmutableArray<ActionEvent> dockLossEvents = ImmutableArray.Create<ActionEvent>(
                     new Lost(ActionOutcome.LossDockOverflow));
                 return new CheckLossResult(state, dockLossEvents, ActionOutcome.LossDockOverflow);
-            }
-
-            for (int i = 0; i < resolvedState.Targets.Length; i++)
-            {
-                TargetState target = resolvedState.Targets[i];
-                if (!target.Extracted && IsFloodedTarget(resolvedState.Board, resolvedState.Water, target.Coord))
-                {
-                    ImmutableArray<ActionEvent> waterLossEvents = ImmutableArray.Create<ActionEvent>(
-                        new Lost(ActionOutcome.LossWaterOnTarget));
-                    return new CheckLossResult(resolvedState, waterLossEvents, ActionOutcome.LossWaterOnTarget);
-                }
             }
 
             return new CheckLossResult(resolvedState, ImmutableArray<ActionEvent>.Empty, ActionOutcome.Ok);

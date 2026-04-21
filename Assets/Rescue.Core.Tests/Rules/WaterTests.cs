@@ -116,8 +116,8 @@ namespace Rescue.Core.Tests.Rules
             GameState state = CreateState(
                 PipelineTestFixtures.CreateBoard(
                     Row(
-                        new BlockerTile(BlockerType.Crate, 1, Hidden: null),
-                        new BlockerTile(BlockerType.Crate, 1, Hidden: null),
+                        new BlockerTile(BlockerType.Crate, 2, Hidden: null),
+                        new BlockerTile(BlockerType.Crate, 2, Hidden: null),
                         new TargetTile("safe", Extracted: false),
                         new EmptyTile()),
                     Row(

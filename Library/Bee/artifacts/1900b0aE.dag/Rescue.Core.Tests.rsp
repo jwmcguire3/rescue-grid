@@ -275,6 +275,7 @@
 "Assets/Rescue.Core.Tests/Determinism/PipelineDeterminismTests.cs"
 "Assets/Rescue.Core.Tests/Integration/RescueRaceTests.cs"
 "Assets/Rescue.Core.Tests/Pipeline/InvalidInputTests.cs"
+"Assets/Rescue.Core.Tests/Pipeline/LossTests.cs"
 "Assets/Rescue.Core.Tests/Pipeline/OrderTests.cs"
 "Assets/Rescue.Core.Tests/Rng/SeededRngTests.cs"
 "Assets/Rescue.Core.Tests/Rules/BlockersTests.cs"

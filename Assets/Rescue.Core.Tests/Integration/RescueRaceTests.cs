@@ -14,8 +14,8 @@ namespace Rescue.Core.Tests.Integration
             GameState state = PipelineTestFixtures.CreateState(
                 PipelineTestFixtures.CreateBoard(
                     Row(
-                        new BlockerTile(BlockerType.Crate, 1, Hidden: null),
-                        new BlockerTile(BlockerType.Crate, 1, Hidden: null),
+                        new BlockerTile(BlockerType.Crate, 2, Hidden: null),
+                        new BlockerTile(BlockerType.Crate, 2, Hidden: null),
                         new DebrisTile(DebrisType.B)),
                     Row(
                         new DebrisTile(DebrisType.A),
