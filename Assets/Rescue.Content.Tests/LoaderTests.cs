@@ -59,5 +59,22 @@ namespace Rescue.Content.Tests
                 }
             }
         }
+
+        [Test]
+        public void LoadLevel_AssistanceChance_ReachesLevelConfig()
+        {
+            LevelJson level = TestLevels.MinimalLevel() with
+            {
+                Assistance = new AssistanceJson
+                {
+                    Chance = 1.0d,
+                    ConsecutiveEmergencyCap = 2,
+                },
+            };
+
+            GameState state = Loader.LoadLevel(level, seed: 23);
+
+            Assert.That(state.LevelConfig.AssistanceChance, Is.EqualTo(1.0d));
+        }
     }
 }
