@@ -36,12 +36,12 @@ namespace Rescue.PlayMode.Tests.Debug
         [UnityTest]
         public System.Collections.IEnumerator PanelLoadsWithoutCrashingGivenLoadedLevel()
         {
-            LogAssert.Expect(LogType.Warning, "No Theme Style Sheet set to PanelSettings , UI will not render properly");
             DebugPanel panel = DebugPanel.EnsureInstance();
             panel.ConfigureForTest(CreateTestLevel(), seed: 17);
 
             yield return null;
 
+            LogAssert.NoUnexpectedReceived();
             Assert.That(panel.CurrentLevelId, Is.EqualTo("DBG_TEST"));
             Assert.That(panel.CurrentState.ActionCount, Is.EqualTo(0));
             Assert.That(panel.CurrentState.Board.Width, Is.EqualTo(3));
@@ -51,12 +51,12 @@ namespace Rescue.PlayMode.Tests.Debug
         [UnityTest]
         public System.Collections.IEnumerator StepButtonAdvancesByExactlyOneAction()
         {
-            LogAssert.Expect(LogType.Warning, "No Theme Style Sheet set to PanelSettings , UI will not render properly");
             DebugPanel panel = DebugPanel.EnsureInstance();
             panel.ConfigureForTest(CreateTestLevel(), seed: 17);
 
             yield return null;
 
+            LogAssert.NoUnexpectedReceived();
             int before = panel.CurrentState.ActionCount;
             bool stepped = panel.StepOneAction();
 
@@ -69,12 +69,12 @@ namespace Rescue.PlayMode.Tests.Debug
         [UnityTest]
         public System.Collections.IEnumerator ResetReturnsStateToInitialForSameSeed()
         {
-            LogAssert.Expect(LogType.Warning, "No Theme Style Sheet set to PanelSettings , UI will not render properly");
             DebugPanel panel = DebugPanel.EnsureInstance();
             panel.ConfigureForTest(CreateTestLevel(), seed: 31);
 
             yield return null;
 
+            LogAssert.NoUnexpectedReceived();
             string initialJson = panel.ExportFullGameStateJson();
             Assert.That(panel.StepOneAction(), Is.True);
 
@@ -91,12 +91,12 @@ namespace Rescue.PlayMode.Tests.Debug
         [UnityTest]
         public System.Collections.IEnumerator StateExportProducesValidJson()
         {
-            LogAssert.Expect(LogType.Warning, "No Theme Style Sheet set to PanelSettings , UI will not render properly");
             DebugPanel panel = DebugPanel.EnsureInstance();
             panel.ConfigureForTest(CreateTestLevel(), seed: 9);
 
             yield return null;
 
+            LogAssert.NoUnexpectedReceived();
             string json = panel.ExportFullGameStateJson();
 
             Assert.That(IsValidJson(json), Is.True);
@@ -105,12 +105,12 @@ namespace Rescue.PlayMode.Tests.Debug
         [UnityTest]
         public System.Collections.IEnumerator NearRescueSummaryReflectsOneClearAwayTarget()
         {
-            LogAssert.Expect(LogType.Warning, "No Theme Style Sheet set to PanelSettings , UI will not render properly");
             DebugPanel panel = DebugPanel.EnsureInstance();
             panel.ConfigureForTest(CreateNearRescueLevel(), seed: 19);
 
             yield return null;
 
+            LogAssert.NoUnexpectedReceived();
             Assert.That(panel.CurrentNearRescueSummary, Is.EqualTo("0"));
             Assert.That(panel.ExportFullGameStateJson(), Does.Contain("\"oneClearAway\":true"));
         }

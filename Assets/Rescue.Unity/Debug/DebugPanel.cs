@@ -25,6 +25,7 @@ namespace Rescue.Unity.Debugging
     {
         private const string UxmlAssetPath = "Assets/Rescue.Unity/Debug/DebugPanel.uxml";
         private const string UssAssetPath = "Assets/Rescue.Unity/Debug/DebugPanel.uss";
+        private const string RuntimeThemeResourcePath = "Rescue.Unity/Debug/UnityDefaultRuntimeTheme";
         private const int EventLogCapacity = 20;
         private const int DockSize = 7;
         private static readonly string[] SpeedChoices = { "0.25x", "0.5x", "1x", "2x", "4x" };
@@ -421,7 +422,41 @@ namespace Rescue.Unity.Debugging
             settings.sortingOrder = 1000;
             settings.clearColor = true;
             settings.colorClearValue = new Color(0.0f, 0.0f, 0.0f, 0.0f);
+            ApplyRuntimeTheme(settings);
             return settings;
+        }
+
+        private static void ApplyRuntimeTheme(PanelSettings settings)
+        {
+            Type? themeStyleSheetType = Type.GetType("UnityEngine.UIElements.ThemeStyleSheet, UnityEngine.UIElementsModule");
+            if (themeStyleSheetType is null)
+            {
+                return;
+            }
+
+            UnityEngine.Object? themeStyleSheet = Resources.Load(RuntimeThemeResourcePath, themeStyleSheetType);
+            if (themeStyleSheet is null)
+            {
+                return;
+            }
+
+            const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+            Type settingsType = settings.GetType();
+
+            PropertyInfo? themeProperty = settingsType.GetProperty("themeStyleSheet", Flags)
+                ?? settingsType.GetProperty("themeUss", Flags);
+            if (themeProperty is not null && themeProperty.CanWrite && themeProperty.PropertyType.IsInstanceOfType(themeStyleSheet))
+            {
+                themeProperty.SetValue(settings, themeStyleSheet);
+                return;
+            }
+
+            FieldInfo? themeField = settingsType.GetField("themeStyleSheet", Flags)
+                ?? settingsType.GetField("themeUss", Flags);
+            if (themeField is not null && themeField.FieldType.IsInstanceOfType(themeStyleSheet))
+            {
+                themeField.SetValue(settings, themeStyleSheet);
+            }
         }
 
         private void BuildPanelTree()
