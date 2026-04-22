@@ -7,7 +7,7 @@ description: Author, modify, or validate Phase 1 Rescue Grid level JSON files. U
 
 ## Purpose
 
-This skill is the authoring contract for Phase 1 levels. Every level in `Assets/Resources/Levels/` must conform to it. The goal of Phase 1 is to prove four things:
+This skill is the authoring contract for Phase 1 levels. Every level in `Assets/StreamingAssets/Levels/` must conform to it. The goal of Phase 1 is to prove four things:
 
 1. Acting advances danger; thinking is free.
 2. Dock tension feels self-authored.
@@ -279,7 +279,7 @@ These are the authored design intents for all 15 Phase 1 levels. Do not invent n
 
 ### 1. Write the level JSON
 
-Files live in `Assets/Resources/Levels/` as `L01.json` through `L15.json`. Filename must match the `id` field.
+Files live in `Assets/StreamingAssets/Levels/` as `L01.json` through `L15.json`. Filename must match the `id` field.
 
 Start from the per-level intent block above. Copy the tuning values from the band tables. Lay out the tile grid last — it's the most iterative part.
 
@@ -294,7 +294,7 @@ Run the standalone validator CLI (it does not require Unity):
 Or for a single file:
 
 ```
-dotnet run --project Tools/LevelValidator -- validate Assets/Resources/Levels/L03.json
+dotnet run --project Tools/LevelValidator -- validate Assets/StreamingAssets/Levels/L03.json
 ```
 
 To see the board as ASCII for sanity-checking:
