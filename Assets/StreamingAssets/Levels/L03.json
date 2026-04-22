@@ -1,0 +1,47 @@
+{
+  "id": "L03",
+  "name": "Rescue Order Arrives",
+  "board": {
+    "width": 6,
+    "height": 7,
+    "tiles": [
+      [".", ".", ".", ".", "A", "A"],
+      [".", ".", ".", ".", "T1", "CR"],
+      [".", ".", ".", "C", "CR", "CR"],
+      [".", "CR", ".", "C", ".", "."],
+      ["B", "CR", ".", ".", ".", "."],
+      ["B", "T0", "CR", ".", "D", "D"],
+      [".", "A", "A", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 5, "col": 1 },
+    { "id": "1", "row": 1, "col": 4 }
+  ],
+  "initialFloodedRows": 0,
+  "water": {
+    "riseInterval": 10
+  },
+  "vine": {
+    "growthThreshold": 4,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.70,
+    "consecutiveEmergencyCap": 2
+  },
+  "meta": {
+    "intent": "Force first-clear priority between the lower puppy that is near the coming water and the upper-right puppy that looks cleaner to rescue.",
+    "expectedPath": "Rescue the lower puppy first even though the upper-right puppy looks more open, then pivot across the board to finish the safer rescue.",
+    "expectedFailMode": "The player saves the easier upper-right puppy first, spends too many actions away from the lower route, and risks losing the lower puppy to water.",
+    "whatItProves": "By Level 3, rescue order is the puzzle.",
+    "notes": "The lower-left route is intentionally closer to the next flood row, while the upper-right puppy presents the false-easy read.",
+    "isRuleTeach": false
+  }
+}

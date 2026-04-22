@@ -6,18 +6,18 @@
     "height": 7,
     "tiles": [
       [".", ".", ".", ".", ".", "."],
-      [".", ".", ".", ".", ".", "."],
-      [".", ".", ".", ".", ".", "."],
-      [".", ".", "CR", ".", ".", "."],
-      [".", ".", "A", ".", ".", "."],
-      [".", "CR", "T0", ".", ".", "."],
-      ["A", "A", ".", ".", ".", "."]
+      [".", ".", "C", ".", "D", "."],
+      ["T0", "CR", ".", ".", ".", "."],
+      ["CR", "B", ".", ".", ".", "."],
+      [".", "B", ".", ".", ".", "."],
+      ["A", "A", ".", ".", ".", "."],
+      [".", "A", ".", ".", ".", "."]
     ]
   },
   "debrisTypePool": ["A", "B", "C", "D"],
   "baseDistribution": null,
   "targets": [
-    { "id": "0", "row": 5, "col": 2 }
+    { "id": "0", "row": 2, "col": 0 }
   ],
   "initialFloodedRows": 0,
   "water": {
@@ -32,15 +32,15 @@
     "jamEnabled": false
   },
   "assistance": {
-    "chance": 0.7,
+    "chance": 0.70,
     "consecutiveEmergencyCap": 2
   },
   "meta": {
-    "intent": "Teach that water stays still until the first valid action, then rises because acting advances danger.",
-    "expectedPath": "Tap the visible A pair to trigger the first water rise before freeing the puppy.",
-    "expectedFailMode": "Player ignores the water teaching beat and treats the level like static cleanup.",
-    "whatItProves": "The player can learn the per-action ticking rule through authored play.",
-    "notes": "Phase 1 Level 0 rule-teach scaffold.",
+    "intent": "Teach the core rule through contrast: thinking is free, but the first valid action releases the held water and makes danger advance.",
+    "expectedPath": "Tap the visible bottom-left A group, watch the first flood row appear, then clear the B pair to pop both remaining blockers and free the puppy.",
+    "expectedFailMode": "The player treats the board like static cleanup and misses the authored contrast between planning time and action time.",
+    "whatItProves": "The player can learn the prototype's defining timing rule through interaction instead of explanation.",
+    "notes": "The opening A group is intentionally parked beside the future flood edge so the first water rise reads immediately.",
     "isRuleTeach": true
   }
 }

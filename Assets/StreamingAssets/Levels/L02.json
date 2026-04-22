@@ -1,0 +1,46 @@
+{
+  "id": "L02",
+  "name": "Dock Pressure",
+  "board": {
+    "width": 6,
+    "height": 7,
+    "tiles": [
+      ["CR", ".", "A", "A", "CR", "."],
+      ["A", "CR", "T0", ".", "CR", "B"],
+      ["A", "CR", ".", ".", "CR", "B"],
+      ["C", "CR", ".", ".", "CR", "D"],
+      ["C", ".", ".", ".", ".", "D"],
+      [".", ".", ".", ".", ".", "."],
+      [".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 1, "col": 2 }
+  ],
+  "initialFloodedRows": 0,
+  "water": {
+    "riseInterval": 0
+  },
+  "vine": {
+    "growthThreshold": 4,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": true
+  },
+  "assistance": {
+    "chance": 0.70,
+    "consecutiveEmergencyCap": 2
+  },
+  "meta": {
+    "intent": "Teach that the dock is not a bag of free storage by putting a simple rescue behind a narrow middle lane and tempting side clears.",
+    "expectedPath": "Use the left A pair and the top A pair to open the middle lane cleanly, letting the dock cycle one color instead of hoarding side singles.",
+    "expectedFailMode": "The player clears the B, C, and D side pairs first, triggers Dock Jam, and learns that rack sequencing was their own mistake.",
+    "whatItProves": "Losses can read as self-authored even with no hazard present.",
+    "notes": "The crate walls create the one-lane read while the side pairs are deliberately attractive but low-value for rescue progress.",
+    "isRuleTeach": false
+  }
+}

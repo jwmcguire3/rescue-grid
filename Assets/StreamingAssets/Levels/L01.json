@@ -1,5 +1,46 @@
 {
   "id": "L01",
   "name": "First Rescue",
-  "notes": "Placeholder level file for initial project scaffolding."
+  "board": {
+    "width": 6,
+    "height": 7,
+    "tiles": [
+      [".", ".", "A", "A", ".", "."],
+      [".", ".", "CR", "CR", ".", "."],
+      [".", "CR", "T0", "CR", ".", "."],
+      ["C", "A", "CR", "B", "D", "."],
+      ["C", "A", "CR", "B", "D", "."],
+      ["C", "A", ".", "B", "D", "."],
+      [".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 2, "col": 2 }
+  ],
+  "initialFloodedRows": 0,
+  "water": {
+    "riseInterval": 12
+  },
+  "vine": {
+    "growthThreshold": 4,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": true
+  },
+  "assistance": {
+    "chance": 0.70,
+    "consecutiveEmergencyCap": 2
+  },
+  "meta": {
+    "intent": "Teach valid group taps, dock clears, rescue extraction, and that water is now part of every real board.",
+    "expectedPath": "Clear the lower-center A and B columns to open the lane around the puppy, then take the top A pair to finish the rescue before the second rise matters.",
+    "expectedFailMode": "The player chases the easy side triples first, stuffs the dock with mismatched pieces, and walks into Dock Jam instead of finishing the rescue lane.",
+    "whatItProves": "The game can deliver 'save the puppy' before it reads as abstract clearing.",
+    "notes": "The center route is intentionally cleaner than the side-value clears so the first rescue lands fast when the player commits to it.",
+    "isRuleTeach": false
+  }
 }
