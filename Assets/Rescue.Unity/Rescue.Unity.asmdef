@@ -4,6 +4,7 @@
   "references": [
     "Rescue.Core",
     "Rescue.Content",
+    "Rescue.Replay",
     "Rescue.Telemetry",
     "Unity.InputSystem"
   ],

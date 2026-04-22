@@ -26,6 +26,8 @@ namespace Rescue.Telemetry
 
         public TelemetryConfig Config { get; }
 
+        public string OutputPath => _outputPath;
+
         public TelemetryLogger(string outputPath, TelemetryConfig config)
         {
             if (outputPath is null)

@@ -19,6 +19,15 @@
             <ui:Button name="debug-undo-button" text="Debug Undo" />
             <ui:Button name="reset-button" text="Reset Level" />
 
+            <ui:Label text="Replay" class="debug-section" />
+            <ui:TextField name="replay-path-field" label="Session" />
+            <ui:VisualElement class="button-row">
+                <ui:Button name="load-replay-button" text="Load Replay" />
+                <ui:Button name="step-replay-button" text="Step Replay" />
+                <ui:Button name="clear-replay-button" text="Clear Replay" />
+            </ui:VisualElement>
+            <ui:Label name="replay-status-value" class="debug-value" />
+
             <ui:Label text="Hazards" class="debug-section" />
             <ui:Label name="water-actions-value" class="debug-value" />
             <ui:Label name="water-rise-interval-value" class="debug-value" />

@@ -1,0 +1,28 @@
+{
+  "name": "Rescue.Replay.EditMode.Tests",
+  "rootNamespace": "Rescue.Replay.Tests",
+  "references": [
+    "Rescue.Core",
+    "Rescue.Content",
+    "Rescue.Telemetry",
+    "Rescue.Replay"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "System.Collections.Immutable.dll",
+    "System.Text.Json.dll",
+    "System.Text.Encodings.Web.dll"
+  ],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": true,
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}

@@ -9,6 +9,7 @@ using Rescue.Core.Pipeline;
 using Rescue.Core.Rules;
 using Rescue.Core.State;
 using Rescue.Core.Undo;
+using Rescue.Replay;
 using Rescue.Telemetry;
 using Rescue.Unity.Telemetry;
 using UnityEngine;
@@ -28,6 +29,7 @@ namespace Rescue.Unity.Debugging
         private const string RuntimeThemeResourcePath = "Rescue.Unity/Debug/UnityDefaultRuntimeTheme";
         private const int EventLogCapacity = 20;
         private const int DockSize = 7;
+        private const int LossReplayRetentionCap = 20;
         private static readonly string[] SpeedChoices = { "0.25x", "0.5x", "1x", "2x", "4x" };
         private static readonly string[] AssistanceChoices = { "Current", "0", "1" };
         private static readonly string[] EmergencyChoices = { "Auto", "On", "Off" };
@@ -60,6 +62,11 @@ namespace Rescue.Unity.Debugging
         private Toggle? _fastForwardToggle;
         private Button? _debugUndoButton;
         private Button? _resetButton;
+        private TextField? _replayPathField;
+        private Button? _loadReplayButton;
+        private Button? _stepReplayButton;
+        private Button? _clearReplayButton;
+        private Label? _replayStatusValue;
         private Label? _statusLabel;
         private Label? _waterActionsValue;
         private Label? _waterRiseIntervalValue;
@@ -97,6 +104,9 @@ namespace Rescue.Unity.Debugging
         private LevelJson? _testLevel;
         private TelemetryLogger? _telemetryLogger;
         private TelemetrySessionState? _telemetrySession;
+        private ReplayResult? _loadedReplay;
+        private int _replayFrameIndex;
+        private string _replaySessionPath = string.Empty;
         private double _lastActionEndMs;
 
         public static DebugPanel? Instance => _instance;
@@ -218,6 +228,20 @@ namespace Rescue.Unity.Debugging
 
         public void ResetLevel()
         {
+            if (_loadedReplay is not null)
+            {
+                _replayFrameIndex = 0;
+                _eventLog.Clear();
+                _currentState = _loadedReplay.InitialFrame.State;
+                _initialState = _loadedReplay.InitialFrame.State;
+                _isPlaying = false;
+                _playAccumulator = 0.0f;
+                UpdatePlayButtonLabel();
+                SetStatus($"Reset replay {_currentLevelId} to frame 0.");
+                RefreshUi();
+                return;
+            }
+
             if (_initialState is null)
             {
                 return;
@@ -235,6 +259,11 @@ namespace Rescue.Unity.Debugging
 
         public bool StepOneAction()
         {
+            if (_loadedReplay is not null)
+            {
+                return StepReplayAction();
+            }
+
             if (_currentState is null)
             {
                 return false;
@@ -269,7 +298,65 @@ namespace Rescue.Unity.Debugging
                     _telemetrySession,
                     _telemetryLogger);
             }
-            SetStatus($"Stepped action at ({nextTap.Value.Row}, {nextTap.Value.Col}) -> {result.Outcome}.");
+
+            string? capturedLossReplayPath = CaptureLossReplayIfNeeded(result.Outcome);
+            string status = $"Stepped action at ({nextTap.Value.Row}, {nextTap.Value.Col}) -> {result.Outcome}.";
+            if (!string.IsNullOrWhiteSpace(capturedLossReplayPath))
+            {
+                status += $" Captured loss replay to {capturedLossReplayPath}.";
+            }
+
+            SetStatus(status);
+            RefreshUi();
+            return true;
+        }
+
+        public void LoadReplaySession(string sessionJsonlPath)
+        {
+            if (string.IsNullOrWhiteSpace(sessionJsonlPath))
+            {
+                throw new ArgumentException("Replay session path is required.", nameof(sessionJsonlPath));
+            }
+
+            ReplayResult replay = ReplayRunner.ReplaySession(sessionJsonlPath, LoadLevelById);
+            _loadedReplay = replay;
+            _replayFrameIndex = 0;
+            _replaySessionPath = sessionJsonlPath;
+            _currentLevelId = replay.LevelId;
+            _currentSeed = replay.Seed;
+            _testLevel = null;
+            _debugUndo.Clear();
+            _eventLog.Clear();
+            _isPlaying = false;
+            _playAccumulator = 0.0f;
+            _currentState = replay.InitialFrame.State;
+            _initialState = replay.InitialFrame.State;
+            UpdatePlayButtonLabel();
+            SetStatus($"Loaded replay {Path.GetFileName(sessionJsonlPath)} for {replay.LevelId} seed {replay.Seed}.");
+            RefreshUi();
+        }
+
+        public bool StepReplayAction()
+        {
+            if (_loadedReplay is null)
+            {
+                SetStatus("No replay is loaded.");
+                RefreshUi();
+                return false;
+            }
+
+            if (_replayFrameIndex >= _loadedReplay.Frames.Length - 1)
+            {
+                SetStatus("Replay already reached the final frame.");
+                RefreshUi();
+                return false;
+            }
+
+            _replayFrameIndex++;
+            ReplayFrame frame = _loadedReplay.Frames[_replayFrameIndex];
+            _currentState = frame.State;
+            AppendActionLog($"Replay {_replayFrameIndex}", frame.Events, frame.Outcome ?? ActionOutcome.Ok);
+            SetStatus($"Replay stepped to frame {_replayFrameIndex}/{_loadedReplay.Frames.Length - 1}.");
             RefreshUi();
             return true;
         }
@@ -349,6 +436,7 @@ namespace Rescue.Unity.Debugging
 
         private void SetLoadedState(GameState state, string levelId, int seed, string status)
         {
+            ClearReplayState();
             _currentState = state;
             _initialState = state;
             _currentLevelId = levelId;
@@ -380,6 +468,35 @@ namespace Rescue.Unity.Debugging
             _telemetrySession = new TelemetrySessionState { LevelStartMs = nowMs };
 
             TelemetryHooks.OnLevelStart(levelId, (ulong)(uint)seed, state, nowMs, _telemetryLogger);
+        }
+
+        private void ClearReplayState()
+        {
+            _loadedReplay = null;
+            _replayFrameIndex = 0;
+            _replaySessionPath = string.Empty;
+        }
+
+        private string? CaptureLossReplayIfNeeded(ActionOutcome outcome)
+        {
+            if (outcome != ActionOutcome.LossDockOverflow && outcome != ActionOutcome.LossWaterOnTarget)
+            {
+                return null;
+            }
+
+            if (_telemetryLogger is null || string.IsNullOrWhiteSpace(_telemetryLogger.OutputPath) || !File.Exists(_telemetryLogger.OutputPath))
+            {
+                return null;
+            }
+
+            string lossesDirectory = Path.Combine(Application.persistentDataPath, "telemetry", "losses");
+            return ReplayRunner.CaptureLossSession(
+                _telemetryLogger.OutputPath,
+                _currentLevelId,
+                _currentSeed,
+                lossesDirectory,
+                DateTimeOffset.UtcNow,
+                retentionCap: LossReplayRetentionCap);
         }
 
         private void ConfigureInputs()
@@ -520,6 +637,11 @@ namespace Rescue.Unity.Debugging
             _fastForwardToggle = panel.Q<Toggle>("fast-forward-toggle");
             _debugUndoButton = panel.Q<Button>("debug-undo-button");
             _resetButton = panel.Q<Button>("reset-button");
+            _replayPathField = panel.Q<TextField>("replay-path-field");
+            _loadReplayButton = panel.Q<Button>("load-replay-button");
+            _stepReplayButton = panel.Q<Button>("step-replay-button");
+            _clearReplayButton = panel.Q<Button>("clear-replay-button");
+            _replayStatusValue = panel.Q<Label>("replay-status-value");
             _statusLabel = panel.Q<Label>("status-label");
             _waterActionsValue = panel.Q<Label>("water-actions-value");
             _waterRiseIntervalValue = panel.Q<Label>("water-rise-interval-value");
@@ -628,6 +750,40 @@ namespace Rescue.Unity.Debugging
                 _resetButton.clicked += ResetLevel;
             }
 
+            if (_loadReplayButton is not null)
+            {
+                _loadReplayButton.clicked += () =>
+                {
+                    if (_replayPathField is null)
+                    {
+                        return;
+                    }
+
+                    LoadReplaySession(_replayPathField.value);
+                };
+            }
+
+            if (_stepReplayButton is not null)
+            {
+                _stepReplayButton.clicked += () => StepReplayAction();
+            }
+
+            if (_clearReplayButton is not null)
+            {
+                _clearReplayButton.clicked += () =>
+                {
+                    if (_loadedReplay is null)
+                    {
+                        SetStatus("No replay is loaded.");
+                        RefreshUi();
+                        return;
+                    }
+
+                    ClearReplayState();
+                    ReloadCurrentLevel();
+                };
+            }
+
             if (_copyRngButton is not null)
             {
                 _copyRngButton.clicked += CopyRngStateToClipboard;
@@ -705,6 +861,16 @@ namespace Rescue.Unity.Debugging
             scroll.Add(fastForward);
             scroll.Add(MakeButton("Debug Undo", "debug-undo-button", out _debugUndoButton));
             scroll.Add(MakeButton("Reset Level", "reset-button", out _resetButton));
+
+            scroll.Add(MakeSection("Replay"));
+            scroll.Add(MakeFieldRow("Session", out _replayPathField, "replay-path-field"));
+            VisualElement replayRow = new VisualElement();
+            replayRow.AddToClassList("button-row");
+            replayRow.Add(MakeButton("Load Replay", "load-replay-button", out _loadReplayButton));
+            replayRow.Add(MakeButton("Step Replay", "step-replay-button", out _stepReplayButton));
+            replayRow.Add(MakeButton("Clear Replay", "clear-replay-button", out _clearReplayButton));
+            scroll.Add(replayRow);
+            scroll.Add(MakeRow(out _replayStatusValue, "replay-status-value"));
 
             scroll.Add(MakeSection("Hazards"));
             scroll.Add(MakeRow(out _waterActionsValue, "water-actions-value"));
@@ -792,6 +958,17 @@ namespace Rescue.Unity.Debugging
             return row;
         }
 
+        private static VisualElement MakeFieldRow(string title, out TextField field, string name)
+        {
+            VisualElement row = new VisualElement();
+            row.AddToClassList("field-row");
+            row.Add(new Label(title));
+            field = new TextField { name = name };
+            field.style.flexGrow = 1.0f;
+            row.Add(field);
+            return row;
+        }
+
         private static Button MakeButton(string text, string name, out Button button)
         {
             button = new Button { text = text, name = name };
@@ -809,10 +986,19 @@ namespace Rescue.Unity.Debugging
 
         private void TogglePlayPause()
         {
+            if (_loadedReplay is not null && _replayFrameIndex >= _loadedReplay.Frames.Length - 1)
+            {
+                SetStatus("Replay is already at the final frame.");
+                RefreshUi();
+                return;
+            }
+
             _isPlaying = !_isPlaying;
             _playAccumulator = 0.0f;
             UpdatePlayButtonLabel();
-            SetStatus(_isPlaying ? "Auto-step playing." : "Auto-step paused.");
+            SetStatus(_loadedReplay is null
+                ? (_isPlaying ? "Auto-step playing." : "Auto-step paused.")
+                : (_isPlaying ? "Replay auto-step playing." : "Replay auto-step paused."));
             RefreshUi();
         }
 
@@ -830,7 +1016,8 @@ namespace Rescue.Unity.Debugging
         {
             if (_playPauseButton is not null)
             {
-                _playPauseButton.text = _isPlaying ? "Pause" : "Play";
+                string playLabel = _loadedReplay is null ? "Play" : "Play Replay";
+                _playPauseButton.text = _isPlaying ? "Pause" : playLabel;
             }
         }
 
@@ -1041,9 +1228,21 @@ namespace Rescue.Unity.Debugging
                 _seedField.SetValueWithoutNotify(_currentSeed);
             }
 
+            if (_replayPathField is not null)
+            {
+                _replayPathField.SetValueWithoutNotify(_replaySessionPath);
+            }
+
             SyncLevelSelectorChoices(_currentLevelId);
             SyncOverrideFields();
             UpdatePlayButtonLabel();
+
+            if (_replayStatusValue is not null)
+            {
+                _replayStatusValue.text = _loadedReplay is null
+                    ? "Replay: inactive"
+                    : $"Replay: frame {_replayFrameIndex}/{_loadedReplay.Frames.Length - 1}; verified: {_loadedReplay.Verified}";
+            }
 
             if (_waterActionsValue is not null) _waterActionsValue.text = $"Water actions until rise: {_currentState.Water.ActionsUntilRise}";
             if (_waterRiseIntervalValue is not null) _waterRiseIntervalValue.text = $"Water rise interval: {_currentState.Water.RiseInterval}";
