@@ -4,6 +4,7 @@
   "references": [
     "Rescue.Core",
     "Rescue.Content",
+    "Rescue.Telemetry",
     "Unity.InputSystem"
   ],
   "includePlatforms": [],

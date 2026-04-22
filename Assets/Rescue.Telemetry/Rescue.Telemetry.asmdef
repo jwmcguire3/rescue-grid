@@ -1,0 +1,20 @@
+{
+  "name": "Rescue.Telemetry",
+  "rootNamespace": "Rescue.Telemetry",
+  "references": [
+    "Rescue.Core"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "System.Collections.Immutable",
+    "System.Text.Json",
+    "System.Text.Encodings.Web"
+  ],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": true
+}
