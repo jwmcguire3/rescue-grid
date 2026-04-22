@@ -36,6 +36,7 @@ namespace Rescue.PlayMode.Tests.Debug
         [UnityTest]
         public System.Collections.IEnumerator PanelLoadsWithoutCrashingGivenLoadedLevel()
         {
+            ExpectThemeWarning();
             DebugPanel panel = DebugPanel.EnsureInstance();
             panel.ConfigureForTest(CreateTestLevel(), seed: 17);
 
@@ -51,6 +52,7 @@ namespace Rescue.PlayMode.Tests.Debug
         [UnityTest]
         public System.Collections.IEnumerator StepButtonAdvancesByExactlyOneAction()
         {
+            ExpectThemeWarning();
             DebugPanel panel = DebugPanel.EnsureInstance();
             panel.ConfigureForTest(CreateTestLevel(), seed: 17);
 
@@ -69,6 +71,7 @@ namespace Rescue.PlayMode.Tests.Debug
         [UnityTest]
         public System.Collections.IEnumerator ResetReturnsStateToInitialForSameSeed()
         {
+            ExpectThemeWarning();
             DebugPanel panel = DebugPanel.EnsureInstance();
             panel.ConfigureForTest(CreateTestLevel(), seed: 31);
 
@@ -91,6 +94,7 @@ namespace Rescue.PlayMode.Tests.Debug
         [UnityTest]
         public System.Collections.IEnumerator StateExportProducesValidJson()
         {
+            ExpectThemeWarning();
             DebugPanel panel = DebugPanel.EnsureInstance();
             panel.ConfigureForTest(CreateTestLevel(), seed: 9);
 
@@ -105,6 +109,7 @@ namespace Rescue.PlayMode.Tests.Debug
         [UnityTest]
         public System.Collections.IEnumerator NearRescueSummaryReflectsOneClearAwayTarget()
         {
+            ExpectThemeWarning();
             DebugPanel panel = DebugPanel.EnsureInstance();
             panel.ConfigureForTest(CreateNearRescueLevel(), seed: 19);
 
@@ -112,7 +117,7 @@ namespace Rescue.PlayMode.Tests.Debug
 
             LogAssert.NoUnexpectedReceived();
             Assert.That(panel.CurrentNearRescueSummary, Is.EqualTo("0"));
-            Assert.That(panel.ExportFullGameStateJson(), Does.Contain("\"oneClearAway\":true"));
+            Assert.That(panel.ExportFullGameStateJson(), Does.Contain("\"oneClearAway\": true"));
         }
 
         private static bool IsValidJson(string json)
@@ -132,6 +137,11 @@ namespace Rescue.PlayMode.Tests.Debug
             object? options = Activator.CreateInstance(optionsType);
             object? value = deserializeMethod.Invoke(null, new object?[] { json, typeof(object), options });
             return value is not null;
+        }
+
+        private static void ExpectThemeWarning()
+        {
+            LogAssert.Expect(LogType.Warning, "No Theme Style Sheet set to PanelSettings , UI will not render properly");
         }
 
         private static LevelJson CreateTestLevel()

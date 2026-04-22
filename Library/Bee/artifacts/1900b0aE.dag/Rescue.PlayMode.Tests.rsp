@@ -411,7 +411,13 @@
 -analyzer:"C:/Program Files/Unity/Hub/Editor/6000.4.3f1/Editor/Data/Tools/BuildPipeline/Unity.SourceGenerators/Unity.Properties.SourceGenerator.dll"
 -analyzer:"C:/Program Files/Unity/Hub/Editor/6000.4.3f1/Editor/Data/Tools/BuildPipeline/Unity.SourceGenerators/Unity.SourceGenerators.dll"
 -analyzer:"C:/Program Files/Unity/Hub/Editor/6000.4.3f1/Editor/Data/Tools/BuildPipeline/Unity.SourceGenerators/Unity.UIToolkit.SourceGenerator.dll"
+"Assets/Tests/PlayMode/Compatibility/IsExternalInit.cs"
 "Assets/Tests/PlayMode/Debug/DebugPanelSmokeTests.cs"
+"Assets/Tests/PlayMode/Smoke/LifecycleSmokeTests.cs"
+"Assets/Tests/PlayMode/Smoke/PerfSmokeTests.cs"
+"Assets/Tests/PlayMode/Smoke/RetrySmokeTests.cs"
+"Assets/Tests/PlayMode/Smoke/SmokeTestHarness.cs"
+"Assets/Tests/PlayMode/Smoke/UndoSmokeTests.cs"
 -langversion:9.0
 /deterministic
 /optimize+

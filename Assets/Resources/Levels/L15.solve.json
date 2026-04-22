@@ -1,0 +1,17 @@
+{
+  "LevelId": "L15",
+  "Seed": 5,
+  "AlternateSeed": 1005,
+  "ExpectedOutcome": "LossDockOverflow",
+  "ExpectAlternateSeedDivergence": true,
+  "Actions": [
+    {
+      "Row": 0,
+      "Col": 4
+    },
+    {
+      "Row": 0,
+      "Col": 1
+    }
+  ]
+}

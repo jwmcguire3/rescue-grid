@@ -1,0 +1,38 @@
+name: Unity Tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  unity-tests:
+    runs-on:
+      - self-hosted
+      - windows
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Edit Mode Tests
+        shell: powershell
+        run: |
+          powershell -ExecutionPolicy Bypass -File '.\scripts\test.ps1' -Platforms EditMode
+
+      - name: Run Play Mode Tests
+        shell: powershell
+        run: |
+          powershell -ExecutionPolicy Bypass -File '.\scripts\test.ps1' -Platforms PlayMode
+
+      - name: Upload Unity Test Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-test-results
+          path: |
+            editmode-results.xml
+            editmode-tests.log
+            playmode-results.xml
+            playmode-tests.log
