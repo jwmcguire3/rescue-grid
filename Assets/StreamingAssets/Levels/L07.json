@@ -1,0 +1,47 @@
+{
+  "id": "L07",
+  "name": "Vine Introduction",
+  "board": {
+    "width": 7,
+    "height": 8,
+    "tiles": [
+      [".", ".", ".", "A", "A", ".", "."],
+      [".", ".", "CR", "V", "CR", ".", "."],
+      [".", ".", ".", "V", ".", ".", "."],
+      [".", "CR", ".", ".", ".", ".", "."],
+      ["B", "B", ".", "T0", ".", "C", "C"],
+      ["D", ".", ".", "V", ".", ".", "E"],
+      ["D", ".", ".", "CR", ".", "CR", "E"],
+      [".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 4, "col": 3 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 8
+  },
+  "vine": {
+    "growthThreshold": 999,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.45,
+    "consecutiveEmergencyCap": 2
+  },
+  "meta": {
+    "intent": "Teach vine as a visible route blocker before it adds pressure by making the shortest rescue lane run directly through a static vine column.",
+    "expectedPath": "Take the central vine lane because it is clearly the shortest path to the puppy, then use the side pairs only as support once the route is open.",
+    "expectedFailMode": "The player treats vine like background clutter, detours around it with slower side clears, and gives up too much water time on a board that should read direct.",
+    "whatItProves": "Vine can enter as pressure visualization, not confusion.",
+    "notes": "Growth is effectively disabled here so the player only learns the vine tile as a one-hit route tax before L08 adds the preview-and-growth pressure.",
+    "isRuleTeach": false
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "id": "L05",
+  "name": "Sequencing With Mixed Blockers",
+  "board": {
+    "width": 6,
+    "height": 8,
+    "tiles": [
+      [".", ".", ".", "A", "A", "."],
+      [".", ".", ".", "CR", "T1", "CR"],
+      [".", ".", ".", "B", "CR", "."],
+      [".", "CR", ".", ".", ".", "."],
+      ["C", "IA", ".", ".", ".", "D"],
+      ["C", "T0", "IB", ".", "CR", "D"],
+      ["E", "IC", ".", ".", ".", "."],
+      ["E", "E", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 5, "col": 1 },
+    { "id": "1", "row": 1, "col": 4 }
+  ],
+  "initialFloodedRows": 0,
+  "water": {
+    "riseInterval": 9
+  },
+  "vine": {
+    "growthThreshold": 4,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.60,
+    "consecutiveEmergencyCap": 2
+  },
+  "meta": {
+    "intent": "Combine rescue order choice with blocker choice by making the lower puppy urgent but gated by ice while the upper puppy sits behind a cleaner crate route.",
+    "expectedPath": "Open the lower puppy through the left-side ice first, then pivot to the top crate pocket once the urgent rescue is secured.",
+    "expectedFailMode": "The player spends too many early actions on the tidier upper crate side because it looks faster, then loses tempo on the lower rescue.",
+    "whatItProves": "Rescue order survives once the board gets slightly messier.",
+    "notes": "The lower route mixes three ice tiles with nearby pairs so the correct line is legible, while the top A-led pocket is intentionally the false-clean solve.",
+    "isRuleTeach": false
+  }
+}

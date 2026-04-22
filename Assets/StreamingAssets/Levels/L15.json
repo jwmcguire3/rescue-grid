@@ -1,0 +1,51 @@
+{
+  "id": "L15",
+  "name": "Hero Rescue Moment",
+  "board": {
+    "width": 8,
+    "height": 9,
+    "tiles": [
+      [".", ".", ".", ".", "A", "A", ".", "."],
+      [".", ".", ".", ".", "CR", ".", "T1", "."],
+      [".", ".", "B", "B", ".", ".", "CR", "."],
+      [".", ".", ".", ".", "IA", ".", ".", "."],
+      [".", "D", "D", ".", "CR", ".", ".", "."],
+      [".", ".", ".", "T0", "CR", "V", ".", "."],
+      [".", ".", ".", "CR", ".", ".", ".", "."],
+      [".", ".", ".", ".", ".", ".", ".", "."],
+      [".", ".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 5, "col": 3 },
+    { "id": "1", "row": 1, "col": 6 }
+  ],
+  "initialFloodedRows": 2,
+  "water": {
+    "riseInterval": 6
+  },
+  "vine": {
+    "growthThreshold": 4,
+    "growthPriority": [
+      { "row": 5, "col": 6 }
+    ]
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.30,
+    "consecutiveEmergencyCap": 2
+  },
+  "meta": {
+    "intent": "Produce one instantly legible, high-stakes rescue beat with a hero puppy hanging over the flood and a clean route that reads in seconds even to a cold viewer.",
+    "expectedPath": "Clear the tempting left-side bait once, realize it does not finish the hero route, then open the central leash-side lane and save the spotlight puppy before pivoting to the safe secondary rescue.",
+    "expectedFailMode": "The player chases the obvious-looking bait side too long, the flood closes on the hero puppy, and the level loses its clean rescue moment.",
+    "whatItProves": "The game has a genuinely captureable rescue sequence that reads as rescue-order play rather than generic clearing.",
+    "notes": "The lower two flooded rows frame the hero puppy as the immediate story beat; blocker count stays intentionally light for capture readability.",
+    "isRuleTeach": false
+  }
+}

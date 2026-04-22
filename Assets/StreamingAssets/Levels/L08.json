@@ -1,0 +1,49 @@
+{
+  "id": "L08",
+  "name": "Vine Growth Tutorial",
+  "board": {
+    "width": 7,
+    "height": 8,
+    "tiles": [
+      [".", ".", ".", "A", "A", ".", "."],
+      [".", ".", ".", "V", ".", ".", "."],
+      [".", ".", ".", "V", ".", ".", "."],
+      [".", ".", ".", ".", ".", ".", "."],
+      ["B", "B", "CR", "T0", "CR", "C", "C"],
+      ["D", ".", ".", "V", ".", ".", "E"],
+      ["D", ".", "CR", "V", "CR", ".", "E"],
+      [".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 4, "col": 3 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 8
+  },
+  "vine": {
+    "growthThreshold": 4,
+    "growthPriority": [
+      { "row": 3, "col": 3 }
+    ]
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.45,
+    "consecutiveEmergencyCap": 2
+  },
+  "meta": {
+    "intent": "Teach that ignoring vine creates future cost by putting the clean center rescue lane on a visible growth path.",
+    "expectedPath": "Notice the center preview, clip the vine before it grows into the gap above the puppy, then continue opening the rescue lane with the side pairs.",
+    "expectedFailMode": "The player ignores the warning, lets the growth land in the center gap, and turns a clean rescue path into a slower reroute.",
+    "whatItProves": "Route urgency can be visual and fair.",
+    "notes": "The authored growth tile is the empty cell directly above the puppy's lane so the preview should read as relevant pressure instead of random spread.",
+    "isRuleTeach": false
+  }
+}

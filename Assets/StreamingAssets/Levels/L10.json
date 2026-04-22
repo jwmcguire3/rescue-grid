@@ -1,0 +1,51 @@
+{
+  "id": "L10",
+  "name": "Midpoint Exam",
+  "board": {
+    "width": 7,
+    "height": 8,
+    "tiles": [
+      [".", ".", "A", "A", ".", "B", "B"],
+      [".", ".", "CR", ".", "CR", "T1", "CR"],
+      [".", "C", "IA", "V", ".", "CR", "."],
+      [".", "CR", ".", ".", ".", "D", "."],
+      ["E", "CR", "T0", "CR", ".", "ID", "."],
+      ["E", "V", "CR", ".", ".", "D", "."],
+      ["A", "A", ".", ".", "V", ".", "."],
+      [".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 4, "col": 2 },
+    { "id": "1", "row": 1, "col": 5 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 7
+  },
+  "vine": {
+    "growthThreshold": 4,
+    "growthPriority": [
+      { "row": 3, "col": 3 },
+      { "row": 4, "col": 4 }
+    ]
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.45,
+    "consecutiveEmergencyCap": 2
+  },
+  "meta": {
+    "intent": "Pressure the first meaningful mixed-blocker route plan under a single-row flood start and a central choke that has to be opened before the board branches cleanly.",
+    "expectedPath": "Take the central choke immediately by cutting the low vine and adjacent blocker chain, rescue the lower puppy first, then branch upward into the safer top-right rescue.",
+    "expectedFailMode": "The player cashes obvious side pairs for dock value before opening the choke, then runs short on actions and flexibility once water and vine pressure start compounding.",
+    "whatItProves": "All three blockers can coexist without hiding the rescue-order seed.",
+    "notes": "The board keeps one obvious center lane so the exam is about route commitment, not searching for hidden lines.",
+    "isRuleTeach": false
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "id": "L06",
+  "name": "First Bigger Read",
+  "board": {
+    "width": 7,
+    "height": 8,
+    "tiles": [
+      [".", ".", "A", "A", ".", ".", "."],
+      [".", ".", ".", "CR", ".", ".", "."],
+      [".", "IA", ".", ".", ".", "IB", "."],
+      ["B", "CR", ".", "T1", ".", "CR", "C"],
+      ["B", ".", "CR", ".", "CR", ".", "C"],
+      ["D", "IC", ".", "T0", ".", "ID", "E"],
+      ["D", "CR", ".", "CR", ".", "CR", "E"],
+      [".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 5, "col": 3 },
+    { "id": "1", "row": 3, "col": 3 }
+  ],
+  "initialFloodedRows": 0,
+  "water": {
+    "riseInterval": 9
+  },
+  "vine": {
+    "growthThreshold": 4,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.60,
+    "consecutiveEmergencyCap": 2
+  },
+  "meta": {
+    "intent": "Test first-read readability on a larger board by presenting big outer clears that feel productive while the real progress lives in the narrow middle lane.",
+    "expectedPath": "Read the center first, use the small top A entry to start opening the middle, then route through the stacked central targets instead of farming the broad side columns.",
+    "expectedFailMode": "The player keeps taking the satisfying left and right side clears, feels busy, and wastes too many actions before the center route is meaningfully open.",
+    "whatItProves": "The player can orient in a larger greybox without the game turning mushy.",
+    "notes": "The blocker count is intentionally concentrated around the centerline so the board reads bigger, not denser; the side columns are there to tempt broad but low-value clears.",
+    "isRuleTeach": false
+  }
+}

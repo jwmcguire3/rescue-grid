@@ -1,0 +1,46 @@
+{
+  "id": "L04",
+  "name": "Ice Introduction",
+  "board": {
+    "width": 6,
+    "height": 7,
+    "tiles": [
+      [".", ".", "A", "A", ".", "."],
+      [".", ".", "IA", "CR", ".", "."],
+      [".", "IB", "T0", "IC", ".", "."],
+      [".", "CR", "ID", "CR", ".", "."],
+      ["B", "B", ".", ".", "C", "C"],
+      ["D", "D", ".", ".", "CR", "."],
+      [".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 2, "col": 2 }
+  ],
+  "initialFloodedRows": 0,
+  "water": {
+    "riseInterval": 10
+  },
+  "vine": {
+    "growthThreshold": 4,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.60,
+    "consecutiveEmergencyCap": 2
+  },
+  "meta": {
+    "intent": "Teach revealed future value and adjacency literacy by putting the urgent rescue lane behind ice instead of behind a simple crate wall.",
+    "expectedPath": "Use the lower B and D pairs to crack the frozen ring around the puppy, then clear the revealed lane instead of spending early actions on the cleaner top A or right C sets.",
+    "expectedFailMode": "The player cashes the easy side sets first, leaves the frozen route untouched too long, and runs out of time opening the real lane.",
+    "whatItProves": "Ice reads immediately and does not muddle the seed.",
+    "notes": "The puppy is surrounded by four ice tiles so the player cannot safely ignore the reveal step; the side pairs are present as bait, not as the intended route.",
+    "isRuleTeach": false
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "id": "L13",
+  "name": "Vine Pressure Exam",
+  "board": {
+    "width": 7,
+    "height": 9,
+    "tiles": [
+      [".", ".", "A", "A", ".", "B", "B"],
+      [".", ".", "V", ".", ".", "T1", "CR"],
+      [".", "CR", "V", ".", "IE", "CR", "."],
+      [".", ".", "V", ".", ".", "C", "."],
+      ["D", "CR", ".", ".", ".", "C", "."],
+      ["D", "T0", "CR", "V", "IA", ".", "."],
+      ["E", "CR", "V", ".", ".", ".", "."],
+      ["E", ".", ".", ".", ".", ".", "."],
+      [".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 5, "col": 1 },
+    { "id": "1", "row": 1, "col": 5 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 6
+  },
+  "vine": {
+    "growthThreshold": 3,
+    "growthPriority": [
+      { "row": 4, "col": 3 },
+      { "row": 3, "col": 3 },
+      { "row": 2, "col": 3 }
+    ]
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.30,
+    "consecutiveEmergencyCap": 2
+  },
+  "meta": {
+    "intent": "Make vine the future-action tax on an otherwise readable rescue route, so ignoring it feels like borrowing trouble rather than engaging a side mechanic.",
+    "expectedPath": "Clip the authored vine lane twice early to keep the shortcut open, rescue the lower urgent puppy, and only then pivot up to the safer target.",
+    "expectedFailMode": "The player lets the vine lane grow shut, spends extra actions rerouting, and then loses to combined water and dock pressure rather than one clean mistake.",
+    "whatItProves": "Vine supports the rescue-order seed by taxing future actions instead of stealing the board's identity.",
+    "notes": "Growth priority is a single visible lane through the center-right, not a diffuse spread pattern.",
+    "isRuleTeach": false
+  }
+}

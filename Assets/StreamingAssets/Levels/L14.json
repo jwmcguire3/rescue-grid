@@ -1,0 +1,54 @@
+{
+  "id": "L14",
+  "name": "Late Stress Test",
+  "board": {
+    "width": 8,
+    "height": 9,
+    "tiles": [
+      [".", ".", "A", "A", ".", "B", "B", "."],
+      [".", ".", "CR", "T2", "CR", ".", "IA", "."],
+      [".", "C", "CR", "V", ".", ".", "CR", "."],
+      [".", ".", ".", "CR", ".", "V", "D", "."],
+      ["E", ".", "CR", ".", "CR", "T1", "CR", "."],
+      ["E", "CR", "V", ".", "IA", "CR", ".", "."],
+      ["T0", "CR", ".", "V", ".", ".", "IE", "."],
+      ["CR", "V", ".", ".", ".", ".", ".", "."],
+      [".", ".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 6, "col": 0 },
+    { "id": "1", "row": 4, "col": 5 },
+    { "id": "2", "row": 1, "col": 3 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 6
+  },
+  "vine": {
+    "growthThreshold": 3,
+    "growthPriority": [
+      { "row": 6, "col": 4 },
+      { "row": 4, "col": 3 },
+      { "row": 3, "col": 4 }
+    ]
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.30,
+    "consecutiveEmergencyCap": 2
+  },
+  "meta": {
+    "intent": "Push the packet into sharp late tension with three rescues and dense mixed blockers while keeping each pivot readable enough to feel fair.",
+    "expectedPath": "Commit fully to the lower-left rescue first, pivot hard into the middle-right target second, and only then spend actions on the safer top rescue.",
+    "expectedFailMode": "The player brute-forces low-value clears across the whole board, never really commits, and loses either to dock overflow or to water catching the first urgent puppy.",
+    "whatItProves": "The Phase 1 seed scales into real tension without collapsing into busywork.",
+    "notes": "Density is concentrated near target lanes so the board stays parseable instead of becoming uniformly noisy.",
+    "isRuleTeach": false
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "id": "L11",
+  "name": "False-Easy Trap",
+  "board": {
+    "width": 7,
+    "height": 9,
+    "tiles": [
+      [".", ".", ".", ".", "A", "A", "."],
+      [".", ".", ".", ".", ".", "T1", "."],
+      [".", ".", ".", ".", "CR", ".", "."],
+      [".", "B", "B", ".", "V", ".", "."],
+      [".", "CR", "IA", "CR", ".", "C", "C"],
+      ["D", "CR", "T0", "CR", ".", "IE", "."],
+      ["D", "V", "CR", "V", ".", ".", "."],
+      ["E", "E", ".", ".", ".", ".", "."],
+      [".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 5, "col": 2 },
+    { "id": "1", "row": 1, "col": 5 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 7
+  },
+  "vine": {
+    "growthThreshold": 4,
+    "growthPriority": [
+      { "row": 4, "col": 4 },
+      { "row": 5, "col": 4 }
+    ]
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.30,
+    "consecutiveEmergencyCap": 2
+  },
+  "meta": {
+    "intent": "Punish the instinct to finish the visually open high rescue first by pairing it with a lower puppy that is obviously more buried and meaningfully closer to the next flood rows.",
+    "expectedPath": "Ignore the tempting near-finished top puppy, route into the buried lower puppy first, then cash the simple top rescue once the water risk is removed.",
+    "expectedFailMode": "The player takes the almost-free top rescue, spends several actions feeling smart, and then realizes the lower puppy has become the real losing clock.",
+    "whatItProves": "Rescue order remains legible even when the board tempts the wrong answer.",
+    "notes": "The top target needs only one meaningful clear; the lower target is the true exam.",
+    "isRuleTeach": false
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "id": "L12",
+  "name": "Three-Way Triage",
+  "board": {
+    "width": 7,
+    "height": 9,
+    "tiles": [
+      [".", ".", "A", "A", ".", "B", "B"],
+      [".", ".", ".", "CR", ".", "T2", "CR"],
+      [".", "C", ".", "IC", ".", "CR", "."],
+      [".", "CR", ".", ".", ".", "D", "."],
+      ["A", ".", "CR", "T1", "CR", "D", "."],
+      ["A", "CR", ".", "CR", ".", "V", "."],
+      ["T0", "CR", ".", "E", "E", "V", "."],
+      ["CR", "V", ".", ".", ".", ".", "."],
+      [".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 6, "col": 0 },
+    { "id": "1", "row": 4, "col": 3 },
+    { "id": "2", "row": 1, "col": 5 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 7
+  },
+  "vine": {
+    "growthThreshold": 4,
+    "growthPriority": [
+      { "row": 4, "col": 5 },
+      { "row": 3, "col": 5 }
+    ]
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.30,
+    "consecutiveEmergencyCap": 2
+  },
+  "meta": {
+    "intent": "Create the first broad three-target board that still reads in clear rescue order instead of collapsing into simultaneous chores.",
+    "expectedPath": "Rescue the lower-left puppy first, pivot through the center target second, and leave the safer top-right puppy for last.",
+    "expectedFailMode": "The player half-opens all three lanes, burns actions without finishing any route, and turns readable triage into self-authored overload.",
+    "whatItProves": "Three targets can create triage pressure without becoming unreadable noise.",
+    "notes": "The board is intentionally broad and sparse between target clusters so players can verbalize order at first read.",
+    "isRuleTeach": false
+  }
+}

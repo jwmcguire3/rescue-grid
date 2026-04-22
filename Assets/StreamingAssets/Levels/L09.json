@@ -1,0 +1,50 @@
+{
+  "id": "L09",
+  "name": "Order Plus Vine Pressure",
+  "board": {
+    "width": 7,
+    "height": 8,
+    "tiles": [
+      [".", ".", ".", ".", "A", "A", "."],
+      [".", ".", "CR", ".", ".", "T1", "CR"],
+      [".", ".", ".", ".", "V", "CR", "."],
+      [".", "CR", ".", ".", ".", ".", "."],
+      ["B", "CR", ".", "V", ".", ".", "C"],
+      ["B", "T0", "CR", ".", ".", "CR", "C"],
+      ["D", ".", ".", ".", "V", ".", "E"],
+      [".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 5, "col": 1 },
+    { "id": "1", "row": 1, "col": 5 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 8
+  },
+  "vine": {
+    "growthThreshold": 4,
+    "growthPriority": [
+      { "row": 3, "col": 4 }
+    ]
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.45,
+    "consecutiveEmergencyCap": 2
+  },
+  "meta": {
+    "intent": "Create real triage between the lower puppy that is close to the water and the upper-right route that vine is about to worsen.",
+    "expectedPath": "Solve the lower puppy first, clipping a vine on the way so the counter resets, then pivot into the upper-right pocket before the route taxes stack up.",
+    "expectedFailMode": "The player tunnels on the vine-threatened upper side first, spends actions protecting that lane, and loses the lower puppy to the rising water.",
+    "whatItProves": "The prototype can create triage, not just obstacle management.",
+    "notes": "The growth priority sits in the right-hand approach pocket so vine pressure is visible, but the lower rescue remains the real first obligation because of the pre-flooded row.",
+    "isRuleTeach": false
+  }
+}
