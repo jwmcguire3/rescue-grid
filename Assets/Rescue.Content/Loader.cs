@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Reflection;
 using Rescue.Core.Rng;
 using Rescue.Core.State;
@@ -16,7 +17,7 @@ namespace Rescue.Content
                 throw new ArgumentException("Level id is required.", nameof(levelId));
             }
 
-            string json = LoadLevelJsonFromUnityResources(levelId);
+            string json = LoadLevelJsonFromStreamingAssets(levelId);
             LevelJson parsed = ContentJson.DeserializeLevel(json);
             return LoadLevel(parsed, seed);
         }
@@ -256,44 +257,30 @@ namespace Rescue.Content
             return true;
         }
 
-        private static string LoadLevelJsonFromUnityResources(string levelId)
+        private static string LoadLevelJsonFromStreamingAssets(string levelId)
         {
-            Type? resourcesType = Type.GetType("UnityEngine.Resources, UnityEngine.CoreModule");
-            Type? textAssetType = Type.GetType("UnityEngine.TextAsset, UnityEngine.CoreModule");
-            if (resourcesType is null || textAssetType is null)
+            Type? applicationType = Type.GetType("UnityEngine.Application, UnityEngine.CoreModule");
+            if (applicationType is null)
             {
-                throw new PlatformNotSupportedException("Unity Resources loading is only available inside the Unity runtime.");
+                throw new PlatformNotSupportedException("Unity streaming assets loading is only available inside the Unity runtime.");
             }
 
-            MethodInfo? loadMethod = resourcesType.GetMethod(
-                "Load",
-                BindingFlags.Public | BindingFlags.Static,
-                binder: null,
-                types: new[]
-                {
-                    typeof(string),
-                    typeof(Type),
-                },
-                modifiers: null);
-
-            if (loadMethod is null)
+            PropertyInfo? streamingAssetsPathProperty = applicationType.GetProperty(
+                "streamingAssetsPath",
+                BindingFlags.Public | BindingFlags.Static);
+            if (streamingAssetsPathProperty?.GetValue(null) is not string streamingAssetsPath
+                || string.IsNullOrWhiteSpace(streamingAssetsPath))
             {
-                throw new MissingMethodException("UnityEngine.Resources.Load(string, Type) was not found.");
+                throw new MissingMemberException("UnityEngine.Application.streamingAssetsPath was not found.");
             }
 
-            object? asset = loadMethod.Invoke(null, new object?[] { "Levels/" + levelId, textAssetType });
-            if (asset is null)
+            string levelPath = Path.Combine(streamingAssetsPath, "Levels", levelId + ".json");
+            if (!File.Exists(levelPath))
             {
-                throw new InvalidOperationException($"Level '{levelId}' was not found in Assets/Resources/Levels/.");
+                throw new InvalidOperationException($"Level '{levelId}' was not found in Assets/StreamingAssets/Levels/.");
             }
 
-            PropertyInfo? textProperty = textAssetType.GetProperty("text", BindingFlags.Public | BindingFlags.Instance);
-            if (textProperty?.GetValue(asset) is not string text)
-            {
-                throw new InvalidOperationException($"Level '{levelId}' could not be read as a TextAsset.");
-            }
-
-            return text;
+            return File.ReadAllText(levelPath);
         }
 
         private static string FormatValidationErrors(IReadOnlyList<ValidationError> errors)

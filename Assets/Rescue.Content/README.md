@@ -80,7 +80,7 @@ The validator is pure .NET and operates on raw JSON strings. It checks:
 ## Loader behavior
 
 - `Loader.LoadLevel(LevelJson, seed)` validates first, then builds the immutable `GameState`
-- `Loader.LoadLevel(levelId, seed)` reads `Assets/Resources/Levels/<levelId>.json` through Unity `Resources`
+- `Loader.LoadLevel(levelId, seed)` reads `Assets/StreamingAssets/Levels/<levelId>.json` through Unity's streaming assets path
 - bottom `initialFloodedRows` are converted into `FloodedTile`
 - `WaterState.ActionsUntilRise` starts at `riseInterval`
 - `meta.isRuleTeach = true` keeps the waterline in its teach state until the first valid action, then normal ticking resumes

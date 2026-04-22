@@ -1245,13 +1245,6 @@ namespace Rescue.Unity.Debugging
         {
             HashSet<string> ids = new HashSet<string>(StringComparer.Ordinal);
 
-            TextAsset[] resourceLevels = Resources.LoadAll<TextAsset>("Levels");
-            for (int i = 0; i < resourceLevels.Length; i++)
-            {
-                ids.Add(resourceLevels[i].name);
-            }
-
-            AddIdsFromDirectory(Path.Combine(Application.dataPath, "Resources", "Levels"), ids);
             AddIdsFromDirectory(Path.Combine(Application.dataPath, "StreamingAssets", "Levels"), ids);
 
             List<string> sorted = new List<string>(ids);
@@ -1283,7 +1276,6 @@ namespace Rescue.Unity.Debugging
             {
                 string[] candidatePaths =
                 {
-                    Path.Combine(Application.dataPath, "Resources", "Levels", levelId + ".json"),
                     Path.Combine(Application.dataPath, "StreamingAssets", "Levels", levelId + ".json"),
                 };
 

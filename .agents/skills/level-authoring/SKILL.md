@@ -1,6 +1,6 @@
 ---
 name: level-authoring
-description: Author, modify, or validate Phase 1 Rescue Grid level JSON files. Use when creating new levels, editing levels in Assets/Resources/Levels/, debugging a level that fails validation, or writing a new tile grid. Covers the level schema, tile-code grammar, per-level design intents for L01-L15, the validator CLI workflow, and common authoring mistakes.
+description: Author, modify, or validate Phase 1 Rescue Grid level JSON files. Use when creating new levels, editing levels in Assets/StreamingAssets/Levels/, debugging a level that fails validation, or writing a new tile grid. Covers the level schema, tile-code grammar, per-level design intents for L01-L15, the validator CLI workflow, and common authoring mistakes.
 ---
 
 # Level Authoring — Rescue Grid Phase 1
@@ -300,7 +300,7 @@ dotnet run --project Tools/LevelValidator -- validate Assets/StreamingAssets/Lev
 To see the board as ASCII for sanity-checking:
 
 ```
-dotnet run --project Tools/LevelValidator -- preview Assets/Resources/Levels/L03.json
+dotnet run --project Tools/LevelValidator -- preview Assets/StreamingAssets/Levels/L03.json
 ```
 
 The validator exits non-zero on any `Error`-level issue. Warnings do not block.

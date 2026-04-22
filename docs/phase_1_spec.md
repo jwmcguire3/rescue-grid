@@ -29,6 +29,22 @@ Dock stays 7 slots for the full packet. Do not vary size in pass one. Size varia
 Dock Jam stays, but only as a teaching variant on Levels 1–2. After that, overflow is real.
 No mechanical Distressed state in first-pass build. Water reaching an unrescued target is immediate loss. This is harsher than early full-game softening, but much cleaner for determining whether rescue order is actually the puzzle. If it tests too punitive, the fallback is a one-tick grace state as a tuning toggle, not as the default.
 Reinforced crate exists only as a data flag (crate_hp = 2) and is off by default. Do not use it unless late packet tuning proves the three core blockers are insufficient. This keeps the blocker trio conceptually clean.
+
+v3.2 alignment note for Phase 1
+
+Adopted in this prototype spec:
+Level 0 rule-teach
+Persistent next-flood-row forecast for water
+One-clear-away target state as a prototype rule/state with event and debug/proxy surfacing
+
+Explicitly not adopted in Phase 1:
+Insertion preview
+Distressed state / soft hazard recovery
+Continuation offers
+Lucky drops
+RNG-bias acknowledgment copy
+Broader production-law, monetization, and live-ops updates from the full-game v3.2 spec
+
 1. Phase-1 prototype rules spec
 1.1 Core purpose of the ruleset
 
@@ -169,6 +185,13 @@ Reason: teach the consequence without muting it for the rest of the packet.
 
 Water is the only hazard in Phase 1.
 
+Level 0 rule-teach special case
+L00 is the first interaction in the prototype packet.
+It exists only to teach “acting advances danger; thinking is free.”
+In L00, water is held before the first valid action.
+On the first valid action, the hold is released and the normal per-action water rule resumes immediately.
+The authored teaching beat is a visible opening pair that causes the first water rise.
+
 Water model
 Water rises from the bottom of the board upward
 It advances by rows, not tiles
@@ -184,12 +207,13 @@ Why row-based flooding
 It is the cleanest readable version of “danger is coming,” especially in greybox. It creates strong rescue-order pressure without requiring more simulation.
 
 Water visibility
-Persistent waterline at board bottom
-Counter pips or fill meter for next rise
-On threshold-1:
+The prototype exposes a persistent forecast of the next flood row.
+At minimum, the player should be able to read which row floods next without waiting for a threshold-1 warning.
+This is a readability/forecast affordance, not a promise of final-game waterline art.
+Threshold-1 warning still layers on top:
 next row flashes blue
-affected target portraits pulse
 subtle water audio swell
+debug/event surfacing may also call out the pending rise
 
 This is how the game avoids reading like a hidden timer.
 
@@ -242,13 +266,13 @@ Mae portrait reacts
 One short aftercare card or kennel shot plays after level win
 Stabilization beat in prototype
 
-Because Phase 1 has no drain tools or distressed recovery, the true “stabilization” beat from the full game is reduced to a proxy:
+Because Phase 1 has no drain tools or distressed recovery, the full-game rescue-readiness stack is reduced to a prototype one-clear-away state.
 
-When a target becomes one clear away from extraction, play:
-target relief animation
-portrait pulse
-softer vocal
-tiny pause
+When a target has exactly one required orthogonal neighbor still blocked, it enters one-clear-away.
+This state is real in the rules, not just an authoring note.
+The pipeline emits a one-clear-away event on the false→true transition.
+The current prototype surfaces this through state/event/debug visibility and near-rescue proxy readouts.
+Full diegetic on-target puppy presentation is deferred; do not spec portrait pulses, bespoke relief animation, or audio as implemented Phase 1 behavior.
 
 That gives the prototype:
 
@@ -388,7 +412,16 @@ Level band	Target first-attempt win rate
 11–15	45–60%
 3. Level-by-level intent packet (15-level brief)
 
-I am recommending 15 levels. That is enough to scaffold the seed, pressure it, and still produce diagnostic data without drifting into content production.
+I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is enough to scaffold the seed, pressure it, and still produce diagnostic data without drifting into content production.
+
+Level 0 — Rule teach
+Geometry: 6x7 rectangle
+Composition: 1 puppy, 2 crates, 4 debris types, one visible opening pair
+Pressure: water held before first valid action, then rises immediately on that action and resumes normal ticking
+Intent: teach the core rule through contrast — thinking is free, acting advances danger
+Expected path: tap the visible pair, observe the first rise, then free the puppy
+Expected fail mode: player treats the board as static cleanup and misses the authored contrast
+What it proves: the player can learn the prototype’s defining timing rule through interaction instead of explanation
 
 Level 1 — First rescue
 Geometry: 6x7 rectangle
@@ -515,11 +548,14 @@ What it proves: the game has one genuinely captureable “I know exactly what to
 Hazard fairness
 Players will describe water pressure as fair because it advances only when they act.
 Success threshold: at least half of testers explicitly note that they had time to think.
+Rule-teach landing
+Players will understand after L00 that water advances on action, not on deliberation.
+Success threshold: most first-session testers can restate the rule in their own words after the opening beat.
 Dock attribution
 Players will describe dock losses as their mistake, not as randomness.
 Success threshold: fewer than 20% of overflow losses are described as “unlucky.”
 Rescue-order readability
-By Level 3, most testers will identify rescue order as the core decision.
+By Level 3 of the main packet, most testers will identify rescue order as the core decision.
 Success threshold: at least 60% say some version of “I saved the wrong one first.”
 Rescue framing
 Players will describe the game as “save the animal before danger gets there,” not just sorting.
@@ -531,9 +567,11 @@ Not a pseudo-timer
 Players should feel pressure without describing the game as timed.
 Success threshold: “timed” language appears in under 25% of first-session interviews.
 4.2 Level-specific hypotheses
+L00: Players understand that water moves when they do, not while they think.
 L1: Players call the target a puppy or “the dog,” not “the objective.”
 L2: Players understand the dock is dangerous before the level ends.
 L3: Players describe failure as wrong rescue order.
+L3: Players can distinguish the rule-teach from the rescue-order proof; Level 3 should feel like the first pure rescue-priority exam.
 L4: Players understand ice after one exposure without needing text.
 L7: Players see vine as a route issue, not random clutter.
 L8: Most players notice vine preview before the first growth.
@@ -563,10 +601,12 @@ level win / loss
 loss cause: dock / water
 action count
 water rises count
+next flood row / forecast state per action
 dock occupancy per action
 undo used y/n
 target extraction order
 first target extracted at action #
+target entered one-clear-away at action #
 vine growth count
 time spent idle between actions
 invalid taps count

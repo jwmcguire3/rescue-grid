@@ -4,7 +4,7 @@ This panel is dev-only and only compiles when `UNITY_EDITOR` or `DEVELOPMENT_BUI
 
 ## Controls
 
-- Level selector: lists level ids discovered from `Assets/Resources/Levels` and `Assets/StreamingAssets/Levels`; selecting one reloads it with the current seed.
+- Level selector: lists level ids discovered from `Assets/StreamingAssets/Levels`; selecting one reloads it with the current seed.
 - Seed field: delayed integer field; committing a new value reloads the current level with that seed.
 - Randomize Seed: generates a new seed, logs it to the Unity console, and reloads reproducibly.
 - Play / Pause: auto-steps the board by repeatedly running the first valid action found on the current board.
