@@ -13,7 +13,13 @@ namespace Rescue.Core.Pipeline.Steps
 
             if (context.WaterRisePending && updatedState.Water.FloodedRows < updatedState.Board.Height)
             {
-                int floodedRow = updatedState.Board.Height - updatedState.Water.FloodedRows - 1;
+                int? nextFloodRow = WaterHelpers.GetNextFloodRow(updatedState.Board, updatedState.Water);
+                if (!nextFloodRow.HasValue)
+                {
+                    return new StepResult(updatedState, updatedContext, events.ToImmutable());
+                }
+
+                int floodedRow = nextFloodRow.Value;
                 Board floodedBoard = updatedState.Board;
                 for (int col = 0; col < floodedBoard.Width; col++)
                 {

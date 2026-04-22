@@ -21,7 +21,7 @@ namespace Rescue.Telemetry
     public sealed class TelemetryLogger : IDisposable
     {
         private readonly object _lock = new object();
-        private readonly StreamWriter _writer;
+        private readonly string _outputPath;
         private bool _disposed;
 
         public TelemetryConfig Config { get; }
@@ -41,9 +41,7 @@ namespace Rescue.Telemetry
                 Directory.CreateDirectory(directory);
             }
 
-            _writer = new StreamWriter(
-                new FileStream(outputPath, FileMode.Append, FileAccess.Write, FileShare.Read),
-                Encoding.UTF8);
+            _outputPath = outputPath;
         }
 
         public void Append(ITelemetryEvent telemetryEvent)
@@ -65,8 +63,11 @@ namespace Rescue.Telemetry
                     throw new ObjectDisposedException(nameof(TelemetryLogger));
                 }
 
-                _writer.WriteLine(line);
-                _writer.Flush();
+                using StreamWriter writer = new StreamWriter(
+                    new FileStream(_outputPath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite),
+                    Encoding.UTF8);
+                writer.WriteLine(line);
+                writer.Flush();
             }
         }
 
@@ -80,7 +81,6 @@ namespace Rescue.Telemetry
                 }
 
                 _disposed = true;
-                _writer.Dispose();
             }
         }
     }

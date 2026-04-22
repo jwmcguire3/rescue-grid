@@ -23,6 +23,8 @@
             <ui:Label name="water-actions-value" class="debug-value" />
             <ui:Label name="water-rise-interval-value" class="debug-value" />
             <ui:Label name="water-next-row-value" class="debug-value" />
+            <ui:Label name="water-forecast-value" class="debug-value" />
+            <ui:Label name="rule-teach-value" class="debug-value" />
             <ui:Label name="vine-actions-value" class="debug-value" />
             <ui:Label name="vine-threshold-value" class="debug-value" />
             <ui:Label name="vine-pending-value" class="debug-value" />
@@ -33,6 +35,7 @@
             <ui:Label name="dock-contents-value" class="debug-value" />
             <ui:Label name="dock-jam-used-value" class="debug-value" />
             <ui:Label name="dock-jam-enabled-value" class="debug-value" />
+            <ui:Label name="near-rescue-targets-value" class="debug-value" />
 
             <ui:Label text="RNG" class="debug-section" />
             <ui:Label name="rng-state-value" class="debug-value" />

@@ -85,6 +85,8 @@ namespace Rescue.Content
         public string WhatItProves { get; init; } = string.Empty;
 
         public string? Notes { get; init; }
+
+        public bool IsRuleTeach { get; init; }
     }
 
     public sealed record TileCoordJson

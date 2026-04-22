@@ -40,6 +40,7 @@
     "expectedPath": "Describe the intended solve path here.",
     "expectedFailMode": "Describe the common failure mode here.",
     "whatItProves": "Describe what this level proves about the design.",
-    "notes": "Optional: author notes, deviations from tuning tables, or anything a reviewer needs to know."
+    "notes": "Optional: author notes, deviations from tuning tables, or anything a reviewer needs to know.",
+    "isRuleTeach": false
   }
 }

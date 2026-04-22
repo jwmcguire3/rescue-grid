@@ -40,7 +40,8 @@ namespace Rescue.Core.State
     public sealed record WaterState(
         int FloodedRows,
         int ActionsUntilRise,
-        int RiseInterval);
+        int RiseInterval,
+        bool PauseUntilFirstAction = false);
 
     public sealed record VineState(
         int ActionsSinceLastClear,

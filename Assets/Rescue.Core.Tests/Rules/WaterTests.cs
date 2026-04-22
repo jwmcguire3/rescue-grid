@@ -90,6 +90,76 @@ namespace Rescue.Core.Tests.Rules
         }
 
         [Test]
+        public void WaterForecastReportsNextFloodRowUntilBoardIsFull()
+        {
+            GameState state = CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    Row(new EmptyTile(), new EmptyTile()),
+                    Row(new EmptyTile(), new EmptyTile()),
+                    Row(new EmptyTile(), new EmptyTile())),
+                floodedRows: 1,
+                actionsUntilRise: 2);
+
+            Assert.That(WaterHelpers.GetNextFloodRow(state.Board, state.Water), Is.EqualTo(1));
+            Assert.That(WaterHelpers.HasForecast(state.Board, state.Water), Is.True);
+
+            WaterState fullyFlooded = state.Water with { FloodedRows = state.Board.Height };
+            Assert.That(WaterHelpers.GetNextFloodRow(state.Board, fullyFlooded), Is.Null);
+            Assert.That(WaterHelpers.HasForecast(state.Board, fullyFlooded), Is.False);
+        }
+
+        [Test]
+        public void RuleTeachLevelStartsTickingOnFirstValidAction()
+        {
+            GameState state = CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    Row(new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A)),
+                    Row(new EmptyTile(), new EmptyTile())),
+                actionsUntilRise: 1,
+                riseInterval: 3) with
+            {
+                Water = new WaterState(
+                    FloodedRows: 0,
+                    ActionsUntilRise: 1,
+                    RiseInterval: 3,
+                    PauseUntilFirstAction: true),
+                LevelConfig = PipelineTestFixtures.CreateLevelConfig() with { IsRuleTeach = true },
+            };
+
+            StepResult tick = Step11_TickHazards.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
+            StepResult resolve = Step12_ResolveHazards.Run(tick.State, tick.Context);
+
+            Assert.That(tick.State.Water.PauseUntilFirstAction, Is.False);
+            Assert.That(tick.Context.WaterRisePending, Is.True);
+            Assert.That(resolve.State.Water.FloodedRows, Is.EqualTo(1));
+            Assert.That(resolve.Events, Has.Some.EqualTo(new WaterRose(1)));
+        }
+
+        [Test]
+        public void RuleTeachAfterFirstActionUsesNormalWaterTicking()
+        {
+            GameState state = CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    Row(new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A)),
+                    Row(new EmptyTile(), new EmptyTile())),
+                actionsUntilRise: 3,
+                riseInterval: 3) with
+            {
+                Water = new WaterState(
+                    FloodedRows: 0,
+                    ActionsUntilRise: 3,
+                    RiseInterval: 3,
+                    PauseUntilFirstAction: false),
+                LevelConfig = PipelineTestFixtures.CreateLevelConfig() with { IsRuleTeach = true },
+            };
+
+            StepResult tick = Step11_TickHazards.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
+
+            Assert.That(tick.State.Water.ActionsUntilRise, Is.EqualTo(2));
+            Assert.That(tick.Context.WaterRisePending, Is.False);
+        }
+
+        [Test]
         public void TargetInFloodedRowIsLost()
         {
             GameState state = CreateState(

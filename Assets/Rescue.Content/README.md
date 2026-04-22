@@ -46,6 +46,7 @@
     "expectedPath": "Save the lower target first.",
     "expectedFailMode": "Save the easy target first and lose the urgent one.",
     "whatItProves": "Rescue order is the puzzle.",
+    "isRuleTeach": false,
     "notes": "Optional author notes."
   }
 }
@@ -71,6 +72,7 @@ The validator is pure .NET and operates on raw JSON strings. It checks:
 - unique target ids
 - target coordinates, matching `T<id>` board tiles, and stray board targets
 - initial flooded rows, rise interval, dock size, and assistance chance ranges
+- rule-teach levels require a positive `water.riseInterval`
 - vine growth-priority bounds
 - heuristic warnings for unreachable targets, disconnected dry regions, singleton-heavy dock traps, and water-budget pressure
 - heuristic start errors when a target or one of its required access neighbors begins in flooded rows
@@ -81,4 +83,5 @@ The validator is pure .NET and operates on raw JSON strings. It checks:
 - `Loader.LoadLevel(levelId, seed)` reads `Assets/Resources/Levels/<levelId>.json` through Unity `Resources`
 - bottom `initialFloodedRows` are converted into `FloodedTile`
 - `WaterState.ActionsUntilRise` starts at `riseInterval`
+- `meta.isRuleTeach = true` keeps the waterline in its teach state until the first valid action, then normal ticking resumes
 - `riseInterval = 0` means water is disabled for the level

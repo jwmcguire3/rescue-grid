@@ -23,7 +23,9 @@ namespace Rescue.Content.Tests
             Assert.That(state.Targets.Length, Is.EqualTo(1));
             Assert.That(state.Targets[0], Is.EqualTo(new TargetState("0", new TileCoord(2, 1), Extracted: false, OneClearAway: true)));
             Assert.That(state.Water.ActionsUntilRise, Is.EqualTo(level.Water.RiseInterval));
+            Assert.That(state.Water.PauseUntilFirstAction, Is.False);
             Assert.That(state.Dock.Size, Is.EqualTo(7));
+            Assert.That(state.LevelConfig.IsRuleTeach, Is.False);
         }
 
         [Test]
@@ -75,6 +77,28 @@ namespace Rescue.Content.Tests
             GameState state = Loader.LoadLevel(level, seed: 23);
 
             Assert.That(state.LevelConfig.AssistanceChance, Is.EqualTo(1.0d));
+        }
+
+        [Test]
+        public void LoadLevel_RuleTeachLevel_PausesWaterUntilFirstAction()
+        {
+            LevelJson level = TestLevels.MinimalLevel() with
+            {
+                Meta = TestLevels.MinimalLevel().Meta with
+                {
+                    IsRuleTeach = true,
+                },
+                Water = new WaterJson
+                {
+                    RiseInterval = 1,
+                },
+            };
+
+            GameState state = Loader.LoadLevel(level, seed: 11);
+
+            Assert.That(state.LevelConfig.IsRuleTeach, Is.True);
+            Assert.That(state.Water.PauseUntilFirstAction, Is.True);
+            Assert.That(state.Water.ActionsUntilRise, Is.EqualTo(1));
         }
     }
 }

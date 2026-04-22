@@ -6,5 +6,6 @@ namespace Rescue.Core.State
         ImmutableArray<DebrisType> DebrisTypePool,
         ImmutableDictionary<DebrisType, double>? BaseDistribution,
         double AssistanceChance,
-        int ConsecutiveEmergencyCap = 2);
+        int ConsecutiveEmergencyCap = 2,
+        bool IsRuleTeach = false);
 }

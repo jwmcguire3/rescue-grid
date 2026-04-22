@@ -4,7 +4,7 @@ The authoritative design guide is at [`.agents/skills/level-authoring/SKILL.md`]
 
 ## Level files
 
-Levels live in `Assets/StreamingAssets/Levels/` as `L01.json` through `L15.json`. The filename must match the `id` field inside the JSON.
+Levels live in `Assets/StreamingAssets/Levels/` as `L00.json` through `L15.json`. The filename must match the `id` field inside the JSON.
 
 A complete template with every required field is at [`scripts/level-template.json`](../../scripts/level-template.json). Copy it, rename it to the target level id, and fill in all values before authoring the tile grid.
 
@@ -113,3 +113,5 @@ level: L03 — rescue order arrives
 ```
 
 If the level deviates from the tuning tables in the design spec, document the deviation in `meta.notes`.
+
+Set `meta.isRuleTeach = true` only on `L00`. That flag is reserved for the Level 0 rule-teach and causes the loader to hold the waterline in its pre-action state until the first valid action.

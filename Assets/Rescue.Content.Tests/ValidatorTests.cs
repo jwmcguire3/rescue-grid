@@ -1,4 +1,6 @@
 using System.Linq;
+using System.Reflection;
+using System.IO;
 using NUnit.Framework;
 using Rescue.Content;
 
@@ -137,6 +139,41 @@ namespace Rescue.Content.Tests
 
             Assert.That(result.HasWarnings, Is.True);
             Assert.That(result.Errors.Any(error => error.Code == "heuristic.unreachableTarget"), Is.True);
+        }
+
+        [Test]
+        public void Validate_RuleTeachLevelWithoutPositiveRiseInterval_Fails()
+        {
+            LevelJson level = TestLevels.MinimalLevel() with
+            {
+                Meta = TestLevels.MinimalLevel().Meta with
+                {
+                    IsRuleTeach = true,
+                },
+                Water = new WaterJson
+                {
+                    RiseInterval = 0,
+                },
+            };
+
+            ValidationResult result = Validator.Validate(TestLevels.Serialize(level));
+
+            Assert.That(result.HasErrors, Is.True);
+            Assert.That(result.Errors.Any(error => error.Code == "water.ruleTeachRiseInterval"), Is.True);
+        }
+
+        [Test]
+        public void Validate_AuthoredL00Level_Passes()
+        {
+            string root = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+                ?? throw new IOException("Could not resolve test assembly directory.");
+            string projectRoot = Path.GetFullPath(Path.Combine(root, "..", ".."));
+            string l00Path = Path.Combine(projectRoot, "Assets", "StreamingAssets", "Levels", "L00.json");
+
+            string json = File.ReadAllText(l00Path);
+            ValidationResult result = Validator.Validate(json);
+
+            Assert.That(result.HasErrors, Is.False, string.Join(", ", result.Errors.Select(error => error.Code)));
         }
     }
 }

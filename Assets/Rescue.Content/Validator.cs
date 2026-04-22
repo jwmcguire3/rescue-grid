@@ -226,6 +226,15 @@ namespace Rescue.Content
                     "$.water.riseInterval"));
             }
 
+            if (level.Meta.IsRuleTeach && level.Water.RiseInterval <= 0)
+            {
+                errors.Add(new ValidationError(
+                    ValidationSeverity.Error,
+                    "water.ruleTeachRiseInterval",
+                    "Rule-teach levels must set water.riseInterval to a positive value so ticking can begin on the first valid action.",
+                    "$.water.riseInterval"));
+            }
+
             if (level.Dock.Size != 7)
             {
                 errors.Add(new ValidationError(

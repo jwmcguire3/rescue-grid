@@ -1,0 +1,46 @@
+{
+  "id": "L00",
+  "name": "Rule Teach",
+  "board": {
+    "width": 6,
+    "height": 7,
+    "tiles": [
+      [".", ".", ".", ".", ".", "."],
+      [".", ".", ".", ".", ".", "."],
+      [".", ".", ".", ".", ".", "."],
+      [".", ".", "CR", ".", ".", "."],
+      [".", ".", "A", ".", ".", "."],
+      [".", "CR", "T0", ".", ".", "."],
+      ["A", "A", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 5, "col": 2 }
+  ],
+  "initialFloodedRows": 0,
+  "water": {
+    "riseInterval": 1
+  },
+  "vine": {
+    "growthThreshold": 4,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.7,
+    "consecutiveEmergencyCap": 2
+  },
+  "meta": {
+    "intent": "Teach that water stays still until the first valid action, then rises because acting advances danger.",
+    "expectedPath": "Tap the visible A pair to trigger the first water rise before freeing the puppy.",
+    "expectedFailMode": "Player ignores the water teaching beat and treats the level like static cleanup.",
+    "whatItProves": "The player can learn the per-action ticking rule through authored play.",
+    "notes": "Phase 1 Level 0 rule-teach scaffold.",
+    "isRuleTeach": true
+  }
+}

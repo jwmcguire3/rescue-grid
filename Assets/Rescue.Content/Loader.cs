@@ -42,7 +42,8 @@ namespace Rescue.Content
             WaterState water = new WaterState(
                 FloodedRows: json.InitialFloodedRows,
                 ActionsUntilRise: json.Water.RiseInterval,
-                RiseInterval: json.Water.RiseInterval);
+                RiseInterval: json.Water.RiseInterval,
+                PauseUntilFirstAction: json.Meta.IsRuleTeach);
 
             Board floodedBoard = ApplyInitialFlood(board, json.InitialFloodedRows);
             SeededRng rng = new SeededRng(unchecked((uint)seed));
@@ -62,7 +63,8 @@ namespace Rescue.Content
                     DebrisTypePool: json.DebrisTypePool.ToImmutableArray(),
                     BaseDistribution: json.BaseDistribution?.ToImmutableDictionary(),
                     AssistanceChance: json.Assistance.Chance,
-                    ConsecutiveEmergencyCap: json.Assistance.ConsecutiveEmergencyCap),
+                    ConsecutiveEmergencyCap: json.Assistance.ConsecutiveEmergencyCap,
+                    IsRuleTeach: json.Meta.IsRuleTeach),
                 RngState: rng.GetState(),
                 ActionCount: 0,
                 DockJamUsed: false,

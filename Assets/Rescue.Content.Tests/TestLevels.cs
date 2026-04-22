@@ -50,6 +50,7 @@ namespace Rescue.Content.Tests
                     ExpectedPath = "Clear the crate-adjacent debris.",
                     ExpectedFailMode = "Ignore the target lane.",
                     WhatItProves = "Loader and validator basics.",
+                    IsRuleTeach = false,
                 },
             };
         }

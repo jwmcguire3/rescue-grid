@@ -11,9 +11,20 @@ namespace Rescue.Core.Pipeline.Steps
             StepContext updatedContext = context;
             ImmutableArray<ActionEvent>.Builder events = ImmutableArray.CreateBuilder<ActionEvent>();
 
-            if (state.Water.FloodedRows < state.Board.Height && state.Water.ActionsUntilRise > 0)
+            if (updatedState.Water.PauseUntilFirstAction)
             {
-                int actionsUntilRise = state.Water.ActionsUntilRise - 1;
+                updatedState = updatedState with
+                {
+                    Water = updatedState.Water with
+                    {
+                        PauseUntilFirstAction = false,
+                    },
+                };
+            }
+
+            if (updatedState.Water.FloodedRows < updatedState.Board.Height && updatedState.Water.ActionsUntilRise > 0)
+            {
+                int actionsUntilRise = updatedState.Water.ActionsUntilRise - 1;
                 bool waterRisePending = actionsUntilRise == 0;
                 updatedState = updatedState with
                 {
@@ -29,8 +40,11 @@ namespace Rescue.Core.Pipeline.Steps
 
                 if (!waterRisePending && actionsUntilRise == 1)
                 {
-                    int nextFloodRow = state.Board.Height - state.Water.FloodedRows - 1;
-                    events.Add(new WaterWarning(actionsUntilRise, nextFloodRow));
+                    int? nextFloodRow = WaterHelpers.GetNextFloodRow(updatedState.Board, updatedState.Water);
+                    if (nextFloodRow.HasValue)
+                    {
+                        events.Add(new WaterWarning(actionsUntilRise, nextFloodRow.Value));
+                    }
                 }
             }
 

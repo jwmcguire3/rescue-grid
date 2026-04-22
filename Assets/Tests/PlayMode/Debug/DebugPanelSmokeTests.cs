@@ -45,6 +45,7 @@ namespace Rescue.PlayMode.Tests.Debug
             Assert.That(panel.CurrentLevelId, Is.EqualTo("DBG_TEST"));
             Assert.That(panel.CurrentState.ActionCount, Is.EqualTo(0));
             Assert.That(panel.CurrentState.Board.Width, Is.EqualTo(3));
+            Assert.That(panel.CurrentWaterForecastSummary, Does.Contain("row 2"));
         }
 
         [UnityTest]
@@ -99,6 +100,19 @@ namespace Rescue.PlayMode.Tests.Debug
             string json = panel.ExportFullGameStateJson();
 
             Assert.That(IsValidJson(json), Is.True);
+        }
+
+        [UnityTest]
+        public System.Collections.IEnumerator NearRescueSummaryReflectsOneClearAwayTarget()
+        {
+            LogAssert.Expect(LogType.Warning, "No Theme Style Sheet set to PanelSettings , UI will not render properly");
+            DebugPanel panel = DebugPanel.EnsureInstance();
+            panel.ConfigureForTest(CreateNearRescueLevel(), seed: 19);
+
+            yield return null;
+
+            Assert.That(panel.CurrentNearRescueSummary, Is.EqualTo("0"));
+            Assert.That(panel.ExportFullGameStateJson(), Does.Contain("\"oneClearAway\":true"));
         }
 
         private static bool IsValidJson(string json)
@@ -175,6 +189,64 @@ namespace Rescue.PlayMode.Tests.Debug
                     ExpectedPath = "Step the opening pair.",
                     ExpectedFailMode = "Unexpected panel crash or invalid export.",
                     WhatItProves = "The debug panel can load, step, reset, and export.",
+                    IsRuleTeach = false,
+                },
+            };
+        }
+
+        private static LevelJson CreateNearRescueLevel()
+        {
+            return new LevelJson
+            {
+                Id = "DBG_NEAR",
+                Name = "Debug Near Rescue",
+                Board = new BoardJson
+                {
+                    Width = 3,
+                    Height = 3,
+                    Tiles = new[]
+                    {
+                        new[] { ".", ".", "." },
+                        new[] { ".", "CR", "." },
+                        new[] { ".", "T0", "." },
+                    },
+                },
+                DebrisTypePool = new[] { Rescue.Core.State.DebrisType.A, Rescue.Core.State.DebrisType.B, Rescue.Core.State.DebrisType.C, Rescue.Core.State.DebrisType.D },
+                Targets = new[]
+                {
+                    new TargetJson
+                    {
+                        Id = "0",
+                        Row = 2,
+                        Col = 1,
+                    },
+                },
+                Water = new WaterJson
+                {
+                    RiseInterval = 4,
+                },
+                Vine = new VineJson
+                {
+                    GrowthThreshold = 4,
+                    GrowthPriority = System.Array.Empty<TileCoordJson>(),
+                },
+                Dock = new DockJson
+                {
+                    Size = 7,
+                    JamEnabled = false,
+                },
+                Assistance = new AssistanceJson
+                {
+                    Chance = 0.5d,
+                    ConsecutiveEmergencyCap = 2,
+                },
+                Meta = new MetaJson
+                {
+                    Intent = "Surface the one-clear-away proxy in the debug panel.",
+                    ExpectedPath = "Observe the target state.",
+                    ExpectedFailMode = "Near-rescue state is missing from UI/export.",
+                    WhatItProves = "The debug panel exposes one-clear-away target state.",
+                    IsRuleTeach = false,
                 },
             };
         }

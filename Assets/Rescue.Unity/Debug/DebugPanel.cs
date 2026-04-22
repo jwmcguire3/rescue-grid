@@ -63,6 +63,8 @@ namespace Rescue.Unity.Debugging
         private Label? _waterActionsValue;
         private Label? _waterRiseIntervalValue;
         private Label? _waterNextFloodRowValue;
+        private Label? _waterForecastValue;
+        private Label? _ruleTeachValue;
         private Label? _vineActionsValue;
         private Label? _vineThresholdValue;
         private Label? _vinePendingValue;
@@ -71,6 +73,7 @@ namespace Rescue.Unity.Debugging
         private Label? _dockContentsValue;
         private Label? _dockJamUsedValue;
         private Label? _dockJamEnabledValue;
+        private Label? _nearRescueTargetsValue;
         private Label? _rngStateValue;
         private Button? _copyRngButton;
         private DropdownField? _assistanceOverrideField;
@@ -102,6 +105,10 @@ namespace Rescue.Unity.Debugging
         public string CurrentLevelId => _currentLevelId;
 
         public int CurrentSeed => _currentSeed;
+
+        public string CurrentWaterForecastSummary => GetWaterForecastSummary(CurrentState);
+
+        public string CurrentNearRescueSummary => GetNearRescueTargetsSummary(CurrentState);
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void BootstrapRuntimePanel()
@@ -482,6 +489,8 @@ namespace Rescue.Unity.Debugging
             _waterActionsValue = panel.Q<Label>("water-actions-value");
             _waterRiseIntervalValue = panel.Q<Label>("water-rise-interval-value");
             _waterNextFloodRowValue = panel.Q<Label>("water-next-row-value");
+            _waterForecastValue = panel.Q<Label>("water-forecast-value");
+            _ruleTeachValue = panel.Q<Label>("rule-teach-value");
             _vineActionsValue = panel.Q<Label>("vine-actions-value");
             _vineThresholdValue = panel.Q<Label>("vine-threshold-value");
             _vinePendingValue = panel.Q<Label>("vine-pending-value");
@@ -490,6 +499,7 @@ namespace Rescue.Unity.Debugging
             _dockContentsValue = panel.Q<Label>("dock-contents-value");
             _dockJamUsedValue = panel.Q<Label>("dock-jam-used-value");
             _dockJamEnabledValue = panel.Q<Label>("dock-jam-enabled-value");
+            _nearRescueTargetsValue = panel.Q<Label>("near-rescue-targets-value");
             _rngStateValue = panel.Q<Label>("rng-state-value");
             _copyRngButton = panel.Q<Button>("copy-rng-button");
             _assistanceOverrideField = panel.Q<DropdownField>("assistance-override-field");
@@ -665,6 +675,8 @@ namespace Rescue.Unity.Debugging
             scroll.Add(MakeRow(out _waterActionsValue, "water-actions-value"));
             scroll.Add(MakeRow(out _waterRiseIntervalValue, "water-rise-interval-value"));
             scroll.Add(MakeRow(out _waterNextFloodRowValue, "water-next-row-value"));
+            scroll.Add(MakeRow(out _waterForecastValue, "water-forecast-value"));
+            scroll.Add(MakeRow(out _ruleTeachValue, "rule-teach-value"));
             scroll.Add(MakeRow(out _vineActionsValue, "vine-actions-value"));
             scroll.Add(MakeRow(out _vineThresholdValue, "vine-threshold-value"));
             scroll.Add(MakeRow(out _vinePendingValue, "vine-pending-value"));
@@ -675,6 +687,7 @@ namespace Rescue.Unity.Debugging
             scroll.Add(MakeRow(out _dockContentsValue, "dock-contents-value"));
             scroll.Add(MakeRow(out _dockJamUsedValue, "dock-jam-used-value"));
             scroll.Add(MakeRow(out _dockJamEnabledValue, "dock-jam-enabled-value"));
+            scroll.Add(MakeRow(out _nearRescueTargetsValue, "near-rescue-targets-value"));
 
             scroll.Add(MakeSection("RNG"));
             scroll.Add(MakeRow(out _rngStateValue, "rng-state-value"));
@@ -1000,6 +1013,8 @@ namespace Rescue.Unity.Debugging
             if (_waterActionsValue is not null) _waterActionsValue.text = $"Water actions until rise: {_currentState.Water.ActionsUntilRise}";
             if (_waterRiseIntervalValue is not null) _waterRiseIntervalValue.text = $"Water rise interval: {_currentState.Water.RiseInterval}";
             if (_waterNextFloodRowValue is not null) _waterNextFloodRowValue.text = $"Next row to flood: {GetNextFloodRowLabel(_currentState)}";
+            if (_waterForecastValue is not null) _waterForecastValue.text = $"Water forecast: {GetWaterForecastSummary(_currentState)}";
+            if (_ruleTeachValue is not null) _ruleTeachValue.text = $"Rule teach active: {_currentState.LevelConfig.IsRuleTeach}; waiting for first action: {_currentState.Water.PauseUntilFirstAction}";
             if (_vineActionsValue is not null) _vineActionsValue.text = $"Vine actions since clear: {_currentState.Vine.ActionsSinceLastClear}";
             if (_vineThresholdValue is not null) _vineThresholdValue.text = $"Vine growth threshold: {_currentState.Vine.GrowthThreshold}";
             if (_vinePendingValue is not null) _vinePendingValue.text = $"Pending growth tile: {FormatCoord(_currentState.Vine.PendingGrowthTile)}";
@@ -1008,6 +1023,7 @@ namespace Rescue.Unity.Debugging
             if (_dockContentsValue is not null) _dockContentsValue.text = $"Dock contents: {FormatDockContents(_currentState.Dock)}";
             if (_dockJamUsedValue is not null) _dockJamUsedValue.text = $"Dock jam used: {_currentState.DockJamUsed}";
             if (_dockJamEnabledValue is not null) _dockJamEnabledValue.text = $"Dock jam enabled: {_currentState.DockJamEnabled}";
+            if (_nearRescueTargetsValue is not null) _nearRescueTargetsValue.text = $"Near-rescue targets: {GetNearRescueTargetsSummary(_currentState)}";
             if (_rngStateValue is not null) _rngStateValue.text = $"RNG state: {SerializeRngState(_currentState.RngState)}";
             if (_consecutiveEmergencyValue is not null) _consecutiveEmergencyValue.text = $"Consecutive emergency spawns: {_currentState.ConsecutiveEmergencySpawns}";
             if (_spawnRecoveryValue is not null) _spawnRecoveryValue.text = $"Spawn recovery counter: {_currentState.SpawnRecoveryCounter}";
@@ -1152,13 +1168,50 @@ namespace Rescue.Unity.Debugging
 
         private static string GetNextFloodRowLabel(GameState state)
         {
-            if (state.Water.RiseInterval <= 0 || state.Water.FloodedRows >= state.Board.Height)
+            int? nextFloodRow = WaterHelpers.GetNextFloodRow(state.Board, state.Water);
+            if (!nextFloodRow.HasValue)
             {
                 return "none";
             }
 
-            int nextFloodRow = state.Board.Height - state.Water.FloodedRows - 1;
-            return nextFloodRow < 0 ? "none" : nextFloodRow.ToString();
+            return nextFloodRow.Value.ToString();
+        }
+
+        private static string GetWaterForecastSummary(GameState state)
+        {
+            int? nextFloodRow = WaterHelpers.GetNextFloodRow(state.Board, state.Water);
+            if (!nextFloodRow.HasValue)
+            {
+                return "board fully flooded";
+            }
+
+            if (state.Water.PauseUntilFirstAction)
+            {
+                return $"row {nextFloodRow.Value} will flood on the first valid action";
+            }
+
+            if (state.Water.RiseInterval <= 0)
+            {
+                return $"row {nextFloodRow.Value} queued, water disabled";
+            }
+
+            string actionLabel = state.Water.ActionsUntilRise == 1 ? "action" : "actions";
+            return $"row {nextFloodRow.Value} in {state.Water.ActionsUntilRise} {actionLabel}";
+        }
+
+        private static string GetNearRescueTargetsSummary(GameState state)
+        {
+            ImmutableArray<string>.Builder targetIds = ImmutableArray.CreateBuilder<string>();
+            for (int i = 0; i < state.Targets.Length; i++)
+            {
+                TargetState target = state.Targets[i];
+                if (!target.Extracted && target.OneClearAway)
+                {
+                    targetIds.Add(target.TargetId);
+                }
+            }
+
+            return targetIds.Count == 0 ? "none" : string.Join(", ", targetIds);
         }
 
         private static string FormatCoord(TileCoord? coord)
@@ -1304,6 +1357,7 @@ namespace Rescue.Unity.Debugging
                     ExpectedPath = "Clear the starting pair.",
                     ExpectedFailMode = "Overflow or water loss during debug validation.",
                     WhatItProves = "The debug panel can bootstrap a valid state.",
+                    IsRuleTeach = false,
                 },
             };
         }
@@ -1371,7 +1425,7 @@ namespace Rescue.Unity.Debugging
             return new GameStateExport(
                 new BoardExport(state.Board.Width, state.Board.Height, tiles),
                 new DockExport(dockSlots, state.Dock.Size),
-                new WaterExport(state.Water.FloodedRows, state.Water.ActionsUntilRise, state.Water.RiseInterval),
+                new WaterExport(state.Water.FloodedRows, state.Water.ActionsUntilRise, state.Water.RiseInterval, state.Water.PauseUntilFirstAction),
                 new VineExport(
                     state.Vine.ActionsSinceLastClear,
                     state.Vine.GrowthThreshold,
@@ -1383,7 +1437,8 @@ namespace Rescue.Unity.Debugging
                     debrisPool,
                     baseDistribution,
                     state.LevelConfig.AssistanceChance,
-                    state.LevelConfig.ConsecutiveEmergencyCap),
+                    state.LevelConfig.ConsecutiveEmergencyCap,
+                    state.LevelConfig.IsRuleTeach),
                 new RngExport(state.RngState.S0, state.RngState.S1),
                 state.ActionCount,
                 state.DockJamUsed,
@@ -1471,7 +1526,7 @@ namespace Rescue.Unity.Debugging
 
     internal sealed record DockExport(string?[] Slots, int Size);
 
-    internal sealed record WaterExport(int FloodedRows, int ActionsUntilRise, int RiseInterval);
+    internal sealed record WaterExport(int FloodedRows, int ActionsUntilRise, int RiseInterval, bool PauseUntilFirstAction);
 
     internal sealed record VineExport(
         int ActionsSinceLastClear,
@@ -1491,7 +1546,8 @@ namespace Rescue.Unity.Debugging
         string[] DebrisTypePool,
         Dictionary<string, double>? BaseDistribution,
         double AssistanceChance,
-        int ConsecutiveEmergencyCap);
+        int ConsecutiveEmergencyCap,
+        bool IsRuleTeach);
 
     internal sealed record RngExport(uint S0, uint S1);
 

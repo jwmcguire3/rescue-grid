@@ -12,9 +12,9 @@
   "allowUnsafeCode": false,
   "overrideReferences": true,
   "precompiledReferences": [
-    "System.Collections.Immutable",
-    "System.Text.Json",
-    "System.Text.Encodings.Web"
+    "System.Collections.Immutable.dll",
+    "System.Text.Json.dll",
+    "System.Text.Encodings.Web.dll"
   ],
   "autoReferenced": true,
   "defineConstraints": [],
