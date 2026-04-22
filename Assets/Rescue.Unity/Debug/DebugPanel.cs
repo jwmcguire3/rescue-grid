@@ -9,6 +9,7 @@ using Rescue.Core.Pipeline;
 using Rescue.Core.Rules;
 using Rescue.Core.State;
 using Rescue.Core.Undo;
+using Rescue.Telemetry;
 using Rescue.Unity.Telemetry;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -90,6 +91,9 @@ namespace Rescue.Unity.Debugging
         private GameState? _currentState;
         private GameState? _initialState;
         private LevelJson? _testLevel;
+        private TelemetryLogger? _telemetryLogger;
+        private TelemetrySessionState? _telemetrySession;
+        private double _lastActionEndMs;
 
         public static DebugPanel? Instance => _instance;
 
@@ -147,6 +151,8 @@ namespace Rescue.Unity.Debugging
             }
 
             _inputActions.Clear();
+            _telemetryLogger?.Dispose();
+            _telemetryLogger = null;
 
             if (_instance == this)
             {
@@ -235,9 +241,26 @@ namespace Rescue.Unity.Debugging
             }
 
             PushDebugUndo("Step one action");
+            GameState stateBefore = _currentState;
+            long actionStartMs = (long)(Time.realtimeSinceStartupAsDouble * 1000.0);
             ActionResult result = Pipeline.RunAction(_currentState, new ActionInput(nextTap.Value));
+            long actionEndMs = (long)(Time.realtimeSinceStartupAsDouble * 1000.0);
             _currentState = result.State;
             AppendActionLog("Step 1 Action", result.Events, result.Outcome);
+
+            if (_telemetryLogger is not null && _telemetrySession is not null)
+            {
+                TelemetryHooks.OnAction(
+                    _currentLevelId,
+                    stateBefore,
+                    new ActionInput(nextTap.Value),
+                    result,
+                    (ulong)(uint)_currentSeed,
+                    actionStartMs,
+                    actionEndMs,
+                    _telemetrySession,
+                    _telemetryLogger);
+            }
             SetStatus($"Stepped action at ({nextTap.Value.Row}, {nextTap.Value.Col}) -> {result.Outcome}.");
             RefreshUi();
             return true;
@@ -330,6 +353,25 @@ namespace Rescue.Unity.Debugging
             SyncLevelSelectorChoices(levelId);
             SetStatus(status);
             RefreshUi();
+            StartTelemetrySession(state, levelId, seed);
+        }
+
+        private void StartTelemetrySession(GameState state, string levelId, int seed)
+        {
+            _telemetryLogger?.Dispose();
+
+            string sessionId = DateTime.UtcNow.ToString("yyyyMMddHHmmss") + "_" + Guid.NewGuid().ToString("N")[..6];
+            string logPath = Path.Combine(
+                Application.persistentDataPath, "telemetry", sessionId + ".jsonl");
+
+            TelemetryConfig config = TelemetryConfig.DevDefaults;
+            _telemetryLogger = new TelemetryLogger(logPath, config);
+
+            long nowMs = (long)(Time.realtimeSinceStartupAsDouble * 1000.0);
+            _lastActionEndMs = nowMs;
+            _telemetrySession = new TelemetrySessionState { LevelStartMs = nowMs };
+
+            TelemetryHooks.OnLevelStart(levelId, (ulong)(uint)seed, state, nowMs, _telemetryLogger);
         }
 
         private void ConfigureInputs()
