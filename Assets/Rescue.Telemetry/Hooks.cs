@@ -2,6 +2,7 @@ using System;
 using System.Collections.Immutable;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Rescue.Content;
 using Rescue.Core.Pipeline;
 using Rescue.Core.State;
 
@@ -281,6 +282,36 @@ namespace Rescue.Telemetry
                 LevelId: levelId,
                 TimestampMs: timestampMs,
                 ActionIndexBeforeUndo: actionIndexBeforeUndo));
+        }
+
+        public static void OnTuningChanged(
+            string levelId,
+            ulong seed,
+            LevelTuningOverrides overrides,
+            string changeSource,
+            string? presetName,
+            long timestampMs,
+            TelemetryLogger logger)
+        {
+            if (levelId is null) throw new ArgumentNullException(nameof(levelId));
+            if (overrides is null) throw new ArgumentNullException(nameof(overrides));
+            if (changeSource is null) throw new ArgumentNullException(nameof(changeSource));
+            if (logger is null) throw new ArgumentNullException(nameof(logger));
+
+            logger.Append(new TuningChangedEvent(
+                LevelId: levelId,
+                TimestampMs: timestampMs,
+                Seed: seed,
+                ChangeSource: changeSource,
+                PresetName: presetName,
+                WaterRiseInterval: overrides.WaterRiseInterval,
+                InitialFloodedRows: overrides.InitialFloodedRows,
+                AssistanceChance: overrides.AssistanceChance,
+                ForceEmergencyAssistance: overrides.ForceEmergencyAssistance,
+                DockJamEnabled: overrides.DockJamEnabled,
+                DockSize: overrides.DockSize,
+                DefaultCrateHp: overrides.DefaultCrateHp,
+                VineGrowthThreshold: overrides.VineGrowthThreshold));
         }
 
         private static string MapInvalidReason(InvalidInputReason reason)

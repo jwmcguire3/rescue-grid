@@ -2,7 +2,8 @@
   "name": "Rescue.Telemetry",
   "rootNamespace": "Rescue.Telemetry",
   "references": [
-    "Rescue.Core"
+    "Rescue.Core",
+    "Rescue.Content"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

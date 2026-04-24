@@ -438,7 +438,9 @@
 -analyzer:"C:/Program Files/Unity/Hub/Editor/6000.4.3f1/Editor/Data/Tools/BuildPipeline/Unity.SourceGenerators/Unity.UIToolkit.SourceGenerator.dll"
 "Assets/Rescue.Unity/Capture/CaptureRunner.cs"
 "Assets/Rescue.Unity/Compatibility/IsExternalInit.cs"
+"Assets/Rescue.Unity/Debug/DebugPanel.Tuning.cs"
 "Assets/Rescue.Unity/Debug/DebugPanel.cs"
+"Assets/Rescue.Unity/Debug/TuningPresetAsset.cs"
 "Assets/Rescue.Unity/Telemetry/TelemetryEventClassifier.cs"
 -langversion:9.0
 /deterministic

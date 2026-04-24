@@ -33,6 +33,22 @@
     gap: 6px;
 }
 
+.debug-tab-row {
+    flex-direction: row;
+    gap: 6px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+.debug-tab-button {
+    flex-grow: 1;
+}
+
+.debug-tab-button-active {
+    background-color: rgba(255, 207, 86, 0.18);
+    color: rgb(255, 222, 132);
+}
+
 .field-row {
     flex-direction: row;
     align-items: center;

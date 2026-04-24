@@ -205,6 +205,25 @@ namespace Rescue.Telemetry
         public int SchemaVersion => 1;
     }
 
+    public sealed record TuningChangedEvent(
+        string LevelId,
+        long TimestampMs,
+        ulong Seed,
+        string ChangeSource,
+        string? PresetName,
+        int? WaterRiseInterval,
+        int? InitialFloodedRows,
+        double? AssistanceChance,
+        bool? ForceEmergencyAssistance,
+        bool? DockJamEnabled,
+        int? DockSize,
+        int? DefaultCrateHp,
+        int? VineGrowthThreshold) : ITelemetryEvent
+    {
+        public string EventType => "tuning_changed";
+        public int SchemaVersion => 1;
+    }
+
     public sealed record ActionTakenEvent(
         string LevelId,
         long TimestampMs,
@@ -263,6 +282,7 @@ namespace Rescue.Telemetry
                 "dock_jam_triggered" => JsonSerializer.Deserialize<DockJamTriggeredEvent>(rawJson, InnerOptions),
                 "dock_jam_resolved" => JsonSerializer.Deserialize<DockJamResolvedEvent>(rawJson, InnerOptions),
                 "capture_snapshot" => JsonSerializer.Deserialize<CaptureSnapshotEvent>(rawJson, InnerOptions),
+                "tuning_changed" => JsonSerializer.Deserialize<TuningChangedEvent>(rawJson, InnerOptions),
                 "action_taken" => JsonSerializer.Deserialize<ActionTakenEvent>(rawJson, InnerOptions),
                 var unknown => throw new JsonException($"Unknown telemetry event type: {unknown}"),
             };

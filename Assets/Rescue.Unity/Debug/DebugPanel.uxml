@@ -1,9 +1,14 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
     <ui:VisualElement name="debug-panel-root" class="debug-panel">
-        <ui:ScrollView name="debug-scroll">
-            <ui:Label text="Rescue Grid Debug" class="debug-title" />
-            <ui:Label name="status-label" text="Ready." class="debug-value" />
+        <ui:Label text="Rescue Grid Debug" class="debug-title" />
+        <ui:Label name="status-label" text="Ready." class="debug-value" />
 
+        <ui:VisualElement class="debug-tab-row">
+            <ui:Button name="tab-play-button" text="Play" class="debug-tab-button debug-tab-button-active" />
+            <ui:Button name="tab-tune-button" text="Tune" class="debug-tab-button" />
+        </ui:VisualElement>
+
+        <ui:ScrollView name="play-tab-content">
             <ui:Label text="Level" class="debug-section" />
             <ui:DropdownField name="level-selector" label="Level" />
             <ui:IntegerField name="seed-field" label="Seed" />
@@ -65,6 +70,31 @@
 
             <ui:Label text="Event Log" class="debug-section" />
             <ui:VisualElement name="event-log-list" />
+        </ui:ScrollView>
+
+        <ui:ScrollView name="tune-tab-content">
+            <ui:Label text="Tune" class="debug-section" />
+            <ui:IntegerField name="tune-water-rise-interval-field" label="Water Rise Interval" />
+            <ui:IntegerField name="tune-initial-flooded-rows-field" label="Initial Flooded Rows" />
+            <ui:FloatField name="tune-assistance-chance-field" label="Assistance Chance" />
+            <ui:DropdownField name="tune-force-emergency-field" label="Force Emergency" />
+            <ui:Toggle name="tune-dock-jam-enabled-toggle" text="Dock Jam Enabled" />
+            <ui:IntegerField name="tune-dock-size-field" label="Dock Size (Debug)" />
+            <ui:IntegerField name="tune-default-crate-hp-field" label="Default Crate HP" />
+            <ui:IntegerField name="tune-vine-growth-threshold-field" label="Vine Growth Threshold" />
+
+            <ui:Label text="Presets" class="debug-section" />
+            <ui:DropdownField name="tune-preset-selector" label="Available" />
+            <ui:TextField name="tune-preset-name-field" label="Preset Name" />
+            <ui:VisualElement class="button-row">
+                <ui:Button name="tune-apply-button" text="Apply &amp; Reload" />
+                <ui:Button name="tune-reset-button" text="Reset" />
+            </ui:VisualElement>
+            <ui:VisualElement class="button-row">
+                <ui:Button name="tune-save-preset-button" text="Save Preset" />
+                <ui:Button name="tune-load-preset-button" text="Load Preset" />
+            </ui:VisualElement>
+            <ui:Label name="tune-summary-value" class="debug-value" text="Tune overrides active: none" />
         </ui:ScrollView>
     </ui:VisualElement>
 </ui:UXML>

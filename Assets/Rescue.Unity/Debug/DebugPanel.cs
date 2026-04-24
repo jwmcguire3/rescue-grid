@@ -22,7 +22,7 @@ using UnityEditor;
 namespace Rescue.Unity.Debugging
 {
     [RequireComponent(typeof(UIDocument))]
-    public sealed class DebugPanel : MonoBehaviour
+    public sealed partial class DebugPanel : MonoBehaviour
     {
         private const string UxmlAssetPath = "Assets/Rescue.Unity/Debug/DebugPanel.uxml";
         private const string UssAssetPath = "Assets/Rescue.Unity/Debug/DebugPanel.uss";
@@ -117,6 +117,10 @@ namespace Rescue.Unity.Debugging
 
         public int CurrentSeed => _currentSeed;
 
+        public LevelTuningOverrides CurrentTuningOverrides => _tuningOverrides;
+
+        public int LoadRevision => _loadRevision;
+
         public string CurrentWaterForecastSummary => GetWaterForecastSummary(CurrentState);
 
         public string CurrentNearRescueSummary => GetNearRescueTargetsSummary(CurrentState);
@@ -204,26 +208,45 @@ namespace Rescue.Unity.Debugging
             _testLevel = level ?? throw new ArgumentNullException(nameof(level));
             _currentLevelId = level.Id;
             _currentSeed = seed;
-            GameState loadedState = Loader.LoadLevel(level, seed);
+            GameState loadedState = Loader.LoadLevel(level, seed, _tuningOverrides);
             SetLoadedState(loadedState, level.Id, seed, $"Loaded {_currentLevelId} with seed {seed}.");
         }
 
         public void ReloadCurrentLevel()
         {
+            ReloadCurrentLevelInternal(emitTuneTelemetry: false, changeSource: "manual_reload", presetName: null);
+        }
+
+        private void ReloadCurrentLevelInternal(bool emitTuneTelemetry, string changeSource, string? presetName)
+        {
             if (_testLevel is not null)
             {
                 LoadLevel(_testLevel, _currentSeed);
+                if (emitTuneTelemetry)
+                {
+                    EmitTuningTelemetry(changeSource, presetName);
+                }
+
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(_currentLevelId))
             {
                 InitializeDefaultStateIfNeeded(forceReload: true);
+                if (emitTuneTelemetry)
+                {
+                    EmitTuningTelemetry(changeSource, presetName);
+                }
+
                 return;
             }
 
-            GameState loadedState = LoadLevelById(_currentLevelId, _currentSeed);
+            GameState loadedState = Loader.LoadLevel(_currentLevelId, _currentSeed, _tuningOverrides);
             SetLoadedState(loadedState, _currentLevelId, _currentSeed, $"Reloaded {_currentLevelId} with seed {_currentSeed}.");
+            if (emitTuneTelemetry)
+            {
+                EmitTuningTelemetry(changeSource, presetName);
+            }
         }
 
         public void ResetLevel()
@@ -445,11 +468,13 @@ namespace Rescue.Unity.Debugging
             _eventLog.Clear();
             _isPlaying = false;
             _playAccumulator = 0.0f;
+            _loadRevision++;
             UpdatePlayButtonLabel();
             SyncLevelSelectorChoices(levelId);
             SetStatus(status);
             RefreshUi();
             StartTelemetrySession(state, levelId, seed);
+            OnLevelLoadedForTuning();
         }
 
         private void StartTelemetrySession(GameState state, string levelId, int seed)
@@ -817,102 +842,13 @@ namespace Rescue.Unity.Debugging
             {
                 _copyFullStateButton.clicked += CopyFullGameStateJsonToClipboard;
             }
+
+            BindTuningUi(panel);
         }
 
         private VisualElement CreatePanelFallback()
         {
-            VisualElement root = new VisualElement();
-            root.AddToClassList("debug-panel");
-            root.style.position = Position.Absolute;
-            root.style.top = 12.0f;
-            root.style.right = 12.0f;
-            root.style.width = 420.0f;
-            root.style.maxHeight = 920.0f;
-            root.style.paddingLeft = 12.0f;
-            root.style.paddingRight = 12.0f;
-            root.style.paddingTop = 12.0f;
-            root.style.paddingBottom = 12.0f;
-            root.style.backgroundColor = new Color(0.07f, 0.10f, 0.14f, 0.93f);
-
-            ScrollView scroll = new ScrollView(ScrollViewMode.Vertical)
-            {
-                name = "debug-scroll",
-            };
-            scroll.style.flexGrow = 1.0f;
-            root.Add(scroll);
-
-            scroll.Add(MakeHeader("Rescue Grid Debug"));
-            scroll.Add(MakeRow(out _statusLabel, "status-label", "Ready."));
-
-            scroll.Add(MakeSection("Level"));
-            scroll.Add(MakeFieldRow("Level", out _levelSelector, "level-selector"));
-            scroll.Add(MakeFieldRow("Seed", out _seedField, "seed-field"));
-            scroll.Add(MakeButton("Randomize Seed", "random-seed-button", out _randomSeedButton));
-
-            scroll.Add(MakeSection("Step Through"));
-            VisualElement stepRow = new VisualElement();
-            stepRow.AddToClassList("button-row");
-            stepRow.Add(MakeButton("Play", "play-pause-button", out _playPauseButton));
-            stepRow.Add(MakeButton("Step 1 Action", "step-button", out _stepButton));
-            scroll.Add(stepRow);
-            scroll.Add(MakeFieldRow("Speed", out _speedSelector, "speed-selector"));
-            Toggle fastForward = new Toggle("Fast Forward") { name = "fast-forward-toggle" };
-            _fastForwardToggle = fastForward;
-            scroll.Add(fastForward);
-            scroll.Add(MakeButton("Debug Undo", "debug-undo-button", out _debugUndoButton));
-            scroll.Add(MakeButton("Reset Level", "reset-button", out _resetButton));
-
-            scroll.Add(MakeSection("Replay"));
-            scroll.Add(MakeFieldRow("Session", out _replayPathField, "replay-path-field"));
-            VisualElement replayRow = new VisualElement();
-            replayRow.AddToClassList("button-row");
-            replayRow.Add(MakeButton("Load Replay", "load-replay-button", out _loadReplayButton));
-            replayRow.Add(MakeButton("Step Replay", "step-replay-button", out _stepReplayButton));
-            replayRow.Add(MakeButton("Clear Replay", "clear-replay-button", out _clearReplayButton));
-            scroll.Add(replayRow);
-            scroll.Add(MakeRow(out _replayStatusValue, "replay-status-value"));
-
-            scroll.Add(MakeSection("Hazards"));
-            scroll.Add(MakeRow(out _waterActionsValue, "water-actions-value"));
-            scroll.Add(MakeRow(out _waterRiseIntervalValue, "water-rise-interval-value"));
-            scroll.Add(MakeRow(out _waterNextFloodRowValue, "water-next-row-value"));
-            scroll.Add(MakeRow(out _waterForecastValue, "water-forecast-value"));
-            scroll.Add(MakeRow(out _ruleTeachValue, "rule-teach-value"));
-            scroll.Add(MakeRow(out _vineActionsValue, "vine-actions-value"));
-            scroll.Add(MakeRow(out _vineThresholdValue, "vine-threshold-value"));
-            scroll.Add(MakeRow(out _vinePendingValue, "vine-pending-value"));
-
-            scroll.Add(MakeSection("Dock"));
-            scroll.Add(MakeRow(out _dockOccupancyValue, "dock-occupancy-value"));
-            scroll.Add(MakeRow(out _dockWarningValue, "dock-warning-value"));
-            scroll.Add(MakeRow(out _dockContentsValue, "dock-contents-value"));
-            scroll.Add(MakeRow(out _dockJamUsedValue, "dock-jam-used-value"));
-            scroll.Add(MakeRow(out _dockJamEnabledValue, "dock-jam-enabled-value"));
-            scroll.Add(MakeRow(out _nearRescueTargetsValue, "near-rescue-targets-value"));
-
-            scroll.Add(MakeSection("RNG"));
-            scroll.Add(MakeRow(out _rngStateValue, "rng-state-value"));
-            scroll.Add(MakeButton("Copy RNG State", "copy-rng-button", out _copyRngButton));
-
-            scroll.Add(MakeSection("Spawn Overrides"));
-            scroll.Add(MakeFieldRow("Assist Chance", out _assistanceOverrideField, "assistance-override-field"));
-            scroll.Add(MakeFieldRow("Force Emergency", out _forceEmergencyField, "force-emergency-field"));
-            scroll.Add(MakeRow(out _consecutiveEmergencyValue, "consecutive-emergency-value"));
-            scroll.Add(MakeRow(out _spawnRecoveryValue, "spawn-recovery-value"));
-
-            scroll.Add(MakeSection("Overflow"));
-            scroll.Add(MakeButton("Instant Overflow Test", "overflow-button", out _overflowButton));
-
-            scroll.Add(MakeSection("State Export"));
-            scroll.Add(MakeButton("Copy State JSON", "copy-state-button", out _copyStateButton));
-            scroll.Add(MakeButton("Copy Full GameState JSON", "copy-full-state-button", out _copyFullStateButton));
-
-            scroll.Add(MakeSection("Event Log"));
-            _eventLogList = new VisualElement { name = "event-log-list" };
-            _eventLogList.style.flexDirection = FlexDirection.Column;
-            scroll.Add(_eventLogList);
-
-            return root;
+            return CreateFallbackWithTuningTabs();
         }
 
         private static Label MakeHeader(string text)
@@ -1235,6 +1171,7 @@ namespace Rescue.Unity.Debugging
 
             SyncLevelSelectorChoices(_currentLevelId);
             SyncOverrideFields();
+            RefreshTuningUi();
             UpdatePlayButtonLabel();
 
             if (_replayStatusValue is not null)

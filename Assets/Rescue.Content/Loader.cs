@@ -12,17 +12,37 @@ namespace Rescue.Content
     {
         public static GameState LoadLevel(string levelId, int seed)
         {
+            return LoadLevel(levelId, seed, LevelTuningOverrides.None);
+        }
+
+        public static GameState LoadLevel(string levelId, int seed, LevelTuningOverrides? tuningOverrides)
+        {
+            if (string.IsNullOrWhiteSpace(levelId))
+            {
+                throw new ArgumentException("Level id is required.", nameof(levelId));
+            }
+
+            LevelJson parsed = LoadLevelDefinition(levelId);
+            return LoadLevel(parsed, seed, tuningOverrides);
+        }
+
+        public static LevelJson LoadLevelDefinition(string levelId)
+        {
             if (string.IsNullOrWhiteSpace(levelId))
             {
                 throw new ArgumentException("Level id is required.", nameof(levelId));
             }
 
             string json = LoadLevelJsonFromStreamingAssets(levelId);
-            LevelJson parsed = ContentJson.DeserializeLevel(json);
-            return LoadLevel(parsed, seed);
+            return ContentJson.DeserializeLevel(json);
         }
 
         public static GameState LoadLevel(LevelJson json, int seed)
+        {
+            return LoadLevel(json, seed, LevelTuningOverrides.None);
+        }
+
+        public static GameState LoadLevel(LevelJson json, int seed, LevelTuningOverrides? tuningOverrides)
         {
             if (json is null)
             {
@@ -36,26 +56,30 @@ namespace Rescue.Content
                     $"Level '{json.Id}' has validation errors: {FormatValidationErrors(validation.Errors)}");
             }
 
-            ImmutableArray<ImmutableArray<Tile>> boardRows = BuildBoardRows(json);
+            EffectiveLevelTuning tuning = ResolveTuning(json, tuningOverrides);
+            ImmutableArray<ImmutableArray<Tile>> boardRows = BuildBoardRows(json, tuning.DefaultCrateHp);
             Board board = new Board(json.Board.Width, json.Board.Height, boardRows);
             ImmutableArray<TargetState> targets = BuildTargets(json);
 
             WaterState water = new WaterState(
-                FloodedRows: json.InitialFloodedRows,
-                ActionsUntilRise: json.Water.RiseInterval,
-                RiseInterval: json.Water.RiseInterval,
+                FloodedRows: tuning.InitialFloodedRows,
+                ActionsUntilRise: tuning.WaterRiseInterval,
+                RiseInterval: tuning.WaterRiseInterval,
                 PauseUntilFirstAction: json.Meta.IsRuleTeach);
 
-            Board floodedBoard = ApplyInitialFlood(board, json.InitialFloodedRows);
+            Board floodedBoard = ApplyInitialFlood(board, tuning.InitialFloodedRows);
             SeededRng rng = new SeededRng(unchecked((uint)seed));
+            SpawnOverride? debugSpawnOverride = tuning.ForceEmergencyAssistance.HasValue
+                ? new SpawnOverride(tuning.ForceEmergencyAssistance, OverrideAssistanceChance: null)
+                : null;
 
             return new GameState(
                 Board: floodedBoard,
-                Dock: new Dock(CreateEmptyDockSlots(json.Dock.Size), json.Dock.Size),
+                Dock: new Dock(CreateEmptyDockSlots(tuning.DockSize), tuning.DockSize),
                 Water: water,
                 Vine: new VineState(
                     ActionsSinceLastClear: 0,
-                    GrowthThreshold: json.Vine.GrowthThreshold,
+                    GrowthThreshold: tuning.VineGrowthThreshold,
                     GrowthPriorityList: BuildGrowthPriority(json),
                     PriorityCursor: 0,
                     PendingGrowthTile: null),
@@ -63,7 +87,7 @@ namespace Rescue.Content
                 LevelConfig: new LevelConfig(
                     DebrisTypePool: json.DebrisTypePool.ToImmutableArray(),
                     BaseDistribution: json.BaseDistribution?.ToImmutableDictionary(),
-                    AssistanceChance: json.Assistance.Chance,
+                    AssistanceChance: tuning.AssistanceChance,
                     ConsecutiveEmergencyCap: json.Assistance.ConsecutiveEmergencyCap,
                     IsRuleTeach: json.Meta.IsRuleTeach),
                 RngState: rng.GetState(),
@@ -74,9 +98,60 @@ namespace Rescue.Content
                 Frozen: false,
                 ConsecutiveEmergencySpawns: 0,
                 SpawnRecoveryCounter: 0,
-                DockJamEnabled: json.Dock.JamEnabled,
+                DockJamEnabled: tuning.DockJamEnabled,
                 DockJamActive: false,
-                DebugSpawnOverride: null);
+                DebugSpawnOverride: debugSpawnOverride);
+        }
+
+        private static EffectiveLevelTuning ResolveTuning(LevelJson json, LevelTuningOverrides? tuningOverrides)
+        {
+            LevelTuningOverrides overrides = tuningOverrides ?? LevelTuningOverrides.None;
+
+            int waterRiseInterval = overrides.WaterRiseInterval ?? json.Water.RiseInterval;
+            if (waterRiseInterval < 0)
+            {
+                throw new InvalidOperationException("Tuned water rise interval must be >= 0.");
+            }
+
+            int initialFloodedRows = overrides.InitialFloodedRows ?? json.InitialFloodedRows;
+            if (initialFloodedRows < 0 || initialFloodedRows >= json.Board.Height)
+            {
+                throw new InvalidOperationException("Tuned initial flooded rows must be >= 0 and less than board height.");
+            }
+
+            double assistanceChance = overrides.AssistanceChance ?? json.Assistance.Chance;
+            if (double.IsNaN(assistanceChance) || double.IsInfinity(assistanceChance) || assistanceChance < 0.0d || assistanceChance > 1.0d)
+            {
+                throw new InvalidOperationException("Tuned assistance chance must be between 0 and 1 inclusive.");
+            }
+
+            int dockSize = overrides.DockSize ?? json.Dock.Size;
+            if (dockSize <= 0)
+            {
+                throw new InvalidOperationException("Tuned dock size must be positive.");
+            }
+
+            int defaultCrateHp = overrides.DefaultCrateHp ?? 1;
+            if (defaultCrateHp <= 0)
+            {
+                throw new InvalidOperationException("Tuned crate HP must be positive.");
+            }
+
+            int vineGrowthThreshold = overrides.VineGrowthThreshold ?? json.Vine.GrowthThreshold;
+            if (vineGrowthThreshold < 0)
+            {
+                throw new InvalidOperationException("Tuned vine growth threshold must be >= 0.");
+            }
+
+            return new EffectiveLevelTuning(
+                WaterRiseInterval: waterRiseInterval,
+                InitialFloodedRows: initialFloodedRows,
+                AssistanceChance: assistanceChance,
+                ForceEmergencyAssistance: overrides.ForceEmergencyAssistance,
+                DockJamEnabled: overrides.DockJamEnabled ?? json.Dock.JamEnabled,
+                DockSize: dockSize,
+                DefaultCrateHp: defaultCrateHp,
+                VineGrowthThreshold: vineGrowthThreshold);
         }
 
         private static ImmutableArray<TileCoord> BuildGrowthPriority(LevelJson json)
@@ -91,7 +166,7 @@ namespace Rescue.Content
             return coords.ToImmutable();
         }
 
-        private static ImmutableArray<ImmutableArray<Tile>> BuildBoardRows(LevelJson json)
+        private static ImmutableArray<ImmutableArray<Tile>> BuildBoardRows(LevelJson json, int defaultCrateHp)
         {
             Dictionary<string, string> targetTileIds = GetTargetTileIds(json);
             ImmutableArray<ImmutableArray<Tile>>.Builder rows = ImmutableArray.CreateBuilder<ImmutableArray<Tile>>(json.Board.Height);
@@ -101,7 +176,7 @@ namespace Rescue.Content
                 for (int col = 0; col < json.Board.Width; col++)
                 {
                     string code = json.Board.Tiles[row][col];
-                    tiles.Add(ParseTile(code, targetTileIds, row, col));
+                    tiles.Add(ParseTile(code, targetTileIds, row, col, defaultCrateHp));
                 }
 
                 rows.Add(tiles.ToImmutable());
@@ -193,7 +268,7 @@ namespace Rescue.Content
             return ids;
         }
 
-        private static Tile ParseTile(string code, IReadOnlyDictionary<string, string> targetIds, int row, int col)
+        private static Tile ParseTile(string code, IReadOnlyDictionary<string, string> targetIds, int row, int col, int defaultCrateHp)
         {
             if (code == ".")
             {
@@ -207,7 +282,7 @@ namespace Rescue.Content
 
             if (code == "CR")
             {
-                return new BlockerTile(BlockerType.Crate, 1, Hidden: null);
+                return new BlockerTile(BlockerType.Crate, defaultCrateHp, Hidden: null);
             }
 
             if (code == "CX")

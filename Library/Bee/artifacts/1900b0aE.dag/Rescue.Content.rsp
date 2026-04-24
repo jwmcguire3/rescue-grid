@@ -296,6 +296,7 @@
 "Assets/Rescue.Content/ContentJson.cs"
 "Assets/Rescue.Content/Loader.cs"
 "Assets/Rescue.Content/Schema.cs"
+"Assets/Rescue.Content/Tuning.cs"
 "Assets/Rescue.Content/Validator.cs"
 -langversion:9.0
 /deterministic

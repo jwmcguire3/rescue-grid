@@ -4,6 +4,7 @@ This panel is dev-only and only compiles when `UNITY_EDITOR` or `DEVELOPMENT_BUI
 
 ## Controls
 
+- Tabs: `Play` keeps the existing step/replay/state inspection tools, and `Tune` hosts hot-reloadable level tuning plus preset management.
 - Level selector: lists level ids discovered from `Assets/StreamingAssets/Levels`; selecting one reloads it with the current seed.
 - Seed field: delayed integer field; committing a new value reloads the current level with that seed.
 - Randomize Seed: generates a new seed, logs it to the Unity console, and reloads reproducibly.
@@ -17,6 +18,8 @@ This panel is dev-only and only compiles when `UNITY_EDITOR` or `DEVELOPMENT_BUI
 - Dock readout: shows occupancy, warning level, slot-order contents, `dockJamUsed`, and `dockJamEnabled`.
 - RNG inspector: shows serialized RNG state as `S0:S1` and copies it to the clipboard.
 - Spawn overrides: lets you switch assistance chance between current/`0`/`1`, choose force-emergency `Auto`/`On`/`Off`, and inspect `ConsecutiveEmergencySpawns` plus `SpawnRecoveryCounter`.
+- Tune tab: hot-reloads the current level with overrideable `water.riseInterval`, `initialFloodedRows`, `assistanceChance`, force-emergency mode, dock jam enabled, debug-only dock size, default crate HP, and `vineGrowthThreshold`.
+- Tune presets: saves and loads `TuningPresetAsset` ScriptableObjects from `Assets/Editor/TuningPresets/` so playtest setups can be replayed exactly.
 - Instant Overflow Test: fills the dock with seven mismatched pieces, injects a two-piece group, and immediately runs the overflow action to exercise Dock Jam / overflow.
 - Event log: keeps the last 20 actions, color-coded by event type. `DebugSpawnOverrideApplied` entries are tagged as dev-only telemetry.
 - Copy State JSON: copies a bug-report wrapper containing level id, seed, timestamp, and the exported state.
