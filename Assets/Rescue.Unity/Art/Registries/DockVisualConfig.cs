@@ -89,6 +89,22 @@ namespace Rescue.Unity.Art.Registries
             set => failedMaterial = value;
         }
 
+        public GameObject? GetSharedDockPrefab()
+        {
+            return RegistryWarnings.ResolvePrefab(this, "shared dock", sharedDockPrefab);
+        }
+
+        public Mesh? GetSharedDockMesh()
+        {
+            if (sharedDockMesh is not null)
+            {
+                return sharedDockMesh;
+            }
+
+            RegistryWarnings.WarnMissing(this, "shared dock", "mesh");
+            return null;
+        }
+
         public GameObject? GetPrefab(DockVisualState state)
         {
             GameObject? statePrefab = state switch

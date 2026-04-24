@@ -14,6 +14,7 @@ namespace Rescue.Unity.Art.Tests
         private const string ArtRootPath = Phase1PlaceholderPrefabFactory.DefaultArtRootPath;
         private const string Phase1PrefabsPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1";
         private const string Phase1DockPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Dock/Dock_Shared_7Slot_Phase1.prefab";
+        private const string DirectDryTilePrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Board/DryTile.prefab";
         private const string TileRegistryPath = "Assets/Rescue.Unity/Art/Registries/Phase1TileVisualRegistry.asset";
         private const string PieceRegistryPath = "Assets/Rescue.Unity/Art/Registries/Phase1PieceVisualRegistry.asset";
         private const string BlockerRegistryPath = "Assets/Rescue.Unity/Art/Registries/Phase1BlockerVisualRegistry.asset";
@@ -80,6 +81,36 @@ namespace Rescue.Unity.Art.Tests
             Assert.That(config.CautionMaterial, Is.Not.Null);
             Assert.That(config.AcuteMaterial, Is.Not.Null);
             Assert.That(config.FailedMaterial, Is.Not.Null);
+        }
+
+        [Test]
+        public void Phase1TileRegistry_UsesDirectDryTileAsCanonicalEntry()
+        {
+            TileVisualRegistry tileRegistry = LoadAsset<TileVisualRegistry>(TileRegistryPath);
+            GameObject directDryTile = LoadAsset<GameObject>(DirectDryTilePrefabPath);
+
+            Assert.That(tileRegistry.DryTilePrefab, Is.SameAs(directDryTile));
+            Assert.That(tileRegistry.GetDryTilePrefab(), Is.SameAs(directDryTile));
+        }
+
+        [Test]
+        public void Phase1DockConfig_UsesSharedPhase1DockPrefab()
+        {
+            DockVisualConfig config = LoadAsset<DockVisualConfig>(DockConfigPath);
+            GameObject sharedDockPrefab = LoadAsset<GameObject>(Phase1DockPrefabPath);
+
+            Assert.That(config.SharedDockPrefab, Is.SameAs(sharedDockPrefab));
+            Assert.That(config.GetSharedDockPrefab(), Is.SameAs(sharedDockPrefab));
+        }
+
+        [Test]
+        public void Phase1DryTilePrefabWrapper_DoesNotStackExtraRootRotation()
+        {
+            GameObject phase1DockPrefab = LoadAsset<GameObject>(Phase1DockPrefabPath);
+            GameObject phase1DryTilePrefab = LoadAsset<GameObject>("Assets/Rescue.Unity/Art/Prefabs/Phase1/Board/DryTile_Phase1.prefab");
+
+            Assert.That(phase1DryTilePrefab.transform.localRotation, Is.EqualTo(Quaternion.identity));
+            Assert.That(phase1DockPrefab.transform.localRotation, Is.EqualTo(Quaternion.identity));
         }
 
         [Test]

@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using NUnit.Framework;
 using Rescue.Core.Rng;
 using Rescue.Core.State;
+using Rescue.Unity.Art.Registries;
 using Rescue.Unity.BoardPresentation;
 using UnityEngine;
 using CoreBoard = Rescue.Core.State.Board;
@@ -12,7 +13,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
 {
     public sealed class BoardGridViewPresenterTests
     {
-        private readonly List<GameObject> createdObjects = new List<GameObject>();
+        private readonly List<Object> createdObjects = new List<Object>();
 
         [TearDown]
         public void TearDown()
@@ -116,6 +117,40 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Assert.That(topLeft.localPosition.z + bottomRight.localPosition.z, Is.EqualTo(0f).Within(0.001f));
         }
 
+        [Test]
+        public void BoardGridViewPresenter_UsesTileRegistryBeforeSceneOverrides()
+        {
+            BoardGridViewPresenter presenter = CreatePresenter(out Transform boardRoot);
+            TileVisualRegistry registry = CreateTrackedScriptableObject<TileVisualRegistry>();
+            GameObject registryPrefab = CreateTrackedObject("RegistryTilePrefab");
+            registryPrefab.transform.localScale = new Vector3(2f, 3f, 4f);
+            GameObject sceneOverridePrefab = CreateTrackedObject("SceneOverrideTilePrefab");
+            sceneOverridePrefab.transform.localScale = new Vector3(9f, 9f, 9f);
+
+            registry.DryTilePrefab = registryPrefab;
+            SetPrivateField(presenter, "tileRegistry", registry);
+            SetPrivateField(presenter, "dryTilePrefab", sceneOverridePrefab);
+
+            presenter.RebuildGrid(CreateState(width: 1, height: 1));
+
+            Transform spawnedTile = boardRoot.GetChild(0).GetChild(0);
+            Assert.That(spawnedTile.localScale, Is.EqualTo(registryPrefab.transform.localScale));
+        }
+
+        [Test]
+        public void BoardGridViewPresenter_MapsColumnsToPositiveXAndRowsToNegativeZ()
+        {
+            BoardGridViewPresenter presenter = CreatePresenter(out _);
+            presenter.RebuildGrid(CreateState(width: 3, height: 3));
+
+            Assert.That(presenter.TryGetCellAnchor(new TileCoord(0, 0), out Transform topLeft), Is.True);
+            Assert.That(presenter.TryGetCellAnchor(new TileCoord(0, 1), out Transform topMiddle), Is.True);
+            Assert.That(presenter.TryGetCellAnchor(new TileCoord(1, 0), out Transform middleLeft), Is.True);
+
+            Assert.That(topMiddle.localPosition.x, Is.GreaterThan(topLeft.localPosition.x));
+            Assert.That(middleLeft.localPosition.z, Is.LessThan(topLeft.localPosition.z));
+        }
+
         private BoardGridViewPresenter CreatePresenter(out Transform boardRoot)
         {
             GameObject presenterObject = CreateTrackedObject("BoardPresenter");
@@ -139,6 +174,14 @@ namespace Rescue.Unity.BoardPresentation.Tests
             GameObject gameObject = new GameObject(name);
             createdObjects.Add(gameObject);
             return gameObject;
+        }
+
+        private T CreateTrackedScriptableObject<T>()
+            where T : ScriptableObject
+        {
+            T instance = ScriptableObject.CreateInstance<T>();
+            createdObjects.Add(instance);
+            return instance;
         }
 
         private static int CountGeneratedTiles(Transform boardRoot)

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Rescue.Core.State;
+using Rescue.Unity.Art.Registries;
 using UnityEngine;
 
 namespace Rescue.Unity.BoardPresentation
@@ -7,9 +8,9 @@ namespace Rescue.Unity.BoardPresentation
     public sealed class BoardGridViewPresenter : MonoBehaviour
     {
         private const string DefaultBoardRootName = "BoardGrid";
-        private const string DryTilePrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Board/DryTile.prefab";
 
         [SerializeField] private Transform? boardRoot;
+        [SerializeField] private TileVisualRegistry? tileRegistry;
         [SerializeField] private GameObject? dryTilePrefab;
         [SerializeField] private GameObject? fallbackTilePrefab;
         [SerializeField] private float cellSize = 1.0f;
@@ -126,6 +127,12 @@ namespace Rescue.Unity.BoardPresentation
 
         private GameObject? ResolveTilePrefab()
         {
+            GameObject? registryPrefab = tileRegistry?.GetDryTilePrefab();
+            if (registryPrefab is not null)
+            {
+                return registryPrefab;
+            }
+
             if (dryTilePrefab is not null)
             {
                 return dryTilePrefab;
@@ -145,22 +152,17 @@ namespace Rescue.Unity.BoardPresentation
 #if UNITY_EDITOR
         private void OnValidate()
         {
-            AutoAssignTilePrefabs();
+            SyncFallbackTilePrefab();
         }
 
         private void Reset()
         {
-            AutoAssignTilePrefabs();
+            SyncFallbackTilePrefab();
         }
 
-        private void AutoAssignTilePrefabs()
+        private void SyncFallbackTilePrefab()
         {
-            if (dryTilePrefab is null)
-            {
-                dryTilePrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(DryTilePrefabPath);
-            }
-
-            if (fallbackTilePrefab is null)
+            if (fallbackTilePrefab is null && dryTilePrefab is not null)
             {
                 fallbackTilePrefab = dryTilePrefab;
             }

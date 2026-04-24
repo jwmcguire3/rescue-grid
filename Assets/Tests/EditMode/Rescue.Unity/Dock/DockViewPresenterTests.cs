@@ -145,6 +145,55 @@ namespace Rescue.Unity.UI.Tests
             Assert.That(pieceContainer.childCount, Is.EqualTo(0));
         }
 
+        [Test]
+        public void DockViewPresenter_UsesDockConfigSharedPrefabAndAnchors()
+        {
+            GameObject presenterObject = CreateTrackedObject("DockPresenter");
+            DockViewPresenter presenter = presenterObject.AddComponent<DockViewPresenter>();
+            Transform pieceContainer = new GameObject("DockPieces").transform;
+            pieceContainer.SetParent(presenterObject.transform, false);
+            Track(pieceContainer.gameObject);
+
+            GameObject legacyDockVisual = CreateTrackedObject("LegacyDockVisual");
+            MeshRenderer legacyRenderer = legacyDockVisual.AddComponent<MeshRenderer>();
+            legacyDockVisual.transform.SetParent(presenterObject.transform, false);
+
+            GameObject sharedDockPrefab = CreateTrackedObject("SharedDockPrefab");
+            GameObject dockVisual = CreateTrackedObject("Visual");
+            dockVisual.transform.SetParent(sharedDockPrefab.transform, false);
+            MeshRenderer sharedRenderer = dockVisual.AddComponent<MeshRenderer>();
+
+            for (int i = 0; i < 7; i++)
+            {
+                GameObject anchor = CreateTrackedObject($"Slot_{i:00}");
+                anchor.transform.SetParent(sharedDockPrefab.transform, false);
+                anchor.transform.localPosition = new Vector3(i * 0.5f, 0.125f, 0f);
+            }
+
+            DockVisualConfig config = ScriptableObject.CreateInstance<DockVisualConfig>();
+            Material safeMaterial = new Material(Shader.Find("Standard"));
+
+            config.SharedDockPrefab = sharedDockPrefab;
+            config.SafeMaterial = safeMaterial;
+
+            GameObject fallbackPrefab = CreateTrackedObject("FallbackPiecePrefab");
+
+            SetPrivateField(presenter, "dockVisualConfig", config);
+            SetPrivateField(presenter, "sharedDockRenderer", legacyRenderer);
+            SetPrivateField(presenter, "pieceContainer", pieceContainer);
+            SetPrivateField(presenter, "fallbackPiecePrefab", fallbackPrefab);
+
+            presenter.Rebuild(CreateState(DebrisType.A, null, null, null, null, null, null));
+
+            Assert.That(legacyRenderer.enabled, Is.False);
+            Assert.That(sharedRenderer.sharedMaterial, Is.SameAs(safeMaterial));
+            Assert.That(pieceContainer.childCount, Is.EqualTo(1));
+            Assert.That(pieceContainer.GetChild(0).position.y, Is.EqualTo(0.125f).Within(0.001f));
+
+            Object.DestroyImmediate(safeMaterial);
+            Object.DestroyImmediate(config);
+        }
+
         private GameObject CreateTrackedObject(string name)
         {
             GameObject gameObject = new GameObject(name);

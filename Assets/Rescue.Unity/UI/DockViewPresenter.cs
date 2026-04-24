@@ -39,8 +39,10 @@ namespace Rescue.Unity.UI
     {
         private const int Phase1DockSize = 7;
         private const string DefaultPieceContainerName = "DockPieces";
+        private const string SharedDockInstanceName = "SharedDockVisualInstance";
 
         [Header("Shared Dock")]
+        [SerializeField] private DockVisualConfig? dockVisualConfig;
         [SerializeField] private MeshRenderer? sharedDockRenderer;
         [SerializeField] private Material? safeMaterial;
         [SerializeField] private Material? cautionMaterial;
@@ -56,6 +58,7 @@ namespace Rescue.Unity.UI
         [SerializeField] private GameObject? fallbackPiecePrefab;
 
         private readonly List<GameObject> _spawnedPieces = new List<GameObject>();
+        private GameObject? _sharedDockInstance;
 
         public void Rebuild(GameState state)
         {
@@ -64,6 +67,8 @@ namespace Rescue.Unity.UI
                 Debug.LogWarning($"{nameof(DockViewPresenter)} requires a valid GameState to rebuild.", this);
                 return;
             }
+
+            EnsureSharedDockVisual();
 
             Transform[] anchors = ResolveSlotAnchors();
             if (anchors.Length != Phase1DockSize)
@@ -115,20 +120,14 @@ namespace Rescue.Unity.UI
 
         public void SetDockVisualState(DockVisualState state)
         {
-            if (sharedDockRenderer is null)
+            MeshRenderer? renderer = ResolveSharedDockRenderer();
+            if (renderer is null)
             {
                 Debug.LogWarning($"{nameof(DockViewPresenter)} is missing {nameof(sharedDockRenderer)}.", this);
                 return;
             }
 
-            Material? material = state switch
-            {
-                DockVisualState.Safe => safeMaterial,
-                DockVisualState.Caution => cautionMaterial,
-                DockVisualState.Acute => acuteMaterial,
-                DockVisualState.Failed => failedMaterial,
-                _ => null,
-            };
+            Material? material = dockVisualConfig?.GetMaterial(state) ?? ResolveLegacyMaterial(state);
 
             if (material is null)
             {
@@ -136,7 +135,7 @@ namespace Rescue.Unity.UI
                 return;
             }
 
-            sharedDockRenderer.sharedMaterial = material;
+            renderer.sharedMaterial = material;
         }
 
         public void ClearSlots()
@@ -205,6 +204,13 @@ namespace Rescue.Unity.UI
 
         private Transform[] ResolveSlotAnchors()
         {
+            Transform[] configAnchors = FindSharedDockAnchors();
+            if (IsValidAnchorArray(configAnchors))
+            {
+                slotAnchors = configAnchors;
+                return configAnchors;
+            }
+
             if (IsValidAnchorArray(slotAnchors))
             {
                 Transform[] assignedAnchors = slotAnchors ?? System.Array.Empty<Transform>();
@@ -231,6 +237,119 @@ namespace Rescue.Unity.UI
 
             slotAnchors = anchors.ToArray();
             return slotAnchors;
+        }
+
+        private void EnsureSharedDockVisual()
+        {
+            GameObject? sharedDockPrefab = dockVisualConfig?.GetSharedDockPrefab();
+            if (sharedDockPrefab is null)
+            {
+                return;
+            }
+
+            if (_sharedDockInstance is null)
+            {
+                Transform? existingInstance = transform.Find(SharedDockInstanceName);
+                if (existingInstance is not null)
+                {
+                    _sharedDockInstance = existingInstance.gameObject;
+                }
+            }
+
+            if (_sharedDockInstance is null)
+            {
+                _sharedDockInstance = Instantiate(sharedDockPrefab, transform);
+                _sharedDockInstance.name = SharedDockInstanceName;
+            }
+
+            if (sharedDockRenderer is not null && _sharedDockInstance is not null && !IsChildOf(sharedDockRenderer.transform, _sharedDockInstance.transform))
+            {
+                sharedDockRenderer.enabled = false;
+            }
+        }
+
+        private MeshRenderer? ResolveSharedDockRenderer()
+        {
+            if (_sharedDockInstance is not null)
+            {
+                MeshRenderer? instanceRenderer = _sharedDockInstance.GetComponentInChildren<MeshRenderer>(true);
+                if (instanceRenderer is not null)
+                {
+                    return instanceRenderer;
+                }
+            }
+
+            return sharedDockRenderer;
+        }
+
+        private Material? ResolveLegacyMaterial(DockVisualState state)
+        {
+            return state switch
+            {
+                DockVisualState.Safe => safeMaterial,
+                DockVisualState.Caution => cautionMaterial,
+                DockVisualState.Acute => acuteMaterial,
+                DockVisualState.Failed => failedMaterial,
+                _ => null,
+            };
+        }
+
+        private Transform[] FindSharedDockAnchors()
+        {
+            if (_sharedDockInstance is null)
+            {
+                return System.Array.Empty<Transform>();
+            }
+
+            List<Transform> anchors = new List<Transform>(Phase1DockSize);
+            for (int slotIndex = 0; slotIndex < Phase1DockSize; slotIndex++)
+            {
+                Transform? anchor = FindChildRecursive(_sharedDockInstance.transform, $"Slot_{slotIndex:00}");
+                if (anchor is null)
+                {
+                    return System.Array.Empty<Transform>();
+                }
+
+                anchors.Add(anchor);
+            }
+
+            return anchors.ToArray();
+        }
+
+        private static Transform? FindChildRecursive(Transform root, string name)
+        {
+            if (root.name == name)
+            {
+                return root;
+            }
+
+            for (int childIndex = 0; childIndex < root.childCount; childIndex++)
+            {
+                Transform child = root.GetChild(childIndex);
+                Transform? match = FindChildRecursive(child, name);
+                if (match is not null)
+                {
+                    return match;
+                }
+            }
+
+            return null;
+        }
+
+        private static bool IsChildOf(Transform child, Transform parent)
+        {
+            Transform? current = child;
+            while (current is not null)
+            {
+                if (current == parent)
+                {
+                    return true;
+                }
+
+                current = current.parent;
+            }
+
+            return false;
         }
 
         private GameObject? ResolvePiecePrefab(DebrisType debrisType)

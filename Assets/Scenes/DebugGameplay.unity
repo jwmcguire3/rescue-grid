@@ -405,8 +405,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Rescue.Unity::Rescue.Unity.BoardPresentation.BoardGridViewPresenter
   boardRoot: {fileID: 200000011}
-  dryTilePrefab: {fileID: 7912822185736670360, guid: 193e6b5afbcf8234fa266f6bfc011546, type: 3}
-  fallbackTilePrefab: {fileID: 7912822185736670360, guid: 193e6b5afbcf8234fa266f6bfc011546, type: 3}
+  tileRegistry: {fileID: 11400000, guid: 4799861cd263c5f459452e39480d0177, type: 2}
+  dryTilePrefab: {fileID: 0}
+  fallbackTilePrefab: {fileID: 0}
   cellSize: 1
   centerBoard: 1
   tileRotationOffset: {x: 0, y: 0, z: 0}
@@ -567,6 +568,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 271d5c64b8c04bb0b0f8b61a15359811, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Rescue.Unity::Rescue.Unity.UI.DockViewPresenter
+  dockVisualConfig: {fileID: 11400000, guid: 56f59ef1d9c2f5c4698b191d252576c5, type: 2}
   sharedDockRenderer: {fileID: 200000053}
   safeMaterial: {fileID: 2100000, guid: 3b625ff45a1f61a42b94a4c57794501d, type: 2}
   cautionMaterial: {fileID: 2100000, guid: f306ad2134429824dbb89b5dc42cfd40, type: 2}
