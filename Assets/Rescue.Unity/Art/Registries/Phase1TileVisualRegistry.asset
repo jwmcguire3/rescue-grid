@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e3951f7222bb4f4bbbfef5d3d45cc99, type: 3}
+  m_Name: Phase1TileVisualRegistry
+  m_EditorClassIdentifier: Rescue.Unity::Rescue.Unity.Art.Registries.TileVisualRegistry
+  dryTilePrefab: {fileID: 7912822185736670360, guid: 193e6b5afbcf8234fa266f6bfc011546, type: 3}
+  floodedRowOverlayPrefab: {fileID: 6620061475884623527, guid: 58a4c61a8afaa824081fcdf88d67c8e5, type: 3}
+  forecastRowOverlayPrefab: {fileID: 5228493242478709704, guid: 27a2cca2bd3180446bd60f778162a1aa, type: 3}
+  waterlinePrefab: {fileID: 3537159541585922124, guid: bab1d7f5ce0b64f45a1a912f431f3601, type: 3}
+  fallbackTilePrefab: {fileID: 6408325039132306509, guid: b8399d41e265ab44aa72ecdc5feecc32, type: 3}

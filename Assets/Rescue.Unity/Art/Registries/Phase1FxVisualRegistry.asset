@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9aeff799a05d9e4ab9aff8dd73ef2e2, type: 3}
+  m_Name: Phase1FxVisualRegistry
+  m_EditorClassIdentifier: Rescue.Unity::Rescue.Unity.Art.Registries.FxVisualRegistry
+  groupClearFx: {fileID: 5947619542327747726, guid: 7fcde0cc61216a14d8669a9b78238d74, type: 3}
+  invalidTapFx: {fileID: 8981670047194578908, guid: 5ffd99e17074f2c4eb58659b0cd5eef7, type: 3}
+  crateBreakFx: {fileID: 8006233036480215591, guid: cff735798128f7c49a031998d4fcc6cf, type: 3}
+  iceRevealFx: {fileID: 3586126965639256100, guid: dfdff9f63283fb04eb12608672ac2333, type: 3}
+  vineClearFx: {fileID: 4341405799251762057, guid: f534bf0decfd5d24a9ef699de63688fc, type: 3}
+  vineGrowPreviewFx: {fileID: 5368086689426651186, guid: 0f9f38a42f8635040a518a564f3fd5c8, type: 3}
+  dockInsertFx: {fileID: 4708092636471179262, guid: 2c07b153ac3b9b14e87df5ab528b50b4, type: 3}
+  dockTripleClearFx: {fileID: 4607352549570742908, guid: 007652d1cdf5fd54fb033905845c6eeb, type: 3}
+  waterRiseFx: {fileID: 1792191708528585168, guid: e90a6708dbe8f1f4dae813daf4a95166, type: 3}
+  targetExtractionFx: {fileID: 3243618339897440360, guid: ba2c5f8f771d2f844986c2e725f22995, type: 3}
+  nearRescueReliefFx: {fileID: 6338502557242066128, guid: 162127c00d2260a47b83a5f0177e24f0, type: 3}
+  winFx: {fileID: 6231477822950850827, guid: 1f089be82a1d1e146b37f33722d12683, type: 3}
+  lossFx: {fileID: 5598755144927804160, guid: f02f8210719bafc4f9f2cb0cdf97b3cd, type: 3}
