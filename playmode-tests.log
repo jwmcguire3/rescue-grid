@@ -1,11 +1,11 @@
 [Licensing::Module] Trying to connect to existing licensing client channel...
 Built from '6000.4/staging' branch; Version is '6000.4.3f1 (39d1a88d4dd1) revision 3789224'; Using compiler version '194234433'; Build Type 'Release'
-[Licensing::IpcConnector] Successfully connected to: "LicenseClient-jwmcg" at "2026-04-24T13:18:51.111194Z"
 OS: 'Windows 11  (10.0.26200) Core' Language: 'en' Physical Memory: 32609 MB
 BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-jwmcg" at "2026-04-24T17:22:11.5957642Z"
 System  architecture: x64
 Process architecture: x64
-Date: 2026-04-24T13:18:51Z
+Date: 2026-04-24T17:22:11Z
 
 COMMAND LINE ARGUMENTS:
 C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Unity.exe
@@ -57,16 +57,16 @@ C:/Users/jwmcg/OneDrive/Documents/AI Projects/Live Envirnments/rescue-grid
     "memorysetup-job-temp-allocator-block-size=2097152"
     "memorysetup-job-temp-allocator-block-size-background=1048576"
     "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
-Player connection [30216]  Target information:
+Player connection [17536]  Target information:
 
-Player connection [30216]  * "[IP] 10.0.0.151 [Port] 55504 [Flags] 2 [Guid] 2015376529 [EditorId] 2015376529 [Version] 1048832 [Id] WindowsEditor(7,Johnnys_Super) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+Player connection [17536]  * "[IP] 10.0.0.151 [Port] 55504 [Flags] 2 [Guid] 1564227806 [EditorId] 1564227806 [Version] 1048832 [Id] WindowsEditor(7,Johnnys_Super) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
 
-Player connection [30216] Host joined multi-casting on [225.0.0.222:54997]...
-Player connection [30216] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Player connection [17536] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [17536] Host joined alternative multi-casting on [225.0.0.222:34997]...
 Input System module state changed to: Initialized.
 [Physics::Module] Initialized fallback backend.
 [Physics::Module] Id: 0xdecafbad
-[Package Manager] Connected to IPC stream "Upm-33132" after 0.2 seconds.
+[Package Manager] Connected to IPC stream "Upm-24564" after 0.2 seconds.
 [Licensing::Module] Licensing is not yet initialized.
 [Licensing::Client] Error: HandshakeResponse reported an error:
 	ResponseCode: 505
@@ -74,17 +74,17 @@ Input System module state changed to: Initialized.
 [Licensing::Module] Error: Failed to handshake to channel: "LicenseClient-jwmcg"
 [Licensing::IpcConnector] LicenseClient-jwmcg channel disconnected successfully.
 [Licensing::IpcConnector] Channel LicenseClient-jwmcg-6000.4.3 doesn't exist
-[Licensing::Module] Successfully launched the LicensingClient (PId: 31624)
-[Licensing::IpcConnector] Successfully connected to: "LicenseClient-jwmcg-6000.4.3" at "2026-04-24T13:18:52.4800671Z"
+[Licensing::Module] Successfully launched the LicensingClient (PId: 37352)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-jwmcg-6000.4.3" at "2026-04-24T17:22:13.1079064Z"
 [Licensing::Client] Handshaking with LicensingClient:
   Version:                 1.18.1+9fbee8e
-  Session Id:              c31ad5d10640425ba37bcd86623475ef
-  Correlation Id:          fffb00c36f06fc0d640c6cf698886b1b
-  External correlation Id: 7864106272026610272
+  Session Id:              5cae934605354e8db13a2ab1c730b6b6
+  Correlation Id:          80b52616f08b0c8bf56e7c03ea248f2b
+  External correlation Id: 5486385913752758735
   Machine Id:              1BeB/TLi2XvtpQs0S1BLgEO37gQ=
-[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-jwmcg-6000.4.3" (connect: 0.16s, validation: 0.03s, handshake: 1.18s)
-[Licensing::IpcConnector] Successfully connected to: "LicenseClient-jwmcg-6000.4.3-notifications" at "2026-04-24T13:18:53.6928292Z"
-[Licensing::Module] Connected to LicensingClient (PId: 31624, launch time: 0.00, total connection time: 1.37s)
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-jwmcg-6000.4.3" (connect: 0.16s, validation: 0.03s, handshake: 1.27s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-jwmcg-6000.4.3-notifications" at "2026-04-24T17:22:14.4070286Z"
+[Licensing::Module] Connected to LicensingClient (PId: 37352, launch time: 0.00, total connection time: 1.46s)
 [Licensing::Module] Error: Access token is unavailable; failed to update
 [Licensing::Client] Successfully resolved entitlement details
 [Licensing::Module] License group:
@@ -93,8 +93,8 @@ Input System module state changed to: Initialized.
   Type: Assigned
   Expiration: Unlimited
 [Licensing::Client] Successfully updated license, isAsync: True, time: 0.00
-[Licensing::Module] Licensing Background thread has ended after 2.59s
-[Licensing::Module] Licensing is initialized (took 2.28s).
+[Licensing::Module] Licensing Background thread has ended after 2.82s
+[Licensing::Module] Licensing is initialized (took 2.49s).
 [Licensing::Client] Successfully resolved entitlement details
 Library Redirect Path: Library/
 [Physics::Module] Selected backend.
@@ -103,7 +103,7 @@ Library Redirect Path: Library/
 [Physics::Module] SDK Version: 4.1.2
 [Physics::Module] Integration Version: 1.0.0
 [Physics::Module] Threading Mode: Multi-Threaded
-Artifact Garbage Collection - Removed 5 unused hashed content files
+Artifact Garbage Collection - Removed 220 unused hashed content files
 Initialize engine version: 6000.4.3f1 (39d1a88d4dd1)
 [Subsystems] Discovering subsystems at path C:/Program Files/Unity/Hub/Editor/6000.4.3f1/Editor/Data/Resources/UnitySubsystems
 [Subsystems] Discovering subsystems at path C:/Users/jwmcg/OneDrive/Documents/AI Projects/Live Envirnments/rescue-grid/Assets
@@ -117,7 +117,7 @@ Initialize mono
 Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/6000.4.3f1/Editor/Data/Managed'
 Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/6000.4.3f1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
 Mono config path = 'C:/Program Files/Unity/Hub/Editor/6000.4.3f1/Editor/Data/MonoBleedingEdge/etc'
-Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56132
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56564
 CodeReloadManager initialized
 Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
 Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
@@ -127,30 +127,30 @@ Begin MonoManager ReloadAssembly
 Registering precompiled unity dll's ...
 Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.4.3f1/Editor/Data/PlaybackEngines/WebGLSupport/UnityEditor.WebGL.Extensions.dll
 Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.4.3f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
-Registered in 0.001256 seconds.
+Registered in 0.001283 seconds.
 Native extension for WindowsStandalone target not found
 Native extension for WebGL target not found
 Package Manager log level set to [2]
 ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:True
 Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.230 seconds
-Domain Reload Profiling: 507ms
-	BeginReloadAssembly (88ms)
-		CreateAndSetChildDomain (13ms)
-	RebuildCommonClasses (23ms)
-	RebuildNativeTypeToScriptingClass (7ms)
+- Finished resetting the current domain, in  0.251 seconds
+Domain Reload Profiling: 541ms
+	BeginReloadAssembly (90ms)
+		CreateAndSetChildDomain (15ms)
+	RebuildCommonClasses (24ms)
+	RebuildNativeTypeToScriptingClass (8ms)
 	initialDomainReloadingComplete (38ms)
-	LoadAllAssembliesAndSetupDomain (121ms)
-		LoadAssemblies (73ms)
-		AnalyzeDomain (115ms)
-			TypeCache.Refresh (114ms)
-				TypeCache.ScanAssembly (105ms)
-	FinalizeReload (231ms)
+	LoadAllAssembliesAndSetupDomain (129ms)
+		LoadAssemblies (74ms)
+		AnalyzeDomain (122ms)
+			TypeCache.Refresh (121ms)
+				TypeCache.ScanAssembly (113ms)
+	FinalizeReload (252ms)
 		SetupLoadedEditorAssemblies (0ms)
-			InitializePlatformSupportModulesInManaged (29ms)
-			BeforeProcessingInitializeOnLoad (49ms)
-			ProcessInitializeOnLoadAttributes (65ms)
-			ProcessInitializeOnLoadMethodAttributes (49ms)
+			InitializePlatformSupportModulesInManaged (32ms)
+			BeforeProcessingInitializeOnLoad (52ms)
+			ProcessInitializeOnLoadAttributes (74ms)
+			ProcessInitializeOnLoadMethodAttributes (55ms)
 [Licensing::Client] Successfully resolved entitlement details
 Application.AssetDatabase Initial Refresh Start
 [Package Manager] Restoring resolved packages state from cache
@@ -217,20 +217,6 @@ Application.AssetDatabase Initial Refresh Start
 [Package Manager] Done registering packages in 0.01 seconds
 [ScriptCompilation] Requested script compilation because: Assembly Definition File(s) changed
 [ScriptCompilation] Requested script compilation because: AssetDatabase observed changes in script compilation related files
-Assembly for Assembly Definition File 'Assets/Rescue.Unity.EditorTools/Rescue.Unity.EditorTools.asmdef' will not be compiled, because it has no scripts associated with it.
-UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
-UnityEngine.StackTraceUtility:ExtractStackTrace ()
-UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
-UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
-UnityEngine.Logger:LogFormat (UnityEngine.LogType,string,object[])
-UnityEngine.Debug:LogWarningFormat (string,object[])
-UnityEditor.Scripting.ScriptCompilation.EditorCompilation:WarnIfThereAreAssembliesWithoutAnyScripts (UnityEditor.Scripting.ScriptCompilation.ScriptAssemblySettings,UnityEditor.Scripting.ScriptCompilation.ScriptAssembly[])
-UnityEditor.Scripting.ScriptCompilation.EditorCompilation:CompileScriptsWithSettings (UnityEditor.Scripting.ScriptCompilation.ScriptAssemblySettings)
-UnityEditor.Scripting.ScriptCompilation.EditorCompilation:CompileScripts (UnityEditor.Scripting.ScriptCompilation.EditorScriptCompilationOptions,UnityEditor.BuildTarget,int,string[])
-UnityEditor.Scripting.ScriptCompilation.EditorCompilationInterface/<>c__DisplayClass21_0:<CompileScripts>b__0 ()
-UnityEditor.Scripting.ScriptCompilation.EditorCompilationInterface:EmitExceptionAsError<UnityEditor.Scripting.ScriptCompilation.EditorCompilation/CompileStatus> (System.Func`1<UnityEditor.Scripting.ScriptCompilation.EditorCompilation/CompileStatus>,UnityEditor.Scripting.ScriptCompilation.EditorCompilation/CompileStatus)
-UnityEditor.Scripting.ScriptCompilation.EditorCompilationInterface:CompileScripts (UnityEditor.Scripting.ScriptCompilation.EditorScriptCompilationOptions,UnityEditor.BuildTarget,int,string[])
-
 Assembly for Assembly Definition File 'Assets/Rescue.Unity.Tests/Rescue.Unity.Tests.asmdef' will not be compiled, because it has no scripts associated with it.
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace ()
@@ -248,35 +234,69 @@ UnityEditor.Scripting.ScriptCompilation.EditorCompilationInterface:CompileScript
 Starting: C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1900b0aE.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssemblies
 WorkingDir: C:/Users/jwmcg/OneDrive/Documents/AI Projects/Live Envirnments/rescue-grid
 DisplayProgressbar: Compiling Scripts
-ExitCode: 4 Duration: 0s166ms
-Rebuilding DAG because FileSignature timestamp changed: Library/Bee/1900b0aE-inputdata.json
-*** Tundra requires additional run (0.15 seconds), 1 items updated, 808 evaluated
 Starting: C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\netcorerun\netcorerun.exe "C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\Tools\BuildPipeline\ScriptCompilationBuildProgram.exe" "Library/Bee/1900b0aE.dag.json" "Library/Bee/1900b0aE-inputdata.json" "Library\Bee\buildprogram0.traceevents"
 WorkingDir: C:/Users/jwmcg/OneDrive/Documents/AI Projects/Live Envirnments/rescue-grid
-ExitCode: 0 Duration: 0s426ms
+ExitCode: 4 Duration: 1s520ms
+Rebuilding DAG because FileSignature timestamp changed: Library/Bee/1900b0aE-inputdata.json
+[826/838    1s] Csc Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.dll (+2 others)
+*** Tundra requires additional run (1.50 seconds), 1 items updated, 825 evaluated
+ExitCode: 0 Duration: 0s449ms
 Starting: C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1900b0aE.dag" --continue-on-failure --dagfilejson="Library\Bee\1900b0aE.dag.json" --profile="Library/Bee/backend2.traceevents" ScriptAssemblies
 WorkingDir: C:/Users/jwmcg/OneDrive/Documents/AI Projects/Live Envirnments/rescue-grid
-ExitCode: 0 Duration: 2s40ms
-Finished compiling graph: 834 nodes, 13721 flattened edges (12537 ToBuild, 156 ToUse), maximum node priority 539
-[341/830    0s] WriteText Library/Bee/artifacts/1900b0aE.dag/Rescue.Telemetry.rsp
-[809/830    0s] Csc Library/Bee/artifacts/1900b0aE.dag/Rescue.Telemetry.dll (+2 others)
-[810/830    0s] CopyFiles Library/ScriptAssemblies/Rescue.Telemetry.pdb
-[811/830    0s] CopyFiles Library/ScriptAssemblies/Rescue.Telemetry.dll
-[812/830    0s] Csc Library/Bee/artifacts/1900b0aE.dag/Rescue.Replay.dll (+2 others)
-[813/830    0s] CopyFiles Library/ScriptAssemblies/Rescue.Replay.pdb
-[814/830    0s] Csc Library/Bee/artifacts/1900b0aE.dag/Rescue.Telemetry.EditMode.Tests.dll (+2 others)
-[815/830    0s] CopyFiles Library/ScriptAssemblies/Rescue.Telemetry.EditMode.Tests.pdb
-[816/830    0s] CopyFiles Library/ScriptAssemblies/Rescue.Replay.dll
-[817/830    0s] CopyFiles Library/ScriptAssemblies/Rescue.Telemetry.EditMode.Tests.dll
-[818/830    0s] Csc Library/Bee/artifacts/1900b0aE.dag/Rescue.Replay.EditMode.Tests.dll (+2 others)
-[819/830    0s] CopyFiles Library/ScriptAssemblies/Rescue.Replay.EditMode.Tests.pdb
-[820/830    0s] CopyFiles Library/ScriptAssemblies/Rescue.Replay.EditMode.Tests.dll
-[821/830    0s] Csc Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.dll (+2 others)
-[822/830    0s] CopyFiles Library/ScriptAssemblies/Rescue.Unity.pdb
-[823/830    0s] CopyFiles Library/ScriptAssemblies/Rescue.Unity.dll
-[824/830    0s] Csc Library/Bee/artifacts/1900b0aE.dag/Rescue.PlayMode.Tests.dll (+2 others)
-[825/830    0s] CopyFiles Library/ScriptAssemblies/Rescue.PlayMode.Tests.pdb
-[826/830    0s] Csc Library/Bee/artifacts/1900b0aE.dag/Assembly-CSharp-Editor.dll (+2 others)
+ExitCode: 0 Duration: 0s955ms
+Finished compiling graph: 882 nodes, 14842 flattened edges (13558 ToBuild, 168 ToUse), maximum node priority 581
+[361/878    0s] WriteText Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.rsp
+[392/878    0s] WriteText Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.EditorTools.UnityAdditionalFile.txt
+[473/878    0s] WriteText Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.EditorTools.rsp
+[480/878    0s] WriteText Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.EditorTools.dll.mvfrm.rsp
+[484/878    0s] WriteText Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.EditorTools.rsp2
+[485/878    0s] WriteText Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.Dock.EditMode.Tests.UnityAdditionalFile.txt
+[486/878    0s] WriteText Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.Art.Validation.EditMode.Tests.UnityAdditionalFile.txt
+[487/878    0s] WriteText Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.Art.Prefabs.EditMode.Tests.dll.mvfrm.rsp
+[488/878    0s] WriteText Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.Art.Validation.EditMode.Tests.dll.mvfrm.rsp
+[489/878    0s] WriteText Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.Art.Prefabs.EditMode.Tests.UnityAdditionalFile.txt
+[490/878    0s] WriteText Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.Art.Prefabization.EditMode.Tests.UnityAdditionalFile.txt
+[491/878    0s] WriteText Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.Dock.EditMode.Tests.rsp
+[492/878    0s] WriteText Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.Art.Prefabs.EditMode.Tests.rsp
+[493/878    0s] WriteText Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.Dock.EditMode.Tests.dll.mvfrm.rsp
+[494/878    0s] WriteText Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.Art.Prefabization.EditMode.Tests.dll.mvfrm.rsp
+[495/878    0s] WriteText Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.Art.Validation.EditMode.Tests.rsp
+[496/878    0s] WriteText Library/Bee/artifacts/1900b0aE.dag/Assembly-CSharp-Editor.rsp
+[497/878    0s] WriteText Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.Art.Prefabization.EditMode.Tests.rsp
+[498/878    0s] WriteText Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.Art.Prefabs.EditMode.Tests.rsp2
+[499/878    0s] WriteText Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.Dock.EditMode.Tests.rsp2
+[500/878    0s] WriteText Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.Art.Validation.EditMode.Tests.rsp2
+[501/878    0s] WriteText Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.Art.Prefabization.EditMode.Tests.rsp2
+[846/878    0s] MovedFromExtractor-Combine Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.Dock.EditMode.Tests.dll.mvfrm
+[847/878    0s] MovedFromExtractor-Combine Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.Art.Prefabs.EditMode.Tests.dll.mvfrm
+[848/878    0s] MovedFromExtractor-Combine Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.EditorTools.dll.mvfrm
+[849/878    0s] MovedFromExtractor-Combine Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.Art.Validation.EditMode.Tests.dll.mvfrm
+[850/878    0s] MovedFromExtractor-Combine Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.Art.Prefabization.EditMode.Tests.dll.mvfrm
+[851/878    0s] Csc Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.dll (+2 others)
+[852/878    0s] CopyFiles Library/ScriptAssemblies/Rescue.Unity.pdb
+[853/878    0s] Csc Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.Art.Validation.EditMode.Tests.dll (+2 others)
+[854/878    0s] Csc Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.Art.EditMode.Tests.dll (+2 others)
+[855/878    0s] CopyFiles Library/ScriptAssemblies/Rescue.Unity.Art.Validation.EditMode.Tests.pdb
+[856/878    0s] CopyFiles Library/ScriptAssemblies/Rescue.Unity.Art.EditMode.Tests.pdb
+[857/878    0s] CopyFiles Library/ScriptAssemblies/Rescue.Unity.Art.Validation.EditMode.Tests.dll
+[858/878    0s] Csc Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.Dock.EditMode.Tests.dll (+2 others)
+[859/878    0s] CopyFiles Library/ScriptAssemblies/Rescue.Unity.Dock.EditMode.Tests.pdb
+[860/878    0s] Csc Library/Bee/artifacts/1900b0aE.dag/Rescue.PlayMode.Tests.dll (+2 others)
+[861/878    0s] CopyFiles Library/ScriptAssemblies/Rescue.Unity.Art.EditMode.Tests.dll
+[862/878    0s] CopyFiles Library/ScriptAssemblies/Rescue.PlayMode.Tests.pdb
+[863/878    0s] CopyFiles Library/ScriptAssemblies/Rescue.Unity.Dock.EditMode.Tests.dll
+[864/878    0s] Csc Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.EditorTools.dll (+2 others)
+[865/878    0s] CopyFiles Library/ScriptAssemblies/Rescue.Unity.EditorTools.pdb
+[866/878    0s] CopyFiles Library/ScriptAssemblies/Rescue.Unity.dll
+[867/878    0s] CopyFiles Library/ScriptAssemblies/Rescue.PlayMode.Tests.dll
+[868/878    0s] Csc Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.Art.Prefabs.EditMode.Tests.dll (+2 others)
+[869/878    0s] CopyFiles Library/ScriptAssemblies/Rescue.Unity.Art.Prefabs.EditMode.Tests.pdb
+[870/878    0s] Csc Library/Bee/artifacts/1900b0aE.dag/Rescue.Unity.Art.Prefabization.EditMode.Tests.dll (+2 others)
+[871/878    0s] CopyFiles Library/ScriptAssemblies/Rescue.Unity.Art.Prefabs.EditMode.Tests.dll
+[872/878    0s] CopyFiles Library/ScriptAssemblies/Rescue.Unity.EditorTools.dll
+[873/878    0s] CopyFiles Library/ScriptAssemblies/Rescue.Unity.Art.Prefabization.EditMode.Tests.pdb
+[874/878    0s] CopyFiles Library/ScriptAssemblies/Rescue.Unity.Art.Prefabization.EditMode.Tests.dll
+[875/878    0s] Csc Library/Bee/artifacts/1900b0aE.dag/Assembly-CSharp-Editor.dll (+2 others)
 Assets\Editor\BuildScripts.cs(31,19): warning CS0618: 'PlayerSettings.GetApplicationIdentifier(BuildTargetGroup)' is obsolete: 'Use GetApplicationIdentifier(NamedBuildTarget buildTarget) instead'
 
 Assets\Editor\BuildScripts.cs(32,22): warning CS0618: 'PlayerSettings.SetApplicationIdentifier(BuildTargetGroup, string)' is obsolete: 'Use SetApplicationIdentifier(NamedBuildTarget buildTarget, string identifier) instead'
@@ -292,10 +312,9 @@ Assets\Editor\BuildScripts.cs(243,22): warning CS0618: 'PlayerSettings.SetApplic
 Assets\Editor\BuildScripts.cs(277,19): warning CS0618: 'PlayerSettings.GetApplicationIdentifier(BuildTargetGroup)' is obsolete: 'Use GetApplicationIdentifier(NamedBuildTarget buildTarget) instead'
 
 Assets\Editor\BuildScripts.cs(278,22): warning CS0618: 'PlayerSettings.SetApplicationIdentifier(BuildTargetGroup, string)' is obsolete: 'Use SetApplicationIdentifier(NamedBuildTarget buildTarget, string identifier) instead'
-[827/830    0s] CopyFiles Library/ScriptAssemblies/Assembly-CSharp-Editor.pdb
-[828/830    0s] CopyFiles Library/ScriptAssemblies/Assembly-CSharp-Editor.dll
-[829/830    0s] CopyFiles Library/ScriptAssemblies/Rescue.PlayMode.Tests.dll
-*** Tundra build success (2.02 seconds), 22 items updated, 830 evaluated
+[876/878    0s] CopyFiles Library/ScriptAssemblies/Assembly-CSharp-Editor.pdb
+[877/878    0s] CopyFiles Library/ScriptAssemblies/Assembly-CSharp-Editor.dll
+*** Tundra build success (0.94 seconds), 54 items updated, 878 evaluated
 Assets\Editor\BuildScripts.cs(31,19): warning CS0618: 'PlayerSettings.GetApplicationIdentifier(BuildTargetGroup)' is obsolete: 'Use GetApplicationIdentifier(NamedBuildTarget buildTarget) instead'
 Assets\Editor\BuildScripts.cs(32,22): warning CS0618: 'PlayerSettings.SetApplicationIdentifier(BuildTargetGroup, string)' is obsolete: 'Use SetApplicationIdentifier(NamedBuildTarget buildTarget, string identifier) instead'
 Assets\Editor\BuildScripts.cs(69,19): warning CS0618: 'PlayerSettings.GetApplicationIdentifier(BuildTargetGroup)' is obsolete: 'Use GetApplicationIdentifier(NamedBuildTarget buildTarget) instead'
@@ -304,13 +323,12 @@ Assets\Editor\BuildScripts.cs(242,19): warning CS0618: 'PlayerSettings.GetApplic
 Assets\Editor\BuildScripts.cs(243,22): warning CS0618: 'PlayerSettings.SetApplicationIdentifier(BuildTargetGroup, string)' is obsolete: 'Use SetApplicationIdentifier(NamedBuildTarget buildTarget, string identifier) instead'
 Assets\Editor\BuildScripts.cs(277,19): warning CS0618: 'PlayerSettings.GetApplicationIdentifier(BuildTargetGroup)' is obsolete: 'Use GetApplicationIdentifier(NamedBuildTarget buildTarget) instead'
 Assets\Editor\BuildScripts.cs(278,22): warning CS0618: 'PlayerSettings.SetApplicationIdentifier(BuildTargetGroup, string)' is obsolete: 'Use SetApplicationIdentifier(NamedBuildTarget buildTarget, string identifier) instead'
-AssetDatabase: script compilation time: 2.908193s
+AssetDatabase: script compilation time: 3.197692s
 Begin MonoManager ReloadAssembly
 Assembly Assembly-CSharp-Editor-firstpass.dll at Library/ScriptAssemblies/Assembly-CSharp-Editor-firstpass.dll not valid. Loading of assembly skipped.
 Assembly Assembly-CSharp-firstpass.dll at Library/ScriptAssemblies/Assembly-CSharp-firstpass.dll not valid. Loading of assembly skipped.
 Assembly Assembly-CSharp.dll at Library/ScriptAssemblies/Assembly-CSharp.dll not valid. Loading of assembly skipped.
 Assembly DocCodeExamples.dll at Library/ScriptAssemblies/DocCodeExamples.dll not valid. Loading of assembly skipped.
-Assembly Rescue.Unity.EditorTools.dll at Library/ScriptAssemblies/Rescue.Unity.EditorTools.dll not valid. Loading of assembly skipped.
 Assembly Rescue.Unity.Tests.dll at Library/ScriptAssemblies/Rescue.Unity.Tests.dll not valid. Loading of assembly skipped.
 Assembly TestNewCustomAssembly.dll at Library/ScriptAssemblies/TestNewCustomAssembly.dll not valid. Loading of assembly skipped.
 Assembly Unity.2D.Sprite.Package.EditorTests.dll at Library/ScriptAssemblies/Unity.2D.Sprite.Package.EditorTests.dll not valid. Loading of assembly skipped.
@@ -333,137 +351,289 @@ Assembly UnityEngine.Purchasing.Security.dll at Library/ScriptAssemblies/UnityEn
 Assembly UnityEngine.Purchasing.WinRT.dll at Library/ScriptAssemblies/UnityEngine.Purchasing.WinRT.dll not valid. Loading of assembly skipped.
 Assembly UnityEngine.SpatialTracking.Tests.dll at Library/ScriptAssemblies/UnityEngine.SpatialTracking.Tests.dll not valid. Loading of assembly skipped.
 Assembly UnityEngine.UI.Tests.dll at Library/ScriptAssemblies/UnityEngine.UI.Tests.dll not valid. Loading of assembly skipped.
-Start importing Assets/Editor/TuningPresets using Guid(72a4cfbdf3e34938a093cbb71cc5f5d2) (DefaultImporter) -> (Import Result ID: 'a95872830e0c5924cdae573e45eb1a65') in 0.0224367 seconds [static dependencies only]. Details - ImportResultOutputID=efd3681dc73db24867577a18b8c19957 DependenciesID=0ac1782ee1526d8aa023d282ca6d4a38 StaticDependenciesID=f3fdc4130956449f1277c0e8334b7fd6 
-Start importing Assets/Rescue.Telemetry/Rescue.Telemetry.asmdef using Guid(c3d4e5f678901234567890abcdef0123) (AssemblyDefinitionImporter) -> (Import Result ID: '1f0c40143e7bb506ac592ec2dcd833a4') in 0.0065424 seconds [static dependencies only]. Details - ImportResultOutputID=56846f26a84ab8867adb5b267c8f5c2c DependenciesID=f3d13c932960762e0325da1b55c5aff1 StaticDependenciesID=7f9d8b3a28d266d045371365cfe40fc9 
-Refreshing native plugins compatible for Editor in 11.85 ms, found 3 plugins.
+Start importing Assets/Rescue.Unity/Editor using Guid(61447fd6cfc7423aa12b677a8d776d34) (DefaultImporter) -> (Import Result ID: '89cf520ff353ca81816e14f662d030ca') in 0.0084377 seconds [static dependencies only]. Details - ImportResultOutputID=293197b162829a6adf443384b733d4f2 DependenciesID=c785d8394a53354afc16c445e67e3eed StaticDependenciesID=8774a2845444a261acc3842042a59c9a 
+Start importing Assets/Rescue.Unity.EditorTools/Art using Guid(8662545ca5b7449c8ad1cf590508d79e) (DefaultImporter) -> (Import Result ID: '19672fc075bc26b8cf3825ed3ec70cf3') in 0.0005327 seconds [static dependencies only]. Details - ImportResultOutputID=ba363103009e3a9d353eaf8765fdb07b DependenciesID=f1c38eed5f1bffac1e41bb09741a68bb StaticDependenciesID=dca6527238cd950330094dcb9a9fc4ef 
+Start importing Assets/Rescue.Unity/UI using Guid(4a0b2f0d8f974d4aa8d11d31d9d4f001) (DefaultImporter) -> (Import Result ID: '7076f40b99b5bacac80a10c8a8aaf50c') in 0.0003804 seconds [static dependencies only]. Details - ImportResultOutputID=b192ebed651aad23b130095bb06c5acf DependenciesID=f0e11ab4eb96aee1d40c42a26480914e StaticDependenciesID=03762a66e5e08170b8d13c615f823b7c 
+Start importing Assets/Rescue.Unity/Editor/Art using Guid(f19c7445e7f6434ca8b6ef1a0a1af83f) (DefaultImporter) -> (Import Result ID: '4c89baad284862555316ab2e19a2e5c2') in 0.0004116 seconds [static dependencies only]. Details - ImportResultOutputID=fb6d86c1f9b62d276dd1d83163d65fa2 DependenciesID=69fe335fb9f02f8b9426ca1a90e0a847 StaticDependenciesID=14cf037b9b2e4fef84ce4e79fedb6d35 
+Start importing Assets/Rescue.Unity/Art/Prefabs using Guid(645966b1bdb82a748aaeb8c5761482b4) (DefaultImporter) -> (Import Result ID: '2e3ca0f40efa889b318ca3afd6271a24') in 0.0003552 seconds [static dependencies only]. Details - ImportResultOutputID=4250f922995fe130f61b7c9542595e5e DependenciesID=21fdb0d2a0afd527b7f117e0e518e1ee StaticDependenciesID=e600098167e1e3df25f16844863b845c 
+Start importing Assets/Rescue.Unity/Art/Textures using Guid(84ad2186c8aea6c4f9ac90a0c7f757c2) (DefaultImporter) -> (Import Result ID: '100ecd4cd88969593f5632278c7fba49') in 0.0003387 seconds [static dependencies only]. Details - ImportResultOutputID=08f22b7ed1d31fd6fce6f53cabc2958b DependenciesID=d79bc2df2415e9b4b000400004c6a115 StaticDependenciesID=b58f6011dd3dd1ea7064604d90d60590 
+Start importing Assets/Rescue.Unity.EditorTools/Art/Prefabs using Guid(37c173bab24c44ce9d4f4e32548efb72) (DefaultImporter) -> (Import Result ID: '87db8bc8300ccd355f13f35fe44662af') in 0.0003929 seconds [static dependencies only]. Details - ImportResultOutputID=e6a6eb2b0b64a62f0b147a34514b7d94 DependenciesID=4a8b426bc1d4e1435189c2b0743085ef StaticDependenciesID=5c3bf67bb92b54409ab9fc7bf06e3dc8 
+Start importing Assets/Rescue.Unity/Art/Materials using Guid(acc84ce7d0aed964882849d2c0016177) (DefaultImporter) -> (Import Result ID: '0e033ba29fbc88a4800f10f60841e547') in 0.0004436 seconds [static dependencies only]. Details - ImportResultOutputID=45c25a29490c14873ef7e647be652f6a DependenciesID=b8398c8a2fa31d4fe0d981180e53d8b7 StaticDependenciesID=46fce9bba140648e77e777f8683be565 
+Start importing Assets/Rescue.Unity/Art/Validation using Guid(3d6219de02e640a1a2f4d7926e8650dc) (DefaultImporter) -> (Import Result ID: '5e95aea90dac444b123d6de4b3f204bf') in 0.0003297 seconds [static dependencies only]. Details - ImportResultOutputID=4fc4b415424aedd9e88cbcc4302b8019 DependenciesID=4c84dbdf0a155fddc92045332a377c87 StaticDependenciesID=0f65c53ce390b6049bf1305e5ae3a0aa 
+Start importing Assets/Rescue.Unity/Art/Models using Guid(5f205a6e0d88518418570459f72e624e) (DefaultImporter) -> (Import Result ID: '5b0f572bde69d0fbae747522183b4afa') in 0.0003157 seconds [static dependencies only]. Details - ImportResultOutputID=6efe021241451f6603b41f19d0d9ade9 DependenciesID=7512038d9190ea03930ad540708a97fb StaticDependenciesID=2588069845125caebeddda329700b428 
+Start importing Assets/Rescue.Unity/Editor/Art/Validation using Guid(30f2dfe676764d5295a4bcdf866a17a3) (DefaultImporter) -> (Import Result ID: '1e540249c3f1fbb8820fa226e1e64f48') in 0.0003134 seconds [static dependencies only]. Details - ImportResultOutputID=a47dd2b4fbd0b4fcb6c5ee3cbe1bf870 DependenciesID=026859f119ae5aa5b83e68de1188c5ff StaticDependenciesID=e75fb7af592b28ef5b911c79aae4d200 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Water using Guid(70bfb9a664576dc40b545be510a9666d) (DefaultImporter) -> (Import Result ID: 'c7fd0b56c546530e973f6ff1d3c24f0f') in 0.0003116 seconds [static dependencies only]. Details - ImportResultOutputID=92b74029f58b84a8b0780dda0f8c171b DependenciesID=6f78819a26edcdfa382bf129320d3b08 StaticDependenciesID=3e2b58501249f53106a9292384dde723 
+Start importing Assets/Rescue.Unity/Art/Models/Board using Guid(521bb43cbdd50a34ba941ff24de67762) (DefaultImporter) -> (Import Result ID: '4242de8cd02a0b6d7f427fe00bbeecad') in 0.0002931 seconds [static dependencies only]. Details - ImportResultOutputID=42dc0fc22f9f82a1cd9e12622d235fe1 DependenciesID=e96c95e9904e1f7a4fb3f14c7523fde5 StaticDependenciesID=9811928ea027180a3f561541a4a291a9 
+Start importing Assets/Rescue.Unity/Art/Models/Targets using Guid(b3f6b8b5a4c9c664899b963cd570aac9) (DefaultImporter) -> (Import Result ID: '9f593ec22a83568a022a2f2cb28a944e') in 0.0002864 seconds [static dependencies only]. Details - ImportResultOutputID=33fbd40b27e337651ddda52aa4b8bd33 DependenciesID=e664e7d155e1878119b2912c837d5061 StaticDependenciesID=0b72beb2b499eadccf951a10a5a4964c 
+Start importing Assets/Rescue.Unity/Art/Models/Unknown using Guid(14ee54f11ed7f894eb085b0f80b0c491) (DefaultImporter) -> (Import Result ID: 'f031c870fecf5bdf0c658699aa9c08e8') in 0.0003369 seconds [static dependencies only]. Details - ImportResultOutputID=be27f2adcaa549ba341a51328dd81ab8 DependenciesID=71529da7786d61adf7afdf707160ba59 StaticDependenciesID=751ad26a0350b95c5c80e57ba4f8092c 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Phase1 using Guid(540df75e14fed7643a31fc67dc4e8b29) (DefaultImporter) -> (Import Result ID: 'e4cfdb37ef2f30a57f943808b4dbd8a9') in 0.0003814 seconds [static dependencies only]. Details - ImportResultOutputID=ea68c12e9e35535f728a930b6b7e8ccd DependenciesID=90a323a5586ff598842175ea3a38f881 StaticDependenciesID=768c0269eba71a0640ad0c52320a8e4d 
+Start importing Assets/Rescue.Unity/Art/Models/Dock using Guid(36a0f3f490756ea48a005f673aeefc7d) (DefaultImporter) -> (Import Result ID: 'b8c193862664fe4ba386c84651ead87c') in 0.0003134 seconds [static dependencies only]. Details - ImportResultOutputID=7ebc62f18a80937ea18973fd3f1104c2 DependenciesID=4d7b330be5b24971cdf4ee2b3ebdd283 StaticDependenciesID=bf5cca116a409ab58f9c2478f094679f 
+Start importing Assets/Rescue.Unity/Art/Textures/Targets using Guid(4640226e802f62241a0f8a9543c5f106) (DefaultImporter) -> (Import Result ID: 'b46bc6cd8fbccd331ae04552877abb7d') in 0.0003337 seconds [static dependencies only]. Details - ImportResultOutputID=cc5eb80cd322cee0bdb8aa8e63a5abe7 DependenciesID=7f4831695cb485bfe414ef27a4fd189f StaticDependenciesID=cc5499be0b799a413a7844567abba599 
+Start importing Assets/Rescue.Unity/Art/Textures/Blockers using Guid(867815ea13ee56847ba1ad92ce1d6923) (DefaultImporter) -> (Import Result ID: 'b4de26d33e7974b23fa92b27ae93698f') in 0.0004513 seconds [static dependencies only]. Details - ImportResultOutputID=901207bb88c48e8dbf718522400b7bcb DependenciesID=732859a420faf2cace4e6afed32add75 StaticDependenciesID=70767b5a718916dda2516dedbb91f311 
+Start importing Assets/Rescue.Unity/Art/Models/Pieces using Guid(a6648955b916a124fbb4a4829829cd99) (DefaultImporter) -> (Import Result ID: 'fbc16ec93cf38e2c29bfc1920abd66cf') in 0.0003028 seconds [static dependencies only]. Details - ImportResultOutputID=d12e240d130310070211c3a67c81db74 DependenciesID=7e838d03cb9c75fe1e9ade85580f94cb StaticDependenciesID=e3540995358d5be76e4fb33b7c925e2e 
+Start importing Assets/Rescue.Unity/Art/Prefabs/FX using Guid(074966997a1070944b403201442ad043) (DefaultImporter) -> (Import Result ID: '26bc8a010010f7dceba37faab6c9037c') in 0.0003127 seconds [static dependencies only]. Details - ImportResultOutputID=9e8e1bf45f138ecca3a2efb2a7a77a28 DependenciesID=d6166823c80ba4dc72ff41ad5e716f21 StaticDependenciesID=e67586010c28c365c724d1b5552873a7 
+Start importing Assets/Rescue.Unity/Art/Materials/Phase1 using Guid(875d27b33ed0b584394cba04b6f35969) (DefaultImporter) -> (Import Result ID: '1f5456fe707f9116a745d37c47aebfb3') in 0.0003756 seconds [static dependencies only]. Details - ImportResultOutputID=11eab74929ca267a41e876c5fc8e985c DependenciesID=01ebf774068d6f3f926f4df5068acf1c StaticDependenciesID=5f56d54d4b54eb8dc5d1d8aa28add982 
+Start importing Assets/Rescue.Unity/Art/Textures/Dock using Guid(a8a70717ffc2f404bb7539bceb025331) (DefaultImporter) -> (Import Result ID: '51ec055f6382b5b1deb9cbcfbc3e00ec') in 0.0003154 seconds [static dependencies only]. Details - ImportResultOutputID=b7db9ffa7165f3d984858ca88a720aa5 DependenciesID=92949630e3f0bf6250ec6af9ac6302eb StaticDependenciesID=3ff539ad879ca0d2463d88094fe7338c 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Board using Guid(c8311adf623428d4693951222aff019b) (DefaultImporter) -> (Import Result ID: '28dbcc8a93c53541ac5e2bb499f986a9') in 0.0002942 seconds [static dependencies only]. Details - ImportResultOutputID=47ef10c0830afbe71a98428cd63e5385 DependenciesID=dab802b655660622fcd2d25e8b766c2d StaticDependenciesID=557893780c51909129a0fd86ce82508e 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Targets using Guid(f862ac9e835e8bb44ae177e9a289c8f4) (DefaultImporter) -> (Import Result ID: 'eee95bc873fbe93dbdee8c859d59fea7') in 0.0003292 seconds [static dependencies only]. Details - ImportResultOutputID=073af63fb80f60be85ea1238473395fd DependenciesID=07d8f2d2ec5613308e8c4543b6254eb1 StaticDependenciesID=e698a7257eac333015f4f9ab2a406405 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Dock using Guid(c9e41230833abc342b4e3cf56619b8bc) (DefaultImporter) -> (Import Result ID: 'b7549124ad0a37c659cc5adeca0d44b5') in 0.0002887 seconds [static dependencies only]. Details - ImportResultOutputID=182d509128c88f8c473ae84bdf52d105 DependenciesID=26f1cc0e1db33e98f495d865350f6e73 StaticDependenciesID=412084841f410809950997eb7fcdf844 
+Start importing Assets/Rescue.Unity/Art/Textures/Unknown using Guid(2a2c03c3cd3e70a4881d68a6a1e89570) (DefaultImporter) -> (Import Result ID: '235585a9b9fa3c67eabb7d4658fac019') in 0.000443 seconds [static dependencies only]. Details - ImportResultOutputID=877b2ca1f42387340170e5cbbcc70159 DependenciesID=e0bb2ec7e61a6b1a8997ddbcc69571fb StaticDependenciesID=d5ec9e4756cf35b0d7f840d67bf51601 
+Start importing Assets/Rescue.Unity/Art/Models/Blockers using Guid(da789ebf57e84774197ba73582d8abc3) (DefaultImporter) -> (Import Result ID: 'f993c87b64e7e52e678430f4ebbdb8eb') in 0.0003339 seconds [static dependencies only]. Details - ImportResultOutputID=24de0a22fbc6cf424639aa389fa2c4c4 DependenciesID=dba002afa7da6a21d451efaa8dd38f3d StaticDependenciesID=26e0c95596a1ec504f490192347c1bab 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Pieces using Guid(4b9fdf5d5597f424e91aa137820464ad) (DefaultImporter) -> (Import Result ID: 'caa417f9a118d80f209d345cbe4cbfe5') in 0.0003158 seconds [static dependencies only]. Details - ImportResultOutputID=85c5a77c4eb53bbff5077dce84614128 DependenciesID=319085fd36edb7f683fc56f7141679d4 StaticDependenciesID=ac221567397e13009ff8fc2a57a45c36 
+Start importing Assets/Rescue.Unity/Art/Textures/Board using Guid(1c1269330881aef409a93c2ea077f9e7) (DefaultImporter) -> (Import Result ID: '619d20bfe8b5ec8f84dbc8138677f507') in 0.0003027 seconds [static dependencies only]. Details - ImportResultOutputID=100740d9d12e0b217d2f54b9072207d1 DependenciesID=d26371426e274c301e79a6bd9de12455 StaticDependenciesID=168b9b31dcd8262777aa1cecb5efed78 
+Start importing Assets/Tests/EditMode/Rescue.Unity/Dock using Guid(6db2a8ef6acb4ef8ba2f0b59f1e0b771) (DefaultImporter) -> (Import Result ID: '1d25d04eca1ca2fb995180e5edca7ace') in 0.0003185 seconds [static dependencies only]. Details - ImportResultOutputID=0b1bc5db28ff273837f86e004f99e20d DependenciesID=24279028376eacb2e1dae7e9c60d2207 StaticDependenciesID=59e78092b1afb305cb52e1966f4c56fc 
+Start importing Assets/Rescue.Unity/Art/Textures/Pieces using Guid(4ef914e6acca33849a41b7685b6ce575) (DefaultImporter) -> (Import Result ID: '0347f359b9aa0439cb9f5e05df75160f') in 0.0002941 seconds [static dependencies only]. Details - ImportResultOutputID=9ebe77d55ee7b9dd8b747694e3afabf8 DependenciesID=8a55fdf597fbceb95e97fe829e581754 StaticDependenciesID=43ccb2e67f8501b5dac075287443e29c 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Blockers using Guid(0fb314b3eeaf4e5499ac25d7a968cbcd) (DefaultImporter) -> (Import Result ID: 'e1d840288508dc0846234917930db617') in 0.000296 seconds [static dependencies only]. Details - ImportResultOutputID=818d07efcb5d5556b40738867809669d DependenciesID=8f2d2c6b156ce2781aa67d5ee8b9c6f4 StaticDependenciesID=3bbddd30662fbf10e7289d32112841cd 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Phase1/FX using Guid(40236fa2cfe7f714c97cf2b28c5570d7) (DefaultImporter) -> (Import Result ID: '0eb9fcb4b5b4df30e71f51a12374c789') in 0.0003414 seconds [static dependencies only]. Details - ImportResultOutputID=15b893e560520b7aed222597d9df0f69 DependenciesID=35964c7bc9d6b3903af24421f666df77 StaticDependenciesID=3567bca5e317e90d51b61f3baef87cbe 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Phase1/Blockers using Guid(e0b4d7e71e49ad1499d51881f378dcc2) (DefaultImporter) -> (Import Result ID: '0276d0ca6faf757f2b067b53db4fc91d') in 0.0002938 seconds [static dependencies only]. Details - ImportResultOutputID=5d20ccac7eb65dda8faf2e0a7bb7a8db DependenciesID=cdd6dacc280e4eb9328b65963d495f71 StaticDependenciesID=f820640c3d7a030417a145abab1b15a2 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Phase1/Board using Guid(01141f9f6848e504b8ae24bb1d918824) (DefaultImporter) -> (Import Result ID: '41ad7a24595e9db25125c1588d7c4cbc') in 0.000351 seconds [static dependencies only]. Details - ImportResultOutputID=fc4caf2a9e74a83a3cfca23b17c807a5 DependenciesID=d434e70a13caf18324a5d89cb7786f25 StaticDependenciesID=07cd35ad36a5c058792f6c9548f8d9cb 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Phase1/Targets using Guid(12152bd96736fab4b98e19349170f818) (DefaultImporter) -> (Import Result ID: 'ebc0b4e62681cd2303bdbde2746cc522') in 0.0003707 seconds [static dependencies only]. Details - ImportResultOutputID=4c80a2f33211ef58604fcf2e22aeefc0 DependenciesID=9081147bd016cf732376988527b70886 StaticDependenciesID=d6225bfbb4495ec0654905d51d69e8c4 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Phase1/Water using Guid(13a24d11e203255489616309beb9378c) (DefaultImporter) -> (Import Result ID: '260442f8d4eaf93d5ca5d7dd34228baa') in 0.0003729 seconds [static dependencies only]. Details - ImportResultOutputID=2dbe62396f02ad14768f0f828cb99033 DependenciesID=af6637e6079564a746df02b398a78751 StaticDependenciesID=25bc6ed4cfcb89c0148d47833df06268 
+Start importing Assets/Tests/EditMode/Rescue.Unity/Art/Validation using Guid(0499848fe7524bf7a65311fe5f1d9930) (DefaultImporter) -> (Import Result ID: '33aae4ab86837b2457d81b4f1a5ce2c3') in 0.0003033 seconds [static dependencies only]. Details - ImportResultOutputID=7da5949b7ab4a310d0dbdc14af2c5ca9 DependenciesID=ff0a9b2a20194621018590b8dc3f6764 StaticDependenciesID=a448856c873a19e44585c0ef302046d3 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Phase1/Dock using Guid(746d2d8aa8b20a04a95ba839bb5d53f7) (DefaultImporter) -> (Import Result ID: '1e8d37592cb2cdf51afbe022fb50180b') in 0.0003579 seconds [static dependencies only]. Details - ImportResultOutputID=09fdfd9946e2b1c3a774937c91eb3785 DependenciesID=add60a254207243120e94c89899a9610 StaticDependenciesID=526039aae5148644a7050a45e5db1227 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Phase1/Pieces using Guid(e883777f5dad642438120aacde5b1f1c) (DefaultImporter) -> (Import Result ID: '0db3b02f69ac16a6c64cdc3e76d5c551') in 0.000336 seconds [static dependencies only]. Details - ImportResultOutputID=dbb795f26f4f273efdfa65a1c8ad2152 DependenciesID=78e5a472b7059f7da9f8d10e85902694 StaticDependenciesID=29470821e4834857b2d9a57ed6cd42f5 
+Start importing Assets/Tests/EditMode/Rescue.Unity/Art/Prefabization using Guid(7917740bb33efde489f36cb604666322) (DefaultImporter) -> (Import Result ID: '626f9e6c408369a91802b31b76ce1fa5') in 0.000332 seconds [static dependencies only]. Details - ImportResultOutputID=5837f349788a2669c472444b778e25a5 DependenciesID=0fa35af7fb4a42ffa5dc957f447bcc33 StaticDependenciesID=a358d7dc9e551ab671ac0e7b3463f9c3 
+Start importing Assets/Tests/EditMode/Rescue.Unity/Art/Prefabs using Guid(9f5931240cc64c0f9306188bc6a7f46a) (DefaultImporter) -> (Import Result ID: '3be413f4df765863c03dd943c82a78d1') in 0.0003137 seconds [static dependencies only]. Details - ImportResultOutputID=3f1296efd41546a0d5689ea95eca21be DependenciesID=bd58607ffa09d9afc0eea5950137e78e StaticDependenciesID=59b48a7007e3a5f71bca1b89ca5ea42e 
+Start importing Assets/Tests/EditMode/Rescue.Unity/Art/Prefabs/Rescue.Unity.Art.Prefabs.EditMode.Tests.asmdef using Guid(a3c21793dd294486bfcb1f29abaf5bb6) (AssemblyDefinitionImporter) -> (Import Result ID: '8911c1f81df861a70e1e7a95fcc2f1f9') in 0.0011104 seconds [static dependencies only]. Details - ImportResultOutputID=f06f1fff2f4e7b4b479476e26586e2c1 DependenciesID=b8825d5a5773346de378ebfb2039d20e StaticDependenciesID=e687c50dee6dcd1ac408ebdf81e1b481 
+Start importing Assets/Tests/EditMode/Rescue.Unity/Art/Validation/Rescue.Unity.Art.Validation.EditMode.Tests.asmdef using Guid(c9778df3c97a48859ec00ff4261741b2) (AssemblyDefinitionImporter) -> (Import Result ID: '5ed0a1e69a7804bf6ee50b2237f72fb5') in 0.0010329 seconds [static dependencies only]. Details - ImportResultOutputID=8021afe3dd4f4713f07d4a0a20524b9b DependenciesID=beb733823d8c6a22df9d87b1137b3a19 StaticDependenciesID=4a4874d20ac79ef9391a9d0369a6a6b5 
+Start importing Assets/Tests/EditMode/Rescue.Unity/Art/Prefabization/Rescue.Unity.Art.Prefabization.EditMode.Tests.asmdef using Guid(5bf0ed10d64545845a54a5c10ef37ba8) (AssemblyDefinitionImporter) -> (Import Result ID: '60424ec7a84209da5658768b7ca33600') in 0.0009222 seconds [static dependencies only]. Details - ImportResultOutputID=b154e5f7af11a256a9cbeb0ec6795cf7 DependenciesID=bdc583e3118d817c6781077a887eba38 StaticDependenciesID=a2b8f98405d3e347120557ca7508fcf6 
+Start importing Assets/Tests/EditMode/Rescue.Unity/Dock/Rescue.Unity.Dock.EditMode.Tests.asmdef using Guid(3ef9369ab2b34cfd83803d54000d5eaa) (AssemblyDefinitionImporter) -> (Import Result ID: 'ef5224815b38de7cadd60a2f1a1d89f7') in 0.0008324 seconds [static dependencies only]. Details - ImportResultOutputID=11d58e790dd5268b239d680e572c0bfd DependenciesID=1308d96753ae52488b4881aa91e9b80a StaticDependenciesID=2d7a9f6b3896302e099e534d53401510 
+Refreshing native plugins compatible for Editor in 4.58 ms, found 3 plugins.
 Native extension for WindowsStandalone target not found
 Native extension for WebGL target not found
 ScheduleIndexationOnStartup MainProcess:True IndexOnStartup:True
 Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.625 seconds
-Domain Reload Profiling: 2422ms
-	BeginReloadAssembly (265ms)
-		DisableScriptedObjects (38ms)
-		CreateAndSetChildDomain (135ms)
-	RebuildCommonClasses (23ms)
+- Finished resetting the current domain, in  0.617 seconds
+Domain Reload Profiling: 2135ms
+	BeginReloadAssembly (255ms)
+		DisableScriptedObjects (14ms)
+		CreateAndSetChildDomain (149ms)
+	RebuildCommonClasses (24ms)
 	RebuildNativeTypeToScriptingClass (8ms)
-	initialDomainReloadingComplete (1067ms)
-	LoadAllAssembliesAndSetupDomain (434ms)
-		LoadAssemblies (367ms)
-		AnalyzeDomain (125ms)
-			TypeCache.Refresh (96ms)
-				TypeCache.ScanAssembly (86ms)
-			BuildScriptInfoCaches (26ms)
-	FinalizeReload (625ms)
+	initialDomainReloadingComplete (901ms)
+	LoadAllAssembliesAndSetupDomain (329ms)
+		LoadAssemblies (276ms)
+		AnalyzeDomain (115ms)
+			TypeCache.Refresh (83ms)
+				TypeCache.ScanAssembly (75ms)
+			BuildScriptInfoCaches (28ms)
+			ResolveRequiredComponents (3ms)
+	FinalizeReload (618ms)
 		SetupLoadedEditorAssemblies (0ms)
-			InitializePlatformSupportModulesInManaged (15ms)
-			BeforeProcessingInitializeOnLoad (123ms)
-			ProcessInitializeOnLoadAttributes (241ms)
+			InitializePlatformSupportModulesInManaged (17ms)
+			BeforeProcessingInitializeOnLoad (127ms)
+			ProcessInitializeOnLoadAttributes (221ms)
 			ProcessInitializeOnLoadMethodAttributes (146ms)
 			AfterProcessingInitializeOnLoad (4ms)
 		AwakeInstancesAfterBackupRestoration (12ms)
-Start importing Assets/Rescue.Unity/Debug/README.md using Guid(e49d6b1f00d79d44eb4e6d8cdb548325) (TextScriptImporter) -> (Import Result ID: '5531e58b7c422ca873abbcdca6dba024') in 0.0015871 seconds [static dependencies only]. Details - ImportResultOutputID=b6b56d168c0449841157fe3f1cfdd812 DependenciesID=6f7ca274115900310b4bd30d68e9d04a StaticDependenciesID=08bd2a9b994ec9218578927a23c584f6 
-Start importing Assets/Rescue.Unity/Debug/DebugPanel.uss using Guid(c16da66cde3a3524ba791895f9a99894) (ScriptedImporter)Assets/Rescue.Unity/Debug/DebugPanel.uss (line 14): warning: Unknown property 'unity-font-style' (did you mean '-unity-font-style'?)
-    unity-font-style: bold
-Assets/Rescue.Unity/Debug/DebugPanel.uss (line 22): warning: Unknown property 'unity-font-style' (did you mean '-unity-font-style'?)
-    unity-font-style: bold
-Assets/Rescue.Unity/Debug/DebugPanel.uss (line 33): warning: Unknown property 'gap' (did you mean 'top'?)
-    gap: 6px
-Assets/Rescue.Unity/Debug/DebugPanel.uss (line 38): warning: Unknown property 'gap' (did you mean 'top'?)
-    gap: 6px
- -> (Import Result ID: '54291c18ec9fb622ae588cb60ef1d677') in 0.0356845 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=fde05f9e220351723d0e59b78cf06efe DependenciesID=994c6a8d66df699ad77bd9600f0fc9b1 StaticDependenciesID=395f95ea4b363658e063747920199b7a 
-Start importing Assets/Rescue.Unity/Debug/DebugPanel.uxml using Guid(10d98afa7e777c342a86b6ccef280725) (ScriptedImporter) -> (Import Result ID: '90393aefe330fbd8f1fa91ece9354c14') in 0.0198418 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=f87a96b4a6414d495c95f92367b08112 DependenciesID=922408d480c116855093ff008196f091 StaticDependenciesID=c768aa0f6d111cbc9bac6637415f71fd 
-Refreshing native plugins compatible for Editor in 4.05 ms, found 3 plugins.
+Start importing Assets/Rescue.Unity/Art/Textures/Pieces/Meshy_AI_Blue_Rimmed_Paw_Print_0424154835_texture.png using Guid(508c52dbe908daa47a79f533ecbfc4cc) (TextureImporter) -> (Import Result ID: 'fbd2565e811c6ada6bae4b14cce7e3f7') in 0.0975192 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=816e5ece5bd6b383f2c77dd92868f159 DependenciesID=1d0113408db67ae2e779edcf0ca3b74f StaticDependenciesID=fcc07942233966daff08cf2dc1666719 
+Start importing Assets/Rescue.Unity/Art/Textures/Dock/Meshy_AI_Dock_Caution_0424154706_texture_fbx.png using Guid(807a83aea0aa95244b6bf17aa39476bc) (TextureImporter) -> (Import Result ID: '507ed3f1700cfc55e92556143c994abb') in 0.0941923 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=070486279501e093bd2249956a05dab2 DependenciesID=0cf355451d803a4b59cd0cc4905395af StaticDependenciesID=d5a15381dc885940f7be24e2b169b5d9 
+Start importing Assets/Rescue.Unity/Art/Textures/Pieces/Meshy_AI_Blue_Speckled_Paw_Bow_0424154905_texture.png using Guid(e16355e6d324508429361f65a881adfa) (TextureImporter) -> (Import Result ID: '349cb5d22b78851aa67072432e6aeee0') in 0.0936826 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=1bfb329d788901a7dcfc9039f0e68804 DependenciesID=ded4490a95766ea6db16a6811ff6eba0 StaticDependenciesID=b1b0298363513067fd3177f8fff9e720 
+Start importing Assets/Rescue.Unity/Art/Textures/Board/Meshy_AI_Terrazzo_Square_Box_L_0424155101_texture.png using Guid(32a816aaf87ff804bb748b5b43d295e1) (TextureImporter) -> (Import Result ID: '63525c5fff1ebe0b329f37de3e22d960') in 0.1030771 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=4eec2e975a5653ad2f094312a3b5b59b DependenciesID=5336d18597cf6e08fead696ddbd71ff5 StaticDependenciesID=d1c43c23953e03caf59fcaa05ebeefc8 
+Start importing Assets/Rescue.Unity/Art/Textures/Dock/Meshy_AI_Dock_Safe_0424154642_texture_fbx.png using Guid(138775d71855ec9479a2214a2860bf83) (TextureImporter) -> (Import Result ID: '9f1d6f91635c4f58870976032b978b4b') in 0.0949296 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=3073faf23ada27024086799f10ed08f8 DependenciesID=0ba0cb5452db6782c127c6041d933ed1 StaticDependenciesID=632e4121a60d6a5dffb64ced385210ab 
+Start importing Assets/Rescue.Unity/Art/Textures/Blockers/Meshy_AI_Pawprint_Wooden_Crate_0424155503_texture.png using Guid(2488cfc7b547aef4e8fe3d36b1e90bfc) (TextureImporter) -> (Import Result ID: '308a3a12a9656bbd3d8b71fc1240d463') in 0.1016238 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=09ede27b51ef9abced0713927c987803 DependenciesID=534ee3fbb8b86f0dafe6cda263492bc0 StaticDependenciesID=4e3fc48835f97fc59991be24728dc4a0 
+Start importing Assets/Rescue.Unity/Art/Textures/Pieces/Meshy_AI_Heart_Shaped_Massager_0424155210_texture.png using Guid(06393f4088dd55745a7c9ca5df909a8c) (TextureImporter) -> (Import Result ID: '2d7f3bd12b04f7ed94863ad7e311bb0e') in 0.0925345 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=bde77f5b0987d4af26224f38192c8ea3 DependenciesID=9b704f2ac08303a1567901d11cc6b39a StaticDependenciesID=7e7b12bd582c14461942b125a8b51c7e 
+Start importing Assets/Rescue.Unity/Art/Textures/Dock/Meshy_AI_Dock_Alert_0424154721_texture_fbx.png using Guid(2ce0de8a8a42f544fa0d5c9739faa646) (TextureImporter) -> (Import Result ID: 'cf16fb39afe1762a30c7ea9bf2aad35f') in 0.0904105 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=4b810cef53560e6c9dce12f098ded06f DependenciesID=a15cf4e34e6d950e5ea74469e835084d StaticDependenciesID=67deaef973839c876a9454287513f2bc 
+Start importing Assets/Rescue.Unity/Art/Textures/Dock/Meshy_AI_Dock_fail_0424154736_texture_fbx.png using Guid(7c01738384371664eba61008268ce192) (TextureImporter) -> (Import Result ID: 'c6957434a441ad210cf800ceb80dd5f1') in 0.0950754 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=f694dddeef6179727b3f9f054167f384 DependenciesID=95c98aa59c89b77a86580e1a0e9a378c StaticDependenciesID=0bec50df08d08b3f16c3124b6de012d4 
+Start importing Assets/Rescue.Unity/Art/Textures/Targets/Meshy_AI_Curious_Wet_Puppy_0424155427_texture.png using Guid(8c0ca5b2339660d4381ca40614e719bb) (TextureImporter) -> (Import Result ID: 'fb59cc81c8d3429dd6d76d9af30114c4') in 0.1002705 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=8dab5509519f17af08f8be3990eeeea8 DependenciesID=9690d6c1fe7343e2f7bc8412c389bb2f StaticDependenciesID=933763ab34afbbfc607c0aa923dca769 
+Start importing Assets/Rescue.Unity/Art/Textures/Pieces/Meshy_AI_Beige_terry_towel_wit_0424155142_texture.png using Guid(bcfe24ff6a6b43342b49cd7623e8a2c4) (TextureImporter) -> (Import Result ID: '77e258cdc8d5d26a228fcf69461e98ec') in 0.1038356 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=2aea96d2b560d6ed6b2d789283e651be DependenciesID=5e027b075f3641687afe1e9d45054ac1 StaticDependenciesID=a28213e7c4129edba33ca83f47721bc8 
+Start importing Assets/Rescue.Unity/Art/Textures/Pieces/Meshy_AI_Knot_of_Colors_0424154848_texture.png using Guid(ece896d41ffefd74397822c0ca334cb1) (TextureImporter) -> (Import Result ID: 'd9fb4e6d808a1b7d641884e4384edc09') in 0.1014696 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=27b39b526c4248246a228f083f226d51 DependenciesID=dd56885365117dfd05d830bcde98ac9f StaticDependenciesID=22f566b6a45bc038dba651e1f98536cc 
+Start importing Assets/Rescue.Unity/Art/Textures/Targets/Meshy_AI_Wet_Puppy_0424155412_texture.png using Guid(ed33335179661304599c2026e249905e) (TextureImporter) -> (Import Result ID: 'b80c70230305e08f005d03f428d92d84') in 0.1013923 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=5188ff6da6d18940e4399a752b07e59e DependenciesID=fe4712e412e1569ce9a4a9a7cab19175 StaticDependenciesID=d9660ab8f455bf33418937e49e074dda 
+Start importing Assets/Rescue.Unity/Art/Textures/Blockers/Meshy_AI_Weathered_Paw_Crate_0424155259_texture.png using Guid(1f997bd06ec08494b9c105a2a6b20aa3) (TextureImporter) -> (Import Result ID: 'a7cca44e0ded097f6a4dca45940811f7') in 0.0909795 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=b34427b9ce685e0cb74dba76abae3194 DependenciesID=52790b9ad881b925648c3755ffeaf97d StaticDependenciesID=012eef691add6d352255d0381de11c7d 
+Start importing Assets/Rescue.Unity/Art/Materials/Tile_Dry.mat using Guid(e0c1e17896af16146b5229b60ff56a1b) (NativeFormatImporter) -> (Import Result ID: '0e30ea9c5f4f447d3a581d7687c27044') in 0.0012698 seconds [static dependencies only]. Details - ImportResultOutputID=2b37c2658a3d583c995fa18c3c6a5f2e DependenciesID=384293f32c54e0f2ca7833fe255ffa3f StaticDependenciesID=ff02535eb4f896bb1f653c3cccdcb163 
+Start importing Assets/Rescue.Unity/Art/Materials/Waterline.mat using Guid(424f193d138d7b1438f32ec5dd6fd72a) (NativeFormatImporter) -> (Import Result ID: 'aef3b6c6f304a8ef37b655b4b1448762') in 0.0009561 seconds [static dependencies only]. Details - ImportResultOutputID=dc3584a9c95d62d0f35a9ebbd6be3624 DependenciesID=4cfdedeb647860b096e9829d9e7b4402 StaticDependenciesID=6cde7e39ecb4ef832eb0d876a3b36f70 
+Start importing Assets/Rescue.Unity/Art/Materials/Phase1/Vine_Overlay_Phase1.mat using Guid(72311cc9001b8b94d8cc298614ce2d6e) (NativeFormatImporter) -> (Import Result ID: 'e7c93cfff93aeaaaed0a0324d21a486d') in 0.0009077 seconds [static dependencies only]. Details - ImportResultOutputID=b933da274f3544297a1aac10c3edb3af DependenciesID=9a41c927fe9300c13392431fe0559e9b StaticDependenciesID=f8eaf23258475dcc7e3715c4236517f0 
+Start importing Assets/Rescue.Unity/Art/Materials/Phase1/Ice_Overlay_Phase1.mat using Guid(437eddce5661b5648b98e81a34e85155) (NativeFormatImporter) -> (Import Result ID: 'e485cd6cf3d6813e622edb6cd47ae61b') in 0.0009088 seconds [static dependencies only]. Details - ImportResultOutputID=db96e178d1a2ea26bb2b67488c85c5fc DependenciesID=dfbd3250b86e66958d1d7364fa39219b StaticDependenciesID=5948c0c3992d7802997f40fcdf98908e 
+Start importing Assets/Rescue.Unity/Art/Materials/Dock_Caution.mat using Guid(53f88bfa61f707b46bc5d74a294c6b0d) (NativeFormatImporter) -> (Import Result ID: 'e6565a625f0fd2fb24445df57a851f31') in 0.0009147 seconds [static dependencies only]. Details - ImportResultOutputID=2b746956974049b8659246ca4af81bd2 DependenciesID=1c9f882225c924a8a35d617f7207dbbf StaticDependenciesID=d5e12f8d92f93a783e3d7e985fc676ee 
+Start importing Assets/Rescue.Unity/Art/Materials/Phase1/Dock_Caution_Phase1.mat using Guid(f306ad2134429824dbb89b5dc42cfd40) (NativeFormatImporter) -> (Import Result ID: 'c884c99feeeeed7bf51b15b556b7b707') in 0.0009453 seconds [static dependencies only]. Details - ImportResultOutputID=b7fc62da25d67527dbc537e35b287917 DependenciesID=1b9206900ac184357f2d69de9810f547 StaticDependenciesID=96a1678e2dc51016549823bc633c3151 
+Start importing Assets/Rescue.Unity/Art/Materials/Water_Forecast.mat using Guid(75797570a59fabd419395c88474fba65) (NativeFormatImporter) -> (Import Result ID: 'bd9483a421d3f7970e614c5b83bfc8aa') in 0.0009275 seconds [static dependencies only]. Details - ImportResultOutputID=4e86bde513737155239cb6ac38df840c DependenciesID=7b68ed7fd3d01e7033f7b6976540e83c StaticDependenciesID=aa32a4ae8e15276c21a8e73d6310daaf 
+Start importing Assets/Rescue.Unity/Art/Materials/Phase1/PuppyTarget_Phase1.mat using Guid(f54c299464247fb4ca4591680924d42d) (NativeFormatImporter) -> (Import Result ID: '5f7bf46daca5d06c67feae94c387eb68') in 0.0009595 seconds [static dependencies only]. Details - ImportResultOutputID=c9115e925745c07a7e388f81ff3a039d DependenciesID=51eead61658e98d4bbffca370f16067e StaticDependenciesID=773a7753ce4d38cdfd5ddf6c6f70d8dd 
+Start importing Assets/Rescue.Unity/Art/Materials/Debris_B.mat using Guid(969ffb6101c79dc4981c5ae1fa68bef0) (NativeFormatImporter) -> (Import Result ID: '038854f5b9f66ae8c619e9f5cf59a06c') in 0.0008341 seconds [static dependencies only]. Details - ImportResultOutputID=7711ae90f6316db2c82324e0368c3da9 DependenciesID=cbe4a19924f70ab9b2e55fff670c8996 StaticDependenciesID=e8e08edb98fbb59251b6c27cda279834 
+Start importing Assets/Rescue.Unity/Art/Materials/Debris_A.mat using Guid(d6a64d6b433c16c478cd672b178a8e7d) (NativeFormatImporter) -> (Import Result ID: '3f890db2282c416decc76c99f03d241c') in 0.0008898 seconds [static dependencies only]. Details - ImportResultOutputID=09a573bec9ea00ae5c0fb2fc50295fb1 DependenciesID=48027d4a5d43b3310b35b6b6ae27ea6c StaticDependenciesID=e56fd7104bc9ce7c89c2eca5ea8eaf48 
+Start importing Assets/Rescue.Unity/Art/Materials/Phase1/Debris_B_Phase1.mat using Guid(17d7f9d74cc781a4ea29abf9d6635394) (NativeFormatImporter) -> (Import Result ID: 'eee86407fdf835b7d1a2475c0ee7d623') in 0.0009332 seconds [static dependencies only]. Details - ImportResultOutputID=4d4fecb288a8aed47a3ff4cf2fd4140b DependenciesID=107831cb01ab888223d0568d58b8fdfd StaticDependenciesID=954fe76d298717e18054082fc6bf780d 
+Start importing Assets/Rescue.Unity/Art/Materials/Dock_Safe.mat using Guid(084b5ea69323b894d927b28e5c4b889a) (NativeFormatImporter) -> (Import Result ID: '35416652320f50d4b0a586a5b7719ace') in 0.000905 seconds [static dependencies only]. Details - ImportResultOutputID=521e8c1e588f7cc1f1a2781d49547560 DependenciesID=7b41b8210a6e201d086221063c0fb865 StaticDependenciesID=24a2c6d976f682d9480bdd41d3b8a65a 
+Start importing Assets/Rescue.Unity/Art/Materials/Phase1/Debris_D_Phase1.mat using Guid(980af1647617e7f4ca9d96107ca3d6c9) (NativeFormatImporter) -> (Import Result ID: 'd56b70c42cecbcebc9c3c0a1e6ac27b4') in 0.0009249 seconds [static dependencies only]. Details - ImportResultOutputID=ea0c90bd84cb6cff10e988be6559aa22 DependenciesID=2f33699a635eeb31fca9b5c35e4fe715 StaticDependenciesID=4caa1efdb1ddad803f65084a532a65a4 
+Start importing Assets/Rescue.Unity/Art/Materials/Phase1/Tile_Dry_Phase1.mat using Guid(491ebc243cdf853489908304dd817f85) (NativeFormatImporter) -> (Import Result ID: '33d3d04d3c7ac716a8b1c307a944d35c') in 0.0008801 seconds [static dependencies only]. Details - ImportResultOutputID=38af42a22cc38933e5d1a71ad67b6b90 DependenciesID=d3cc3f20b54f88012de4f5474bde37c1 StaticDependenciesID=e59f094ed8ad7b0d5578e1aea210a854 
+Start importing Assets/Rescue.Unity/Art/Materials/Phase1/Debris_E_Phase1.mat using Guid(89b0dea0631708748beace5cc3975d34) (NativeFormatImporter) -> (Import Result ID: '411a7cae70788ad0f07d1bb90d1d16c4') in 0.0009872 seconds [static dependencies only]. Details - ImportResultOutputID=9632a833d834914fe79f63414316589c DependenciesID=cb9cbefb15557d0854f1e6ff4adfe1d1 StaticDependenciesID=84bd52d96d0a0ae167ab2c6ae79ef9c2 
+Start importing Assets/Rescue.Unity/Art/Materials/Phase1/Crate_Phase1.mat using Guid(c97ae12879dbd6548a42b3cf4ec6e40d) (NativeFormatImporter) -> (Import Result ID: 'aaedec06eda097d3f3d304c07432451e') in 0.0009792 seconds [static dependencies only]. Details - ImportResultOutputID=8da5f274fedc7c595e0ba2a41b97c513 DependenciesID=c86a33cc89939c6ebd7efdce1c0c53a6 StaticDependenciesID=f60b8b0e91fe028c6af28fe4a854bf9f 
+Start importing Assets/Rescue.Unity/Art/Materials/Phase1/Dock_Failed_Phase1.mat using Guid(2a5bce4e92255064fa278c80d3305d50) (NativeFormatImporter) -> (Import Result ID: '03e3a92057b0950f9f81f61ab99dd118') in 0.00095 seconds [static dependencies only]. Details - ImportResultOutputID=197efb9bd6d6f8bcc12fdb367e302819 DependenciesID=846d4198ef11e364c448b6c8a51f3893 StaticDependenciesID=b4553ae814def00148727d1e312eea4d 
+Start importing Assets/Rescue.Unity/Art/Materials/Phase1/Dock_Safe_Phase1.mat using Guid(3b625ff45a1f61a42b94a4c57794501d) (NativeFormatImporter) -> (Import Result ID: '69d208ccbc0b0d56323c9092e2d3b157') in 0.0008432 seconds [static dependencies only]. Details - ImportResultOutputID=3d5375019538470ed32098bf75f81570 DependenciesID=ac9f880c3bb0138344f2f33978cef45a StaticDependenciesID=e15520933a69371036926f05e9ff5cd6 
+Start importing Assets/Rescue.Unity/Art/Materials/PuppyTarget.mat using Guid(5b5cdf0b7b90091428cd2d131bddf1f5) (NativeFormatImporter) -> (Import Result ID: '47b0df7e73112af56e02298267493167') in 0.0009302 seconds [static dependencies only]. Details - ImportResultOutputID=7cd939bd5aadadfcb85b50f3bd9dffca DependenciesID=32ed5a859ba9becffda5807da6bc77cd StaticDependenciesID=5bfd4945c1f4d19feb4d28aabd0c3f99 
+Start importing Assets/Rescue.Unity/Art/Materials/Phase1/Debris_C_Phase1.mat using Guid(bb232ffe7d7622d439570e9857e3640c) (NativeFormatImporter) -> (Import Result ID: '5cb40dd33dd50b7787d01fd88fd4de30') in 0.0008736 seconds [static dependencies only]. Details - ImportResultOutputID=459f03428eb1129113e596af18277fb5 DependenciesID=bf66a95ae0506febd44eba72e3857749 StaticDependenciesID=6ea16a85e6cad91351d9caa05a1855ff 
+Start importing Assets/Rescue.Unity/Art/Materials/Dock_Failed.mat using Guid(eb786aced284aa248a7a5878e30c9532) (NativeFormatImporter) -> (Import Result ID: '3dcd76fd93992cb92fb00c27ec69e84e') in 0.0009162 seconds [static dependencies only]. Details - ImportResultOutputID=896fa734b081d3595386a06b4fe7bc87 DependenciesID=945a19f1aa0af35d3f2f224536d8902a StaticDependenciesID=d7ebc6876cfe871fbba1335b2efacfaf 
+Start importing Assets/Rescue.Unity/Art/Materials/Dock_Acute.mat using Guid(7c9e72323483e3e4bb847f2548351b59) (NativeFormatImporter) -> (Import Result ID: 'cf17499239cc58fd8b339029af80b19e') in 0.0008989 seconds [static dependencies only]. Details - ImportResultOutputID=859f7c8fe01a12a10efd01c3ee5bd7c8 DependenciesID=a861381d59ba3a238d0eed7e6eec2b61 StaticDependenciesID=e2c21d2bdd1cf6c5c79a20093a38034a 
+Start importing Assets/Rescue.Unity/Art/Materials/Vine.mat using Guid(8c9d4ae39c9b86140b4192b139856231) (NativeFormatImporter) -> (Import Result ID: 'd22f9b1bd4fc97e28f55f7c1c42c17f4') in 0.0009437 seconds [static dependencies only]. Details - ImportResultOutputID=11ffa87584f3b10610e48662ec8dd44d DependenciesID=4bce3d270d1de11ca2af1e252daf9ee0 StaticDependenciesID=310df27a4a32e5e903f3baf199cbedc5 
+Start importing Assets/Rescue.Unity/Art/Materials/Debris_E.mat using Guid(bcfac7c78af746e47a7e129195765dd0) (NativeFormatImporter) -> (Import Result ID: 'd91b5f14907c9b29496a8de08f6a13c3') in 0.0009384 seconds [static dependencies only]. Details - ImportResultOutputID=22e03decbdd954b34d2a5f3cda2e6029 DependenciesID=5f524accf47bc0b96126dc18dedd4b31 StaticDependenciesID=e8c3ba95edb132dceb6cd72a7cfdef1b 
+Start importing Assets/Rescue.Unity/Art/Materials/Ice.mat using Guid(3d6eea782a3d1e741ad6338e282d07bc) (NativeFormatImporter) -> (Import Result ID: 'a0fe2b2f807a2272e9e6f7bacab01f9d') in 0.0009007 seconds [static dependencies only]. Details - ImportResultOutputID=ecda7c8f4a0e63d7ad6565ee2eca213d DependenciesID=adbe361bf7dbce733abaa926764f1b74 StaticDependenciesID=cf6798d36eb6ef85f363bf6b6784097e 
+Start importing Assets/Rescue.Unity/Art/Materials/Debris_C.mat using Guid(6d259863f156cb8498745a09827d10c1) (NativeFormatImporter) -> (Import Result ID: '703d7aba5b5b72a6993367d3910c5b9e') in 0.0008283 seconds [static dependencies only]. Details - ImportResultOutputID=96586f4379b43ca8f18c150441d482de DependenciesID=744b7cda7579d4f1b5dd7b0fc6ddb58e StaticDependenciesID=152e2802dcd263b1e300c7a4dffdb19f 
+Start importing Assets/Rescue.Unity/Art/Materials/Phase1/Dock_Acute_Phase1.mat using Guid(3ea3efcfc755c71488d7fc74f7389578) (NativeFormatImporter) -> (Import Result ID: '7c0e0d8c4fcb53cd26f025b3577aa303') in 0.0008916 seconds [static dependencies only]. Details - ImportResultOutputID=b5c72034cf840b459c946ae58af56be5 DependenciesID=5835ef07c89976e4edcf2e8dfe58d2e6 StaticDependenciesID=ebcc4f0fa824f83ebdf49223e255354e 
+Start importing Assets/Rescue.Unity/Art/Materials/Crate.mat using Guid(9e1c02efbbf331944a0a264345a52670) (NativeFormatImporter) -> (Import Result ID: 'a52eeb34adb95949750981a888aabc77') in 0.0008864 seconds [static dependencies only]. Details - ImportResultOutputID=1fe70e8c79e2963807396a0022a34764 DependenciesID=f720625a96ae254222ce6d8547a7698d StaticDependenciesID=0d8af1b184a03d5de26a877780920c67 
+Start importing Assets/Rescue.Unity/Art/Materials/Debris_D.mat using Guid(fe48f8b9a0e7c4844b1c6232520102c1) (NativeFormatImporter) -> (Import Result ID: '5548f5d7d982a6f9430e996101e2f60e') in 0.0008624 seconds [static dependencies only]. Details - ImportResultOutputID=213555879a6cccd39dddeea07e0baaad DependenciesID=02b11c3e606201473e8d7858e982870c StaticDependenciesID=0cf4873e8bb048062d6f9ccdf6cfc490 
+Start importing Assets/Rescue.Unity/Art/Materials/Water_Flooded.mat using Guid(0f3aa0e5c0bfec0449b6359b63d1b4fe) (NativeFormatImporter) -> (Import Result ID: 'e956fc6e595e60527df2afe82364fef2') in 0.0009554 seconds [static dependencies only]. Details - ImportResultOutputID=79c5df4fc7d7c1526f5eaeb9c12f23bb DependenciesID=04646beb8d39654c3c39163cd9bfc191 StaticDependenciesID=072025f7ffdf6a33ce60dc16f4698094 
+Start importing Assets/Rescue.Unity/Art/Materials/Phase1/Debris_A_Phase1.mat using Guid(3f11e7cbbdf62f94fb6cf2baffc99401) (NativeFormatImporter) -> (Import Result ID: '7377e64c2916e1069ec68e2d69339a11') in 0.001031 seconds [static dependencies only]. Details - ImportResultOutputID=432ffe37afd27ef35ec289d827fc621d DependenciesID=a0bcf89b03115092036bf87af552b917 StaticDependenciesID=2583a3610d57ef433bd92cf96ab7df81 
+Start importing Assets/Rescue.Unity/Art/Models/Pieces/Meshy_AI_Blue_Rimmed_Paw_Print_0424154835_texture.fbx using Guid(d20e9a68e971d144387375352e32cf54) (FBXImporter)Launched and connected shader compiler UnityShaderCompiler.exe after 0.01 seconds
+ -> (Import Result ID: '32e262f3bef9cf7f9ae9d2fef5d571d3') in 0.0464941 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=88c958b29240fbf6ef210f2c7f472c79 DependenciesID=30fac3b00da63fe827573c1f62234956 StaticDependenciesID=483eb21e2769ae63546673cd0d4f7469 
+Start importing Assets/Rescue.Unity/Art/Models/Targets/Meshy_AI_Curious_Wet_Puppy_0424155427_texture.fbx using Guid(341d5daf8c0d85147bdbcd55d250eb03) (FBXImporter) -> (Import Result ID: 'd3af3a7ac421f4411b95cabe926081f7') in 0.0534009 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=232776d3923caeb7c744f5195b51e637 DependenciesID=eb87c2766fec86b8e842d0de204a72a8 StaticDependenciesID=0890baddc97ce357d849d9b805899a94 
+Start importing Assets/Rescue.Unity/Art/Models/Dock/Meshy_AI_Dock_Caution_0424154706_texture_fbx.fbx using Guid(e49e4ab41ee478948a1d632cae25f866) (FBXImporter) -> (Import Result ID: 'f8f86c2708a1163d5d4b17d12f9bb781') in 0.0257562 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=e12a664891906a237b20183f0057d310 DependenciesID=0143bfdb3b4d28e7db4530f3afec77d6 StaticDependenciesID=4376b2623fe0eb4b5fb587ca7e78a6e3 
+Start importing Assets/Rescue.Unity/Art/Models/Blockers/Meshy_AI_Pawprint_Wooden_Crate_0424155503_texture.fbx using Guid(f65223844d520c84e936ad9b23009648) (FBXImporter) -> (Import Result ID: 'e488c209a6c51fd7cc2cf0d87bd16f0d') in 0.0166702 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=5d5d36ef29872378c9636bbdb6718801 DependenciesID=4ca87fbf8866c57f9b89d1ecdda870b7 StaticDependenciesID=b8b4a5e25d7ad772fd9f961ca31e30ca 
+Start importing Assets/Rescue.Unity/Art/Models/Pieces/Meshy_AI_Heart_Shaped_Massager_0424155210_texture.fbx using Guid(6709f68a7ce91de479c6013c71f8ed21) (FBXImporter) -> (Import Result ID: 'c70fcb3272566ffa2aaa472363cec32e') in 0.0169067 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=6ff67b50766af55133a3ab259c77648d DependenciesID=7f6759c385bcf99efe5d770d915b6df4 StaticDependenciesID=034d8cabc729bf2d7b7a85c10cd668d8 
+Start importing Assets/Rescue.Unity/Art/Models/Board/Meshy_AI_Terrazzo_Square_Box_L_0424155101_texture.fbx using Guid(69b88b77fb8cb77499006151e3227238) (FBXImporter) -> (Import Result ID: '1e57a8fb0d8d161b731fb51aed2d2d5e') in 0.016837 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=dcfc7d15b061c21b8178f2efa8b2c9ec DependenciesID=c5cb42d32336dc52a296f5b029160ef1 StaticDependenciesID=96c8088f3ac522973d73ed08c24652d0 
+Start importing Assets/Rescue.Unity/Art/Models/Pieces/Meshy_AI_Blue_Speckled_Paw_Bow_0424154905_texture.fbx using Guid(b9d50356d22eaad4caa56f35b437a1ea) (FBXImporter) -> (Import Result ID: '198bf7ccb268a30aec8554b8d58f9dbe') in 0.016341 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=881520be39fd908ccbaf3657fa86ad27 DependenciesID=2e8459403e846e035817b393c18c40b9 StaticDependenciesID=a46564f036a3b8cc5f8176118e4f1e86 
+Start importing Assets/Rescue.Unity/Art/Models/Pieces/Meshy_AI_Knot_of_Colors_0424154848_texture.fbx using Guid(ea5f63781c24f29419b4a26fd0d8f7b3) (FBXImporter) -> (Import Result ID: 'cfa4a410aa5c214c71e275f68911cb78') in 0.0165038 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=72a2e1aff674693a3ff6d9bcafa0b0f1 DependenciesID=adb7aab5117c4b99532b3f4a65b7c244 StaticDependenciesID=66086ed18a79db1036caa99380994523 
+Start importing Assets/Rescue.Unity/Art/Models/Dock/Meshy_AI_Dock_Alert_0424154721_texture_fbx.fbx using Guid(7b54e8ec6016e24468fda9f8dc53e290) (FBXImporter) -> (Import Result ID: 'fe875534bbb3213f78b08765a7348ca0') in 0.024864 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=58b1b4a228e98570e2b4136963539aef DependenciesID=c1d2527bd5b7e102ece58dc23b0b088d StaticDependenciesID=a3098a9360a11fe4a23df9738453df23 
+Start importing Assets/Rescue.Unity/Art/Models/Dock/Meshy_AI_Dock_Safe_0424154642_texture_fbx.fbx using Guid(0cca2b2ae7e81f541a6217f9fd738a03) (FBXImporter) -> (Import Result ID: '827d5a7a3e012b0ac90389a1898e2119') in 0.0252494 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=cd6cb06b202a47965038bc62dbfe4af0 DependenciesID=572f0cf8a498a9952fe2da3c5a91212d StaticDependenciesID=8c26d2c327c9f78608a4f8941baad01c 
+Start importing Assets/Rescue.Unity/Art/Models/Targets/Meshy_AI_Wet_Puppy_0424155412_texture.fbx using Guid(3cbfb89b33228744e93ef15f0fabba96) (FBXImporter) -> (Import Result ID: '73032db50db754903d0ee512c4924580') in 0.0521807 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=85e98cedf1322e26df9b75d73bfd9b8d DependenciesID=f5dbdf7eb10b386d3fd93b64bc40fcae StaticDependenciesID=1f737cbd154ccf11b1a4c96d8755041e 
+Start importing Assets/Rescue.Unity/Art/Models/Dock/Meshy_AI_Dock_fail_0424154736_texture_fbx.fbx using Guid(5ca39d901ff3e3d40b5f98f492ffdcd2) (FBXImporter) -> (Import Result ID: '2f51b55f5e6dcf73a81fd7fb5c9223b7') in 0.0251264 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=60cdae7ef5d6edbad72bf300e70c3963 DependenciesID=726061b51ac6903964df5c396c7194bb StaticDependenciesID=afe899e5e4fa248986e13cea856f3865 
+Start importing Assets/Rescue.Unity/Art/Models/Pieces/Meshy_AI_Beige_terry_towel_wit_0424155142_texture.fbx using Guid(acbcd6cb1937d4c4184c83d2c8f8e2cf) (FBXImporter) -> (Import Result ID: '41849bbb6b827ea524e5adbe6127d6e9') in 0.0162877 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=3ed94848350506203022a1665263aa3a DependenciesID=359072800dd87785320adbea0bf699da StaticDependenciesID=087c3e5dc7f1e3b1505baea398ed03ec 
+Start importing Assets/Rescue.Unity/Art/Models/Blockers/Meshy_AI_Weathered_Paw_Crate_0424155259_texture.fbx using Guid(dc4fa7e93e4135b4aaa50113f1a8d1c8) (FBXImporter) -> (Import Result ID: '3684b5b327acd7d69dd79b0b4c49fafe') in 0.0159659 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=66288c788d6435535ead638917570229 DependenciesID=9cb4a5a36f14c4841257a792e6e33500 StaticDependenciesID=e1011c04e4a9f166b0397725d244fea4 
+Start importing Assets/Rescue.Unity/Art/Registries/Phase1FxVisualRegistry.asset using Guid(b1429a0b0e5762443944d06aac7a1fbf) (NativeFormatImporter) -> (Import Result ID: 'e9102b868724e12d264586a2e2680fc8') in 0.0014139 seconds [static dependencies only]. Details - ImportResultOutputID=e278fd7155654d2a7ff00d1df1444f4c DependenciesID=eb425a9c22056d2f0302231d44ff970e StaticDependenciesID=b84fe57ff2276e4986c9aae06091e389 
+Start importing Assets/Rescue.Unity/Art/Registries/Phase1DockVisualConfig.asset using Guid(56f59ef1d9c2f5c4698b191d252576c5) (NativeFormatImporter) -> (Import Result ID: '2c4862b5d882bae55e0815260a8cdabe') in 0.0015633 seconds [static dependencies only]. Details - ImportResultOutputID=bd20882e9080f72e4b75842138fb1ed2 DependenciesID=48f5e004399d34f89bf2037538ac9b80 StaticDependenciesID=797f525e6cea412336f5e11b8ad72c91 
+Start importing Assets/Rescue.Unity/Art/Registries/Phase1TileVisualRegistry.asset using Guid(4799861cd263c5f459452e39480d0177) (NativeFormatImporter) -> (Import Result ID: '017c002effabf7396a8ef3df1734a494') in 0.0010278 seconds [static dependencies only]. Details - ImportResultOutputID=73497d904b1dab472f42e29b2efe2a4e DependenciesID=20be34ee71029518eceae1d8d8030057 StaticDependenciesID=9e8fc26f52b47f2a8d56d5c094ab0914 
+Start importing Assets/Rescue.Unity/Art/Registries/Phase1TargetVisualRegistry.asset using Guid(1937fca32f148044c9e220425dd0e997) (NativeFormatImporter) -> (Import Result ID: '1b1a16137fdcbf7d4838f750546b83e5') in 0.0010357 seconds [static dependencies only]. Details - ImportResultOutputID=3a7ab63e2392d4d4dd894d545f3c7324 DependenciesID=848ddbfdcf776fc162d027e8c9fc6f97 StaticDependenciesID=f98aabcb10aed443c60dafc495249125 
+Start importing Assets/Rescue.Unity/Art/Registries/Phase1BlockerVisualRegistry.asset using Guid(1bfb4325a88f4714f8094f8255658b54) (NativeFormatImporter) -> (Import Result ID: '0c7f214e7bc58317da3d3067a6e292d5') in 0.001001 seconds [static dependencies only]. Details - ImportResultOutputID=0b4970f25c696a643dfc4b298994405d DependenciesID=bac84987741d4b6a064186022210dfab StaticDependenciesID=2a7d3f968a396a81d9a1877011bda23b 
+Start importing Assets/Rescue.Unity/Art/Registries/Phase1PieceVisualRegistry.asset using Guid(3f655fe0407a8814d855a622dd0bccde) (NativeFormatImporter) -> (Import Result ID: '4197296e3aa565da2d7e216f432e4e47') in 0.0010101 seconds [static dependencies only]. Details - ImportResultOutputID=3a9791396110722b03fc55f33fa47a93 DependenciesID=9048521492852d13347204a9a2001e38 StaticDependenciesID=b659ac8cf96403f47e49fdb48c65bced 
+Start importing Assets/Rescue.Unity/Art/Prefabs/FX/DockTripleClearFx.prefab using Guid(007652d1cdf5fd54fb033905845c6eeb) (PrefabImporter) -> (Import Result ID: 'ec6a5616e469bc028cb4d8281a34df2b') in 0.0014533 seconds [static dependencies only]. Details - ImportResultOutputID=d50bd744c8473608cf3cca2685f884b8 DependenciesID=fea6e53c8f2c9a35553d0b0b9db8c3b4 StaticDependenciesID=e7c0468d9225cf87353334a81c69b52f 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Phase1/Pieces/Debris_B_Phase1.prefab using Guid(90418f9d02b8d2e4b954f5d0a146c735) (PrefabImporter) -> (Import Result ID: '953395bb6358234e729e5842642b5abd') in 0.0022365 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=5be7c7d419b9946c295c27e97f54d3ad DependenciesID=295e65b0d01bde24e84a0c5906b3351e StaticDependenciesID=2edb6665cff47bace184be08f3624455 
+Start importing Assets/Rescue.Unity/Art/Prefabs/FX/LossFx.prefab using Guid(f02f8210719bafc4f9f2cb0cdf97b3cd) (PrefabImporter) -> (Import Result ID: '098e4d53c76c7a4d601f6884c73b578e') in 0.0011831 seconds [static dependencies only]. Details - ImportResultOutputID=5a126123d1f43932955bc6b8a198d266 DependenciesID=8216608171ecb94b99eefdf24c7c50b8 StaticDependenciesID=584de2bf47e9ff3a2c5e398dae6f57d7 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Blockers/Crate.prefab using Guid(7193280341d7cb84d97a3b3e7201a0bc) (PrefabImporter) -> (Import Result ID: '6e1d796c396b65aab916902f90ddefe6') in 0.0017455 seconds [static dependencies only]. Details - ImportResultOutputID=717f3d81be67c033eef3437aa4a93034 DependenciesID=8992d322cfee96a73e9e7b798cea223e StaticDependenciesID=37bc0d1e708e4153e0aa713e8cb0f289 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Phase1/Dock/Dock_Safe_Phase1.prefab using Guid(523203d6223c53a4185bda5c92a9195a) (PrefabImporter) -> (Import Result ID: 'aaa9fb3d0631630707e9fce8dc5d81cb') in 0.001611 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=809ef74689545925eee5943efac60fff DependenciesID=4858c70c2d15f561f3c00cf0e33e0195 StaticDependenciesID=c6ff3f56d9959ea7ed1f846caebc0f92 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Phase1/Pieces/Debris_C_Phase1.prefab using Guid(723515075faee384d8e46194a12a39fc) (PrefabImporter) -> (Import Result ID: '342efa5858bf5f62b55fc7ff4ad53c73') in 0.0016219 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=44624566f7f2853db0d0581abfea8548 DependenciesID=b34e1d4aedec07c90adf25d1b3ee8055 StaticDependenciesID=ff86db53af9ac59026945818b40cee48 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Phase1/Pieces/Debris_A_Phase1.prefab using Guid(92a0a1a4a5d26e945a5086b63da007b7) (PrefabImporter) -> (Import Result ID: 'a93c8df71255c9c429b8e317e3201106') in 0.0015659 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=316c3dca6f784ece72211b798f8bc083 DependenciesID=dc2c602f765cbdf5d63dbe4600441a24 StaticDependenciesID=3d34ab33e52e0340468b5196938cbb4a 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Phase1/Blockers/Ice_Overlay_Phase1.prefab using Guid(a33b3bbf0685947438d460deb6dfa049) (PrefabImporter) -> (Import Result ID: '2cd72bcc708a1292e26663ff8d134e2f') in 0.0014289 seconds [static dependencies only]. Details - ImportResultOutputID=97442282d1d358ef07e9775defffccb6 DependenciesID=7f0f5785e55f3dcb98e32398c4abaf86 StaticDependenciesID=106bc5372d0982d44da0343a5560a4eb 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Pieces/Debris_B.prefab using Guid(f4e2e37da1cce0c46832afc3e9718c5a) (PrefabImporter) -> (Import Result ID: '4a2b89efe2e88c4543b7be6f3a2f0097') in 0.0014796 seconds [static dependencies only]. Details - ImportResultOutputID=4998f9074f5735f2e7ff156c1d62cc24 DependenciesID=54a7087efeb7473e0c03bec89af3c77f StaticDependenciesID=ef9896509377e92734ac3a09fab01b06 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Phase1/Dock/Dock_Shared_7Slot_Phase1.prefab using Guid(f45a199fe920d4b4fbcf47ff3bfc5864) (PrefabImporter) -> (Import Result ID: '5e0bc461cb3963f9d4d6cadc63c2bd6b') in 0.0015062 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=4d96717a5b6db6bc9e1c9493c5a1490d DependenciesID=7ddf7ddb45154fb2a4431466707600dd StaticDependenciesID=000bc058dff846cee895fe3657f3f6d1 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Targets/PuppyTarget.prefab using Guid(45abae3b5d2e9994789b87a4b5b543dc) (PrefabImporter) -> (Import Result ID: '9459ca378c9ed595ec4c8e615801ac0a') in 0.0015106 seconds [static dependencies only]. Details - ImportResultOutputID=48ebc078bf50dc885a780328d5fe2c4c DependenciesID=301e6b99e97000f414ac8f0709bbbca6 StaticDependenciesID=378a1dfdced83f38e054ddd09f0325b2 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Phase1/Dock/Dock_Failed_Phase1.prefab using Guid(55b17f70825536643a31d7a50fc8a173) (PrefabImporter) -> (Import Result ID: '090534ca94c03ed398f3e81d07ae071b') in 0.0018429 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=32350fcb2e5f6b3cd6db50f3cef38d66 DependenciesID=c9eb15342b0424a54d95a26b3467f715 StaticDependenciesID=4b1f7df5965b7f27f1fb3438e6783912 
+Start importing Assets/Rescue.Unity/Art/Prefabs/FX/VineClearFx.prefab using Guid(f534bf0decfd5d24a9ef699de63688fc) (PrefabImporter) -> (Import Result ID: '8d5726199f9cdfbdf43fa72f625677ef') in 0.001245 seconds [static dependencies only]. Details - ImportResultOutputID=81727b42219df743670c323b28775d06 DependenciesID=ee56049d689d969fd92d213a682707bd StaticDependenciesID=f7998e66f024485fb68e42e3c352e378 
+Start importing Assets/Rescue.Unity/Art/Prefabs/FX/NearRescueReliefFx.prefab using Guid(162127c00d2260a47b83a5f0177e24f0) (PrefabImporter) -> (Import Result ID: '1a775ca9bb646c0328bc308d8fbbfa3c') in 0.0012172 seconds [static dependencies only]. Details - ImportResultOutputID=6a097896a8668a3f40d5066ddd129364 DependenciesID=56328e383f1837960e14e7adfccc8248 StaticDependenciesID=72c99412b00afef2a88007f8460e0504 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Blockers/Vine.prefab using Guid(b68c8424d764528488d0357a14d8320e) (PrefabImporter) -> (Import Result ID: 'ba0283c06c541077b71b4826f6104621') in 0.0013736 seconds [static dependencies only]. Details - ImportResultOutputID=1bf4dbec22c2bb0609130d5151e08dd0 DependenciesID=01a6762061e7656985e26da4c554e23e StaticDependenciesID=b9c3dfe59aa5e68a90ed4aee322dd10f 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Pieces/Debris_D.prefab using Guid(f683ab9ac301455498e2cb4f067953ef) (PrefabImporter) -> (Import Result ID: '510b5ea94bcc80cad4c40562b97906d1') in 0.0016495 seconds [static dependencies only]. Details - ImportResultOutputID=62b17899556e34953332600890838b23 DependenciesID=f332f8047a72d66a5058f3f310027837 StaticDependenciesID=d2535c4d7270deea9deb719b8e6f3037 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Water/ForecastRowOverlay.prefab using Guid(27a2cca2bd3180446bd60f778162a1aa) (PrefabImporter) -> (Import Result ID: '33eac2ae94edbc24e260e357b7254ff0') in 0.0014759 seconds [static dependencies only]. Details - ImportResultOutputID=a5f98062a7c270d21733ac8d97792fc5 DependenciesID=76b1d00e69028b1bda5be44d6d800412 StaticDependenciesID=3d189cda607d2ec48c477c0f29b8a2cf 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Water/FloodedRowOverlay.prefab using Guid(58a4c61a8afaa824081fcdf88d67c8e5) (PrefabImporter) -> (Import Result ID: '0d838fb0eabd55027f77b496966139bf') in 0.0015607 seconds [static dependencies only]. Details - ImportResultOutputID=946f0b01e07668c646564bf74d32b6d5 DependenciesID=9444b90549e4da185acab1e3e9a5910f StaticDependenciesID=e10a68bc44c39c30228fa5b47ba8e41c 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Board/DryTile.prefab using Guid(b8399d41e265ab44aa72ecdc5feecc32) (PrefabImporter) -> (Import Result ID: '6ade3c1026529a3ca1288b7373e989fa') in 0.0013382 seconds [static dependencies only]. Details - ImportResultOutputID=cc8142ee0a12e312fc771f71c7ac4c87 DependenciesID=1e906d0df87e040a0f5a0782061146ee StaticDependenciesID=51246ef80269fa0237513592a6abcc8e 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Phase1/Board/DryTile_Phase1.prefab using Guid(193e6b5afbcf8234fa266f6bfc011546) (PrefabImporter) -> (Import Result ID: '8577123077716c02a3677cf056940b61') in 0.0017241 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=9875daac1f38cfb13934dc14bce91e13 DependenciesID=a3f029442b33153aecd6d6353017f23c StaticDependenciesID=5ee94d931097a6958649f84fb3e2873f 
+Start importing Assets/Rescue.Unity/Art/Prefabs/FX/WaterRiseFx.prefab using Guid(e90a6708dbe8f1f4dae813daf4a95166) (PrefabImporter) -> (Import Result ID: '3685e392f021c62e33581a031673ad85') in 0.0018924 seconds [static dependencies only]. Details - ImportResultOutputID=0922e7b9725c24364f8c3e158231c49d DependenciesID=f318768cccf1b9144ed3fcecab35680c StaticDependenciesID=368569368dd6e791530e1d4e531979c0 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Phase1/Blockers/Vine_Overlay_Phase1.prefab using Guid(9a1eaa6886695d642ad97e21fdf07c97) (PrefabImporter) -> (Import Result ID: '96e7f33083e8cbc35616f96a1e1fcff8') in 0.0013614 seconds [static dependencies only]. Details - ImportResultOutputID=81c1cbd0f1e8de31e2fbb2bef961eabe DependenciesID=89668a4266c92d929e85938d54c7c8ee StaticDependenciesID=6d57506868ceb7ce53c17aebcffdd39c 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Water/Waterline.prefab using Guid(bab1d7f5ce0b64f45a1a912f431f3601) (PrefabImporter) -> (Import Result ID: 'cd4a08b96a8d0c5488d7d6e43151a0af') in 0.0014496 seconds [static dependencies only]. Details - ImportResultOutputID=9d9209c2488645daf5a20563ee011dff DependenciesID=6339ed04be1862c37342af74f946acd6 StaticDependenciesID=348a4dccd231d86d95277fb28c8d4301 
+Start importing Assets/Rescue.Unity/Art/Prefabs/FX/TargetExtractionFx.prefab using Guid(ba2c5f8f771d2f844986c2e725f22995) (PrefabImporter) -> (Import Result ID: '9d8a290f589fec070305fd385a24eada') in 0.0013472 seconds [static dependencies only]. Details - ImportResultOutputID=a3510f2afbbecbf24cc083c77d852d9e DependenciesID=60878a238a9e4afc10db9c74f1802f4b StaticDependenciesID=2c693b25a7e311e740ba899d148b5913 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Phase1/Dock/Dock_Acute_Phase1.prefab using Guid(4b6f8ff752647494b80f3227b10c543a) (PrefabImporter) -> (Import Result ID: '96d5468c4e29e090882f5a325b40c6f4') in 0.0018331 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=c78260b46f6610cc50fdc6ec5580ebd9 DependenciesID=1454ea9fc675640098fdec59c4733a44 StaticDependenciesID=8553802afab4f6200a1f60e191e5957e 
+Start importing Assets/Rescue.Unity/Art/Prefabs/FX/DockInsertFx.prefab using Guid(2c07b153ac3b9b14e87df5ab528b50b4) (PrefabImporter) -> (Import Result ID: '0b6228e4faf8102bc7da606850f6275f') in 0.0013216 seconds [static dependencies only]. Details - ImportResultOutputID=5f9aecccc47ab6309b099fee26926773 DependenciesID=265f4769412d35692507a197ab9d53f4 StaticDependenciesID=f4dcb517a422d6b1b00ece33c91d89bf 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Phase1/Blockers/Crate_Phase1.prefab using Guid(6c606d435f2e8d14d91c5a1df88a7f91) (PrefabImporter) -> (Import Result ID: '9baeab30dace8d372b57f3c6f8082d2d') in 0.0017987 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=967813aeb3b0e2a0135e784a5d50ce80 DependenciesID=f2048d5b6afdba49cf2abbf94dd1a261 StaticDependenciesID=28286ab15eee6b6418144261e583b0e9 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Phase1/Pieces/Debris_D_Phase1.prefab using Guid(ecf082f3c9070bb408f0e393adc33e46) (PrefabImporter) -> (Import Result ID: '2e7b0274453288c8c418d0287ff4352b') in 0.0017538 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=bd1f63691951d2acdc89ac89d4893f31 DependenciesID=f8ca98ff0e67ac317d6ef77d04ea3dbf StaticDependenciesID=b47f47111984ea8c3c000cbb72800cf5 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Phase1/Pieces/Debris_E_Phase1.prefab using Guid(4dda2698a5741ed42980f19a9cb5d9b3) (PrefabImporter) -> (Import Result ID: '8e8498b38ccabb3a6f3a4f4b3819def0') in 0.0016694 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=1cb36aa7074bc0a347a844536bea24af DependenciesID=a520bf76b0936f5a602a7d8e812ef7df StaticDependenciesID=1bf0a7b2f04b31a442f188e9e23a9400 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Phase1/Targets/PuppyTarget_Phase1.prefab using Guid(ad0036ab768fccf41abb5a30dfc88499) (PrefabImporter) -> (Import Result ID: '413d01e37b142b6d9dde25a591938de2') in 0.0019964 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=0d9d1999a11a31f19720c1b35114f136 DependenciesID=f17a3314848c99a64df562186fca354f StaticDependenciesID=4846c76b10ec5c7143a6e853602e9c75 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Pieces/Debris_A.prefab using Guid(adce84dd619aac84f883a04a4888bdb8) (PrefabImporter) -> (Import Result ID: 'a297ee6d7c1c45d969f3d087a5047d88') in 0.0013423 seconds [static dependencies only]. Details - ImportResultOutputID=046b15c57f988e791c217eab1b4d0edf DependenciesID=13068136ce68f9eb38e67de21f13b3c7 StaticDependenciesID=1e9ed535e8c794bbc1bc3edec645d8f2 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Phase1/Dock/Dock_Caution_Phase1.prefab using Guid(bd8a1c246b033694fbe9e49524b46f6d) (PrefabImporter) -> (Import Result ID: '4bfcc16b2ed6a950dddc4d93bf4b6b2e') in 0.0018137 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=ee9b498560e052a9f377aa3c8f7c3712 DependenciesID=eb3b3ffac15067eb8e9b0bd4fe032162 StaticDependenciesID=726c8f64d03b6b8dc4df0c2f8b9d8398 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Pieces/Debris_C.prefab using Guid(4eb02c386f243a64a8ebe0c522c88be2) (PrefabImporter) -> (Import Result ID: 'ef6fdb897b2a020d8c70d42b4d1337db') in 0.0014555 seconds [static dependencies only]. Details - ImportResultOutputID=03abd38cdd1f9f51a56fd3621e6fa4a6 DependenciesID=d5b1767c92666cb417ed739b84632d53 StaticDependenciesID=d8db913a20c43ab92d394fc3e3c5c08c 
+Start importing Assets/Rescue.Unity/Art/Prefabs/FX/VineGrowPreviewFx.prefab using Guid(0f9f38a42f8635040a518a564f3fd5c8) (PrefabImporter) -> (Import Result ID: '5ce0d4216e7e54201c0dbd3844910d59') in 0.0012858 seconds [static dependencies only]. Details - ImportResultOutputID=4e5f554586cd93f3e7e0f9ff4bfc66da DependenciesID=9ed925551d26516cdaeb7f4ed51413a1 StaticDependenciesID=150f32662c9f474e12c5e13bf7b64e2f 
+Start importing Assets/Rescue.Unity/Art/Prefabs/FX/WinFx.prefab using Guid(1f089be82a1d1e146b37f33722d12683) (PrefabImporter) -> (Import Result ID: '24dd21fea4d25a72c3cb4144cfc8fc06') in 0.0012459 seconds [static dependencies only]. Details - ImportResultOutputID=5d3be47909812c784c970fb04ac76370 DependenciesID=9f415b452c40d80016d8d28cb3aee72c StaticDependenciesID=7f8695d148c66aebad32135c78fe6e7b 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Pieces/Debris_E.prefab using Guid(2f3d893dcd7b29041a3d15020ef34c58) (PrefabImporter) -> (Import Result ID: '42aad627e4910df51a76fea1a13f87b3') in 0.0014735 seconds [static dependencies only]. Details - ImportResultOutputID=bf6383f42b96d35d401c026a67ec223e DependenciesID=2276b92bc127f06c4fc68f9d0d9baff8 StaticDependenciesID=257db4f21b0162dc277c96edb13f0698 
+Start importing Assets/Rescue.Unity/Art/Prefabs/FX/InvalidTapFx.prefab using Guid(5ffd99e17074f2c4eb58659b0cd5eef7) (PrefabImporter) -> (Import Result ID: '61cb3f482208dde4a37e9dd32773897d') in 0.001311 seconds [static dependencies only]. Details - ImportResultOutputID=bdf0716060d9e1c29b0c4f745f40b3b0 DependenciesID=d16811d1a83caa8aa2aa1b8987d4f271 StaticDependenciesID=1ccdc10718844ab3c1a1aae7fda110ca 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Blockers/Ice.prefab using Guid(7f3816778c62fb54fbeec177b8248c53) (PrefabImporter) -> (Import Result ID: 'fec63b5d7a370eed82eebb7a5b1b34b3') in 0.0014175 seconds [static dependencies only]. Details - ImportResultOutputID=b74bf87d31947341e8a1d6739e27550e DependenciesID=6322cf954feb287c4aebbe39472c917d StaticDependenciesID=03cb9c6e075cd42d9af856dd2499eaf6 
+Start importing Assets/Rescue.Unity/Art/Prefabs/FX/GroupClearFx.prefab using Guid(7fcde0cc61216a14d8669a9b78238d74) (PrefabImporter) -> (Import Result ID: 'f10626be176d05fa2e35be80aef1d34e') in 0.0012852 seconds [static dependencies only]. Details - ImportResultOutputID=168f09302563c3c6cba93bb3deb9da9b DependenciesID=0d1063d37335e6094d6cc1d336aa9a8a StaticDependenciesID=60cd383b833e85f81aa4ff3f11cef19c 
+Start importing Assets/Rescue.Unity/Art/Prefabs/FX/CrateBreakFx.prefab using Guid(cff735798128f7c49a031998d4fcc6cf) (PrefabImporter) -> (Import Result ID: 'f4aa5d046cb87e3cef886e69cddf2997') in 0.0012222 seconds [static dependencies only]. Details - ImportResultOutputID=e8a95510938597040c01f50c37fcdf50 DependenciesID=06c41cd027cd675c4339f39438c7c308 StaticDependenciesID=2acdeec5e39f59560f0811691de14816 
+Start importing Assets/Rescue.Unity/Art/Prefabs/FX/IceRevealFx.prefab using Guid(dfdff9f63283fb04eb12608672ac2333) (PrefabImporter) -> (Import Result ID: 'f909de417524e7923cd476ca621036d3') in 0.0014138 seconds [static dependencies only]. Details - ImportResultOutputID=3e9883815b31857fbe3ea09fda58e7a5 DependenciesID=b91ede25d47b840a405ee2883e93a172 StaticDependenciesID=f3341941b9ef1c74775ed165fd54bf0a 
+Start importing Assets/Rescue.Unity/Art/Prefabs/Dock/Dock_Shared_7Slot.prefab using Guid(efbe93b09b714e542a1cbaf34ab05b62) (PrefabImporter) -> (Import Result ID: 'ad82fb0333c01ffa92c7e181681b1a4b') in 0.0015632 seconds [static dependencies only]. Details - ImportResultOutputID=165664cbb204e0fd559c719b9569b580 DependenciesID=869a6d9b7da994f8f04625953fdd3c8a StaticDependenciesID=618ded6d14dc1ede81a6925cb4d262cb 
+Refreshing native plugins compatible for Editor in 5.09 ms, found 3 plugins.
 (Values over 0.050ms)
-Asset Pipeline Refresh (id=e5ac292963f855b488636635cbc159de): Total: 5.973 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
+Asset Pipeline Refresh (id=7796ba8821cdc3844a8f953cb5fec066): Total: 7.657 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
 	Summary:
-		Imports: total=5 (actual=5, local cache=0, cache server=0)
-		Asset DB Process Time: managed=3 ms, native=1096 ms
-		Asset DB Callback time: managed=94 ms, native=23 ms
-		Scripting: domain reloads=1, domain reload time=1800 ms, compile time=2909 ms, other=45 ms
-		Project Asset Count: scripts=979, non-scripts=1248
-		Asset File Changes: new=0, changed=1, moved=0, deleted=0
+		Imports: total=154 (actual=154, local cache=0, cache server=0)
+		Asset DB Process Time: managed=14 ms, native=2750 ms
+		Asset DB Callback time: managed=96 ms, native=28 ms
+		Scripting: domain reloads=1, domain reload time=1520 ms, compile time=3199 ms, other=47 ms
+		Project Asset Count: scripts=1033, non-scripts=1355
+		Asset File Changes: new=166, changed=166, moved=0, deleted=0
 		Scan Filter Count: 0
-	InvokePackagesCallback: 12.596ms
-	ApplyChangesToAssetFolders: 0.388ms
-	Scan: 123.115ms
-	OnSourceAssetsModified: 0.693ms
-	CategorizeScriptCompilationAssets: 16.824ms
-	ProcessAssetsWithTransientArtifactChanges: 27.777ms
-	CategorizeAssets: 12.078ms
-	CompileScripts: 2909.142ms
-	ImportOutOfDateAssets: 818.279ms (646.736ms without children)
-		ImportManagerImport: 170.197ms (82.359ms without children)
-		UnloadImportedAssets: 0.074ms
-		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.224ms
-		OnDemandSchedulerStart: 1.040ms
-	PostProcessAllAssets: 100.130ms
-		VCAutoAddAssetPostprocess 2.159ms
-		AssemblyValidation.PostprocessAllAssets 1.379ms
-		XRBuildSystem.XRAssetImported 0.840ms
-		PostProcessCallbackCreateDeferredMaterials 0.319ms
-		MonoPostProcessAllAssets: 93.913ms
-			AssetPostprocessor.OnPostprocessAllAssets 40.457ms
-			RetainedModeAssetPostprocessor.OnPostprocessAllAssets 13.616ms
-			StyleCatalogPostProcessor.OnPostprocessAllAssets 11.527ms
-			WindowAssetPostprocessingWatcher.OnPostprocessAllAssets 7.849ms
-			BuilderAssetPostprocessor.OnPostprocessAllAssets 3.776ms
-			PackageManagerResolver.OnPostprocessAllAssets 1.633ms
-			AssetChangedListener.OnPostprocessAllAssets 1.173ms
-			VersionHandlerImpl.OnPostprocessAllAssets 0.939ms
-			TMPro_TexturePostProcessor.OnPostprocessAllAssets 0.653ms
-			SpeedTree9Postprocessor.OnPostprocessAllAssets 0.534ms
-			SpriteEditorTexturePostprocessor.OnPostprocessAllAssets 0.437ms
-			TextAssetPostProcessor.OnPostprocessAllAssets 0.395ms
-			ArtifactBrowserPostProcessor.OnPostprocessAllAssets 0.304ms
-			IOSResolver.OnPostprocessAllAssets 0.278ms
-			PlayServicesResolver.OnPostprocessAllAssets 0.275ms
-			UVCSAssetPostprocessor.OnPostprocessAllAssets 0.265ms
-			ReferencedClipsPostProcessor.OnPostprocessAllAssets 0.261ms
-			InputActionAssetPostprocessor.OnPostprocessAllAssets 0.216ms
-			AssetProcessor.OnPostprocessAllAssets 0.186ms
-			AssetEvents.OnPostprocessAllAssets 0.176ms
-			AudioMixerPostprocessor.OnPostprocessAllAssets 0.146ms
-			AssetDatabaseCallbacks.OnPostprocessAllAssets 0.119ms
-			TerrainToolbarOverlayPostProcessor.OnPostprocessAllAssets 0.113ms
-			SamplePostprocessor.OnPostprocessAllAssets 0.100ms
-			SpeedTreePostProcessor.OnPostprocessAllAssets 0.096ms
-			ConfigAssetsTracker.OnPostprocessAllAssets 0.094ms
-			ScenarioDriftAssetsTracker.OnPostprocessAllAssets 0.089ms
-			SyncVS.PostprocessSyncProject 0.079ms
-			RenderPipelineGlobalSettingsPostprocessor.OnPostprocessAllAssets 0.072ms
-			ProjectSettingsPostprocessor.OnPostprocessAllAssets 0.062ms
-	PostAssetChangesProfiler: 5.883ms
-	UnloadStreamsBegin: 0.856ms
-	PersistCurrentRevisions: 0.303ms
-	GenerateScriptTypeHashes: 1.131ms
-	GenerateScriptTypeSerializationHashes: 2.595ms
-	Untracked: 1941.124ms
+	InvokePackagesCallback: 12.653ms
+	ApplyChangesToAssetFolders: 0.514ms
+	Scan: 88.176ms
+	OnSourceAssetsModified: 0.949ms
+	CategorizeScriptCompilationAssets: 15.687ms
+	ProcessAssetsWithTransientArtifactChanges: 28.195ms
+	CategorizeAssets: 11.700ms
+	CompileScripts: 3198.541ms
+	ImportOutOfDateAssets: 2521.799ms (633.013ms without children)
+		ImportManagerImport: 1888.256ms (6.889ms without children)
+			UpdateCategorizedAssets: 0.424ms
+		UnloadImportedAssets: 0.073ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.247ms
+		OnDemandSchedulerStart: 0.204ms
+	PostProcessAllAssets: 107.139ms
+		VersionControlSettings.HiddenFilePostprocess 2.652ms
+		AssemblyValidation.PostprocessAllAssets 2.280ms
+		XRBuildSystem.XRAssetImported 0.819ms
+		VCAutoAddAssetPostprocess 0.610ms
+		PostProcessCallbackCreateDeferredMaterials 0.179ms
+		ShaderAssetModifiedCallback 0.139ms
+		RaytracingShaderImportPostprocess 0.122ms
+		ComputeShaderImportPostprocess 0.099ms
+		LocalizationDatabase.AssetDatabasePostprocessCallback 0.087ms
+		SpeedTreeImporter.PostprocessAllAssets 0.081ms
+		BlockShaderImporter.PostprocessAllAssets 0.054ms
+		MonoPostProcessAllAssets: 95.389ms
+			AssetPostprocessor.OnPostprocessAllAssets 40.832ms
+			PackageManagerResolver.OnPostprocessAllAssets 18.653ms
+			StyleCatalogPostProcessor.OnPostprocessAllAssets 10.367ms
+			WindowAssetPostprocessingWatcher.OnPostprocessAllAssets 4.640ms
+			BuilderAssetPostprocessor.OnPostprocessAllAssets 3.615ms
+			AssetChangedListener.OnPostprocessAllAssets 1.613ms
+			TextAssetPostProcessor.OnPostprocessAllAssets 1.402ms
+			VersionHandlerImpl.OnPostprocessAllAssets 1.092ms
+			RetainedModeAssetPostprocessor.OnPostprocessAllAssets 0.986ms
+			InputActionAssetPostprocessor.OnPostprocessAllAssets 0.613ms
+			SpeedTree9Postprocessor.OnPostprocessAllAssets 0.596ms
+			InputActionJsonNameModifierAssetProcessor.OnPostprocessAllAssets 0.482ms
+			SpriteEditorTexturePostprocessor.OnPostprocessAllAssets 0.377ms
+			PlayServicesResolver.OnPostprocessAllAssets 0.313ms
+			ArtifactBrowserPostProcessor.OnPostprocessAllAssets 0.306ms
+			IOSResolver.OnPostprocessAllAssets 0.279ms
+			ReferencedClipsPostProcessor.OnPostprocessAllAssets 0.231ms
+			UVCSAssetPostprocessor.OnPostprocessAllAssets 0.212ms
+			TMPro_TexturePostProcessor.OnPostprocessAllAssets 0.193ms
+			AssetProcessor.OnPostprocessAllAssets 0.180ms
+			AssetEvents.OnPostprocessAllAssets 0.156ms
+			AudioMixerPostprocessor.OnPostprocessAllAssets 0.150ms
+			TerrainToolbarOverlayPostProcessor.OnPostprocessAllAssets 0.117ms
+			SpeedTreePostProcessor.OnPostprocessAllAssets 0.104ms
+			AssetDatabaseCallbacks.OnPostprocessAllAssets 0.102ms
+			ProjectSettingsPostprocessor.OnPostprocessAllAssets 0.097ms
+			SamplePostprocessor.OnPostprocessAllAssets 0.093ms
+			ConfigAssetsTracker.OnPostprocessAllAssets 0.079ms
+			ScenarioDriftAssetsTracker.OnPostprocessAllAssets 0.073ms
+			SyncVS.PostprocessSyncProject 0.067ms
+			RenderPipelineGlobalSettingsPostprocessor.OnPostprocessAllAssets 0.062ms
+	PostAssetChangesProfiler: 6.321ms
+	UnloadStreamsBegin: 1.177ms
+	PersistCurrentRevisions: 0.300ms
+	GenerateScriptTypeHashes: 1.002ms
+	GenerateScriptTypeSerializationHashes: 2.316ms
+	Untracked: 1660.491ms
 
 Application.AssetDatabase Initial Refresh End
-Scanning for USB devices : 16.659ms
+Scanning for USB devices : 15.658ms
 Initializing Unity extensions:
 [MODES] ModeService[none].Initialize
 [MODES] ModeService[none].LoadModes
 [MODES] Loading mode Default (0) for mode-current-id-rescue-grid
-Unloading 8 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 3736 unused Assets / (2.0 MB). Loaded Objects now: 4332.
-Memory consumption went from 133.6 MB to 131.5 MB.
-Total: 8.761900 ms (FindLiveObjects: 0.199900 ms CreateObjectMapping: 0.091100 ms MarkObjects: 7.582600 ms  DeleteObjects: 0.886500 ms)
+Unloading 158 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 3904 unused Assets / (2.3 MB). Loaded Objects now: 4355.
+Memory consumption went from 142.0 MB to 139.7 MB.
+Total: 7.313800 ms (FindLiveObjects: 0.199600 ms CreateObjectMapping: 0.096500 ms MarkObjects: 6.025600 ms  DeleteObjects: 0.990400 ms)
 
 Microsoft Media Foundation video decoding to texture disabled: graphics device is Null, only Direct3D 11 and Direct3D 12 (only on desktop) are supported for hardware-accelerated video decoding.
-[Project] Loading completed in 9.589 seconds
-	Project init time: 				9.336 seconds
+[Project] Loading completed in 11.485 seconds
+	Project init time: 				11.249 seconds
 		Template init time: 		0.000 seconds
-		Package Manager init time: 		2.449 seconds
-		Asset Database init time: 		0.139 seconds
+		Package Manager init time: 		2.681 seconds
+		Asset Database init time: 		0.190 seconds
 		Global illumination init time: 	0.002 seconds
-		Assemblies load time: 			0.532 seconds
+		Assemblies load time: 			0.565 seconds
 		Unity extensions init time: 	0.003 seconds
-		Asset Database refresh time: 	5.974 seconds
-	Scene opening time: 			0.089 seconds
-##utp:{"type":"ProjectInfo","version":2,"phase":"Immediate","time":1777036740694,"processId":33132,"projectLoad":9.5891816,"projectInit":9.3358629,"templateInit":0.0,"packageManagerInit":2.4490347,"assetDatabaseInit":0.1390481,"globalIlluminationInit":0.0018582,"assembliesLoad":0.5318341,"unityExtensionsInit":0.0026505,"assetDatabaseRefresh":5.9737318,"sceneOpening":0.0885855}
-##utp:{"type":"EditorInfo","version":2,"phase":"Immediate","time":1777036740695,"processId":33132,"editorVersion":"6000.4.3f1 (39d1a88d4dd1)","branch":"6000.4/staging","buildType":"Release","platform":"Windows"}
+		Asset Database refresh time: 	7.658 seconds
+	Scene opening time: 			0.066 seconds
+##utp:{"type":"ProjectInfo","version":2,"phase":"Immediate","time":1777051343075,"processId":24564,"projectLoad":11.4846867,"projectInit":11.2493249,"templateInit":0.0,"packageManagerInit":2.6807423,"assetDatabaseInit":0.1904906,"globalIlluminationInit":0.0017853,"assembliesLoad":0.5649293,"unityExtensionsInit":0.0028033,"assetDatabaseRefresh":7.6578697,"sceneOpening":0.0658674}
+##utp:{"type":"EditorInfo","version":2,"phase":"Immediate","time":1777051343075,"processId":24564,"editorVersion":"6000.4.3f1 (39d1a88d4dd1)","branch":"6000.4/staging","buildType":"Release","platform":"Windows"}
 [Licensing::Client] Successfully resolved entitlement details
 Running tests for ExecutionSettings with details:
 targetPlatform = 
@@ -494,23 +664,22 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 Start Indexing on Editor startup
 [Indexing] Starting Initial Indexing for Assets
 [UnityConnectServicesConfig] config is NOT valid, switching to default
-Created GICache directory at C:/Users/jwmcg/AppData/LocalLow/Unity/Caches/GiCache. Took: 0.015s, timestamps: [9.593 - 9.608]
+Created GICache directory at C:/Users/jwmcg/AppData/LocalLow/Unity/Caches/GiCache. Took: 0.009s, timestamps: [11.487 - 11.496]
 [Licensing::Client] Successfully resolved entitlement details
 Unloading 12 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 15 unused Assets / (60.2 KB). Loaded Objects now: 4352.
-Memory consumption went from 129.0 MB to 128.9 MB.
-Total: 7.441400 ms (FindLiveObjects: 0.127300 ms CreateObjectMapping: 0.058700 ms MarkObjects: 7.228400 ms  DeleteObjects: 0.026200 ms)
+Unloading 15 unused Assets / (60.3 KB). Loaded Objects now: 4375.
+Memory consumption went from 130.3 MB to 130.3 MB.
+Total: 6.633100 ms (FindLiveObjects: 0.117700 ms CreateObjectMapping: 0.043500 ms MarkObjects: 6.445400 ms  DeleteObjects: 0.026100 ms)
 
-Start importing Assets/InitTestScenec9376f09-71c6-4ae0-972f-ebd98598dc98.unity using Guid(fb26f13ac8209ab428a676d5699df1b8) (DefaultImporter) -> (Import Result ID: 'cf019f706f4228cdc6ab6405e331a8f8') in 0.0010129 seconds [static dependencies only]. Details - ImportResultOutputID=4acfac1d546059703d80638019e1a50c DependenciesID=b4191317be0b09a6bbdcba4c72aa0e0e StaticDependenciesID=237f24896ddac187dee44ea1a67a674b 
-Refreshing native plugins compatible for Editor in 4.05 ms, found 3 plugins.
-Asset Pipeline Refresh (id=36dbb65df700b4e4e89c0ba849cebdaf): Total: 0.031 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/InitTestScene83c01f55-bd31-4979-a6eb-eb24e131ef24.unity using Guid(20eada5770daf8e47b3b4b587683fe2b) (DefaultImporter) -> (Import Result ID: '3396821e672f235c961058dceb488054') in 0.000561 seconds [static dependencies only]. Details - ImportResultOutputID=ab9621157306876b17eef27f6e1126a2 DependenciesID=e3a73704fb1b3a866b4d983e4e162123 StaticDependenciesID=9568ba93e8a8a6ba7fff95a06614d249 
+Refreshing native plugins compatible for Editor in 4.20 ms, found 3 plugins.
+Asset Pipeline Refresh (id=2a31d2e602e89b44a8f8b8a542c849be): Total: 0.030 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 Reloading assemblies for play mode.
 Reloading assemblies after forced synchronous recompile.
 Assembly Assembly-CSharp-Editor-firstpass.dll at Library/ScriptAssemblies/Assembly-CSharp-Editor-firstpass.dll not valid. Loading of assembly skipped.
 Assembly Assembly-CSharp-firstpass.dll at Library/ScriptAssemblies/Assembly-CSharp-firstpass.dll not valid. Loading of assembly skipped.
 Assembly Assembly-CSharp.dll at Library/ScriptAssemblies/Assembly-CSharp.dll not valid. Loading of assembly skipped.
 Assembly DocCodeExamples.dll at Library/ScriptAssemblies/DocCodeExamples.dll not valid. Loading of assembly skipped.
-Assembly Rescue.Unity.EditorTools.dll at Library/ScriptAssemblies/Rescue.Unity.EditorTools.dll not valid. Loading of assembly skipped.
 Assembly Rescue.Unity.Tests.dll at Library/ScriptAssemblies/Rescue.Unity.Tests.dll not valid. Loading of assembly skipped.
 Assembly TestNewCustomAssembly.dll at Library/ScriptAssemblies/TestNewCustomAssembly.dll not valid. Loading of assembly skipped.
 Assembly Unity.2D.Sprite.Package.EditorTests.dll at Library/ScriptAssemblies/Unity.2D.Sprite.Package.EditorTests.dll not valid. Loading of assembly skipped.
@@ -538,7 +707,6 @@ Assembly Assembly-CSharp-Editor-firstpass.dll at Library/ScriptAssemblies/Assemb
 Assembly Assembly-CSharp-firstpass.dll at Library/ScriptAssemblies/Assembly-CSharp-firstpass.dll not valid. Loading of assembly skipped.
 Assembly Assembly-CSharp.dll at Library/ScriptAssemblies/Assembly-CSharp.dll not valid. Loading of assembly skipped.
 Assembly DocCodeExamples.dll at Library/ScriptAssemblies/DocCodeExamples.dll not valid. Loading of assembly skipped.
-Assembly Rescue.Unity.EditorTools.dll at Library/ScriptAssemblies/Rescue.Unity.EditorTools.dll not valid. Loading of assembly skipped.
 Assembly Rescue.Unity.Tests.dll at Library/ScriptAssemblies/Rescue.Unity.Tests.dll not valid. Loading of assembly skipped.
 Assembly TestNewCustomAssembly.dll at Library/ScriptAssemblies/TestNewCustomAssembly.dll not valid. Loading of assembly skipped.
 Assembly Unity.2D.Sprite.Package.EditorTests.dll at Library/ScriptAssemblies/Unity.2D.Sprite.Package.EditorTests.dll not valid. Loading of assembly skipped.
@@ -561,112 +729,110 @@ Assembly UnityEngine.Purchasing.Security.dll at Library/ScriptAssemblies/UnityEn
 Assembly UnityEngine.Purchasing.WinRT.dll at Library/ScriptAssemblies/UnityEngine.Purchasing.WinRT.dll not valid. Loading of assembly skipped.
 Assembly UnityEngine.SpatialTracking.Tests.dll at Library/ScriptAssemblies/UnityEngine.SpatialTracking.Tests.dll not valid. Loading of assembly skipped.
 Assembly UnityEngine.UI.Tests.dll at Library/ScriptAssemblies/UnityEngine.UI.Tests.dll not valid. Loading of assembly skipped.
-Refreshing native plugins compatible for Editor in 4.20 ms, found 3 plugins.
+Refreshing native plugins compatible for Editor in 4.23 ms, found 3 plugins.
 Native extension for WindowsStandalone target not found
 Native extension for WebGL target not found
 ScheduleIndexationOnStartup MainProcess:True IndexOnStartup:True
 Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.679 seconds
-Domain Reload Profiling: 997ms
-	BeginReloadAssembly (140ms)
-		DisableScriptedObjects (15ms)
-		CreateAndSetChildDomain (46ms)
-	RebuildCommonClasses (22ms)
+- Finished resetting the current domain, in  0.698 seconds
+Domain Reload Profiling: 1021ms
+	BeginReloadAssembly (147ms)
+		DisableScriptedObjects (26ms)
+		CreateAndSetChildDomain (45ms)
+	RebuildCommonClasses (23ms)
 	RebuildNativeTypeToScriptingClass (8ms)
 	initialDomainReloadingComplete (36ms)
-	LoadAllAssembliesAndSetupDomain (111ms)
-		LoadAssemblies (82ms)
-		AnalyzeDomain (81ms)
+	LoadAllAssembliesAndSetupDomain (109ms)
+		LoadAssemblies (79ms)
+		AnalyzeDomain (79ms)
 			TypeCache.Refresh (5ms)
-			BuildScriptInfoCaches (69ms)
-			ResolveRequiredComponents (4ms)
-	FinalizeReload (679ms)
+			BuildScriptInfoCaches (70ms)
+			ResolveRequiredComponents (3ms)
+	FinalizeReload (698ms)
 		SetupLoadedEditorAssemblies (0ms)
 			InitializePlatformSupportModulesInManaged (15ms)
-			BeforeProcessingInitializeOnLoad (124ms)
-			ProcessInitializeOnLoadAttributes (191ms)
-			ProcessInitializeOnLoadMethodAttributes (186ms)
+			BeforeProcessingInitializeOnLoad (127ms)
+			ProcessInitializeOnLoadAttributes (203ms)
+			ProcessInitializeOnLoadMethodAttributes (182ms)
 			AfterProcessingInitializeOnLoad (4ms)
-		AwakeInstancesAfterBackupRestoration (17ms)
+		AwakeInstancesAfterBackupRestoration (21ms)
 (Values over 0.050ms)
-Asset Pipeline Refresh (id=f308c1cb493b2324dbe9ef257c8b17ac): Total: 1.067 seconds - Initiated by StopAssetImportingV2(ForceSynchronousImport | ForceDomainReload)
+Asset Pipeline Refresh (id=f0f25e9b97fb2a44fa289a13e3edeae0): Total: 1.094 seconds - Initiated by StopAssetImportingV2(ForceSynchronousImport | ForceDomainReload)
 	Summary:
 		Imports: total=0 (actual=0, local cache=0, cache server=0)
-		Asset DB Process Time: managed=0 ms, native=708 ms
-		Asset DB Callback time: managed=11 ms, native=0 ms
-		Scripting: domain reloads=1, domain reload time=345 ms, compile time=1 ms, other=0 ms
-		Project Asset Count: scripts=979, non-scripts=1249
+		Asset DB Process Time: managed=0 ms, native=728 ms
+		Asset DB Callback time: managed=14 ms, native=0 ms
+		Scripting: domain reloads=1, domain reload time=349 ms, compile time=1 ms, other=0 ms
+		Project Asset Count: scripts=1033, non-scripts=1356
 		Asset File Changes: new=0, changed=0, moved=0, deleted=0
 		Scan Filter Count: 0
-	InvokePackagesCallback: 1.056ms
-	ApplyChangesToAssetFolders: 0.177ms
-	ProcessAssetsWithTransientArtifactChanges: 1.199ms
-	CategorizeAssets: 8.762ms
-	CompileScripts: 0.770ms
-	ImportOutOfDateAssets: 686.033ms (685.671ms without children)
-		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.199ms
-		OnDemandSchedulerStart: 0.147ms
-	PostProcessAllAssets: 11.072ms
-		MonoPostProcessAllAssets: 11.067ms
-			WindowAssetPostprocessingWatcher.OnPostprocessAllAssets 4.670ms
-			AssetPostprocessor.OnPostprocessAllAssets 1.270ms
-			SpeedTree9Postprocessor.OnPostprocessAllAssets 0.490ms
-			ReferencedClipsPostProcessor.OnPostprocessAllAssets 0.214ms
-			InputActionAssetPostprocessor.OnPostprocessAllAssets 0.173ms
-			PackageManagerResolver.OnPostprocessAllAssets 0.148ms
-			TerrainToolbarOverlayPostProcessor.OnPostprocessAllAssets 0.119ms
-			AssetDatabaseCallbacks.OnPostprocessAllAssets 0.100ms
-			SyncVS.PostprocessSyncProject 0.075ms
-			ProjectSettingsPostprocessor.OnPostprocessAllAssets 0.067ms
-			AssetChangedListener.OnPostprocessAllAssets 0.060ms
-			VersionHandlerImpl.OnPostprocessAllAssets 0.054ms
-			RenderPipelineGlobalSettingsPostprocessor.OnPostprocessAllAssets 0.051ms
-	GatherAllCurrentPrimaryImportResultRevisions: 0.076ms
-	GenerateScriptTypeHashes: 0.996ms
-	GenerateScriptTypeSerializationHashes: 2.244ms
-	Untracked: 355.147ms
+	InvokePackagesCallback: 1.068ms
+	ApplyChangesToAssetFolders: 0.179ms
+	ProcessAssetsWithTransientArtifactChanges: 1.197ms
+	CategorizeAssets: 9.496ms
+	CompileScripts: 0.807ms
+	ImportOutOfDateAssets: 704.840ms (704.457ms without children)
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.214ms
+		OnDemandSchedulerStart: 0.154ms
+	PostProcessAllAssets: 14.457ms
+		MonoPostProcessAllAssets: 14.452ms
+			WindowAssetPostprocessingWatcher.OnPostprocessAllAssets 4.617ms
+			AssetPostprocessor.OnPostprocessAllAssets 1.319ms
+			SpeedTree9Postprocessor.OnPostprocessAllAssets 0.502ms
+			ReferencedClipsPostProcessor.OnPostprocessAllAssets 0.211ms
+			InputActionAssetPostprocessor.OnPostprocessAllAssets 0.183ms
+			PackageManagerResolver.OnPostprocessAllAssets 0.149ms
+			TerrainToolbarOverlayPostProcessor.OnPostprocessAllAssets 0.116ms
+			AssetDatabaseCallbacks.OnPostprocessAllAssets 0.098ms
+			SyncVS.PostprocessSyncProject 0.069ms
+			ProjectSettingsPostprocessor.OnPostprocessAllAssets 0.057ms
+			AssetChangedListener.OnPostprocessAllAssets 0.057ms
+			VersionHandlerImpl.OnPostprocessAllAssets 0.053ms
+	GatherAllCurrentPrimaryImportResultRevisions: 0.099ms
+	GenerateScriptTypeHashes: 0.973ms
+	GenerateScriptTypeSerializationHashes: 2.191ms
+	Untracked: 358.616ms
 
 Loaded scene 'Temp/__Backupscenes/0.backup'
-	Deserialize:            1.905 ms
-	Integration:            292.843 ms
+	Deserialize:            0.549 ms
+	Integration:            305.233 ms
 	Integration of assets:  0.001 ms
-	Thread Wait Time:       0.006 ms
-	Total Operation Time:   294.755 ms
-Launched and connected shader compiler UnityShaderCompiler.exe after 0.01 seconds
+	Thread Wait Time:       0.010 ms
+	Total Operation Time:   305.793 ms
 [MODES] ModeService[none].Initialize
 [MODES] ModeService[none].LoadModes
 [Licensing::Client] Successfully resolved entitlement details
 [Licensing::Client] Successfully resolved entitlement details
-Asset Pipeline Refresh (id=e54fbd9641a0e40488bac3f8632cced5): Total: 0.014 seconds - Initiated by RefreshV2(NoUpdateAssetOptions)
-Start importing Assets/Editor/TuningPresets/TunePanelSmoke.asset using Guid(2ca224c519f6be24faf984e7ddb3fa80) (NativeFormatImporter) -> (Import Result ID: 'a11b192213fa3538d03c7aca8afd165e') in 0.0037409 seconds [static dependencies only]. Details - ImportResultOutputID=30a18737ee5ee7757bfcaf2404e75389 DependenciesID=f360598edda47c12494a40ced084f717 StaticDependenciesID=7f3ea89cf1fe00323c2327282ca0f5ba 
-Refreshing native plugins compatible for Editor in 4.76 ms, found 3 plugins.
-Asset Pipeline Refresh (id=c291c6f4670caf746abe9673f7cb2fc4): Total: 0.044 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Start importing Assets/Editor/TuningPresets/TunePanelSmoke.asset using Guid(2ca224c519f6be24faf984e7ddb3fa80) (NativeFormatImporter) -> (Import Result ID: '27548abc012f1a0b635219ba71b7dc36') in 0.0013992 seconds [static dependencies only]. Details - ImportResultOutputID=30a18737ee5ee7757bfcaf2404e75389 DependenciesID=542d444837e0ea5af588384a2514b6fb StaticDependenciesID=d0ffb16fdc92c7c5690227a5931d48c8 
-Refreshing native plugins compatible for Editor in 4.15 ms, found 3 plugins.
-Asset Pipeline Refresh (id=359b7abf963845d4897dab14065fbfba): Total: 0.014 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Asset Pipeline Refresh (id=c1c9f69525479a74198e3824874258ac): Total: 0.006 seconds - Initiated by RefreshV2(NoUpdateAssetOptions)
-Refreshing native plugins compatible for Editor in 4.20 ms, found 3 plugins.
-Asset Pipeline Refresh (id=cc018dbf44b010445a3ee2290891078b): Total: 0.012 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
-Asset Pipeline Refresh (id=9264505e80224fd4d9d95d3b4b1f7f1d): Total: 0.007 seconds - Initiated by RefreshV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=736f53a82f1a75147bb2922da096bbc1): Total: 0.014 seconds - Initiated by RefreshV2(NoUpdateAssetOptions)
+Start importing Assets/Editor/TuningPresets/TunePanelSmoke.asset using Guid(fb43e8f65276fb54ab340aebdc4ae056) (NativeFormatImporter) -> (Import Result ID: 'd0a94899853216886773aab19e64cbcc') in 0.003436 seconds [static dependencies only]. Details - ImportResultOutputID=cb3bc4fb2e85bc2ae25bc5841ea98430 DependenciesID=0b408644e3fcb9bf290f34a5c67260eb StaticDependenciesID=b28b99555003c10b3bc9f7a2811a8b63 
+Refreshing native plugins compatible for Editor in 4.37 ms, found 3 plugins.
+Asset Pipeline Refresh (id=bdca1bf4918fcfd44adc69f8161eea26): Total: 0.040 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Editor/TuningPresets/TunePanelSmoke.asset using Guid(fb43e8f65276fb54ab340aebdc4ae056) (NativeFormatImporter) -> (Import Result ID: '95720bcd921d2aa1c4291759246c210e') in 0.0011546 seconds [static dependencies only]. Details - ImportResultOutputID=cb3bc4fb2e85bc2ae25bc5841ea98430 DependenciesID=bd0015345a4b9c6c25ecb073f76d3483 StaticDependenciesID=d7a470d3145f14e762faf78249e4fa7c 
+Refreshing native plugins compatible for Editor in 4.32 ms, found 3 plugins.
+Asset Pipeline Refresh (id=2ec32ef81b14b9044af332dd1afbe3a3): Total: 0.014 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=471db4642390bc04d88e49e75fd05c78): Total: 0.006 seconds - Initiated by RefreshV2(NoUpdateAssetOptions)
+Refreshing native plugins compatible for Editor in 4.18 ms, found 3 plugins.
+Asset Pipeline Refresh (id=f8d04cc96c9418e4b8aca3f86f90168a): Total: 0.012 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=21ebb413c1569d9468148761aac1221f): Total: 0.006 seconds - Initiated by RefreshV2(NoUpdateAssetOptions)
 Saving results to: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\playmode-results.xml
 Unloading 15 Unused Serialized files (Serialized files now loaded: 0)
 Loaded scene 'Temp/__Backupscenes/0.backup'
-	Deserialize:            0.382 ms
-	Integration:            6.839 ms
+	Deserialize:            0.378 ms
+	Integration:            7.398 ms
 	Integration of assets:  0.001 ms
 	Thread Wait Time:       0.007 ms
-	Total Operation Time:   7.228 ms
-Unloading 79 unused Assets / (106.1 KB). Loaded Objects now: 4554.
-Memory consumption went from 270.5 MB to 270.4 MB.
-Total: 13.913700 ms (FindLiveObjects: 0.138600 ms CreateObjectMapping: 0.051100 ms MarkObjects: 13.622800 ms  DeleteObjects: 0.100300 ms)
+	Total Operation Time:   7.784 ms
+Unloading 79 unused Assets / (111.0 KB). Loaded Objects now: 4577.
+Memory consumption went from 272.0 MB to 271.9 MB.
+Total: 14.060000 ms (FindLiveObjects: 0.139700 ms CreateObjectMapping: 0.041600 ms MarkObjects: 13.770900 ms  DeleteObjects: 0.107200 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 0 unused Assets / (0 B). Loaded Objects now: 4559.
-Memory consumption went from 269.8 MB to 269.8 MB.
-Total: 13.975200 ms (FindLiveObjects: 0.110000 ms CreateObjectMapping: 0.043300 ms MarkObjects: 13.814100 ms  DeleteObjects: 0.007200 ms)
+Unloading 0 unused Assets / (0 B). Loaded Objects now: 4582.
+Memory consumption went from 271.4 MB to 271.4 MB.
+Total: 14.397500 ms (FindLiveObjects: 0.116300 ms CreateObjectMapping: 0.043700 ms MarkObjects: 14.228900 ms  DeleteObjects: 0.007600 ms)
 
-Refreshing native plugins compatible for Editor in 3.83 ms, found 3 plugins.
-Asset Pipeline Refresh (id=baeec050e731994448ac09386a257386): Total: 0.024 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Refreshing native plugins compatible for Editor in 3.96 ms, found 3 plugins.
+Asset Pipeline Refresh (id=a83a2d1f4dc738646883bbd7d36673ad): Total: 0.024 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 DisplayProgressbar: Undo
 Test run completed. Exiting with code 0 (Ok). Run completed.
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
@@ -681,9 +847,9 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
 
 (Filename: ./Library/PackageCache/com.unity.test-framework@76560ee600cb/UnityEditor.TestRunner/CommandLineTest/Executer.cs Line: 81)
 
-Start importing ProjectSettings/ProjectSettings.asset using Guid(00000000000000004000000000000000) (LibraryAssetImporter) -> (Import Result ID: 'a822bd3cbf740ac2728a2c6156b6205b') in 0.0020816 seconds [static dependencies only]. Details - ImportResultOutputID=d3ca6db29495033f6ec6c171ea098da8 DependenciesID=a627d15f9953b65c956fc3d165786c27 StaticDependenciesID=0d4e996c8543500bf7036e632bced1ce 
-Refreshing native plugins compatible for Editor in 4.34 ms, found 3 plugins.
-Asset Pipeline Refresh (id=5fdd83de99e2c744db3e763b74530541): Total: 0.015 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing ProjectSettings/ProjectSettings.asset using Guid(00000000000000004000000000000000) (LibraryAssetImporter) -> (Import Result ID: 'a822bd3cbf740ac2728a2c6156b6205b') in 0.0025631 seconds [static dependencies only]. Details - ImportResultOutputID=d3ca6db29495033f6ec6c171ea098da8 DependenciesID=a627d15f9953b65c956fc3d165786c27 StaticDependenciesID=0d4e996c8543500bf7036e632bced1ce 
+Refreshing native plugins compatible for Editor in 7.64 ms, found 3 plugins.
+Asset Pipeline Refresh (id=027d3fa3b7fdea6469cfdd85ce1790dc): Total: 0.029 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 [Physics::Module] Cleanup current backend.
 [Physics::Module] Id: 0xf2b8ea05
 Input System module state changed to: ShutdownInProgress.
@@ -697,4 +863,4 @@ CodeReloadManager destroyed
 Checking for leaked weakptr:
   Found no leaked weakptrs.
 [Package Manager] Server process was shutdown
-##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1777036744483,"processId":33132,"allocatedMemory":40898221,"memoryLabels":[{"Default":173992},{"Permanent":15276},{"NewDelete":65787},{"Thread":4230344},{"Manager":51013},{"VertexData":8},{"Geometry":816},{"Texture":24},{"Shader":850701},{"Material":24},{"GfxDevice":55321},{"Animation":392},{"Audio":2632},{"FreeType":8},{"FontEngine":27793324},{"Physics":2090},{"Physics2D":16},{"Serialization":1016},{"Input":9880},{"JobScheduler":33024},{"TextLib":216},{"Mono":32},{"ScriptingNativeRuntime":155052},{"BaseObject":1620368},{"Resource":1184},{"Renderer":3008},{"Transform":4685},{"File":24580},{"WebCam":616},{"Culling":32},{"Terrain":11394},{"Wind":24},{"STL":40},{"String":13165},{"StaticString":6718},{"Utility":2675494},{"Curl":2559},{"PoolAlloc":2072},{"AI":80},{"TypeTree":13637},{"ScriptManager":448},{"RuntimeInitializeOnLoadManager":64},{"SpriteAtlas":120},{"GI":7792},{"Director":8320},{"CloudService":432},{"WebRequest":808},{"VR":48050},{"SceneManager":504},{"Video":64},{"LazyScriptCache":32},{"Camera":17},{"Secure":2113},{"SerializationCache":1576},{"APIUpdating":10320},{"Subsystems":336},{"VirtualTexturing":57888},{"StaticSafetyDebugInfo":278528},{"Analytics":336},{"Hierarchy":608},{"CoreStats":13032},{"Identifiers":12960},{"Gui":128},{"EditorUtility":116088},{"VersionControl":4},{"Undo":931},{"AssetDatabase":2458485},{"EditorGi":328},{"UnityConnect":37777},{"Upm":1912},{"UpmDiagnostics":8},{"AssetCompliance":64},{"DrivenProperties":72},{"LocalIPC":211},{"ProfilerEditor":9746},{"CoreBusinessMetrics":6395},{"Windowing":456},{"Licensing":664},{"AssetReference":32},{"IPCStream":32}]}
+##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1777051347480,"processId":24564,"allocatedMemory":40954611,"memoryLabels":[{"Default":174238},{"Permanent":15276},{"NewDelete":65835},{"Thread":4230344},{"Manager":51013},{"VertexData":8},{"Geometry":816},{"Texture":24},{"Shader":850701},{"Material":24},{"GfxDevice":55321},{"Animation":392},{"Audio":2632},{"FreeType":8},{"FontEngine":27793324},{"Physics":2090},{"Physics2D":16},{"Serialization":1016},{"Input":9880},{"JobScheduler":33024},{"TextLib":216},{"Mono":32},{"ScriptingNativeRuntime":155052},{"BaseObject":1620368},{"Resource":1184},{"Renderer":3008},{"Transform":4685},{"File":77158},{"WebCam":616},{"Culling":32},{"Terrain":11394},{"Wind":24},{"STL":40},{"String":13208},{"StaticString":6718},{"Utility":2675494},{"Curl":2559},{"PoolAlloc":2072},{"AI":80},{"TypeTree":13637},{"ScriptManager":448},{"RuntimeInitializeOnLoadManager":64},{"SpriteAtlas":120},{"GI":7792},{"Director":8320},{"CloudService":432},{"WebRequest":808},{"VR":48050},{"SceneManager":504},{"Video":64},{"LazyScriptCache":32},{"Camera":17},{"Secure":2113},{"SerializationCache":1576},{"APIUpdating":10320},{"Subsystems":336},{"VirtualTexturing":57888},{"StaticSafetyDebugInfo":278528},{"Analytics":336},{"Hierarchy":608},{"CoreStats":13032},{"Identifiers":12960},{"Gui":128},{"EditorUtility":117327},{"VersionControl":4},{"Undo":931},{"AssetDatabase":2464517},{"EditorGi":328},{"UnityConnect":37777},{"Upm":1912},{"UpmDiagnostics":8},{"AssetCompliance":64},{"DrivenProperties":72},{"LocalIPC":211},{"ProfilerEditor":9746},{"CoreBusinessMetrics":2599},{"Windowing":456},{"Licensing":664},{"AssetReference":32},{"IPCStream":32}]}
