@@ -185,8 +185,14 @@ namespace Rescue.Unity.UI.Tests
 
             presenter.Rebuild(CreateState(DebrisType.A, null, null, null, null, null, null));
 
+            Transform? sharedDockInstance = presenterObject.transform.Find("SharedDockVisualInstance");
+            Assert.That(sharedDockInstance, Is.Not.Null);
+
+            MeshRenderer? instantiatedRenderer = sharedDockInstance?.GetComponentInChildren<MeshRenderer>(true);
+            Assert.That(instantiatedRenderer, Is.Not.Null);
+
             Assert.That(legacyRenderer.enabled, Is.False);
-            Assert.That(sharedRenderer.sharedMaterial, Is.SameAs(safeMaterial));
+            Assert.That(instantiatedRenderer!.sharedMaterial, Is.SameAs(safeMaterial));
             Assert.That(pieceContainer.childCount, Is.EqualTo(1));
             Assert.That(pieceContainer.GetChild(0).position.y, Is.EqualTo(0.125f).Within(0.001f));
 

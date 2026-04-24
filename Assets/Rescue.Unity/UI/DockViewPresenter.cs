@@ -111,7 +111,8 @@ namespace Rescue.Unity.UI
                 pieceObject.name = $"DockPiece_{slotIndex:00}_{debrisType.Value}";
 
                 Transform pieceTransform = pieceObject.transform;
-                pieceTransform.SetPositionAndRotation(anchors[slotIndex].position, anchors[slotIndex].rotation);
+                pieceTransform.position = anchors[slotIndex].position;
+                pieceTransform.rotation = anchors[slotIndex].rotation;
                 pieceTransform.localScale = piecePrefab.transform.localScale;
 
                 _spawnedPieces.Add(pieceObject);
@@ -260,6 +261,15 @@ namespace Rescue.Unity.UI
             {
                 _sharedDockInstance = Instantiate(sharedDockPrefab, transform);
                 _sharedDockInstance.name = SharedDockInstanceName;
+            }
+
+            if (_sharedDockInstance is not null)
+            {
+                Transform sharedDockTransform = _sharedDockInstance.transform;
+                sharedDockTransform.SetParent(transform, false);
+                sharedDockTransform.localPosition = Vector3.zero;
+                sharedDockTransform.localRotation = Quaternion.identity;
+                sharedDockTransform.localScale = Vector3.one;
             }
 
             if (sharedDockRenderer is not null && _sharedDockInstance is not null && !IsChildOf(sharedDockRenderer.transform, _sharedDockInstance.transform))

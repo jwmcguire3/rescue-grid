@@ -366,7 +366,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             string registriesPath = CombinePath(artRootPath, RegistriesFolderName);
 
             TileVisualRegistry tileRegistry = CreateOrLoadAsset<TileVisualRegistry>(CombinePath(registriesPath, "Phase1TileVisualRegistry.asset"));
-            tileRegistry.DryTilePrefab = productionAssets.TilePrefab ?? placeholderAssets.DryTilePrefab;
+            tileRegistry.DryTilePrefab = placeholderAssets.DryTilePrefab;
             tileRegistry.FloodedRowOverlayPrefab = placeholderAssets.FloodedRowOverlayPrefab;
             tileRegistry.ForecastRowOverlayPrefab = placeholderAssets.ForecastRowOverlayPrefab;
             tileRegistry.WaterlinePrefab = placeholderAssets.WaterlinePrefab;
