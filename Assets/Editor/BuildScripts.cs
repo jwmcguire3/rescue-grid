@@ -4,12 +4,15 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
+using UnityEngine;
 
 public static class BuildScripts
 {
     private const string DefaultOutputRoot = "Build";
     private const string DefaultBaseIdentifier = "com.defaultcompany.rescuegrid.dev";
     private const string DefaultAndroidFormat = "apk";
+    private const string CaptureDefineSymbol = "CAPTURE_BUILD";
+    private const string CaptureScenePath = "Assets/DebugPanelSettingOnly.unity";
 
     public static void BuildIos()
     {
@@ -95,6 +98,38 @@ public static class BuildScripts
         ExecuteBuild(options);
     }
 
+    public static void BuildCapture()
+    {
+        string outputRoot = GetOutputRoot();
+        string targetName = GetEnvironmentVariable("RESCUE_CAPTURE_TARGET", "windows").Trim().ToLowerInvariant();
+
+        switch (targetName)
+        {
+            case "windows":
+            case "win":
+            case "win64":
+                BuildCaptureWindows(outputRoot);
+                return;
+
+            case "android":
+                BuildCaptureAndroid(outputRoot);
+                return;
+
+            case "ios":
+                BuildCaptureIos(outputRoot);
+                return;
+
+            case "web":
+            case "webgl":
+                BuildCaptureWeb(outputRoot);
+                return;
+
+            default:
+                throw new InvalidOperationException(
+                    "RESCUE_CAPTURE_TARGET must be one of: windows, android, ios, webgl.");
+        }
+    }
+
     private static BuildPlayerOptions CreatePlayerOptions(
         BuildTargetGroup targetGroup,
         BuildTarget target,
@@ -128,6 +163,151 @@ public static class BuildScripts
         };
     }
 
+    private static BuildPlayerOptions CreateCapturePlayerOptions(
+        BuildTargetGroup targetGroup,
+        BuildTarget target,
+        string locationPathName)
+    {
+        return new BuildPlayerOptions
+        {
+            scenes = GetCaptureScenes(),
+            targetGroup = targetGroup,
+            target = target,
+            locationPathName = locationPathName,
+            options = BuildOptions.StrictMode,
+        };
+    }
+
+    private static void BuildCaptureWindows(string outputRoot)
+    {
+        string outputPath = Path.Combine(outputRoot, "Capture", "Windows", "rescue-grid-capture.exe");
+        PrepareFile(outputPath);
+
+        BuildPlayerOptions options = CreateCapturePlayerOptions(
+            BuildTargetGroup.Standalone,
+            BuildTarget.StandaloneWindows64,
+            outputPath);
+
+        WithCaptureSettings(BuildTargetGroup.Standalone, () =>
+        {
+            WithTemporarySetting(
+                () => PlayerSettings.defaultScreenWidth,
+                value => PlayerSettings.defaultScreenWidth = value,
+                1920,
+                () =>
+                {
+                    WithTemporarySetting(
+                        () => PlayerSettings.defaultScreenHeight,
+                        value => PlayerSettings.defaultScreenHeight = value,
+                        1080,
+                        () =>
+                        {
+                            WithTemporarySetting(
+                                () => PlayerSettings.runInBackground,
+                                value => PlayerSettings.runInBackground = value,
+                                true,
+                                () =>
+                                {
+                                    WithTemporarySetting(
+                                        () => PlayerSettings.resizableWindow,
+                                        value => PlayerSettings.resizableWindow = value,
+                                        false,
+                                        () =>
+                                        {
+                                            WithTemporarySetting(
+                                                () => PlayerSettings.fullScreenMode,
+                                                value => PlayerSettings.fullScreenMode = value,
+                                                FullScreenMode.Windowed,
+                                                () => ExecuteBuild(options));
+                                        });
+                                });
+                        });
+                });
+        });
+    }
+
+    private static void BuildCaptureAndroid(string outputRoot)
+    {
+        string outputPath = Path.Combine(outputRoot, "Capture", "Android", "rescue-grid-capture.apk");
+        PrepareFile(outputPath);
+
+        BuildPlayerOptions options = CreateCapturePlayerOptions(
+            BuildTargetGroup.Android,
+            BuildTarget.Android,
+            outputPath);
+
+        string bundleIdentifier = GetEnvironmentVariable(
+            "RESCUE_ANDROID_APPLICATION_IDENTIFIER",
+            GetEnvironmentVariable("RESCUE_BUILD_APP_IDENTIFIER", DefaultBaseIdentifier) + ".capture");
+
+        WithCaptureSettings(BuildTargetGroup.Android, () =>
+        {
+            WithTemporarySetting(
+                () => PlayerSettings.GetApplicationIdentifier(BuildTargetGroup.Android),
+                value => PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, value),
+                bundleIdentifier,
+                () =>
+                {
+                    WithTemporarySetting(
+                        () => EditorUserBuildSettings.buildAppBundle,
+                        value => EditorUserBuildSettings.buildAppBundle = value,
+                        false,
+                        () =>
+                        {
+                            WithTemporarySetting(
+                                () => PlayerSettings.Android.targetArchitectures,
+                                value => PlayerSettings.Android.targetArchitectures = value,
+                                AndroidArchitecture.ARM64,
+                                () => ExecuteBuild(options));
+                        });
+                });
+        });
+    }
+
+    private static void BuildCaptureIos(string outputRoot)
+    {
+        string outputDirectory = Path.Combine(outputRoot, "Capture", "iOS", "XcodeProject");
+        PrepareDirectory(outputDirectory);
+
+        BuildPlayerOptions options = CreateCapturePlayerOptions(
+            BuildTargetGroup.iOS,
+            BuildTarget.iOS,
+            outputDirectory);
+
+        string bundleIdentifier = GetEnvironmentVariable(
+            "RESCUE_IOS_BUNDLE_IDENTIFIER",
+            GetEnvironmentVariable("RESCUE_BUILD_APP_IDENTIFIER", DefaultBaseIdentifier) + ".capture");
+
+        WithCaptureSettings(BuildTargetGroup.iOS, () =>
+        {
+            WithTemporarySetting(
+                () => PlayerSettings.GetApplicationIdentifier(BuildTargetGroup.iOS),
+                value => PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iOS, value),
+                bundleIdentifier,
+                () =>
+                {
+                    WithTemporarySetting(
+                        () => PlayerSettings.iOS.appleEnableAutomaticSigning,
+                        value => PlayerSettings.iOS.appleEnableAutomaticSigning = value,
+                        false,
+                        () => ExecuteBuild(options));
+                });
+        });
+    }
+
+    private static void BuildCaptureWeb(string outputRoot)
+    {
+        string outputDirectory = Path.Combine(outputRoot, "Capture", "WebGL");
+        PrepareDirectory(outputDirectory);
+
+        BuildPlayerOptions options = CreateCapturePlayerOptions(
+            BuildTargetGroup.WebGL,
+            BuildTarget.WebGL,
+            outputDirectory);
+
+        WithCaptureSettings(BuildTargetGroup.WebGL, () => ExecuteBuild(options));
+    }
+
     private static void ExecuteBuild(BuildPlayerOptions options)
     {
         BuildReport report = BuildPipeline.BuildPlayer(options);
@@ -152,6 +332,23 @@ public static class BuildScripts
                 "No enabled scenes were found in Build Settings. " +
                 "Add at least one scene before running a build.");
         }
+    }
+
+    private static string[] GetCaptureScenes()
+    {
+        string[] enabledScenes = GetEnabledScenes();
+        if (enabledScenes.Length > 0)
+        {
+            return enabledScenes;
+        }
+
+        if (!File.Exists(CaptureScenePath))
+        {
+            throw new InvalidOperationException(
+                $"Capture scene '{CaptureScenePath}' was not found.");
+        }
+
+        return new[] { CaptureScenePath };
     }
 
     private static string[] GetEnabledScenes()
@@ -221,6 +418,45 @@ public static class BuildScripts
         {
             File.Delete(fullPath);
         }
+    }
+
+    private static void WithCaptureSettings(BuildTargetGroup targetGroup, Action action)
+    {
+        WithTemporarySetting(
+            () => GetDefineSymbols(targetGroup),
+            value => SetDefineSymbols(targetGroup, value),
+            AppendDefineSymbol(GetDefineSymbols(targetGroup), CaptureDefineSymbol),
+            action);
+    }
+
+    private static string GetDefineSymbols(BuildTargetGroup targetGroup)
+    {
+#pragma warning disable CS0618
+        return PlayerSettings.GetScriptingDefineSymbolsForGroup(targetGroup);
+#pragma warning restore CS0618
+    }
+
+    private static void SetDefineSymbols(BuildTargetGroup targetGroup, string defineSymbols)
+    {
+#pragma warning disable CS0618
+        PlayerSettings.SetScriptingDefineSymbolsForGroup(targetGroup, defineSymbols);
+#pragma warning restore CS0618
+    }
+
+    private static string AppendDefineSymbol(string existing, string symbol)
+    {
+        string[] parts = existing
+            .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(static part => part.Trim())
+            .Where(static part => part.Length > 0)
+            .ToArray();
+
+        if (parts.Contains(symbol, StringComparer.Ordinal))
+        {
+            return existing;
+        }
+
+        return parts.Length == 0 ? symbol : existing + ";" + symbol;
     }
 
     private static void WithTemporarySetting<T>(

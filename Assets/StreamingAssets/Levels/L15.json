@@ -5,13 +5,13 @@
     "width": 8,
     "height": 9,
     "tiles": [
-      [".", ".", ".", ".", "A", "A", ".", "."],
-      [".", ".", ".", ".", "CR", ".", "T1", "."],
-      [".", ".", "B", "B", ".", ".", "CR", "."],
-      [".", ".", ".", ".", "IA", ".", ".", "."],
-      [".", "D", "D", ".", "CR", ".", ".", "."],
-      [".", ".", ".", "T0", "CR", "V", ".", "."],
-      [".", ".", ".", "CR", ".", ".", ".", "."],
+      [".", ".", ".", ".", "A", "A", "CR", "."],
+      [".", ".", ".", ".", "CR", "CR", ".", "CR"],
+      [".", ".", ".", ".", ".", "CR", "T1", "."],
+      ["CR", ".", ".", ".", "IA", "A", "A", "."],
+      [".", "CR", "CR", ".", "CR", "CR", "CR", "."],
+      ["T0", "CR", "B", ".", ".", "V", "CR", "CR"],
+      [".", "B", "B", ".", ".", ".", ".", "."],
       [".", ".", ".", ".", ".", ".", ".", "."],
       [".", ".", ".", ".", ".", ".", ".", "."]
     ]
@@ -19,8 +19,8 @@
   "debrisTypePool": ["A", "B", "C", "D", "E"],
   "baseDistribution": null,
   "targets": [
-    { "id": "0", "row": 5, "col": 3 },
-    { "id": "1", "row": 1, "col": 6 }
+    { "id": "0", "row": 5, "col": 0 },
+    { "id": "1", "row": 2, "col": 6 }
   ],
   "initialFloodedRows": 2,
   "water": {
@@ -42,10 +42,10 @@
   },
   "meta": {
     "intent": "Produce one instantly legible, high-stakes rescue beat with a hero puppy hanging over the flood and a clean route that reads in seconds even to a cold viewer.",
-    "expectedPath": "Clear the tempting left-side bait once, realize it does not finish the hero route, then open the central leash-side lane and save the spotlight puppy before pivoting to the safe secondary rescue.",
-    "expectedFailMode": "The player chases the obvious-looking bait side too long, the flood closes on the hero puppy, and the level loses its clean rescue moment.",
-    "whatItProves": "The game has a genuinely captureable rescue sequence that reads as rescue-order play rather than generic clearing.",
-    "notes": "The lower two flooded rows frame the hero puppy as the immediate story beat; blocker count stays intentionally light for capture readability.",
+    "expectedPath": "Clear the authored lower B triple to trigger the hero rescue immediately, then clear the compact upper-right A pair to free the secondary puppy and end the level cleanly.",
+    "expectedFailMode": "The player spends actions in the wrong pocket, misses the obvious lower rescue beat, and loses the simple capture read to avoidable pressure.",
+    "whatItProves": "The game has a genuinely captureable rescue sequence that resolves through the real action pipeline rather than a scripted fake.",
+    "notes": "This capture-safe layout uses roofed empty neighbors so extraction survives spawn-before-extract resolution: the lower B triple pops the hero rescue first, then the upper-right A pair opens the secondary finish.",
     "isRuleTeach": false
   }
 }

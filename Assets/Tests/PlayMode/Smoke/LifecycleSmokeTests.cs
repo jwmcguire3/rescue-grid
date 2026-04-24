@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using NUnit.Framework;
+using Rescue.Core.Pipeline;
 using UnityEngine.TestTools;
 
 namespace Rescue.PlayMode.Tests.Smoke
@@ -19,7 +20,18 @@ namespace Rescue.PlayMode.Tests.Smoke
 
                 ScriptFrame finalFrame = SmokeTestHarness.AssertTerminalOutcome(frames, solve.ExpectedOutcome);
                 Assert.That(frames.Count - 1, Is.EqualTo(solve.Actions.Length), $"{solve.LevelId} did not consume the full solve script.");
-                Assert.That(finalFrame.Events, Has.Some.TypeOf<Rescue.Core.Pipeline.Lost>(), $"{solve.LevelId} terminal action should emit a terminal event.");
+
+                bool sawTerminalEvent = false;
+                for (int eventIndex = 0; eventIndex < finalFrame.Events.Length; eventIndex++)
+                {
+                    if (finalFrame.Events[eventIndex] is Won or Lost)
+                    {
+                        sawTerminalEvent = true;
+                        break;
+                    }
+                }
+
+                Assert.That(sawTerminalEvent, Is.True, $"{solve.LevelId} terminal action should emit a terminal event.");
             }
         }
     }
