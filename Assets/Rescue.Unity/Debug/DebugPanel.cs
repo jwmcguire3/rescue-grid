@@ -598,7 +598,7 @@ namespace Rescue.Unity.Debugging
             settings.screenMatchMode = PanelScreenMatchMode.MatchWidthOrHeight;
             settings.match = 0.5f;
             settings.sortingOrder = 1000;
-            settings.clearColor = true;
+            settings.clearColor = false;
             settings.colorClearValue = new Color(0.0f, 0.0f, 0.0f, 0.0f);
             ApplyRuntimeTheme(settings);
             return settings;
