@@ -442,6 +442,13 @@
 "Assets/Rescue.Unity/Debug/DebugPanel.cs"
 "Assets/Rescue.Unity/Debug/TuningPresetAsset.cs"
 "Assets/Rescue.Unity/Telemetry/TelemetryEventClassifier.cs"
+"Assets/Rescue.Unity/Visuals/BlockerVisualRegistry.cs"
+"Assets/Rescue.Unity/Visuals/DockVisualConfig.cs"
+"Assets/Rescue.Unity/Visuals/FxVisualRegistry.cs"
+"Assets/Rescue.Unity/Visuals/PieceVisualRegistry.cs"
+"Assets/Rescue.Unity/Visuals/TargetVisualRegistry.cs"
+"Assets/Rescue.Unity/Visuals/TileVisualRegistry.cs"
+"Assets/Rescue.Unity/Visuals/VisualRegistryCommon.cs"
 -langversion:9.0
 /deterministic
 /optimize+
