@@ -1,0 +1,170 @@
+using System.Collections.Generic;
+using Rescue.Core.State;
+using UnityEngine;
+
+namespace Rescue.Unity.BoardPresentation
+{
+    public sealed class BoardGridViewPresenter : MonoBehaviour
+    {
+        private const string DefaultBoardRootName = "BoardGrid";
+        private const string DryTilePrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Board/DryTile.prefab";
+
+        [SerializeField] private Transform? boardRoot;
+        [SerializeField] private GameObject? dryTilePrefab;
+        [SerializeField] private GameObject? fallbackTilePrefab;
+        [SerializeField] private float cellSize = 1.0f;
+        [SerializeField] private bool centerBoard = true;
+        [SerializeField] private Vector3 tileRotationOffset;
+        [SerializeField] private Vector3 tileScaleMultiplier = Vector3.one;
+
+        private readonly Dictionary<TileCoord, Transform> cellAnchors = new Dictionary<TileCoord, Transform>();
+
+        public void RebuildGrid(GameState state)
+        {
+            if (state is null)
+            {
+                Debug.LogWarning($"{nameof(BoardGridViewPresenter)} requires a valid GameState to rebuild.", this);
+                return;
+            }
+
+            ClearGrid();
+
+            Transform root = ResolveBoardRoot();
+            GameObject? tilePrefab = ResolveTilePrefab();
+            Vector3 originOffset = centerBoard ? CalculateCenteredOffset(state.Board.Width, state.Board.Height) : Vector3.zero;
+
+            for (int row = 0; row < state.Board.Height; row++)
+            {
+                for (int col = 0; col < state.Board.Width; col++)
+                {
+                    TileCoord coord = new TileCoord(row, col);
+                    GameObject anchorObject = new GameObject($"Cell_{row:00}_{col:00}");
+                    Transform anchor = anchorObject.transform;
+                    anchor.SetParent(root, false);
+                    anchor.localPosition = originOffset + new Vector3(col * cellSize, 0f, -row * cellSize);
+                    anchor.localRotation = Quaternion.identity;
+                    anchor.localScale = Vector3.one;
+
+                    cellAnchors.Add(coord, anchor);
+
+                    if (tilePrefab is null)
+                    {
+                        continue;
+                    }
+
+                    GameObject tileObject = Instantiate(tilePrefab, anchor);
+                    tileObject.name = $"Tile_{row:00}_{col:00}";
+
+                    Transform tileTransform = tileObject.transform;
+                    tileTransform.localPosition = Vector3.zero;
+                    tileTransform.localRotation = Quaternion.Euler(tileRotationOffset);
+                    tileTransform.localScale = Vector3.Scale(tilePrefab.transform.localScale, tileScaleMultiplier);
+                }
+            }
+        }
+
+        public void ClearGrid()
+        {
+            foreach (KeyValuePair<TileCoord, Transform> entry in cellAnchors)
+            {
+                Transform? anchor = entry.Value;
+                if (anchor is null)
+                {
+                    continue;
+                }
+
+                if (Application.isPlaying)
+                {
+                    Destroy(anchor.gameObject);
+                }
+                else
+                {
+                    DestroyImmediate(anchor.gameObject);
+                }
+            }
+
+            cellAnchors.Clear();
+        }
+
+        public bool TryGetCellAnchor(TileCoord coord, out Transform anchor)
+        {
+            return cellAnchors.TryGetValue(coord, out anchor);
+        }
+
+        private Vector3 CalculateCenteredOffset(int width, int height)
+        {
+            float xOffset = -((width - 1) * cellSize * 0.5f);
+            float zOffset = (height - 1) * cellSize * 0.5f;
+            return new Vector3(xOffset, 0f, zOffset);
+        }
+
+        private Transform ResolveBoardRoot()
+        {
+            if (boardRoot is not null)
+            {
+                return boardRoot;
+            }
+
+            Transform existingRoot = transform.Find(DefaultBoardRootName);
+            if (existingRoot is not null)
+            {
+                boardRoot = existingRoot;
+                return existingRoot;
+            }
+
+            GameObject rootObject = new GameObject(DefaultBoardRootName);
+            Transform rootTransform = rootObject.transform;
+            rootTransform.SetParent(transform, false);
+            boardRoot = rootTransform;
+
+            Debug.LogWarning(
+                $"{nameof(BoardGridViewPresenter)} is missing {nameof(boardRoot)}. Created a fallback '{DefaultBoardRootName}' container.",
+                this);
+
+            return rootTransform;
+        }
+
+        private GameObject? ResolveTilePrefab()
+        {
+            if (dryTilePrefab is not null)
+            {
+                return dryTilePrefab;
+            }
+
+            if (fallbackTilePrefab is not null)
+            {
+                return fallbackTilePrefab;
+            }
+
+            Debug.LogWarning(
+                $"{nameof(BoardGridViewPresenter)} is missing both {nameof(dryTilePrefab)} and {nameof(fallbackTilePrefab)}.",
+                this);
+            return null;
+        }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            AutoAssignTilePrefabs();
+        }
+
+        private void Reset()
+        {
+            AutoAssignTilePrefabs();
+        }
+
+        private void AutoAssignTilePrefabs()
+        {
+            if (dryTilePrefab is null)
+            {
+                dryTilePrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(DryTilePrefabPath);
+            }
+
+            if (fallbackTilePrefab is null)
+            {
+                fallbackTilePrefab = dryTilePrefab;
+            }
+        }
+#endif
+    }
+}
