@@ -35,6 +35,29 @@ namespace Rescue.PlayMode.Tests.Debug
         }
 
         [UnityTest]
+        public System.Collections.IEnumerator DebugGameplayScene_StartsWithEmptyRuntimeRootsAndNoLegacyDockStandIns()
+        {
+            Transform boardRoot = GameObject.Find("BoardRoot").transform;
+            Transform boardContentRoot = GameObject.Find("BoardContentRoot").transform;
+            Transform waterRoot = GameObject.Find("WaterRoot").transform;
+            Transform dockRoot = GameObject.Find("DockRoot").transform;
+
+            Assert.That(boardRoot.childCount, Is.EqualTo(0));
+            Assert.That(boardContentRoot.childCount, Is.EqualTo(0));
+            Assert.That(waterRoot.childCount, Is.EqualTo(0));
+            Assert.That(dockRoot.childCount, Is.EqualTo(0));
+            Assert.That(GameObject.Find("DockPieces"), Is.Null);
+            Assert.That(dockRoot.Find("DockVisual"), Is.Null);
+
+            for (int slotIndex = 0; slotIndex < 7; slotIndex++)
+            {
+                Assert.That(dockRoot.Find($"Slot_{slotIndex:00}"), Is.Null);
+            }
+
+            yield return null;
+        }
+
+        [UnityTest]
         public System.Collections.IEnumerator DebugGameplayScene_RendersBoardAndDockFromDebugPanelState()
         {
             DebugPanel panel = DebugPanel.Instance ?? DebugPanel.EnsureInstance();
@@ -45,6 +68,7 @@ namespace Rescue.PlayMode.Tests.Debug
             Transform boardRoot = GameObject.Find("BoardRoot").transform;
             Transform boardContentRoot = GameObject.Find("BoardContentRoot").transform;
             Transform waterRoot = GameObject.Find("WaterRoot").transform;
+            Transform dockRoot = GameObject.Find("DockRoot").transform;
             Transform dockPieces = GameObject.Find("DockPieces").transform;
 
             LogAssert.NoUnexpectedReceived();
@@ -52,6 +76,13 @@ namespace Rescue.PlayMode.Tests.Debug
             Assert.That(boardContentRoot.childCount, Is.GreaterThan(0), "Expected the content presenter to generate visible board content.");
             Assert.That(waterRoot.childCount, Is.GreaterThan(0), "Expected the water presenter to generate forecast/flood overlays.");
             Assert.That(dockPieces.childCount, Is.EqualTo(0), "Dock should start empty before stepping.");
+            Assert.That(dockRoot.Find("SharedDockVisualInstance"), Is.Not.Null, "Expected the dock presenter to spawn the shared dock runtime visual.");
+            Assert.That(dockRoot.Find("DockVisual"), Is.Null, "Legacy dock mesh stand-ins should not be scene-authored.");
+
+            for (int slotIndex = 0; slotIndex < 7; slotIndex++)
+            {
+                Assert.That(dockRoot.Find($"Slot_{slotIndex:00}"), Is.Null, "Legacy dock slot stand-ins should not exist as direct scene children.");
+            }
 
             Assert.That(panel.StepOneAction(), Is.True);
 

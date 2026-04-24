@@ -364,13 +364,16 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
         private static void CreateOrUpdateRegistries(string artRootPath, PlaceholderAssets placeholderAssets, ProductionAssets productionAssets)
         {
             string registriesPath = CombinePath(artRootPath, RegistriesFolderName);
+            GameObject canonicalDryTilePrefab = placeholderAssets.DryTilePrefab;
 
             TileVisualRegistry tileRegistry = CreateOrLoadAsset<TileVisualRegistry>(CombinePath(registriesPath, "Phase1TileVisualRegistry.asset"));
-            tileRegistry.DryTilePrefab = placeholderAssets.DryTilePrefab;
+            // Keep the direct dry tile as the canonical board entry. Phase 1 wrappers are optional visuals,
+            // not a registry-level transform compensation layer.
+            tileRegistry.DryTilePrefab = canonicalDryTilePrefab;
             tileRegistry.FloodedRowOverlayPrefab = placeholderAssets.FloodedRowOverlayPrefab;
             tileRegistry.ForecastRowOverlayPrefab = placeholderAssets.ForecastRowOverlayPrefab;
             tileRegistry.WaterlinePrefab = placeholderAssets.WaterlinePrefab;
-            tileRegistry.FallbackTilePrefab = placeholderAssets.DryTilePrefab;
+            tileRegistry.FallbackTilePrefab = canonicalDryTilePrefab;
             EditorUtility.SetDirty(tileRegistry);
 
             PieceVisualRegistry pieceRegistry = CreateOrLoadAsset<PieceVisualRegistry>(CombinePath(registriesPath, "Phase1PieceVisualRegistry.asset"));

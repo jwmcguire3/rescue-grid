@@ -74,7 +74,7 @@ namespace Rescue.Unity.UI
             if (anchors.Length != Phase1DockSize)
             {
                 Debug.LogWarning(
-                    $"{nameof(DockViewPresenter)} expected exactly {Phase1DockSize} slot anchors but found {anchors.Length}. Assign the existing Dock_Shared_7Slot anchors in the inspector.",
+                    $"{nameof(DockViewPresenter)} expected exactly {Phase1DockSize} slot anchors but found {anchors.Length}. Verify the shared dock prefab exposes the Phase 1 slot anchors.",
                     this);
             }
 
@@ -229,7 +229,7 @@ namespace Rescue.Unity.UI
                     anchor = anchorObject.transform;
                     anchor.SetParent(transform, false);
                     Debug.LogWarning(
-                        $"{nameof(DockViewPresenter)} could not find anchor '{anchorName}'. Created a fallback anchor; prefer the existing Dock_Shared_7Slot prefab anchors.",
+                        $"{nameof(DockViewPresenter)} could not find anchor '{anchorName}'. Created a fallback anchor; prefer anchors provided by the shared dock prefab.",
                         this);
                 }
 

@@ -189,12 +189,17 @@ namespace Rescue.Unity.UI.Tests
             Assert.That(sharedDockInstance, Is.Not.Null);
 
             MeshRenderer? instantiatedRenderer = sharedDockInstance?.GetComponentInChildren<MeshRenderer>(true);
+            Transform? instantiatedAnchor = sharedDockInstance?.Find("Slot_00");
             Assert.That(instantiatedRenderer, Is.Not.Null);
+            Assert.That(instantiatedAnchor, Is.Not.Null);
 
             Assert.That(legacyRenderer.enabled, Is.False);
+            Assert.That(sharedDockInstance!.localPosition, Is.EqualTo(Vector3.zero));
+            Assert.That(sharedDockInstance.localRotation, Is.EqualTo(Quaternion.identity));
+            Assert.That(sharedDockInstance.localScale, Is.EqualTo(Vector3.one));
             Assert.That(instantiatedRenderer!.sharedMaterial, Is.SameAs(safeMaterial));
             Assert.That(pieceContainer.childCount, Is.EqualTo(1));
-            Assert.That(pieceContainer.GetChild(0).position.y, Is.EqualTo(0.125f).Within(0.001f));
+            Assert.That(pieceContainer.GetChild(0).position, Is.EqualTo(instantiatedAnchor!.position));
 
             Object.DestroyImmediate(safeMaterial);
             Object.DestroyImmediate(config);
