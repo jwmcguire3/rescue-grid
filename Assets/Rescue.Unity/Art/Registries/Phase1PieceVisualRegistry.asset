@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8516dd994bfe19c43aab28abdb680bee, type: 3}
   m_Name: Phase1PieceVisualRegistry
   m_EditorClassIdentifier: Rescue.Unity::Rescue.Unity.Art.Registries.PieceVisualRegistry
-  debrisAPrefab: {fileID: 355894138586572587, guid: 92a0a1a4a5d26e945a5086b63da007b7, type: 3}
-  debrisBPrefab: {fileID: 6644476978194946215, guid: 90418f9d02b8d2e4b954f5d0a146c735, type: 3}
-  debrisCPrefab: {fileID: 5572116077526639010, guid: 723515075faee384d8e46194a12a39fc, type: 3}
-  debrisDPrefab: {fileID: 5972993865895830873, guid: ecf082f3c9070bb408f0e393adc33e46, type: 3}
-  debrisEPrefab: {fileID: 3913966246088344501, guid: 4dda2698a5741ed42980f19a9cb5d9b3, type: 3}
-  fallbackPrefab: {fileID: 1600071982679177538, guid: adce84dd619aac84f883a04a4888bdb8, type: 3}
+  debrisAPrefab: {fileID: 355894138586572587, guid: adce84dd619aac84f883a04a4888bdb8, type: 3}
+  debrisBPrefab: {fileID: 6644476978194946215, guid: f4e2e37da1cce0c46832afc3e9718c5a, type: 3}
+  debrisCPrefab: {fileID: 5572116077526639010, guid: 4eb02c386f243a64a8ebe0c522c88be2, type: 3}
+  debrisDPrefab: {fileID: 5972993865895830873, guid: f683ab9ac301455498e2cb4f067953ef, type: 3}
+  debrisEPrefab: {fileID: 3913966246088344501, guid: 2f3d893dcd7b29041a3d15020ef34c58, type: 3}
+  fallbackPrefab: {fileID: 355894138586572587, guid: adce84dd619aac84f883a04a4888bdb8, type: 3}

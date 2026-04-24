@@ -84,6 +84,23 @@ namespace Rescue.Unity.Art.Tests
         }
 
         [Test]
+        public void Phase1PrefabFactory_UsesStandinHeightsCloseToPhase1Targets()
+        {
+            Phase1PlaceholderPrefabFactory.CreateAll(TempRootPath);
+
+            Assert.That(LoadPrefab($"{TempRootPath}/Prefabs/Pieces/Debris_A.prefab").transform.localScale.y, Is.EqualTo(0.30f).Within(0.001f));
+            Assert.That(LoadPrefab($"{TempRootPath}/Prefabs/Pieces/Debris_B.prefab").transform.localScale.y, Is.EqualTo(0.32f).Within(0.001f));
+            Assert.That(LoadPrefab($"{TempRootPath}/Prefabs/Pieces/Debris_C.prefab").transform.localScale.y, Is.EqualTo(0.34f).Within(0.001f));
+            Assert.That(LoadPrefab($"{TempRootPath}/Prefabs/Pieces/Debris_D.prefab").transform.localScale.y, Is.EqualTo(0.30f).Within(0.001f));
+            Assert.That(LoadPrefab($"{TempRootPath}/Prefabs/Pieces/Debris_E.prefab").transform.localScale.y, Is.EqualTo(0.25f).Within(0.001f));
+
+            Assert.That(LoadPrefab($"{TempRootPath}/Prefabs/Blockers/Crate.prefab").transform.localScale.y, Is.EqualTo(0.90f).Within(0.001f));
+            Assert.That(LoadPrefab($"{TempRootPath}/Prefabs/Blockers/Ice.prefab").transform.localScale.y, Is.EqualTo(0.52f).Within(0.001f));
+            Assert.That(LoadPrefab($"{TempRootPath}/Prefabs/Targets/PuppyTarget.prefab").transform.localScale.y, Is.EqualTo(0.375f).Within(0.001f));
+            Assert.That(LoadPrefab($"{TempRootPath}/Prefabs/Dock/Dock_Shared_7Slot.prefab").transform.localScale.y, Is.EqualTo(0.60f).Within(0.001f));
+        }
+
+        [Test]
         public void Phase1PrefabFactory_IsIdempotent()
         {
             Phase1PlaceholderPrefabFactory.CreateAll(TempRootPath);
@@ -123,6 +140,13 @@ namespace Rescue.Unity.Art.Tests
             {
                 AssetDatabase.Refresh();
             }
+        }
+
+        private static GameObject LoadPrefab(string path)
+        {
+            GameObject? prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            Assert.That(prefab, Is.Not.Null, $"Expected prefab at '{path}'.");
+            return prefab!;
         }
     }
 }

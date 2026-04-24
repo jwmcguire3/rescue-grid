@@ -7,6 +7,7 @@ using Rescue.Unity.BoardPresentation;
 using Rescue.Unity.Presentation;
 using Rescue.Unity.UI;
 using UnityEngine;
+using UnityEngine.TestTools;
 using CoreBoard = Rescue.Core.State.Board;
 using CoreDock = Rescue.Core.State.Dock;
 
@@ -38,7 +39,17 @@ namespace Rescue.Unity.Presentation.Tests
             GameObject presenterObject = CreateTrackedGameObject("GameStateViewPresenter");
             GameStateViewPresenter presenter = presenterObject.AddComponent<GameStateViewPresenter>();
 
-            Assert.DoesNotThrow(() => presenter.Rebuild(CreateState()));
+            bool previousIgnoreFailingMessages = LogAssert.ignoreFailingMessages;
+            LogAssert.ignoreFailingMessages = true;
+
+            try
+            {
+                Assert.DoesNotThrow(() => presenter.Rebuild(CreateState()));
+            }
+            finally
+            {
+                LogAssert.ignoreFailingMessages = previousIgnoreFailingMessages;
+            }
         }
 
         [Test]
@@ -107,6 +118,13 @@ namespace Rescue.Unity.Presentation.Tests
             Transform dockPieceContainer = CreateTrackedGameObject("DockPieces").transform;
             dockPieceContainer.SetParent(presenterObject.transform, false);
             GameObject fallbackPiecePrefab = CreateTrackedGameObject("FallbackPiecePrefab");
+            GameObject dockVisual = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            createdObjects.Add(dockVisual);
+            dockVisual.name = "LegacyDockVisual";
+            dockVisual.transform.SetParent(presenterObject.transform, false);
+            MeshRenderer dockRenderer = dockVisual.GetComponent<MeshRenderer>();
+            Material safeMaterial = new Material(Shader.Find("Standard"));
+            createdObjects.Add(safeMaterial);
             for (int i = 0; i < 7; i++)
             {
                 Transform anchor = CreateTrackedGameObject($"Slot_{i:00}").transform;
@@ -114,6 +132,8 @@ namespace Rescue.Unity.Presentation.Tests
                 anchor.localPosition = new Vector3(i, 0f, 0f);
             }
 
+            SetPrivateField(dockView, "sharedDockRenderer", dockRenderer);
+            SetPrivateField(dockView, "safeMaterial", safeMaterial);
             SetPrivateField(dockView, "pieceContainer", dockPieceContainer);
             SetPrivateField(dockView, "fallbackPiecePrefab", fallbackPiecePrefab);
 

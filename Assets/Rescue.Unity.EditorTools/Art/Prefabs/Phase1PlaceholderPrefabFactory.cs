@@ -105,33 +105,33 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
 
             GameObject debrisAPrefab = CreateOrUpdatePrefab(
                 CombinePath(prefabsPath, PiecesFolderName, "Debris_A.prefab"),
-                () => CreatePrimitivePlaceholder("Debris_A", PrimitiveType.Cube, debrisAMaterial, new Vector3(0.62f, 0.62f, 0.62f), new Vector3(0.0f, 0.22f, 0.0f), new Vector3(0.0f, 18.0f, 0.0f)));
+                () => CreatePrimitivePlaceholder("Debris_A", PrimitiveType.Cube, debrisAMaterial, new Vector3(0.62f, 0.30f, 0.62f), new Vector3(0.0f, 0.15f, 0.0f), new Vector3(0.0f, 18.0f, 0.0f)));
             GameObject debrisBPrefab = CreateOrUpdatePrefab(
                 CombinePath(prefabsPath, PiecesFolderName, "Debris_B.prefab"),
-                () => CreatePrimitivePlaceholder("Debris_B", PrimitiveType.Cube, debrisBMaterial, new Vector3(0.56f, 0.68f, 0.56f), new Vector3(0.0f, 0.24f, 0.0f), new Vector3(12.0f, -10.0f, 4.0f)));
+                () => CreatePrimitivePlaceholder("Debris_B", PrimitiveType.Cube, debrisBMaterial, new Vector3(0.56f, 0.32f, 0.56f), new Vector3(0.0f, 0.16f, 0.0f), new Vector3(12.0f, -10.0f, 4.0f)));
             GameObject debrisCPrefab = CreateOrUpdatePrefab(
                 CombinePath(prefabsPath, PiecesFolderName, "Debris_C.prefab"),
-                () => CreatePrimitivePlaceholder("Debris_C", PrimitiveType.Cube, debrisCMaterial, new Vector3(0.72f, 0.42f, 0.72f), new Vector3(0.0f, 0.16f, 0.0f), new Vector3(-10.0f, 22.0f, -6.0f)));
+                () => CreatePrimitivePlaceholder("Debris_C", PrimitiveType.Cube, debrisCMaterial, new Vector3(0.72f, 0.34f, 0.72f), new Vector3(0.0f, 0.17f, 0.0f), new Vector3(-10.0f, 22.0f, -6.0f)));
             GameObject debrisDPrefab = CreateOrUpdatePrefab(
                 CombinePath(prefabsPath, PiecesFolderName, "Debris_D.prefab"),
-                () => CreatePrimitivePlaceholder("Debris_D", PrimitiveType.Cube, debrisDMaterial, new Vector3(0.48f, 0.78f, 0.48f), new Vector3(0.0f, 0.28f, 0.0f), new Vector3(6.0f, 35.0f, 0.0f)));
+                () => CreatePrimitivePlaceholder("Debris_D", PrimitiveType.Cube, debrisDMaterial, new Vector3(0.48f, 0.30f, 0.48f), new Vector3(0.0f, 0.15f, 0.0f), new Vector3(6.0f, 35.0f, 0.0f)));
             GameObject debrisEPrefab = CreateOrUpdatePrefab(
                 CombinePath(prefabsPath, PiecesFolderName, "Debris_E.prefab"),
-                () => CreatePrimitivePlaceholder("Debris_E", PrimitiveType.Cube, debrisEMaterial, new Vector3(0.70f, 0.52f, 0.50f), new Vector3(0.0f, 0.19f, 0.0f), new Vector3(0.0f, -24.0f, 11.0f)));
+                () => CreatePrimitivePlaceholder("Debris_E", PrimitiveType.Cube, debrisEMaterial, new Vector3(0.70f, 0.25f, 0.50f), new Vector3(0.0f, 0.125f, 0.0f), new Vector3(0.0f, -24.0f, 11.0f)));
 
             GameObject cratePrefab = CreateOrUpdatePrefab(
                 CombinePath(prefabsPath, BlockersFolderName, "Crate.prefab"),
-                () => CreatePrimitivePlaceholder("Crate", PrimitiveType.Cube, crateMaterial, new Vector3(0.88f, 0.88f, 0.88f), new Vector3(0.0f, 0.34f, 0.0f)));
+                () => CreatePrimitivePlaceholder("Crate", PrimitiveType.Cube, crateMaterial, new Vector3(0.90f, 0.90f, 0.90f), new Vector3(0.0f, 0.45f, 0.0f)));
             GameObject icePrefab = CreateOrUpdatePrefab(
                 CombinePath(prefabsPath, BlockersFolderName, "Ice.prefab"),
-                () => CreateFlatOverlayPlaceholder("Ice", iceMaterial, new Vector3(0.9f, 0.9f, 1.0f), 0.03f));
+                () => CreatePrimitivePlaceholder("Ice", PrimitiveType.Cube, iceMaterial, new Vector3(0.74f, 0.52f, 0.74f), new Vector3(0.0f, 0.26f, 0.0f)));
             GameObject vinePrefab = CreateOrUpdatePrefab(
                 CombinePath(prefabsPath, BlockersFolderName, "Vine.prefab"),
                 () => CreateFlatOverlayPlaceholder("Vine", vineMaterial, new Vector3(0.82f, 0.82f, 1.0f), 0.04f));
 
             GameObject puppyTargetPrefab = CreateOrUpdatePrefab(
                 CombinePath(prefabsPath, TargetsFolderName, "PuppyTarget.prefab"),
-                () => CreatePrimitivePlaceholder("PuppyTarget", PrimitiveType.Capsule, puppyTargetMaterial, new Vector3(0.52f, 0.42f, 0.52f), new Vector3(0.0f, 0.40f, 0.0f), new Vector3(0.0f, 0.0f, 90.0f)));
+                () => CreatePrimitivePlaceholder("PuppyTarget", PrimitiveType.Capsule, puppyTargetMaterial, new Vector3(0.42f, 0.375f, 0.42f), new Vector3(0.0f, 0.375f, 0.0f)));
 
             GameObject dockPrefab = CreateOrUpdatePrefab(
                 CombinePath(prefabsPath, DockFolderName, "Dock_Shared_7Slot.prefab"),
@@ -305,10 +305,10 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 0.9f);
             GameObject icePrefab = CreateOrUpdatePrefab(
                 CombinePath(prefabsPath, BlockersFolderName, "Ice_Overlay_Phase1.prefab"),
-                () => CreateFlatOverlayPlaceholder("Ice_Overlay_Phase1", iceOverlayMaterial, new Vector3(0.96f, 0.96f, 1.0f), 0.03f));
+                () => CreateFlatOverlayPlaceholder("Ice", iceOverlayMaterial, new Vector3(0.96f, 0.96f, 1.0f), 0.03f));
             GameObject vinePrefab = CreateOrUpdatePrefab(
                 CombinePath(prefabsPath, BlockersFolderName, "Vine_Overlay_Phase1.prefab"),
-                () => CreateFlatOverlayPlaceholder("Vine_Overlay_Phase1", vineOverlayMaterial, new Vector3(0.86f, 0.86f, 1.0f), 0.04f));
+                () => CreateFlatOverlayPlaceholder("Vine", vineOverlayMaterial, new Vector3(0.86f, 0.86f, 1.0f), 0.04f));
 
             GameObject? puppyPrefab = CreateMeshWrapperPrefab(
                 CombinePath(prefabsPath, TargetsFolderName, "PuppyTarget_Phase1.prefab"),
@@ -321,22 +321,10 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 CombinePath(prefabsPath, DockFolderName, "Dock_Shared_7Slot_Phase1.prefab"),
                 sharedDockModelPath,
                 safeDockMaterial);
-            GameObject? safeDockPrefab = CreateDockPrefab(
-                CombinePath(prefabsPath, DockFolderName, "Dock_Safe_Phase1.prefab"),
-                sharedDockModelPath,
-                safeDockMaterial);
-            GameObject? cautionDockPrefab = CreateDockPrefab(
-                CombinePath(prefabsPath, DockFolderName, "Dock_Caution_Phase1.prefab"),
-                CombinePath(artRootPath, "Models", "Dock", "Meshy_AI_Dock_Caution_0424154706_texture_fbx.fbx"),
-                cautionDockMaterial);
-            GameObject? acuteDockPrefab = CreateDockPrefab(
-                CombinePath(prefabsPath, DockFolderName, "Dock_Acute_Phase1.prefab"),
-                CombinePath(artRootPath, "Models", "Dock", "Meshy_AI_Dock_Alert_0424154721_texture_fbx.fbx"),
-                acuteDockMaterial);
-            GameObject? failedDockPrefab = CreateDockPrefab(
-                CombinePath(prefabsPath, DockFolderName, "Dock_Failed_Phase1.prefab"),
-                CombinePath(artRootPath, "Models", "Dock", "Meshy_AI_Dock_fail_0424154736_texture_fbx.fbx"),
-                failedDockMaterial);
+            GameObject? safeDockPrefab = sharedDockPrefab;
+            GameObject? cautionDockPrefab = sharedDockPrefab;
+            GameObject? acuteDockPrefab = sharedDockPrefab;
+            GameObject? failedDockPrefab = sharedDockPrefab;
 
             return new ProductionAssets(
                 tilePrefab,
@@ -377,33 +365,33 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             EditorUtility.SetDirty(tileRegistry);
 
             PieceVisualRegistry pieceRegistry = CreateOrLoadAsset<PieceVisualRegistry>(CombinePath(registriesPath, "Phase1PieceVisualRegistry.asset"));
-            pieceRegistry.DebrisAPrefab = productionAssets.DebrisAPrefab ?? placeholderAssets.DebrisAPrefab;
-            pieceRegistry.DebrisBPrefab = productionAssets.DebrisBPrefab ?? placeholderAssets.DebrisBPrefab;
-            pieceRegistry.DebrisCPrefab = productionAssets.DebrisCPrefab ?? placeholderAssets.DebrisCPrefab;
-            pieceRegistry.DebrisDPrefab = productionAssets.DebrisDPrefab ?? placeholderAssets.DebrisDPrefab;
-            pieceRegistry.DebrisEPrefab = productionAssets.DebrisEPrefab ?? placeholderAssets.DebrisEPrefab;
+            pieceRegistry.DebrisAPrefab = placeholderAssets.DebrisAPrefab;
+            pieceRegistry.DebrisBPrefab = placeholderAssets.DebrisBPrefab;
+            pieceRegistry.DebrisCPrefab = placeholderAssets.DebrisCPrefab;
+            pieceRegistry.DebrisDPrefab = placeholderAssets.DebrisDPrefab;
+            pieceRegistry.DebrisEPrefab = placeholderAssets.DebrisEPrefab;
             pieceRegistry.FallbackPrefab = placeholderAssets.DebrisAPrefab;
             EditorUtility.SetDirty(pieceRegistry);
 
             BlockerVisualRegistry blockerRegistry = CreateOrLoadAsset<BlockerVisualRegistry>(CombinePath(registriesPath, "Phase1BlockerVisualRegistry.asset"));
-            blockerRegistry.CratePrefab = productionAssets.CratePrefab ?? placeholderAssets.CratePrefab;
-            blockerRegistry.IcePrefab = productionAssets.IcePrefab ?? placeholderAssets.IcePrefab;
-            blockerRegistry.VinePrefab = productionAssets.VinePrefab ?? placeholderAssets.VinePrefab;
+            blockerRegistry.CratePrefab = placeholderAssets.CratePrefab;
+            blockerRegistry.IcePrefab = placeholderAssets.IcePrefab;
+            blockerRegistry.VinePrefab = placeholderAssets.VinePrefab;
             blockerRegistry.FallbackBlockerPrefab = placeholderAssets.CratePrefab;
             EditorUtility.SetDirty(blockerRegistry);
 
             TargetVisualRegistry targetRegistry = CreateOrLoadAsset<TargetVisualRegistry>(CombinePath(registriesPath, "Phase1TargetVisualRegistry.asset"));
-            targetRegistry.PuppyPrefab = productionAssets.PuppyPrefab ?? placeholderAssets.PuppyTargetPrefab;
+            targetRegistry.PuppyPrefab = placeholderAssets.PuppyTargetPrefab;
             targetRegistry.FallbackTargetPrefab = placeholderAssets.PuppyTargetPrefab;
             EditorUtility.SetDirty(targetRegistry);
 
             DockVisualConfig dockConfig = CreateOrLoadAsset<DockVisualConfig>(CombinePath(registriesPath, "Phase1DockVisualConfig.asset"));
-            dockConfig.SharedDockPrefab = productionAssets.SharedDockPrefab ?? placeholderAssets.DockPrefab;
+            dockConfig.SharedDockPrefab = placeholderAssets.DockPrefab;
             dockConfig.SharedDockMesh = productionAssets.SharedDockMesh;
-            dockConfig.SafePrefab = productionAssets.SafeDockPrefab ?? dockConfig.SharedDockPrefab;
-            dockConfig.CautionPrefab = productionAssets.CautionDockPrefab ?? dockConfig.SharedDockPrefab;
-            dockConfig.AcutePrefab = productionAssets.AcuteDockPrefab ?? dockConfig.SharedDockPrefab;
-            dockConfig.FailedPrefab = productionAssets.FailedDockPrefab ?? dockConfig.SharedDockPrefab;
+            dockConfig.SafePrefab = placeholderAssets.DockPrefab;
+            dockConfig.CautionPrefab = placeholderAssets.DockPrefab;
+            dockConfig.AcutePrefab = placeholderAssets.DockPrefab;
+            dockConfig.FailedPrefab = placeholderAssets.DockPrefab;
             dockConfig.SafeMaterial = productionAssets.SafeDockMaterial;
             dockConfig.CautionMaterial = productionAssets.CautionDockMaterial;
             dockConfig.AcuteMaterial = productionAssets.AcuteDockMaterial;
@@ -712,7 +700,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             GameObject dock = GameObject.CreatePrimitive(PrimitiveType.Cube);
             dock.name = name;
             dock.transform.position = Vector3.zero;
-            dock.transform.localScale = new Vector3(7.2f, 0.30f, 1.1f);
+            dock.transform.localScale = new Vector3(7.2f, 0.60f, 1.1f);
             RemoveCollider(dock);
             AssignMaterial(dock, material);
 
@@ -720,7 +708,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             {
                 GameObject anchor = new GameObject($"Slot_{slotIndex:00}");
                 anchor.transform.SetParent(dock.transform, false);
-                anchor.transform.localPosition = new Vector3(-3.0f + slotIndex, 0.75f, 0.0f);
+                anchor.transform.localPosition = new Vector3(-3.0f + slotIndex, 0.48f, 0.0f);
                 anchor.transform.localRotation = Quaternion.identity;
                 anchor.transform.localScale = Vector3.one;
             }
