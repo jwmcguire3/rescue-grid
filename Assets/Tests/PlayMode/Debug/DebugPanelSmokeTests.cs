@@ -115,6 +115,20 @@ namespace Rescue.PlayMode.Tests.Debug
             Assert.That(panel.ExportFullGameStateJson(), Does.Contain("\"oneClearAway\": true"));
         }
 
+        [UnityTest]
+        public System.Collections.IEnumerator DebugPanel_DoesNotThrowWithoutPresenter()
+        {
+            DebugPanel panel = DebugPanel.EnsureInstance();
+            panel.ConfigureForTest(CreateTestLevel(), seed: 23);
+
+            yield return null;
+
+            Assert.DoesNotThrow(() => panel.StepOneAction());
+            Assert.DoesNotThrow(() => panel.DebugUndo());
+            Assert.DoesNotThrow(() => panel.ResetLevel());
+            LogAssert.NoUnexpectedReceived();
+        }
+
         private static bool IsValidJson(string json)
         {
             Assembly jsonAssembly = Assembly.Load(new AssemblyName("System.Text.Json"));

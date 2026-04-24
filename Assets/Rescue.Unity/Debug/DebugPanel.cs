@@ -11,6 +11,7 @@ using Rescue.Core.State;
 using Rescue.Core.Undo;
 using Rescue.Replay;
 using Rescue.Telemetry;
+using Rescue.Unity.Presentation;
 using Rescue.Unity.Telemetry;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -92,6 +93,7 @@ namespace Rescue.Unity.Debugging
         private Button? _copyStateButton;
         private Button? _copyFullStateButton;
         private VisualElement? _eventLogList;
+        [SerializeField] private GameStateViewPresenter? _gameStateViewPresenter;
 
         private bool _initialized;
         private bool _panelVisible = true;
@@ -261,6 +263,7 @@ namespace Rescue.Unity.Debugging
                 _playAccumulator = 0.0f;
                 UpdatePlayButtonLabel();
                 SetStatus($"Reset replay {_currentLevelId} to frame 0.");
+                RefreshVisualPresenter();
                 RefreshUi();
                 return;
             }
@@ -277,6 +280,7 @@ namespace Rescue.Unity.Debugging
             _playAccumulator = 0.0f;
             UpdatePlayButtonLabel();
             SetStatus($"Reset {_currentLevelId} to initial state for seed {_currentSeed}.");
+            RefreshVisualPresenter();
             RefreshUi();
         }
 
@@ -330,6 +334,7 @@ namespace Rescue.Unity.Debugging
             }
 
             SetStatus(status);
+            RefreshVisualPresenter();
             RefreshUi();
             return true;
         }
@@ -356,6 +361,7 @@ namespace Rescue.Unity.Debugging
             _initialState = replay.InitialFrame.State;
             UpdatePlayButtonLabel();
             SetStatus($"Loaded replay {Path.GetFileName(sessionJsonlPath)} for {replay.LevelId} seed {replay.Seed}.");
+            RefreshVisualPresenter();
             RefreshUi();
         }
 
@@ -380,6 +386,7 @@ namespace Rescue.Unity.Debugging
             _currentState = frame.State;
             AppendActionLog($"Replay {_replayFrameIndex}", frame.Events, frame.Outcome ?? ActionOutcome.Ok);
             SetStatus($"Replay stepped to frame {_replayFrameIndex}/{_loadedReplay.Frames.Length - 1}.");
+            RefreshVisualPresenter();
             RefreshUi();
             return true;
         }
@@ -396,6 +403,7 @@ namespace Rescue.Unity.Debugging
             DebugUndoEntry entry = _debugUndo.Pop();
             _currentState = entry.State;
             SetStatus($"Debug undo restored: {entry.Reason}.");
+            RefreshVisualPresenter();
             RefreshUi();
             return true;
         }
@@ -472,9 +480,37 @@ namespace Rescue.Unity.Debugging
             UpdatePlayButtonLabel();
             SyncLevelSelectorChoices(levelId);
             SetStatus(status);
+            RefreshVisualPresenter();
             RefreshUi();
             StartTelemetrySession(state, levelId, seed);
             OnLevelLoadedForTuning();
+        }
+
+        private void RefreshVisualPresenter()
+        {
+            if (_currentState is null)
+            {
+                return;
+            }
+
+            GameStateViewPresenter? presenter = ResolveGameStateViewPresenter();
+            if (presenter is null)
+            {
+                return;
+            }
+
+            presenter.Rebuild(_currentState);
+        }
+
+        private GameStateViewPresenter? ResolveGameStateViewPresenter()
+        {
+            if (_gameStateViewPresenter != null)
+            {
+                return _gameStateViewPresenter;
+            }
+
+            _gameStateViewPresenter = UnityEngine.Object.FindFirstObjectByType<GameStateViewPresenter>();
+            return _gameStateViewPresenter;
         }
 
         private void StartTelemetrySession(GameState state, string levelId, int seed)
