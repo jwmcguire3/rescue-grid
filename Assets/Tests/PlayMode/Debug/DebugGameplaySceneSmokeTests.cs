@@ -69,15 +69,15 @@ namespace Rescue.PlayMode.Tests.Debug
             Transform boardContentRoot = GameObject.Find("BoardContentRoot").transform;
             Transform waterRoot = GameObject.Find("WaterRoot").transform;
             Transform dockRoot = GameObject.Find("DockRoot").transform;
-            Transform dockPieces = GameObject.Find("DockPieces").transform;
+            Transform? dockPieces = dockRoot.Find("DockPieces");
 
             LogAssert.NoUnexpectedReceived();
             Assert.That(boardRoot.childCount, Is.GreaterThan(0), "Expected the grid presenter to generate board anchors.");
             Assert.That(boardContentRoot.childCount, Is.GreaterThan(0), "Expected the content presenter to generate visible board content.");
             Assert.That(waterRoot.childCount, Is.GreaterThan(0), "Expected the water presenter to generate forecast/flood overlays.");
-            Assert.That(dockPieces.childCount, Is.EqualTo(0), "Dock should start empty before stepping.");
             Assert.That(dockRoot.Find("SharedDockVisualInstance"), Is.Not.Null, "Expected the dock presenter to spawn the shared dock runtime visual.");
             Assert.That(dockRoot.Find("DockVisual"), Is.Null, "Legacy dock mesh stand-ins should not be scene-authored.");
+            Assert.That(dockPieces is null || dockPieces.childCount == 0, Is.True, "Dock should start empty before stepping.");
 
             for (int slotIndex = 0; slotIndex < 7; slotIndex++)
             {
@@ -88,6 +88,8 @@ namespace Rescue.PlayMode.Tests.Debug
 
             yield return null;
 
+            dockPieces = dockRoot.Find("DockPieces");
+            Assert.That(dockPieces, Is.Not.Null, "Expected the dock presenter to materialize a runtime piece container after stepping.");
             Assert.That(dockPieces.childCount, Is.GreaterThan(0), "Expected the dock presenter to generate piece visuals after a step.");
         }
 

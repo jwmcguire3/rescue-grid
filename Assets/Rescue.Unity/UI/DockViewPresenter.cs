@@ -81,13 +81,12 @@ namespace Rescue.Unity.UI
             SetDockVisualState(DockVisualStateResolver.FromOccupancy(CountOccupiedSlots(state.Dock), state.Dock.Size));
 
             ClearSlots();
+            Transform container = ResolvePieceContainer();
 
             if (anchors.Length == 0)
             {
                 return;
             }
-
-            Transform container = ResolvePieceContainer();
 
             int maxSlots = Mathf.Min(state.Dock.Slots.Length, anchors.Length);
             for (int slotIndex = 0; slotIndex < maxSlots; slotIndex++)
@@ -179,7 +178,7 @@ namespace Rescue.Unity.UI
 
         private Transform ResolvePieceContainer()
         {
-            if (pieceContainer is not null)
+            if (pieceContainer != null)
             {
                 return pieceContainer;
             }
@@ -195,10 +194,6 @@ namespace Rescue.Unity.UI
             Transform containerTransform = containerObject.transform;
             containerTransform.SetParent(transform, false);
             pieceContainer = containerTransform;
-
-            Debug.LogWarning(
-                $"{nameof(DockViewPresenter)} is missing {nameof(pieceContainer)}. Created a fallback '{DefaultPieceContainerName}' container.",
-                this);
 
             return containerTransform;
         }
@@ -272,7 +267,7 @@ namespace Rescue.Unity.UI
                 sharedDockTransform.localScale = Vector3.one;
             }
 
-            if (sharedDockRenderer is not null && _sharedDockInstance is not null && !IsChildOf(sharedDockRenderer.transform, _sharedDockInstance.transform))
+            if (sharedDockRenderer != null && _sharedDockInstance != null && !IsChildOf(sharedDockRenderer.transform, _sharedDockInstance.transform))
             {
                 sharedDockRenderer.enabled = false;
             }
