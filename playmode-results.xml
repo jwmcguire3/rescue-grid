@@ -1,62 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<test-run id="2" testcasecount="16" result="Passed" total="16" passed="16" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-04-24 18:00:00Z" end-time="2026-04-24 18:00:01Z" duration="0.6865349">
-  <test-suite type="TestSuite" id="1031" name="rescue-grid" fullname="rescue-grid" runstate="Runnable" testcasecount="16" result="Passed" start-time="2026-04-24 18:00:00Z" end-time="2026-04-24 18:00:01Z" duration="0.686535" total="16" passed="16" failed="0" inconclusive="0" skipped="0" asserts="0">
+<test-run id="2" testcasecount="17" result="Passed" total="17" passed="17" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:22Z" duration="0.8046352">
+  <test-suite type="TestSuite" id="1033" name="rescue-grid" fullname="rescue-grid" runstate="Runnable" testcasecount="17" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:22Z" duration="0.804635" total="17" passed="17" failed="0" inconclusive="0" skipped="0" asserts="0">
     <properties>
       <property name="platform" value="PlayMode" />
     </properties>
-    <test-suite type="Assembly" id="1023" name="Rescue.PlayMode.Tests.dll" fullname="C:/Users/jwmcg/OneDrive/Documents/AI Projects/Live Envirnments/rescue-grid/Library/ScriptAssemblies/Rescue.PlayMode.Tests.dll" runstate="Runnable" testcasecount="16" result="Passed" start-time="2026-04-24 18:00:00Z" end-time="2026-04-24 18:00:01Z" duration="0.681561" total="16" passed="16" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <test-suite type="Assembly" id="1025" name="Rescue.PlayMode.Tests.dll" fullname="C:/Users/jwmcg/OneDrive/Documents/AI Projects/Live Envirnments/rescue-grid/Library/ScriptAssemblies/Rescue.PlayMode.Tests.dll" runstate="Runnable" testcasecount="17" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:22Z" duration="0.799806" total="17" passed="17" failed="0" inconclusive="0" skipped="0" asserts="0">
       <properties>
-        <property name="_PID" value="26748" />
+        <property name="_PID" value="6788" />
         <property name="_APPDOMAIN" value="Unity Child Domain" />
         <property name="platform" value="PlayMode" />
         <property name="EditorOnly" value="False" />
       </properties>
-      <test-suite type="TestSuite" id="1024" name="Rescue" fullname="Rescue" runstate="Runnable" testcasecount="16" result="Passed" start-time="2026-04-24 18:00:00Z" end-time="2026-04-24 18:00:01Z" duration="0.681229" total="16" passed="16" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <test-suite type="TestSuite" id="1026" name="Rescue" fullname="Rescue" runstate="Runnable" testcasecount="17" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:22Z" duration="0.799463" total="17" passed="17" failed="0" inconclusive="0" skipped="0" asserts="0">
         <properties />
-        <test-suite type="TestSuite" id="1025" name="PlayMode" fullname="Rescue.PlayMode" runstate="Runnable" testcasecount="16" result="Passed" start-time="2026-04-24 18:00:00Z" end-time="2026-04-24 18:00:01Z" duration="0.681093" total="16" passed="16" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <test-suite type="TestSuite" id="1027" name="PlayMode" fullname="Rescue.PlayMode" runstate="Runnable" testcasecount="17" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:22Z" duration="0.799316" total="17" passed="17" failed="0" inconclusive="0" skipped="0" asserts="0">
           <properties />
-          <test-suite type="TestSuite" id="1026" name="Tests" fullname="Rescue.PlayMode.Tests" runstate="Runnable" testcasecount="16" result="Passed" start-time="2026-04-24 18:00:00Z" end-time="2026-04-24 18:00:01Z" duration="0.680979" total="16" passed="16" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <test-suite type="TestSuite" id="1028" name="Tests" fullname="Rescue.PlayMode.Tests" runstate="Runnable" testcasecount="17" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:22Z" duration="0.799193" total="17" passed="17" failed="0" inconclusive="0" skipped="0" asserts="0">
             <properties />
-            <test-suite type="TestSuite" id="1028" name="Debug" fullname="Rescue.PlayMode.Tests.Debug" runstate="Runnable" testcasecount="9" result="Passed" start-time="2026-04-24 18:00:00Z" end-time="2026-04-24 18:00:01Z" duration="0.506646" total="9" passed="9" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <test-suite type="TestSuite" id="1030" name="Debug" fullname="Rescue.PlayMode.Tests.Debug" runstate="Runnable" testcasecount="10" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:21Z" duration="0.616345" total="10" passed="10" failed="0" inconclusive="0" skipped="0" asserts="0">
               <properties />
-              <test-suite type="TestFixture" id="1012" name="DebugPanelSmokeTests" fullname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests" classname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-04-24 18:00:00Z" end-time="2026-04-24 18:00:00Z" duration="0.300732" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <test-suite type="TestFixture" id="1012" name="DebugGameplaySceneSmokeTests" fullname="Rescue.PlayMode.Tests.Debug.DebugGameplaySceneSmokeTests" classname="Rescue.PlayMode.Tests.Debug.DebugGameplaySceneSmokeTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:21Z" duration="0.197989" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
                 <properties />
-                <test-case id="1018" name="DebugPanel_DoesNotThrowWithoutPresenter" fullname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests.DebugPanel_DoesNotThrowWithoutPresenter" methodname="DebugPanel_DoesNotThrowWithoutPresenter" classname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests" runstate="Runnable" seed="219347047" result="Passed" start-time="2026-04-24 18:00:00Z" end-time="2026-04-24 18:00:00Z" duration="0.139491" asserts="0">
-                  <properties>
-                    <property name="_JOINTYPE" value="UnityCombinatorial" />
-                    <property name="retryIteration" value="0" />
-                    <property name="repeatIteration" value="0" />
-                  </properties>
-                </test-case>
-                <test-case id="1017" name="NearRescueSummaryReflectsOneClearAwayTarget" fullname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests.NearRescueSummaryReflectsOneClearAwayTarget" methodname="NearRescueSummaryReflectsOneClearAwayTarget" classname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests" runstate="Runnable" seed="559312523" result="Passed" start-time="2026-04-24 18:00:00Z" end-time="2026-04-24 18:00:00Z" duration="0.047389" asserts="0">
-                  <properties>
-                    <property name="_JOINTYPE" value="UnityCombinatorial" />
-                    <property name="retryIteration" value="0" />
-                    <property name="repeatIteration" value="0" />
-                  </properties>
-                </test-case>
-                <test-case id="1013" name="PanelLoadsWithoutCrashingGivenLoadedLevel" fullname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests.PanelLoadsWithoutCrashingGivenLoadedLevel" methodname="PanelLoadsWithoutCrashingGivenLoadedLevel" classname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests" runstate="Runnable" seed="434841487" result="Passed" start-time="2026-04-24 18:00:00Z" end-time="2026-04-24 18:00:00Z" duration="0.016092" asserts="0">
-                  <properties>
-                    <property name="_JOINTYPE" value="UnityCombinatorial" />
-                    <property name="retryIteration" value="0" />
-                    <property name="repeatIteration" value="0" />
-                  </properties>
-                </test-case>
-                <test-case id="1015" name="ResetReturnsStateToInitialForSameSeed" fullname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests.ResetReturnsStateToInitialForSameSeed" methodname="ResetReturnsStateToInitialForSameSeed" classname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests" runstate="Runnable" seed="1223901906" result="Passed" start-time="2026-04-24 18:00:00Z" end-time="2026-04-24 18:00:00Z" duration="0.036059" asserts="0">
-                  <properties>
-                    <property name="_JOINTYPE" value="UnityCombinatorial" />
-                    <property name="retryIteration" value="0" />
-                    <property name="repeatIteration" value="0" />
-                  </properties>
-                </test-case>
-                <test-case id="1016" name="StateExportProducesValidJson" fullname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests.StateExportProducesValidJson" methodname="StateExportProducesValidJson" classname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests" runstate="Runnable" seed="1548378756" result="Passed" start-time="2026-04-24 18:00:00Z" end-time="2026-04-24 18:00:00Z" duration="0.019172" asserts="0">
-                  <properties>
-                    <property name="_JOINTYPE" value="UnityCombinatorial" />
-                    <property name="retryIteration" value="0" />
-                    <property name="repeatIteration" value="0" />
-                  </properties>
-                </test-case>
-                <test-case id="1014" name="StepButtonAdvancesByExactlyOneAction" fullname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests.StepButtonAdvancesByExactlyOneAction" methodname="StepButtonAdvancesByExactlyOneAction" classname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests" runstate="Runnable" seed="1411620282" result="Passed" start-time="2026-04-24 18:00:00Z" end-time="2026-04-24 18:00:00Z" duration="0.034432" asserts="0">
+                <test-case id="1013" name="DebugGameplayScene_RendersBoardAndDockFromDebugPanelState" fullname="Rescue.PlayMode.Tests.Debug.DebugGameplaySceneSmokeTests.DebugGameplayScene_RendersBoardAndDockFromDebugPanelState" methodname="DebugGameplayScene_RendersBoardAndDockFromDebugPanelState" classname="Rescue.PlayMode.Tests.Debug.DebugGameplaySceneSmokeTests" runstate="Runnable" seed="1578515633" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:21Z" duration="0.191106" asserts="0">
                   <properties>
                     <property name="_JOINTYPE" value="UnityCombinatorial" />
                     <property name="retryIteration" value="0" />
@@ -64,23 +29,68 @@
                   </properties>
                 </test-case>
               </test-suite>
-              <test-suite type="TestFixture" id="1019" name="TunePanelSmokeTests" fullname="Rescue.PlayMode.Tests.Debug.TunePanelSmokeTests" classname="Rescue.PlayMode.Tests.Debug.TunePanelSmokeTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-04-24 18:00:00Z" end-time="2026-04-24 18:00:01Z" duration="0.205060" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <test-suite type="TestFixture" id="1014" name="DebugPanelSmokeTests" fullname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests" classname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:21Z" duration="0.193991" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
                 <properties />
-                <test-case id="1020" name="ChangingATunableReloadsTheLevel" fullname="Rescue.PlayMode.Tests.Debug.TunePanelSmokeTests.ChangingATunableReloadsTheLevel" methodname="ChangingATunableReloadsTheLevel" classname="Rescue.PlayMode.Tests.Debug.TunePanelSmokeTests" runstate="Runnable" seed="814255821" result="Passed" start-time="2026-04-24 18:00:00Z" end-time="2026-04-24 18:00:00Z" duration="0.035984" asserts="0">
+                <test-case id="1020" name="DebugPanel_DoesNotThrowWithoutPresenter" fullname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests.DebugPanel_DoesNotThrowWithoutPresenter" methodname="DebugPanel_DoesNotThrowWithoutPresenter" classname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests" runstate="Runnable" seed="1270207491" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:21Z" duration="0.037696" asserts="0">
                   <properties>
                     <property name="_JOINTYPE" value="UnityCombinatorial" />
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1022" name="CurrentSeedIsPreservedAcrossTuneReloadUnlessChangedExplicitly" fullname="Rescue.PlayMode.Tests.Debug.TunePanelSmokeTests.CurrentSeedIsPreservedAcrossTuneReloadUnlessChangedExplicitly" methodname="CurrentSeedIsPreservedAcrossTuneReloadUnlessChangedExplicitly" classname="Rescue.PlayMode.Tests.Debug.TunePanelSmokeTests" runstate="Runnable" seed="1899924049" result="Passed" start-time="2026-04-24 18:00:00Z" end-time="2026-04-24 18:00:00Z" duration="0.021845" asserts="0">
+                <test-case id="1019" name="NearRescueSummaryReflectsOneClearAwayTarget" fullname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests.NearRescueSummaryReflectsOneClearAwayTarget" methodname="NearRescueSummaryReflectsOneClearAwayTarget" classname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests" runstate="Runnable" seed="1499564213" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:21Z" duration="0.047965" asserts="0">
                   <properties>
                     <property name="_JOINTYPE" value="UnityCombinatorial" />
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1021" name="SavingAndLoadingPresetRoundTripsOverrides" fullname="Rescue.PlayMode.Tests.Debug.TunePanelSmokeTests.SavingAndLoadingPresetRoundTripsOverrides" methodname="SavingAndLoadingPresetRoundTripsOverrides" classname="Rescue.PlayMode.Tests.Debug.TunePanelSmokeTests" runstate="Runnable" seed="2044900889" result="Passed" start-time="2026-04-24 18:00:00Z" end-time="2026-04-24 18:00:01Z" duration="0.146495" asserts="0">
+                <test-case id="1015" name="PanelLoadsWithoutCrashingGivenLoadedLevel" fullname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests.PanelLoadsWithoutCrashingGivenLoadedLevel" methodname="PanelLoadsWithoutCrashingGivenLoadedLevel" classname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests" runstate="Runnable" seed="1637442472" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:21Z" duration="0.017108" asserts="0">
+                  <properties>
+                    <property name="_JOINTYPE" value="UnityCombinatorial" />
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1017" name="ResetReturnsStateToInitialForSameSeed" fullname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests.ResetReturnsStateToInitialForSameSeed" methodname="ResetReturnsStateToInitialForSameSeed" classname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests" runstate="Runnable" seed="1169515836" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:21Z" duration="0.041763" asserts="0">
+                  <properties>
+                    <property name="_JOINTYPE" value="UnityCombinatorial" />
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1018" name="StateExportProducesValidJson" fullname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests.StateExportProducesValidJson" methodname="StateExportProducesValidJson" classname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests" runstate="Runnable" seed="939190407" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:21Z" duration="0.020471" asserts="0">
+                  <properties>
+                    <property name="_JOINTYPE" value="UnityCombinatorial" />
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1016" name="StepButtonAdvancesByExactlyOneAction" fullname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests.StepButtonAdvancesByExactlyOneAction" methodname="StepButtonAdvancesByExactlyOneAction" classname="Rescue.PlayMode.Tests.Debug.DebugPanelSmokeTests" runstate="Runnable" seed="2132611301" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:21Z" duration="0.027665" asserts="0">
+                  <properties>
+                    <property name="_JOINTYPE" value="UnityCombinatorial" />
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+              </test-suite>
+              <test-suite type="TestFixture" id="1021" name="TunePanelSmokeTests" fullname="Rescue.PlayMode.Tests.Debug.TunePanelSmokeTests" classname="Rescue.PlayMode.Tests.Debug.TunePanelSmokeTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:21Z" duration="0.223605" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+                <properties />
+                <test-case id="1022" name="ChangingATunableReloadsTheLevel" fullname="Rescue.PlayMode.Tests.Debug.TunePanelSmokeTests.ChangingATunableReloadsTheLevel" methodname="ChangingATunableReloadsTheLevel" classname="Rescue.PlayMode.Tests.Debug.TunePanelSmokeTests" runstate="Runnable" seed="2145351693" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:21Z" duration="0.042042" asserts="0">
+                  <properties>
+                    <property name="_JOINTYPE" value="UnityCombinatorial" />
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1024" name="CurrentSeedIsPreservedAcrossTuneReloadUnlessChangedExplicitly" fullname="Rescue.PlayMode.Tests.Debug.TunePanelSmokeTests.CurrentSeedIsPreservedAcrossTuneReloadUnlessChangedExplicitly" methodname="CurrentSeedIsPreservedAcrossTuneReloadUnlessChangedExplicitly" classname="Rescue.PlayMode.Tests.Debug.TunePanelSmokeTests" runstate="Runnable" seed="695241649" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:21Z" duration="0.022105" asserts="0">
+                  <properties>
+                    <property name="_JOINTYPE" value="UnityCombinatorial" />
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1023" name="SavingAndLoadingPresetRoundTripsOverrides" fullname="Rescue.PlayMode.Tests.Debug.TunePanelSmokeTests.SavingAndLoadingPresetRoundTripsOverrides" methodname="SavingAndLoadingPresetRoundTripsOverrides" classname="Rescue.PlayMode.Tests.Debug.TunePanelSmokeTests" runstate="Runnable" seed="1612560127" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:21Z" duration="0.158708" asserts="0">
                   <properties>
                     <property name="_JOINTYPE" value="UnityCombinatorial" />
                     <property name="retryIteration" value="0" />
@@ -89,11 +99,11 @@
                 </test-case>
               </test-suite>
             </test-suite>
-            <test-suite type="TestSuite" id="1027" name="Smoke" fullname="Rescue.PlayMode.Tests.Smoke" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-04-24 18:00:01Z" end-time="2026-04-24 18:00:01Z" duration="0.174158" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <test-suite type="TestSuite" id="1029" name="Smoke" fullname="Rescue.PlayMode.Tests.Smoke" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:22Z" duration="0.182662" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
               <properties />
-              <test-suite type="TestFixture" id="1001" name="LifecycleSmokeTests" fullname="Rescue.PlayMode.Tests.Smoke.LifecycleSmokeTests" classname="Rescue.PlayMode.Tests.Smoke.LifecycleSmokeTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-04-24 18:00:01Z" end-time="2026-04-24 18:00:01Z" duration="0.058890" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <test-suite type="TestFixture" id="1001" name="LifecycleSmokeTests" fullname="Rescue.PlayMode.Tests.Smoke.LifecycleSmokeTests" classname="Rescue.PlayMode.Tests.Smoke.LifecycleSmokeTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:21Z" duration="0.055268" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
                 <properties />
-                <test-case id="1002" name="EveryMainLevelSolveScriptReachesItsExpectedTerminalOutcome" fullname="Rescue.PlayMode.Tests.Smoke.LifecycleSmokeTests.EveryMainLevelSolveScriptReachesItsExpectedTerminalOutcome" methodname="EveryMainLevelSolveScriptReachesItsExpectedTerminalOutcome" classname="Rescue.PlayMode.Tests.Smoke.LifecycleSmokeTests" runstate="Runnable" seed="930413778" result="Passed" start-time="2026-04-24 18:00:01Z" end-time="2026-04-24 18:00:01Z" duration="0.058400" asserts="0">
+                <test-case id="1002" name="EveryMainLevelSolveScriptReachesItsExpectedTerminalOutcome" fullname="Rescue.PlayMode.Tests.Smoke.LifecycleSmokeTests.EveryMainLevelSolveScriptReachesItsExpectedTerminalOutcome" methodname="EveryMainLevelSolveScriptReachesItsExpectedTerminalOutcome" classname="Rescue.PlayMode.Tests.Smoke.LifecycleSmokeTests" runstate="Runnable" seed="695840426" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:21Z" duration="0.054745" asserts="0">
                   <properties>
                     <property name="_JOINTYPE" value="UnityCombinatorial" />
                     <property name="retryIteration" value="0" />
@@ -101,16 +111,16 @@
                   </properties>
                 </test-case>
               </test-suite>
-              <test-suite type="TestFixture" id="1003" name="PerfSmokeTests" fullname="Rescue.PlayMode.Tests.Smoke.PerfSmokeTests" classname="Rescue.PlayMode.Tests.Smoke.PerfSmokeTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-04-24 18:00:01Z" end-time="2026-04-24 18:00:01Z" duration="0.003598" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <test-suite type="TestFixture" id="1003" name="PerfSmokeTests" fullname="Rescue.PlayMode.Tests.Smoke.PerfSmokeTests" classname="Rescue.PlayMode.Tests.Smoke.PerfSmokeTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:21Z" duration="0.006039" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
                 <properties />
-                <test-case id="1005" name="RepresentativeActionStaysUnderCoarseThreshold" fullname="Rescue.PlayMode.Tests.Smoke.PerfSmokeTests.RepresentativeActionStaysUnderCoarseThreshold" methodname="RepresentativeActionStaysUnderCoarseThreshold" classname="Rescue.PlayMode.Tests.Smoke.PerfSmokeTests" runstate="Runnable" seed="1680264349" result="Passed" start-time="2026-04-24 18:00:01Z" end-time="2026-04-24 18:00:01Z" duration="0.001959" asserts="0">
+                <test-case id="1005" name="RepresentativeActionStaysUnderCoarseThreshold" fullname="Rescue.PlayMode.Tests.Smoke.PerfSmokeTests.RepresentativeActionStaysUnderCoarseThreshold" methodname="RepresentativeActionStaysUnderCoarseThreshold" classname="Rescue.PlayMode.Tests.Smoke.PerfSmokeTests" runstate="Runnable" seed="1955405657" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:21Z" duration="0.004288" asserts="0">
                   <properties>
                     <property name="_JOINTYPE" value="UnityCombinatorial" />
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1004" name="RepresentativeLevelLoadStaysUnderCoarseThreshold" fullname="Rescue.PlayMode.Tests.Smoke.PerfSmokeTests.RepresentativeLevelLoadStaysUnderCoarseThreshold" methodname="RepresentativeLevelLoadStaysUnderCoarseThreshold" classname="Rescue.PlayMode.Tests.Smoke.PerfSmokeTests" runstate="Runnable" seed="1308625539" result="Passed" start-time="2026-04-24 18:00:01Z" end-time="2026-04-24 18:00:01Z" duration="0.001149" asserts="0">
+                <test-case id="1004" name="RepresentativeLevelLoadStaysUnderCoarseThreshold" fullname="Rescue.PlayMode.Tests.Smoke.PerfSmokeTests.RepresentativeLevelLoadStaysUnderCoarseThreshold" methodname="RepresentativeLevelLoadStaysUnderCoarseThreshold" classname="Rescue.PlayMode.Tests.Smoke.PerfSmokeTests" runstate="Runnable" seed="79975264" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:21Z" duration="0.001275" asserts="0">
                   <properties>
                     <property name="_JOINTYPE" value="UnityCombinatorial" />
                     <property name="retryIteration" value="0" />
@@ -118,9 +128,9 @@
                   </properties>
                 </test-case>
               </test-suite>
-              <test-suite type="TestFixture" id="1006" name="RetrySmokeTests" fullname="Rescue.PlayMode.Tests.Smoke.RetrySmokeTests" classname="Rescue.PlayMode.Tests.Smoke.RetrySmokeTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-04-24 18:00:01Z" end-time="2026-04-24 18:00:01Z" duration="0.103624" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <test-suite type="TestFixture" id="1006" name="RetrySmokeTests" fullname="Rescue.PlayMode.Tests.Smoke.RetrySmokeTests" classname="Rescue.PlayMode.Tests.Smoke.RetrySmokeTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:22Z" duration="0.113159" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
                 <properties />
-                <test-case id="1007" name="SameSeedReplayIsIdenticalAndAlternateSeedDivergesWhenAuthoredTo" fullname="Rescue.PlayMode.Tests.Smoke.RetrySmokeTests.SameSeedReplayIsIdenticalAndAlternateSeedDivergesWhenAuthoredTo" methodname="SameSeedReplayIsIdenticalAndAlternateSeedDivergesWhenAuthoredTo" classname="Rescue.PlayMode.Tests.Smoke.RetrySmokeTests" runstate="Runnable" seed="527070711" result="Passed" start-time="2026-04-24 18:00:01Z" end-time="2026-04-24 18:00:01Z" duration="0.103270" asserts="0">
+                <test-case id="1007" name="SameSeedReplayIsIdenticalAndAlternateSeedDivergesWhenAuthoredTo" fullname="Rescue.PlayMode.Tests.Smoke.RetrySmokeTests.SameSeedReplayIsIdenticalAndAlternateSeedDivergesWhenAuthoredTo" methodname="SameSeedReplayIsIdenticalAndAlternateSeedDivergesWhenAuthoredTo" classname="Rescue.PlayMode.Tests.Smoke.RetrySmokeTests" runstate="Runnable" seed="938896803" result="Passed" start-time="2026-04-24 18:38:21Z" end-time="2026-04-24 18:38:22Z" duration="0.112786" asserts="0">
                   <properties>
                     <property name="_JOINTYPE" value="UnityCombinatorial" />
                     <property name="retryIteration" value="0" />
@@ -128,23 +138,23 @@
                   </properties>
                 </test-case>
               </test-suite>
-              <test-suite type="TestFixture" id="1008" name="UndoSmokeTests" fullname="Rescue.PlayMode.Tests.Smoke.UndoSmokeTests" classname="Rescue.PlayMode.Tests.Smoke.UndoSmokeTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-04-24 18:00:01Z" end-time="2026-04-24 18:00:01Z" duration="0.007707" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <test-suite type="TestFixture" id="1008" name="UndoSmokeTests" fullname="Rescue.PlayMode.Tests.Smoke.UndoSmokeTests" classname="Rescue.PlayMode.Tests.Smoke.UndoSmokeTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-04-24 18:38:22Z" end-time="2026-04-24 18:38:22Z" duration="0.007852" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
                 <properties />
-                <test-case id="1011" name="SecondUndoAttemptIsRejectedCleanlyAfterTheChargeIsSpent" fullname="Rescue.PlayMode.Tests.Smoke.UndoSmokeTests.SecondUndoAttemptIsRejectedCleanlyAfterTheChargeIsSpent" methodname="SecondUndoAttemptIsRejectedCleanlyAfterTheChargeIsSpent" classname="Rescue.PlayMode.Tests.Smoke.UndoSmokeTests" runstate="Runnable" seed="1353908551" result="Passed" start-time="2026-04-24 18:00:01Z" end-time="2026-04-24 18:00:01Z" duration="0.003047" asserts="0">
+                <test-case id="1011" name="SecondUndoAttemptIsRejectedCleanlyAfterTheChargeIsSpent" fullname="Rescue.PlayMode.Tests.Smoke.UndoSmokeTests.SecondUndoAttemptIsRejectedCleanlyAfterTheChargeIsSpent" methodname="SecondUndoAttemptIsRejectedCleanlyAfterTheChargeIsSpent" classname="Rescue.PlayMode.Tests.Smoke.UndoSmokeTests" runstate="Runnable" seed="1181687690" result="Passed" start-time="2026-04-24 18:38:22Z" end-time="2026-04-24 18:38:22Z" duration="0.003148" asserts="0">
                   <properties>
                     <property name="_JOINTYPE" value="UnityCombinatorial" />
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1009" name="UndoRestoresInitialStateAndConsumesThePlayerFacingCharge" fullname="Rescue.PlayMode.Tests.Smoke.UndoSmokeTests.UndoRestoresInitialStateAndConsumesThePlayerFacingCharge" methodname="UndoRestoresInitialStateAndConsumesThePlayerFacingCharge" classname="Rescue.PlayMode.Tests.Smoke.UndoSmokeTests" runstate="Runnable" seed="1316773996" result="Passed" start-time="2026-04-24 18:00:01Z" end-time="2026-04-24 18:00:01Z" duration="0.001630" asserts="0">
+                <test-case id="1009" name="UndoRestoresInitialStateAndConsumesThePlayerFacingCharge" fullname="Rescue.PlayMode.Tests.Smoke.UndoSmokeTests.UndoRestoresInitialStateAndConsumesThePlayerFacingCharge" methodname="UndoRestoresInitialStateAndConsumesThePlayerFacingCharge" classname="Rescue.PlayMode.Tests.Smoke.UndoSmokeTests" runstate="Runnable" seed="703732325" result="Passed" start-time="2026-04-24 18:38:22Z" end-time="2026-04-24 18:38:22Z" duration="0.001614" asserts="0">
                   <properties>
                     <property name="_JOINTYPE" value="UnityCombinatorial" />
                     <property name="retryIteration" value="0" />
                     <property name="repeatIteration" value="0" />
                   </properties>
                 </test-case>
-                <test-case id="1010" name="UndoThenAlternateBranchMatchesFreshSecondBranchOnly" fullname="Rescue.PlayMode.Tests.Smoke.UndoSmokeTests.UndoThenAlternateBranchMatchesFreshSecondBranchOnly" methodname="UndoThenAlternateBranchMatchesFreshSecondBranchOnly" classname="Rescue.PlayMode.Tests.Smoke.UndoSmokeTests" runstate="Runnable" seed="461303384" result="Passed" start-time="2026-04-24 18:00:01Z" end-time="2026-04-24 18:00:01Z" duration="0.002487" asserts="0">
+                <test-case id="1010" name="UndoThenAlternateBranchMatchesFreshSecondBranchOnly" fullname="Rescue.PlayMode.Tests.Smoke.UndoSmokeTests.UndoThenAlternateBranchMatchesFreshSecondBranchOnly" methodname="UndoThenAlternateBranchMatchesFreshSecondBranchOnly" classname="Rescue.PlayMode.Tests.Smoke.UndoSmokeTests" runstate="Runnable" seed="2080019063" result="Passed" start-time="2026-04-24 18:38:22Z" end-time="2026-04-24 18:38:22Z" duration="0.002515" asserts="0">
                   <properties>
                     <property name="_JOINTYPE" value="UnityCombinatorial" />
                     <property name="retryIteration" value="0" />

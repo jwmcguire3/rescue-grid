@@ -11,7 +11,7 @@
 
 .debug-title {
     font-size: 18px;
-    unity-font-style: bold;
+    -unity-font-style: bold;
     margin-bottom: 8px;
 }
 
@@ -19,7 +19,7 @@
     margin-top: 10px;
     margin-bottom: 4px;
     font-size: 13px;
-    unity-font-style: bold;
+    -unity-font-style: bold;
     color: rgb(255, 207, 86);
 }
 
@@ -30,14 +30,20 @@
 
 .button-row {
     flex-direction: row;
-    gap: 6px;
+}
+
+.button-row > Button {
+    margin-right: 6px;
 }
 
 .debug-tab-row {
     flex-direction: row;
-    gap: 6px;
     margin-top: 8px;
     margin-bottom: 8px;
+}
+
+.debug-tab-row > Button {
+    margin-right: 6px;
 }
 
 .debug-tab-button {
