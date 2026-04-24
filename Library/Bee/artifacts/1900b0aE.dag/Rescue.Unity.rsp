@@ -448,6 +448,7 @@
 "Assets/Rescue.Unity/Art/Validation/MeshyAssetValidationReport.cs"
 "Assets/Rescue.Unity/Art/Validation/MeshyAssetValidationSettings.cs"
 "Assets/Rescue.Unity/Art/Validation/MeshyAssetValidator.cs"
+"Assets/Rescue.Unity/Board/BoardContentViewPresenter.cs"
 "Assets/Rescue.Unity/Board/BoardGridViewPresenter.cs"
 "Assets/Rescue.Unity/Capture/CaptureRunner.cs"
 "Assets/Rescue.Unity/Compatibility/IsExternalInit.cs"
