@@ -1,0 +1,62 @@
+﻿{
+  "LevelId": "L15",
+  "Seed": 5,
+  "Outcome": "Win",
+  "Actions": [
+    {
+      "Row": 5,
+      "Col": 2
+    },
+    {
+      "Row": 3,
+      "Col": 5
+    }
+  ],
+  "Steps": [
+    {
+      "StepIndex": 1,
+      "Row": 5,
+      "Col": 2,
+      "Outcome": "Ok",
+      "EventTypes": [
+        "GroupRemoved",
+        "BlockerDamaged",
+        "BlockerDamaged",
+        "BlockerBroken",
+        "BlockerBroken",
+        "DockInserted",
+        "DockInserted",
+        "DockInserted",
+        "DockCleared",
+        "Spawned",
+        "TargetExtracted"
+      ]
+    },
+    {
+      "StepIndex": 2,
+      "Row": 3,
+      "Col": 5,
+      "Outcome": "Win",
+      "EventTypes": [
+        "GroupRemoved",
+        "BlockerDamaged",
+        "BlockerDamaged",
+        "BlockerDamaged",
+        "BlockerDamaged",
+        "BlockerBroken",
+        "BlockerBroken",
+        "IceRevealed",
+        "BlockerBroken",
+        "BlockerBroken",
+        "DockInserted",
+        "DockInserted",
+        "TargetExtracted",
+        "Won"
+      ]
+    }
+  ],
+  "ExtractedTargetOrder": [
+    "0",
+    "1"
+  ]
+}

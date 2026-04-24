@@ -14,6 +14,7 @@ PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 OUTPUT_ROOT="${RESCUE_BUILD_OUTPUT_ROOT:-$PROJECT_DIR/Build}"
 LOG_DIR="$OUTPUT_ROOT/Logs"
 LOG_FILE="$LOG_DIR/build-capture.log"
+TARGET_NAME="${RESCUE_CAPTURE_TARGET:-windows}"
 
 fail() {
     printf '%s\n' "$1" >&2
@@ -38,9 +39,28 @@ resolve_unity() {
 UNITY_BIN="$(resolve_unity)"
 mkdir -p "$LOG_DIR"
 
+case "${TARGET_NAME,,}" in
+    windows|win|win64)
+        EXPECTED_ARTIFACT="$OUTPUT_ROOT/Capture/Windows/rescue-grid-capture.exe"
+        ;;
+    android)
+        EXPECTED_ARTIFACT="$OUTPUT_ROOT/Capture/Android/rescue-grid-capture.apk"
+        ;;
+    ios)
+        EXPECTED_ARTIFACT="$OUTPUT_ROOT/Capture/iOS/XcodeProject"
+        ;;
+    web|webgl)
+        EXPECTED_ARTIFACT="$OUTPUT_ROOT/Capture/WebGL"
+        ;;
+    *)
+        fail "RESCUE_CAPTURE_TARGET must be one of: windows, android, ios, webgl."
+        ;;
+esac
+
 export RESCUE_DEVELOPMENT_BUILD=0
 export RESCUE_ALLOW_DEBUGGING=0
 export RESCUE_CONNECT_PROFILER=0
+export RESCUE_CAPTURE_TARGET="$TARGET_NAME"
 
 "$UNITY_BIN" \
     -batchmode \
@@ -50,5 +70,9 @@ export RESCUE_CONNECT_PROFILER=0
     -logFile "$LOG_FILE" \
     -quit
 
-printf 'Capture build written under %s/Capture\n' "$OUTPUT_ROOT"
+if [ ! -e "$EXPECTED_ARTIFACT" ]; then
+    fail "Unity exited without producing the expected capture artifact: $EXPECTED_ARTIFACT"
+fi
+
+printf 'Capture build produced %s\n' "$EXPECTED_ARTIFACT"
 printf 'Unity log written to %s\n' "$LOG_FILE"

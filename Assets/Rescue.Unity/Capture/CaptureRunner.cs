@@ -17,9 +17,12 @@ namespace Rescue.Unity.Capture
     public sealed class CaptureRunner : MonoBehaviour
     {
         private const string CaptureArgument = "-capture-l15";
+        private const string CaptureExitArgument = "-capture-exit";
         private const string PreviewArgument = "-capture-preview";
+        private const string ReportPathArgument = "-capture-report-path";
         private const string SolveResourcePath = "Levels/L15.solve";
         private const string CaptureReportFileName = "L15.capture.json";
+        private const string CaptureReportPathEnvironmentVariable = "RESCUE_CAPTURE_REPORT_PATH";
 
         private static CaptureRunner? _instance;
 
@@ -68,6 +71,12 @@ namespace Rescue.Unity.Capture
                     string eventSummary = string.Join(", ", result.StepEvents[i].EventTypes);
                     Debug.Log($"[CaptureRunner] Step {i + 1} events: {eventSummary}");
                 }
+
+                if (HasArgument(CaptureExitArgument))
+                {
+                    Debug.Log("[CaptureRunner] Exiting after automated capture verification.");
+                    ExitWithSuccess();
+                }
             }
             catch (Exception ex)
             {
@@ -105,6 +114,24 @@ namespace Rescue.Unity.Capture
             }
 
             return false;
+        }
+
+        private static string? GetArgumentValue(string argument)
+        {
+            string[] args = Environment.GetCommandLineArgs();
+            for (int i = 0; i < args.Length - 1; i++)
+            {
+                if (string.Equals(args[i], argument, StringComparison.OrdinalIgnoreCase))
+                {
+                    string value = args[i + 1];
+                    if (!string.IsNullOrWhiteSpace(value))
+                    {
+                        return value;
+                    }
+                }
+            }
+
+            return null;
         }
 
         private static CaptureSolveJson LoadSolve()
@@ -203,10 +230,7 @@ namespace Rescue.Unity.Capture
 
         private static void WriteCaptureReport(CaptureRunResult result)
         {
-            string directory = Path.Combine(Application.persistentDataPath, "capture");
-            Directory.CreateDirectory(directory);
-
-            string path = Path.Combine(directory, CaptureReportFileName);
+            string path = ResolveCaptureReportPath();
             string json = JsonSerializer.Serialize(
                 new CaptureReportJson(
                     result.LevelId,
@@ -222,6 +246,29 @@ namespace Rescue.Unity.Capture
 
             File.WriteAllText(path, json, Encoding.UTF8);
             Debug.Log($"[CaptureRunner] Wrote capture report to {path}");
+        }
+
+        private static string ResolveCaptureReportPath()
+        {
+            string? overridePath = GetArgumentValue(ReportPathArgument);
+            if (string.IsNullOrWhiteSpace(overridePath))
+            {
+                overridePath = Environment.GetEnvironmentVariable(CaptureReportPathEnvironmentVariable);
+            }
+
+            string path = string.IsNullOrWhiteSpace(overridePath)
+                ? Path.Combine(Application.persistentDataPath, "capture", CaptureReportFileName)
+                : overridePath.Trim();
+
+            string fullPath = Path.GetFullPath(path);
+            string? directory = Path.GetDirectoryName(fullPath);
+            if (string.IsNullOrWhiteSpace(directory))
+            {
+                throw new InvalidOperationException($"Could not determine capture report directory for '{path}'.");
+            }
+
+            Directory.CreateDirectory(directory);
+            return fullPath;
         }
 
         private static string FormatActions(IReadOnlyList<CaptureActionJson> actions)
@@ -253,6 +300,18 @@ namespace Rescue.Unity.Capture
 #elif UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX
             Application.Quit(1);
             Environment.Exit(1);
+#else
+            Application.Quit();
+#endif
+        }
+
+        private static void ExitWithSuccess()
+        {
+#if UNITY_EDITOR
+            EditorApplication.Exit(0);
+#elif UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX
+            Application.Quit();
+            Environment.Exit(0);
 #else
             Application.Quit();
 #endif

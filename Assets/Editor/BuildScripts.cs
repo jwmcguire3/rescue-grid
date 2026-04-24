@@ -175,6 +175,7 @@ public static class BuildScripts
             target = target,
             locationPathName = locationPathName,
             options = BuildOptions.StrictMode,
+            extraScriptingDefines = new[] { CaptureDefineSymbol },
         };
     }
 
@@ -188,42 +189,39 @@ public static class BuildScripts
             BuildTarget.StandaloneWindows64,
             outputPath);
 
-        WithCaptureSettings(BuildTargetGroup.Standalone, () =>
-        {
-            WithTemporarySetting(
-                () => PlayerSettings.defaultScreenWidth,
-                value => PlayerSettings.defaultScreenWidth = value,
-                1920,
-                () =>
-                {
-                    WithTemporarySetting(
-                        () => PlayerSettings.defaultScreenHeight,
-                        value => PlayerSettings.defaultScreenHeight = value,
-                        1080,
-                        () =>
-                        {
-                            WithTemporarySetting(
-                                () => PlayerSettings.runInBackground,
-                                value => PlayerSettings.runInBackground = value,
-                                true,
-                                () =>
-                                {
-                                    WithTemporarySetting(
-                                        () => PlayerSettings.resizableWindow,
-                                        value => PlayerSettings.resizableWindow = value,
-                                        false,
-                                        () =>
-                                        {
-                                            WithTemporarySetting(
-                                                () => PlayerSettings.fullScreenMode,
-                                                value => PlayerSettings.fullScreenMode = value,
-                                                FullScreenMode.Windowed,
-                                                () => ExecuteBuild(options));
-                                        });
-                                });
-                        });
-                });
-        });
+        WithTemporarySetting(
+            () => PlayerSettings.defaultScreenWidth,
+            value => PlayerSettings.defaultScreenWidth = value,
+            1920,
+            () =>
+            {
+                WithTemporarySetting(
+                    () => PlayerSettings.defaultScreenHeight,
+                    value => PlayerSettings.defaultScreenHeight = value,
+                    1080,
+                    () =>
+                    {
+                        WithTemporarySetting(
+                            () => PlayerSettings.runInBackground,
+                            value => PlayerSettings.runInBackground = value,
+                            true,
+                            () =>
+                            {
+                                WithTemporarySetting(
+                                    () => PlayerSettings.resizableWindow,
+                                    value => PlayerSettings.resizableWindow = value,
+                                    false,
+                                    () =>
+                                    {
+                                        WithTemporarySetting(
+                                            () => PlayerSettings.fullScreenMode,
+                                            value => PlayerSettings.fullScreenMode = value,
+                                            FullScreenMode.Windowed,
+                                            () => ExecuteBuild(options));
+                                    });
+                            });
+                    });
+            });
     }
 
     private static void BuildCaptureAndroid(string outputRoot)
@@ -240,28 +238,25 @@ public static class BuildScripts
             "RESCUE_ANDROID_APPLICATION_IDENTIFIER",
             GetEnvironmentVariable("RESCUE_BUILD_APP_IDENTIFIER", DefaultBaseIdentifier) + ".capture");
 
-        WithCaptureSettings(BuildTargetGroup.Android, () =>
-        {
-            WithTemporarySetting(
-                () => PlayerSettings.GetApplicationIdentifier(BuildTargetGroup.Android),
-                value => PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, value),
-                bundleIdentifier,
-                () =>
-                {
-                    WithTemporarySetting(
-                        () => EditorUserBuildSettings.buildAppBundle,
-                        value => EditorUserBuildSettings.buildAppBundle = value,
-                        false,
-                        () =>
-                        {
-                            WithTemporarySetting(
-                                () => PlayerSettings.Android.targetArchitectures,
-                                value => PlayerSettings.Android.targetArchitectures = value,
-                                AndroidArchitecture.ARM64,
-                                () => ExecuteBuild(options));
-                        });
-                });
-        });
+        WithTemporarySetting(
+            () => PlayerSettings.GetApplicationIdentifier(BuildTargetGroup.Android),
+            value => PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, value),
+            bundleIdentifier,
+            () =>
+            {
+                WithTemporarySetting(
+                    () => EditorUserBuildSettings.buildAppBundle,
+                    value => EditorUserBuildSettings.buildAppBundle = value,
+                    false,
+                    () =>
+                    {
+                        WithTemporarySetting(
+                            () => PlayerSettings.Android.targetArchitectures,
+                            value => PlayerSettings.Android.targetArchitectures = value,
+                            AndroidArchitecture.ARM64,
+                            () => ExecuteBuild(options));
+                    });
+            });
     }
 
     private static void BuildCaptureIos(string outputRoot)
@@ -278,21 +273,18 @@ public static class BuildScripts
             "RESCUE_IOS_BUNDLE_IDENTIFIER",
             GetEnvironmentVariable("RESCUE_BUILD_APP_IDENTIFIER", DefaultBaseIdentifier) + ".capture");
 
-        WithCaptureSettings(BuildTargetGroup.iOS, () =>
-        {
-            WithTemporarySetting(
-                () => PlayerSettings.GetApplicationIdentifier(BuildTargetGroup.iOS),
-                value => PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iOS, value),
-                bundleIdentifier,
-                () =>
-                {
-                    WithTemporarySetting(
-                        () => PlayerSettings.iOS.appleEnableAutomaticSigning,
-                        value => PlayerSettings.iOS.appleEnableAutomaticSigning = value,
-                        false,
-                        () => ExecuteBuild(options));
-                });
-        });
+        WithTemporarySetting(
+            () => PlayerSettings.GetApplicationIdentifier(BuildTargetGroup.iOS),
+            value => PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iOS, value),
+            bundleIdentifier,
+            () =>
+            {
+                WithTemporarySetting(
+                    () => PlayerSettings.iOS.appleEnableAutomaticSigning,
+                    value => PlayerSettings.iOS.appleEnableAutomaticSigning = value,
+                    false,
+                    () => ExecuteBuild(options));
+            });
     }
 
     private static void BuildCaptureWeb(string outputRoot)
@@ -305,7 +297,7 @@ public static class BuildScripts
             BuildTarget.WebGL,
             outputDirectory);
 
-        WithCaptureSettings(BuildTargetGroup.WebGL, () => ExecuteBuild(options));
+        ExecuteBuild(options);
     }
 
     private static void ExecuteBuild(BuildPlayerOptions options)
@@ -418,45 +410,6 @@ public static class BuildScripts
         {
             File.Delete(fullPath);
         }
-    }
-
-    private static void WithCaptureSettings(BuildTargetGroup targetGroup, Action action)
-    {
-        WithTemporarySetting(
-            () => GetDefineSymbols(targetGroup),
-            value => SetDefineSymbols(targetGroup, value),
-            AppendDefineSymbol(GetDefineSymbols(targetGroup), CaptureDefineSymbol),
-            action);
-    }
-
-    private static string GetDefineSymbols(BuildTargetGroup targetGroup)
-    {
-#pragma warning disable CS0618
-        return PlayerSettings.GetScriptingDefineSymbolsForGroup(targetGroup);
-#pragma warning restore CS0618
-    }
-
-    private static void SetDefineSymbols(BuildTargetGroup targetGroup, string defineSymbols)
-    {
-#pragma warning disable CS0618
-        PlayerSettings.SetScriptingDefineSymbolsForGroup(targetGroup, defineSymbols);
-#pragma warning restore CS0618
-    }
-
-    private static string AppendDefineSymbol(string existing, string symbol)
-    {
-        string[] parts = existing
-            .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
-            .Select(static part => part.Trim())
-            .Where(static part => part.Length > 0)
-            .ToArray();
-
-        if (parts.Contains(symbol, StringComparer.Ordinal))
-        {
-            return existing;
-        }
-
-        return parts.Length == 0 ? symbol : existing + ";" + symbol;
     }
 
     private static void WithTemporarySetting<T>(

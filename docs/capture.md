@@ -1,6 +1,6 @@
 # Capture Build
 
-`scripts/build-capture.sh` builds the special capture variant with the `CAPTURE_BUILD` define enabled. In that build:
+`scripts/build-capture.sh` builds the special capture variant with the `CAPTURE_BUILD` define injected into that player build only. It does not mutate the project's global scripting define symbols, which keeps batch verification from triggering an extra editor recompile/reload on the way out. In that build:
 
 - the debug panel is stripped
 - the committed [`L15` solve](../Assets/Resources/Levels/L15.solve.json) is the source of truth
@@ -40,6 +40,7 @@ RESCUE_CAPTURE_TARGET=webgl scripts/build-capture.sh
 ```
 
 Outputs land under `Build/Capture/`.
+The script also verifies the exact expected artifact path before it reports success.
 
 ## Replay Repeatedly
 
@@ -50,6 +51,14 @@ scripts/record-l15.sh
 ```
 
 That launches the capture app with `-capture-l15`, which runs the exact committed solve inside the player.
+
+For repeatable local verification on Windows without leaving the player open, use:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\verify-capture.ps1
+```
+
+That runs the built player with `-capture-l15 -capture-exit`, writes the report into `Build/Logs/L15.capture.json`, and fails if the player does not produce the expected `L15` win report.
 
 Mobile:
 
@@ -67,6 +76,11 @@ Desktop:
 - run `scripts/record-l15.sh`
 - let the app play the two-action solve
 - stop recording after the frozen win state is visible
+
+Automation:
+
+- run `powershell -ExecutionPolicy Bypass -File .\scripts\verify-capture.ps1`
+- inspect `Build/Logs/verify-capture-player.log` and `Build/Logs/L15.capture.json` if verification fails
 
 Android:
 
