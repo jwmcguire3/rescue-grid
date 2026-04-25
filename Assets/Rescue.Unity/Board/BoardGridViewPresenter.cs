@@ -41,7 +41,10 @@ namespace Rescue.Unity.BoardPresentation
                     TileCoord coord = new TileCoord(row, col);
                     GameObject anchorObject = new GameObject($"Cell_{row:00}_{col:00}");
                     BoardCellView anchorCellView = anchorObject.AddComponent<BoardCellView>();
+                    BoxCollider anchorCollider = anchorObject.AddComponent<BoxCollider>();
                     anchorCellView.Initialize(coord);
+                    anchorCollider.size = new Vector3(cellSize, 1f, cellSize);
+                    anchorCollider.center = Vector3.zero;
                     Transform anchor = anchorObject.transform;
                     anchor.SetParent(root, false);
                     anchor.localPosition = originOffset + new Vector3(col * cellSize, 0f, -row * cellSize);
