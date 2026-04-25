@@ -4,6 +4,7 @@ using NUnit.Framework;
 using Rescue.Core.State;
 using Rescue.Unity.Art.Registries;
 using Rescue.Unity.EditorTools.Art.Prefabs;
+using Rescue.Unity.EditorTools.Diagnostics;
 using UnityEditor;
 using UnityEngine;
 
@@ -153,6 +154,31 @@ namespace Rescue.Unity.Art.Tests
                 {
                     PrefabUtility.UnloadPrefabContents(prefabRoot);
                 }
+            }
+        }
+
+        [Test]
+        public void Phase1DryTilePrefab_FillsOneCellWidthWithinTolerance()
+        {
+            BoardAssetSpacingDiagnostics.AssetSpacingReport report = BoardAssetSpacingDiagnostics.AnalyzePrefabAsset(
+                "Dry tile",
+                DirectDryTilePrefabPath,
+                Phase1PlaceholderPrefabFactory.DefaultBoardCellSize);
+
+            Assert.That(report.FootprintX, Is.EqualTo(Phase1PlaceholderPrefabFactory.DefaultBoardCellSize).Within(0.08f));
+            Assert.That(report.FootprintZ, Is.EqualTo(Phase1PlaceholderPrefabFactory.DefaultBoardCellSize).Within(0.08f));
+            Assert.That(report.Verdict, Is.EqualTo("within tolerance"));
+        }
+
+        [Test]
+        public void RepresentativePhase1Prefabs_MeetMinimumFillRatio()
+        {
+            IReadOnlyList<BoardAssetSpacingDiagnostics.AssetSpacingReport> reports = BoardAssetSpacingDiagnostics.AnalyzeRepresentativePhase1Prefabs();
+
+            Assert.That(reports.Count, Is.GreaterThanOrEqualTo(4));
+            for (int i = 0; i < reports.Count; i++)
+            {
+                Assert.That(reports[i].FillRatio, Is.GreaterThanOrEqualTo(0.88f), $"{reports[i].Label} is underfilled.");
             }
         }
 

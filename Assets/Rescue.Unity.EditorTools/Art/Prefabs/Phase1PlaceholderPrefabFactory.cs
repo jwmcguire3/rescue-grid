@@ -10,6 +10,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
     public static class Phase1PlaceholderPrefabFactory
     {
         public const string DefaultArtRootPath = "Assets/Rescue.Unity/Art";
+        public const float DefaultBoardCellSize = 1.0f;
 
         private const string PrefabsFolderName = "Prefabs";
         private const string MaterialsFolderName = "Materials";
@@ -43,6 +44,11 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             $"{MaterialsFolderName}/{Phase1FolderName}",
             RegistriesFolderName,
         };
+
+        private static readonly AssetSizingProfile TileSizingProfile = new AssetSizingProfile(DefaultBoardCellSize);
+        private static readonly AssetSizingProfile DebrisSizingProfile = new AssetSizingProfile(0.92f);
+        private static readonly AssetSizingProfile CrateSizingProfile = new AssetSizingProfile(0.96f);
+        private static readonly AssetSizingProfile TargetSizingProfile = new AssetSizingProfile(0.90f);
 
         [MenuItem("Rescue Grid/Art/Create Phase 1 Placeholder Prefabs")]
         public static void CreateDefaultPhase1Placeholders()
@@ -270,39 +276,39 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 CombinePath(prefabsPath, BoardFolderName, "DryTile_Phase1.prefab"),
                 CombinePath(artRootPath, "Models", "Board", "Meshy_AI_Terrazzo_Square_Box_L_0424155101_texture.fbx"),
                 tileMaterial,
-                1.0f);
+                TileSizingProfile);
 
             GameObject? debrisAPrefab = CreateMeshWrapperPrefab(
                 CombinePath(prefabsPath, PiecesFolderName, "Debris_A_Phase1.prefab"),
                 CombinePath(artRootPath, "Models", "Pieces", "Meshy_AI_Blue_Rimmed_Paw_Print_0424154835_texture.fbx"),
                 debrisAMaterial,
-                0.8f);
+                DebrisSizingProfile);
             GameObject? debrisBPrefab = CreateMeshWrapperPrefab(
                 CombinePath(prefabsPath, PiecesFolderName, "Debris_B_Phase1.prefab"),
                 CombinePath(artRootPath, "Models", "Pieces", "Meshy_AI_Blue_Speckled_Paw_Bow_0424154905_texture.fbx"),
                 debrisBMaterial,
-                0.8f);
+                DebrisSizingProfile);
             GameObject? debrisCPrefab = CreateMeshWrapperPrefab(
                 CombinePath(prefabsPath, PiecesFolderName, "Debris_C_Phase1.prefab"),
                 CombinePath(artRootPath, "Models", "Pieces", "Meshy_AI_Knot_of_Colors_0424154848_texture.fbx"),
                 debrisCMaterial,
-                0.8f);
+                DebrisSizingProfile);
             GameObject? debrisDPrefab = CreateMeshWrapperPrefab(
                 CombinePath(prefabsPath, PiecesFolderName, "Debris_D_Phase1.prefab"),
                 CombinePath(artRootPath, "Models", "Pieces", "Meshy_AI_Heart_Shaped_Massager_0424155210_texture.fbx"),
                 debrisDMaterial,
-                0.8f);
+                DebrisSizingProfile);
             GameObject? debrisEPrefab = CreateMeshWrapperPrefab(
                 CombinePath(prefabsPath, PiecesFolderName, "Debris_E_Phase1.prefab"),
                 CombinePath(artRootPath, "Models", "Pieces", "Meshy_AI_Beige_terry_towel_wit_0424155142_texture.fbx"),
                 debrisEMaterial,
-                0.8f);
+                DebrisSizingProfile);
 
             GameObject? cratePrefab = CreateMeshWrapperPrefab(
                 CombinePath(prefabsPath, BlockersFolderName, "Crate_Phase1.prefab"),
                 CombinePath(artRootPath, "Models", "Blockers", "Meshy_AI_Pawprint_Wooden_Crate_0424155503_texture.fbx"),
                 crateMaterial,
-                0.9f);
+                CrateSizingProfile);
             GameObject icePrefab = CreateOrUpdatePrefab(
                 CombinePath(prefabsPath, BlockersFolderName, "Ice_Overlay_Phase1.prefab"),
                 () => CreateFlatOverlayPlaceholder("Ice", iceOverlayMaterial, new Vector3(0.96f, 0.96f, 1.0f), 0.03f));
@@ -314,7 +320,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 CombinePath(prefabsPath, TargetsFolderName, "PuppyTarget_Phase1.prefab"),
                 CombinePath(artRootPath, "Models", "Targets", "Meshy_AI_Curious_Wet_Puppy_0424155427_texture.fbx"),
                 puppyMaterial,
-                0.82f);
+                TargetSizingProfile);
 
             string sharedDockModelPath = CombinePath(artRootPath, "Models", "Dock", "Meshy_AI_Dock_Safe_0424154642_texture_fbx.fbx");
             GameObject? sharedDockPrefab = CreateDockPrefab(
@@ -518,7 +524,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             return prefab;
         }
 
-        private static GameObject? CreateMeshWrapperPrefab(string assetPath, string sourceModelPath, Material? material, float targetFootprint)
+        private static GameObject? CreateMeshWrapperPrefab(string assetPath, string sourceModelPath, Material? material, AssetSizingProfile sizingProfile)
         {
             GameObject? sourceModel = AssetDatabase.LoadAssetAtPath<GameObject>(sourceModelPath);
             if (sourceModel is null || material is null)
@@ -532,7 +538,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 GameObject art = (GameObject)PrefabUtility.InstantiatePrefab(sourceModel);
                 art.name = "Visual";
                 art.transform.SetParent(root.transform, false);
-                NormalizeChildToFootprint(art, targetFootprint);
+                NormalizeChildToFootprint(art, sizingProfile);
                 AssignMaterialRecursively(art, material);
                 RemoveCollidersRecursively(art);
                 return root;
@@ -561,18 +567,19 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             });
         }
 
-        private static void NormalizeChildToFootprint(GameObject art, float targetFootprint)
+        private static void NormalizeChildToFootprint(GameObject art, AssetSizingProfile sizingProfile)
         {
             Bounds bounds = GetCombinedRendererBounds(art);
-            float footprint = Mathf.Max(bounds.size.x, bounds.size.z);
+            float footprint = CalculateFootprint(bounds);
             if (footprint <= 0.0001f)
             {
                 return;
             }
 
-            float scale = targetFootprint / footprint;
+            float scale = (sizingProfile.TargetFootprint / footprint) * sizingProfile.UniformScaleMultiplier;
             art.transform.localScale = Vector3.one * scale;
             RecenterChildToRoot(art);
+            art.transform.localPosition += sizingProfile.LocalPositionOffset;
         }
 
         private static void NormalizeChildToDockSize(GameObject art, float targetWidth, float targetDepth)
@@ -619,21 +626,102 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             return null;
         }
 
-        private static Bounds GetCombinedRendererBounds(GameObject root)
+        public static Bounds GetCombinedRendererBounds(GameObject root)
         {
+            MeshFilter[] meshFilters = root.GetComponentsInChildren<MeshFilter>(true);
+            bool hasBounds = false;
+            Bounds combined = default;
+            Matrix4x4 worldToRoot = root.transform.worldToLocalMatrix;
+
+            for (int i = 0; i < meshFilters.Length; i++)
+            {
+                MeshFilter meshFilter = meshFilters[i];
+                Mesh? mesh = meshFilter.sharedMesh;
+                if (mesh is null)
+                {
+                    continue;
+                }
+
+                Bounds transformedBounds = TransformBounds(mesh.bounds, worldToRoot * meshFilter.transform.localToWorldMatrix);
+                if (!hasBounds)
+                {
+                    combined = transformedBounds;
+                    hasBounds = true;
+                    continue;
+                }
+
+                combined.Encapsulate(transformedBounds.min);
+                combined.Encapsulate(transformedBounds.max);
+            }
+
+            if (hasBounds)
+            {
+                return combined;
+            }
+
             Renderer[] renderers = root.GetComponentsInChildren<Renderer>(true);
             if (renderers.Length == 0)
             {
-                return new Bounds(root.transform.position, Vector3.one);
+                return new Bounds(Vector3.zero, Vector3.one);
             }
 
-            Bounds combined = renderers[0].bounds;
-            for (int i = 1; i < renderers.Length; i++)
+            Bounds fallback = new Bounds(worldToRoot.MultiplyPoint3x4(renderers[0].bounds.center), Vector3.zero);
+            for (int i = 0; i < renderers.Length; i++)
             {
-                combined.Encapsulate(renderers[i].bounds);
+                EncapsulateWorldBounds(ref fallback, renderers[i].bounds, worldToRoot);
             }
 
-            return combined;
+            return fallback;
+        }
+
+        public static float CalculateFootprint(Bounds bounds)
+        {
+            return Mathf.Max(bounds.size.x, bounds.size.z);
+        }
+
+        private static Bounds TransformBounds(Bounds sourceBounds, Matrix4x4 matrix)
+        {
+            Vector3 extents = sourceBounds.extents;
+            Vector3[] corners =
+            {
+                sourceBounds.center + new Vector3( extents.x,  extents.y,  extents.z),
+                sourceBounds.center + new Vector3( extents.x,  extents.y, -extents.z),
+                sourceBounds.center + new Vector3( extents.x, -extents.y,  extents.z),
+                sourceBounds.center + new Vector3( extents.x, -extents.y, -extents.z),
+                sourceBounds.center + new Vector3(-extents.x,  extents.y,  extents.z),
+                sourceBounds.center + new Vector3(-extents.x,  extents.y, -extents.z),
+                sourceBounds.center + new Vector3(-extents.x, -extents.y,  extents.z),
+                sourceBounds.center + new Vector3(-extents.x, -extents.y, -extents.z),
+            };
+
+            Bounds transformed = new Bounds(matrix.MultiplyPoint3x4(corners[0]), Vector3.zero);
+            for (int i = 1; i < corners.Length; i++)
+            {
+                transformed.Encapsulate(matrix.MultiplyPoint3x4(corners[i]));
+            }
+
+            return transformed;
+        }
+
+        private static void EncapsulateWorldBounds(ref Bounds combined, Bounds worldBounds, Matrix4x4 worldToLocal)
+        {
+            Vector3 extents = worldBounds.extents;
+            Vector3[] corners =
+            {
+                worldBounds.center + new Vector3( extents.x,  extents.y,  extents.z),
+                worldBounds.center + new Vector3( extents.x,  extents.y, -extents.z),
+                worldBounds.center + new Vector3( extents.x, -extents.y,  extents.z),
+                worldBounds.center + new Vector3( extents.x, -extents.y, -extents.z),
+                worldBounds.center + new Vector3(-extents.x,  extents.y,  extents.z),
+                worldBounds.center + new Vector3(-extents.x,  extents.y, -extents.z),
+                worldBounds.center + new Vector3(-extents.x, -extents.y,  extents.z),
+                worldBounds.center + new Vector3(-extents.x, -extents.y, -extents.z),
+            };
+
+            for (int i = 0; i < corners.Length; i++)
+            {
+                combined.Encapsulate(worldToLocal.MultiplyPoint3x4(corners[i]));
+            }
         }
 
         private static void RemoveCollidersRecursively(GameObject root)
@@ -960,6 +1048,22 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             public Material AcuteDockMaterial { get; }
             public Material FailedDockMaterial { get; }
             public Mesh? SharedDockMesh { get; }
+        }
+
+        private readonly struct AssetSizingProfile
+        {
+            public AssetSizingProfile(float targetFootprint, float uniformScaleMultiplier = 1.0f, Vector3? localPositionOffset = null)
+            {
+                TargetFootprint = targetFootprint;
+                UniformScaleMultiplier = uniformScaleMultiplier;
+                LocalPositionOffset = localPositionOffset ?? Vector3.zero;
+            }
+
+            public float TargetFootprint { get; }
+
+            public float UniformScaleMultiplier { get; }
+
+            public Vector3 LocalPositionOffset { get; }
         }
     }
 }
