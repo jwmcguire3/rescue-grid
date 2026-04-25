@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ebf2b75e49475142b4116e3af848bcb, type: 3}
   m_Name: Phase1TargetVisualRegistry
   m_EditorClassIdentifier: Rescue.Unity::Rescue.Unity.Art.Registries.TargetVisualRegistry
-  puppyPrefab: {fileID: 7264015636803815561, guid: 45abae3b5d2e9994789b87a4b5b543dc, type: 3}
-  fallbackTargetPrefab: {fileID: 7264015636803815561, guid: 45abae3b5d2e9994789b87a4b5b543dc, type: 3}
+  puppyPrefab: {fileID: 7264015636803815561, guid: ad0036ab768fccf41abb5a30dfc88499, type: 3}
+  fallbackTargetPrefab: {fileID: 7264015636803815561, guid: ad0036ab768fccf41abb5a30dfc88499, type: 3}

@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e3951f7222bb4f4bbbfef5d3d45cc99, type: 3}
   m_Name: Phase1TileVisualRegistry
   m_EditorClassIdentifier: Rescue.Unity::Rescue.Unity.Art.Registries.TileVisualRegistry
-  dryTilePrefab: {fileID: 7912822185736670360, guid: b8399d41e265ab44aa72ecdc5feecc32, type: 3}
-  floodedRowOverlayPrefab: {fileID: 6620061475884623527, guid: 58a4c61a8afaa824081fcdf88d67c8e5, type: 3}
-  forecastRowOverlayPrefab: {fileID: 5228493242478709704, guid: 27a2cca2bd3180446bd60f778162a1aa, type: 3}
-  waterlinePrefab: {fileID: 3537159541585922124, guid: bab1d7f5ce0b64f45a1a912f431f3601, type: 3}
-  fallbackTilePrefab: {fileID: 7912822185736670360, guid: b8399d41e265ab44aa72ecdc5feecc32, type: 3}
+  dryTilePrefab: {fileID: 7912822185736670360, guid: 193e6b5afbcf8234fa266f6bfc011546, type: 3}
+  floodedRowOverlayPrefab: {fileID: 7988795128387851316, guid: e2a7754c843cc894381acd1edf7f64f7, type: 3}
+  forecastRowOverlayPrefab: {fileID: 5903940901079056650, guid: cf18c0f28174f2f478e92c64181b4bcc, type: 3}
+  waterlinePrefab: {fileID: 1084044274064967119, guid: d7e1df9846c63434a8ad3e83692055ff, type: 3}
+  fallbackTilePrefab: {fileID: 7912822185736670360, guid: 193e6b5afbcf8234fa266f6bfc011546, type: 3}

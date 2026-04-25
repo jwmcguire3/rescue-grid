@@ -352,7 +352,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
         private static void CreateOrUpdateRegistries(string artRootPath, PlaceholderAssets placeholderAssets, ProductionAssets productionAssets)
         {
             string registriesPath = CombinePath(artRootPath, RegistriesFolderName);
-            GameObject canonicalDryTilePrefab = placeholderAssets.DryTilePrefab;
+            GameObject canonicalDryTilePrefab = productionAssets.TilePrefab ?? placeholderAssets.DryTilePrefab;
 
             TileVisualRegistry tileRegistry = CreateOrLoadAsset<TileVisualRegistry>(CombinePath(registriesPath, "Phase1TileVisualRegistry.asset"));
             // Keep the direct dry tile as the canonical board entry. Phase 1 wrappers are optional visuals,
@@ -365,33 +365,33 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             EditorUtility.SetDirty(tileRegistry);
 
             PieceVisualRegistry pieceRegistry = CreateOrLoadAsset<PieceVisualRegistry>(CombinePath(registriesPath, "Phase1PieceVisualRegistry.asset"));
-            pieceRegistry.DebrisAPrefab = placeholderAssets.DebrisAPrefab;
-            pieceRegistry.DebrisBPrefab = placeholderAssets.DebrisBPrefab;
-            pieceRegistry.DebrisCPrefab = placeholderAssets.DebrisCPrefab;
-            pieceRegistry.DebrisDPrefab = placeholderAssets.DebrisDPrefab;
-            pieceRegistry.DebrisEPrefab = placeholderAssets.DebrisEPrefab;
-            pieceRegistry.FallbackPrefab = placeholderAssets.DebrisAPrefab;
+            pieceRegistry.DebrisAPrefab = productionAssets.DebrisAPrefab ?? placeholderAssets.DebrisAPrefab;
+            pieceRegistry.DebrisBPrefab = productionAssets.DebrisBPrefab ?? placeholderAssets.DebrisBPrefab;
+            pieceRegistry.DebrisCPrefab = productionAssets.DebrisCPrefab ?? placeholderAssets.DebrisCPrefab;
+            pieceRegistry.DebrisDPrefab = productionAssets.DebrisDPrefab ?? placeholderAssets.DebrisDPrefab;
+            pieceRegistry.DebrisEPrefab = productionAssets.DebrisEPrefab ?? placeholderAssets.DebrisEPrefab;
+            pieceRegistry.FallbackPrefab = productionAssets.DebrisAPrefab ?? placeholderAssets.DebrisAPrefab;
             EditorUtility.SetDirty(pieceRegistry);
 
             BlockerVisualRegistry blockerRegistry = CreateOrLoadAsset<BlockerVisualRegistry>(CombinePath(registriesPath, "Phase1BlockerVisualRegistry.asset"));
-            blockerRegistry.CratePrefab = placeholderAssets.CratePrefab;
-            blockerRegistry.IcePrefab = placeholderAssets.IcePrefab;
-            blockerRegistry.VinePrefab = placeholderAssets.VinePrefab;
-            blockerRegistry.FallbackBlockerPrefab = placeholderAssets.CratePrefab;
+            blockerRegistry.CratePrefab = productionAssets.CratePrefab ?? placeholderAssets.CratePrefab;
+            blockerRegistry.IcePrefab = productionAssets.IcePrefab ?? placeholderAssets.IcePrefab;
+            blockerRegistry.VinePrefab = productionAssets.VinePrefab ?? placeholderAssets.VinePrefab;
+            blockerRegistry.FallbackBlockerPrefab = productionAssets.CratePrefab ?? placeholderAssets.CratePrefab;
             EditorUtility.SetDirty(blockerRegistry);
 
             TargetVisualRegistry targetRegistry = CreateOrLoadAsset<TargetVisualRegistry>(CombinePath(registriesPath, "Phase1TargetVisualRegistry.asset"));
-            targetRegistry.PuppyPrefab = placeholderAssets.PuppyTargetPrefab;
-            targetRegistry.FallbackTargetPrefab = placeholderAssets.PuppyTargetPrefab;
+            targetRegistry.PuppyPrefab = productionAssets.PuppyPrefab ?? placeholderAssets.PuppyTargetPrefab;
+            targetRegistry.FallbackTargetPrefab = productionAssets.PuppyPrefab ?? placeholderAssets.PuppyTargetPrefab;
             EditorUtility.SetDirty(targetRegistry);
 
             DockVisualConfig dockConfig = CreateOrLoadAsset<DockVisualConfig>(CombinePath(registriesPath, "Phase1DockVisualConfig.asset"));
-            dockConfig.SharedDockPrefab = placeholderAssets.DockPrefab;
+            dockConfig.SharedDockPrefab = productionAssets.SharedDockPrefab ?? placeholderAssets.DockPrefab;
             dockConfig.SharedDockMesh = productionAssets.SharedDockMesh;
-            dockConfig.SafePrefab = placeholderAssets.DockPrefab;
-            dockConfig.CautionPrefab = placeholderAssets.DockPrefab;
-            dockConfig.AcutePrefab = placeholderAssets.DockPrefab;
-            dockConfig.FailedPrefab = placeholderAssets.DockPrefab;
+            dockConfig.SafePrefab = productionAssets.SafeDockPrefab ?? dockConfig.SharedDockPrefab;
+            dockConfig.CautionPrefab = productionAssets.CautionDockPrefab ?? dockConfig.SharedDockPrefab;
+            dockConfig.AcutePrefab = productionAssets.AcuteDockPrefab ?? dockConfig.SharedDockPrefab;
+            dockConfig.FailedPrefab = productionAssets.FailedDockPrefab ?? dockConfig.SharedDockPrefab;
             dockConfig.SafeMaterial = productionAssets.SafeDockMaterial;
             dockConfig.CautionMaterial = productionAssets.CautionDockMaterial;
             dockConfig.AcuteMaterial = productionAssets.AcuteDockMaterial;

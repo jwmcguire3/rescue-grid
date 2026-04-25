@@ -379,7 +379,7 @@ MonoBehaviour:
   slotAnchors: []
   pieceContainer: {fileID: 0}
   pieceRegistry: {fileID: 11400000, guid: 3f655fe0407a8814d855a622dd0bccde, type: 2}
-  fallbackPiecePrefab: {fileID: 1600071982679177538, guid: adce84dd619aac84f883a04a4888bdb8, type: 3}
+  fallbackPiecePrefab: {fileID: 355894138586572587, guid: 92a0a1a4a5d26e945a5086b63da007b7, type: 3}
 --- !u!1 &477387777
 GameObject:
   m_ObjectHideFlags: 0

@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c414f74a5fe8294b8369494267fb8b0, type: 3}
   m_Name: Phase1DockVisualConfig
   m_EditorClassIdentifier: Rescue.Unity::Rescue.Unity.Art.Registries.DockVisualConfig
-  sharedDockPrefab: {fileID: 8616773766990679052, guid: efbe93b09b714e542a1cbaf34ab05b62, type: 3}
+  sharedDockPrefab: {fileID: 8616773766990679052, guid: f45a199fe920d4b4fbcf47ff3bfc5864, type: 3}
   sharedDockMesh: {fileID: 5461320835613783329, guid: 0cca2b2ae7e81f541a6217f9fd738a03, type: 3}
-  safePrefab: {fileID: 8616773766990679052, guid: efbe93b09b714e542a1cbaf34ab05b62, type: 3}
-  cautionPrefab: {fileID: 8616773766990679052, guid: efbe93b09b714e542a1cbaf34ab05b62, type: 3}
-  acutePrefab: {fileID: 8616773766990679052, guid: efbe93b09b714e542a1cbaf34ab05b62, type: 3}
-  failedPrefab: {fileID: 8616773766990679052, guid: efbe93b09b714e542a1cbaf34ab05b62, type: 3}
+  safePrefab: {fileID: 8616773766990679052, guid: f45a199fe920d4b4fbcf47ff3bfc5864, type: 3}
+  cautionPrefab: {fileID: 8616773766990679052, guid: f45a199fe920d4b4fbcf47ff3bfc5864, type: 3}
+  acutePrefab: {fileID: 8616773766990679052, guid: f45a199fe920d4b4fbcf47ff3bfc5864, type: 3}
+  failedPrefab: {fileID: 8616773766990679052, guid: f45a199fe920d4b4fbcf47ff3bfc5864, type: 3}
   safeMaterial: {fileID: 2100000, guid: 3b625ff45a1f61a42b94a4c57794501d, type: 2}
   cautionMaterial: {fileID: 2100000, guid: f306ad2134429824dbb89b5dc42cfd40, type: 2}
   acuteMaterial: {fileID: 2100000, guid: 3ea3efcfc755c71488d7fc74f7389578, type: 2}

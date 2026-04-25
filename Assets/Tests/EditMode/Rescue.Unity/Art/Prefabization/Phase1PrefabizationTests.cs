@@ -12,9 +12,9 @@ namespace Rescue.Unity.Art.Tests
     public sealed class Phase1PrefabizationTests
     {
         private const string ArtRootPath = Phase1PlaceholderPrefabFactory.DefaultArtRootPath;
-        private const string Phase1PrefabsPath = "Assets/Rescue.Unity/Art/Prefabs";
-        private const string Phase1DockPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Dock/Dock_Shared_7Slot.prefab";
-        private const string DirectDryTilePrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Board/DryTile.prefab";
+        private const string Phase1PrefabsPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1";
+        private const string Phase1DockPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Dock/Dock_Shared_7Slot_Phase1.prefab";
+        private const string DirectDryTilePrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Board/DryTile_Phase1.prefab";
         private const string TileRegistryPath = "Assets/Rescue.Unity/Art/Registries/Phase1TileVisualRegistry.asset";
         private const string PieceRegistryPath = "Assets/Rescue.Unity/Art/Registries/Phase1PieceVisualRegistry.asset";
         private const string BlockerRegistryPath = "Assets/Rescue.Unity/Art/Registries/Phase1BlockerVisualRegistry.asset";
@@ -134,11 +134,6 @@ namespace Rescue.Unity.Art.Tests
             for (int prefabIndex = 0; prefabIndex < prefabGuids.Length; prefabIndex++)
             {
                 string prefabPath = AssetDatabase.GUIDToAssetPath(prefabGuids[prefabIndex]);
-                if (prefabPath.Contains("/Phase1/", System.StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
                 GameObject prefabRoot = PrefabUtility.LoadPrefabContents(prefabPath);
 
                 try
