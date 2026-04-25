@@ -38,18 +38,12 @@ namespace Rescue.Unity.Presentation.Tests
         {
             GameObject presenterObject = CreateTrackedGameObject("GameStateViewPresenter");
             GameStateViewPresenter presenter = presenterObject.AddComponent<GameStateViewPresenter>();
+            LogAssert.Expect(LogType.Warning, "GameStateViewPresenter is missing boardGrid.");
+            LogAssert.Expect(LogType.Warning, "GameStateViewPresenter is missing boardContent.");
+            LogAssert.Expect(LogType.Warning, "GameStateViewPresenter is missing waterView.");
+            LogAssert.Expect(LogType.Warning, "GameStateViewPresenter is missing dockView.");
 
-            bool previousIgnoreFailingMessages = LogAssert.ignoreFailingMessages;
-            LogAssert.ignoreFailingMessages = true;
-
-            try
-            {
-                Assert.DoesNotThrow(() => presenter.Rebuild(CreateState()));
-            }
-            finally
-            {
-                LogAssert.ignoreFailingMessages = previousIgnoreFailingMessages;
-            }
+            Assert.DoesNotThrow(() => presenter.Rebuild(CreateState()));
         }
 
         [Test]
