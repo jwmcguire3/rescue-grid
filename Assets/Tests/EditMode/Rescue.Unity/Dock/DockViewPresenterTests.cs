@@ -65,6 +65,54 @@ namespace Rescue.Unity.UI.Tests
         }
 
         [Test]
+        public void DockFeedbackPresenter_SelectsCautionFeedbackAtFive()
+        {
+            GameObject presenterObject = CreateTrackedObject("DockFeedbackPresenter");
+            DockFeedbackPresenter presenter = presenterObject.AddComponent<DockFeedbackPresenter>();
+
+            DockFeedbackType feedbackType = presenter.SelectFeedbackType(5, 7);
+
+            Assert.That(feedbackType, Is.EqualTo(DockFeedbackType.Caution));
+        }
+
+        [Test]
+        public void DockFeedbackPresenter_SelectsAcuteFeedbackAtSix()
+        {
+            GameObject presenterObject = CreateTrackedObject("DockFeedbackPresenter");
+            DockFeedbackPresenter presenter = presenterObject.AddComponent<DockFeedbackPresenter>();
+
+            DockFeedbackType feedbackType = presenter.SelectFeedbackType(6, 7);
+
+            Assert.That(feedbackType, Is.EqualTo(DockFeedbackType.Acute));
+        }
+
+        [Test]
+        public void DockFeedbackPresenter_SelectsFailedFeedbackAtSeven()
+        {
+            GameObject presenterObject = CreateTrackedObject("DockFeedbackPresenter");
+            DockFeedbackPresenter presenter = presenterObject.AddComponent<DockFeedbackPresenter>();
+
+            DockFeedbackType feedbackType = presenter.SelectFeedbackType(7, 7);
+
+            Assert.That(feedbackType, Is.EqualTo(DockFeedbackType.Failed));
+        }
+
+        [Test]
+        public void DockFeedbackPresenter_DoesNotThrowWhenNoFxAssigned()
+        {
+            GameObject presenterObject = CreateTrackedObject("DockFeedbackPresenter");
+            DockFeedbackPresenter presenter = presenterObject.AddComponent<DockFeedbackPresenter>();
+
+            Assert.DoesNotThrow(() => presenter.PlayInsertFeedback());
+            Assert.DoesNotThrow(() => presenter.PlayCautionFeedback());
+            Assert.DoesNotThrow(() => presenter.PlayAcuteFeedback());
+            Assert.DoesNotThrow(() => presenter.PlayFailedFeedback());
+            Assert.DoesNotThrow(() => presenter.PlayTripleClearFeedback());
+            Assert.DoesNotThrow(() => presenter.SyncToState(5, 7));
+            Assert.DoesNotThrow(() => presenter.SetFeedbackTarget(null));
+        }
+
+        [Test]
         public void DockVisualStateResolver_ClampsOrHandlesInvalidOccupancy()
         {
             DockVisualState negative = DockVisualStateResolver.FromOccupancy(-3, 7);

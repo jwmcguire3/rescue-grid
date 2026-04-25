@@ -1,4 +1,6 @@
+using System.Collections;
 using System.Collections.Generic;
+using Rescue.Core.Pipeline;
 using Rescue.Core.State;
 using Rescue.Unity.Art.Registries;
 using UnityEngine;
@@ -35,6 +37,329 @@ namespace Rescue.Unity.UI
         }
     }
 
+    public enum DockFeedbackType
+    {
+        None,
+        Caution,
+        Acute,
+        Failed,
+    }
+
+    public static class DockFeedbackTypeResolver
+    {
+        public static DockFeedbackType FromOccupancy(int occupiedSlots, int dockSize)
+        {
+            if (dockSize <= 0)
+            {
+                return DockFeedbackType.Failed;
+            }
+
+            int clampedOccupancy = Mathf.Max(0, occupiedSlots);
+
+            if (clampedOccupancy >= dockSize)
+            {
+                return DockFeedbackType.Failed;
+            }
+
+            if (clampedOccupancy == dockSize - 1)
+            {
+                return DockFeedbackType.Acute;
+            }
+
+            if (clampedOccupancy == dockSize - 2)
+            {
+                return DockFeedbackType.Caution;
+            }
+
+            return DockFeedbackType.None;
+        }
+    }
+
+    public sealed class DockFeedbackPresenter : MonoBehaviour
+    {
+        private const float DefaultPulseScaleMultiplier = 1.08f;
+        private const float FailedHoldScaleMultiplier = 1.04f;
+        private const float TripleClearMinScaleMultiplier = 0.9f;
+
+        [Header("Feedback Target")]
+        [SerializeField] private Transform? feedbackTarget;
+        [SerializeField] private CanvasGroup? fadeTarget;
+
+        [Header("Insert")]
+        [SerializeField] private float insertPopScale = 1.12f;
+        [SerializeField] private float insertDuration = 0.18f;
+
+        [Header("Pressure")]
+        [SerializeField] private float cautionPulseDuration = 0.5f;
+        [SerializeField] private float acuteShakeAmount = 0.05f;
+        [SerializeField] private float acuteShakeDuration = 0.4f;
+        [SerializeField] private float failedPulseDuration = 0.7f;
+
+        [Header("Curves")]
+        [SerializeField] private AnimationCurve? insertCurve;
+        [SerializeField] private AnimationCurve? pulseCurve;
+        [SerializeField] private AnimationCurve? shakeCurve;
+
+        private Coroutine? _activeFeedback;
+        private Vector3 _baseLocalScale = Vector3.one;
+        private Vector3 _baseLocalPosition = Vector3.zero;
+        private float _baseAlpha = 1f;
+        private bool _hasCachedBaseline;
+
+        public float InsertPopScale => insertPopScale;
+
+        public float InsertDuration => insertDuration;
+
+        public float CautionPulseDuration => cautionPulseDuration;
+
+        public float AcuteShakeAmount => acuteShakeAmount;
+
+        public float AcuteShakeDuration => acuteShakeDuration;
+
+        public float FailedPulseDuration => failedPulseDuration;
+
+        public DockFeedbackType SelectFeedbackType(int occupancy, int dockSize)
+        {
+            return DockFeedbackTypeResolver.FromOccupancy(occupancy, dockSize);
+        }
+
+        public void PlayInsertFeedback()
+        {
+            PlayRoutine(CreatePulseRoutine(insertDuration, insertPopScale, ResolveInsertCurve()));
+        }
+
+        public void PlayCautionFeedback()
+        {
+            PlayRoutine(CreatePulseRoutine(cautionPulseDuration, DefaultPulseScaleMultiplier, ResolvePulseCurve()));
+        }
+
+        public void PlayAcuteFeedback()
+        {
+            PlayRoutine(CreateShakeRoutine(acuteShakeDuration, acuteShakeAmount, ResolveShakeCurve()));
+        }
+
+        public void PlayFailedFeedback()
+        {
+            PlayRoutine(CreatePulseRoutine(failedPulseDuration, FailedHoldScaleMultiplier, ResolvePulseCurve(), holdAtEnd: true));
+        }
+
+        public void PlayTripleClearFeedback()
+        {
+            PlayRoutine(CreateTripleClearRoutine());
+        }
+
+        public void SyncToState(int occupancy, int dockSize)
+        {
+            DockFeedbackType feedbackType = SelectFeedbackType(occupancy, dockSize);
+            if (feedbackType == DockFeedbackType.Failed)
+            {
+                PlayFailedFeedback();
+                return;
+            }
+
+            ResetVisuals();
+        }
+
+        public void SetFeedbackTarget(Transform? target)
+        {
+            feedbackTarget = target;
+            _hasCachedBaseline = false;
+            CacheBaseline();
+        }
+
+        private void OnDisable()
+        {
+            ResetVisuals();
+        }
+
+        private void PlayRoutine(IEnumerator routine)
+        {
+            CacheBaseline();
+
+            if (!Application.isPlaying || !isActiveAndEnabled)
+            {
+                ResetVisuals();
+                _activeFeedback = null;
+                return;
+            }
+
+            if (_activeFeedback != null)
+            {
+                StopCoroutine(_activeFeedback);
+            }
+
+            ResetVisuals();
+            _activeFeedback = StartCoroutine(RunAndRelease(routine));
+        }
+
+        private IEnumerator RunAndRelease(IEnumerator routine)
+        {
+            yield return routine;
+            _activeFeedback = null;
+        }
+
+        private IEnumerator CreatePulseRoutine(
+            float duration,
+            float peakScaleMultiplier,
+            AnimationCurve curve,
+            bool holdAtEnd = false)
+        {
+            if (!TryGetTarget(out Transform target))
+            {
+                yield break;
+            }
+
+            float safeDuration = Mathf.Max(0.01f, duration);
+            Vector3 baseScale = _baseLocalScale;
+            Vector3 peakScale = baseScale * Mathf.Max(1f, peakScaleMultiplier);
+            float elapsed = 0f;
+
+            while (elapsed < safeDuration)
+            {
+                elapsed += Time.deltaTime;
+                float normalized = Mathf.Clamp01(elapsed / safeDuration);
+                float curveValue = Mathf.Clamp01(curve.Evaluate(normalized));
+                float scaleLerp = normalized <= 0.5f
+                    ? curveValue
+                    : 1f - curveValue;
+
+                target.localScale = Vector3.LerpUnclamped(baseScale, peakScale, scaleLerp);
+                yield return null;
+            }
+
+            target.localScale = holdAtEnd ? peakScale : baseScale;
+        }
+
+        private IEnumerator CreateShakeRoutine(float duration, float amount, AnimationCurve curve)
+        {
+            if (!TryGetTarget(out Transform target))
+            {
+                yield break;
+            }
+
+            float safeDuration = Mathf.Max(0.01f, duration);
+            float safeAmount = Mathf.Max(0f, amount);
+            float elapsed = 0f;
+
+            while (elapsed < safeDuration)
+            {
+                elapsed += Time.deltaTime;
+                float normalized = Mathf.Clamp01(elapsed / safeDuration);
+                float strength = Mathf.Clamp01(1f - normalized);
+                float wave = curve.Evaluate(normalized) * safeAmount * strength;
+                target.localPosition = _baseLocalPosition + new Vector3(Mathf.Sin(normalized * Mathf.PI * 8f) * wave, 0f, 0f);
+                yield return null;
+            }
+
+            target.localPosition = _baseLocalPosition;
+        }
+
+        private IEnumerator CreateTripleClearRoutine()
+        {
+            if (!TryGetTarget(out Transform target))
+            {
+                yield break;
+            }
+
+            CanvasGroup? canvasGroup = ResolveFadeTarget();
+            float duration = Mathf.Max(0.01f, insertDuration);
+            float elapsed = 0f;
+            Vector3 baseScale = _baseLocalScale;
+            Vector3 minScale = baseScale * TripleClearMinScaleMultiplier;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float normalized = Mathf.Clamp01(elapsed / duration);
+                float eased = normalized * normalized;
+                target.localScale = Vector3.LerpUnclamped(baseScale, minScale, eased);
+                if (canvasGroup != null)
+                {
+                    canvasGroup.alpha = 1f - eased;
+                }
+
+                yield return null;
+            }
+
+            ResetVisuals();
+        }
+
+        private bool TryGetTarget(out Transform target)
+        {
+            if (feedbackTarget != null)
+            {
+                target = feedbackTarget;
+                return true;
+            }
+
+            target = transform;
+            return target is not null;
+        }
+
+        private void CacheBaseline()
+        {
+            if (_hasCachedBaseline || !TryGetTarget(out Transform target))
+            {
+                return;
+            }
+
+            _baseLocalScale = target.localScale;
+            _baseLocalPosition = target.localPosition;
+
+            CanvasGroup? canvasGroup = ResolveFadeTarget();
+            _baseAlpha = canvasGroup != null ? canvasGroup.alpha : 1f;
+            _hasCachedBaseline = true;
+        }
+
+        private void ResetVisuals()
+        {
+            if (!_hasCachedBaseline)
+            {
+                CacheBaseline();
+            }
+
+            if (!TryGetTarget(out Transform target))
+            {
+                return;
+            }
+
+            target.localScale = _baseLocalScale;
+            target.localPosition = _baseLocalPosition;
+
+            CanvasGroup? canvasGroup = ResolveFadeTarget();
+            if (canvasGroup != null)
+            {
+                canvasGroup.alpha = _baseAlpha;
+            }
+        }
+
+        private CanvasGroup? ResolveFadeTarget()
+        {
+            if (fadeTarget != null)
+            {
+                return fadeTarget;
+            }
+
+            fadeTarget = GetComponent<CanvasGroup>();
+            return fadeTarget;
+        }
+
+        private AnimationCurve ResolveInsertCurve()
+        {
+            return insertCurve ?? AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+        }
+
+        private AnimationCurve ResolvePulseCurve()
+        {
+            return pulseCurve ?? AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+        }
+
+        private AnimationCurve ResolveShakeCurve()
+        {
+            return shakeCurve ?? AnimationCurve.Linear(0f, 1f, 1f, 0f);
+        }
+    }
+
     public sealed class DockViewPresenter : MonoBehaviour
     {
         private const int Phase1DockSize = 7;
@@ -56,6 +381,7 @@ namespace Rescue.Unity.UI
         [Header("Piece Visuals")]
         [SerializeField] private PieceVisualRegistry? pieceRegistry;
         [SerializeField] private GameObject? fallbackPiecePrefab;
+        [SerializeField] private DockFeedbackPresenter? feedbackPresenter;
 
         private readonly List<GameObject> _spawnedPieces = new List<GameObject>();
         private GameObject? _sharedDockInstance;
@@ -79,6 +405,8 @@ namespace Rescue.Unity.UI
             }
 
             SetDockVisualState(DockVisualStateResolver.FromOccupancy(CountOccupiedSlots(state.Dock), state.Dock.Size));
+            ResolveFeedbackPresenter().SetFeedbackTarget(ResolveFeedbackTarget());
+            ResolveFeedbackPresenter().SyncToState(CountOccupiedSlots(state.Dock), state.Dock.Size);
 
             ClearSlots();
             Transform container = ResolvePieceContainer();
@@ -116,6 +444,41 @@ namespace Rescue.Unity.UI
 
                 _spawnedPieces.Add(pieceObject);
             }
+        }
+
+        public void ApplyActionResult(ActionResult result)
+        {
+            if (result is null)
+            {
+                return;
+            }
+
+            DockFeedbackPresenter feedback = ResolveFeedbackPresenter();
+            feedback.SetFeedbackTarget(ResolveFeedbackTarget());
+
+            for (int i = 0; i < result.Events.Length; i++)
+            {
+                switch (result.Events[i])
+                {
+                    case DockInserted:
+                        feedback.PlayInsertFeedback();
+                        break;
+                    case DockWarningChanged dockWarningChanged when dockWarningChanged.After == DockWarningLevel.Caution:
+                        feedback.PlayCautionFeedback();
+                        break;
+                    case DockWarningChanged dockWarningChanged when dockWarningChanged.After == DockWarningLevel.Acute:
+                        feedback.PlayAcuteFeedback();
+                        break;
+                    case DockCleared:
+                        feedback.PlayTripleClearFeedback();
+                        break;
+                    case Lost lost when lost.Outcome == ActionOutcome.LossDockOverflow:
+                        feedback.PlayFailedFeedback();
+                        break;
+                }
+            }
+
+            feedback.SyncToState(CountOccupiedSlots(result.State.Dock), result.State.Dock.Size);
         }
 
         public void SetDockVisualState(DockVisualState state)
@@ -285,6 +648,28 @@ namespace Rescue.Unity.UI
             }
 
             return sharedDockRenderer;
+        }
+
+        private Transform ResolveFeedbackTarget()
+        {
+            return _sharedDockInstance is not null ? _sharedDockInstance.transform : transform;
+        }
+
+        private DockFeedbackPresenter ResolveFeedbackPresenter()
+        {
+            if (feedbackPresenter is not null)
+            {
+                return feedbackPresenter;
+            }
+
+            feedbackPresenter = GetComponent<DockFeedbackPresenter>();
+            if (feedbackPresenter is not null)
+            {
+                return feedbackPresenter;
+            }
+
+            feedbackPresenter = gameObject.AddComponent<DockFeedbackPresenter>();
+            return feedbackPresenter;
         }
 
         private Material? ResolveLegacyMaterial(DockVisualState state)

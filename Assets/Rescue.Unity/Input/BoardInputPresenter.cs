@@ -109,7 +109,7 @@ namespace Rescue.Unity.Input
         {
             if (gameStateView is not null)
             {
-                gameStateView.Rebuild(result.State);
+                gameStateView.ApplyActionResult(result);
                 fallbackState = null;
             }
             else
@@ -117,7 +117,7 @@ namespace Rescue.Unity.Input
                 fallbackState = result.State;
             }
 
-            if (TryGetInvalidInput(result.Events, out InvalidInput? invalidInput))
+            if (TryGetInvalidInput(result.Events, out InvalidInput invalidInput))
             {
                 Debug.Log(
                     $"Rejected board tap at ({invalidInput.TappedCoord.Row}, {invalidInput.TappedCoord.Col}) because {invalidInput.Reason}.",
@@ -144,7 +144,7 @@ namespace Rescue.Unity.Input
 
         private static bool TryGetInvalidInput(
             System.Collections.Immutable.ImmutableArray<ActionEvent> events,
-            out InvalidInput? invalidInput)
+            out InvalidInput invalidInput)
         {
             for (int i = 0; i < events.Length; i++)
             {
@@ -155,7 +155,7 @@ namespace Rescue.Unity.Input
                 }
             }
 
-            invalidInput = null;
+            invalidInput = new InvalidInput(default, InvalidInputReason.Empty);
             return false;
         }
 

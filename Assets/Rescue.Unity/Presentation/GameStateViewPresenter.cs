@@ -1,3 +1,4 @@
+using Rescue.Core.Pipeline;
 using Rescue.Core.State;
 using Rescue.Unity.BoardPresentation;
 using Rescue.Unity.UI;
@@ -58,6 +59,22 @@ namespace Rescue.Unity.Presentation
             else
             {
                 dockView.Rebuild(state);
+            }
+        }
+
+        public void ApplyActionResult(ActionResult result)
+        {
+            if (result is null)
+            {
+                Debug.LogWarning($"{nameof(GameStateViewPresenter)} requires a valid {nameof(ActionResult)}.", this);
+                return;
+            }
+
+            Rebuild(result.State);
+
+            if (dockView is not null)
+            {
+                dockView.ApplyActionResult(result);
             }
         }
 
