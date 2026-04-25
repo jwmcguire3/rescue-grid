@@ -129,6 +129,16 @@
       "source": "builtin",
       "testable": false
     },
+    "com.unity.textmeshpro@5.0.0": {
+      "name": "com.unity.textmeshpro",
+      "displayName": "TextMeshPro",
+      "resolvedPath": "C:\\Users\\jwmcg\\OneDrive\\Documents\\AI Projects\\Live Envirnments\\rescue-grid\\Library\\PackageCache\\com.unity.textmeshpro@53f43edfd2e0",
+      "fingerprint": "53f43edfd2e0bf2438ca6e2038ba12107a181253",
+      "editorCompatibility": "2023.2.0a1",
+      "version": "5.0.0",
+      "source": "builtin",
+      "testable": false
+    },
     "com.unity.timeline@1.8.12": {
       "name": "com.unity.timeline",
       "displayName": "Timeline",

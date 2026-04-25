@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using System.Reflection;
 using Rescue.Core.State;
+using TMPro;
 using UnityEngine;
 
 namespace Rescue.Unity.BoardPresentation
@@ -14,7 +14,7 @@ namespace Rescue.Unity.BoardPresentation
         [SerializeField] private GameObject? forecastRowOverlayPrefab;
         [SerializeField] private GameObject? waterlinePrefab;
         [SerializeField] private Transform? waterRoot;
-        [SerializeField] private Component? counterLabel;
+        [SerializeField] private TextMeshProUGUI? counterLabel;
         [SerializeField] private GameObject? fallbackOverlayPrefab;
         [SerializeField] private float overlayYOffset = 0.1f;
 
@@ -251,19 +251,13 @@ namespace Rescue.Unity.BoardPresentation
                 return;
             }
 
-            PropertyInfo? textProperty = counterLabel.GetType().GetProperty("text", BindingFlags.Instance | BindingFlags.Public);
-            if (textProperty is null || !textProperty.CanWrite)
-            {
-                return;
-            }
-
             string labelText = water is null
                 ? string.Empty
                 : water.PauseUntilFirstAction
                     ? "Water: paused until first action"
                     : $"Water: {water.ActionsUntilRise}/{water.RiseInterval} ({Mathf.RoundToInt(normalizedProgress * 100f)}%)";
 
-            textProperty.SetValue(counterLabel, labelText);
+            counterLabel.text = labelText;
         }
 
 #if UNITY_EDITOR

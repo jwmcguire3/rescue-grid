@@ -6,7 +6,8 @@
     "Rescue.Content",
     "Rescue.Replay",
     "Rescue.Telemetry",
-    "Unity.InputSystem"
+    "Unity.InputSystem",
+    "Unity.TextMeshPro"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

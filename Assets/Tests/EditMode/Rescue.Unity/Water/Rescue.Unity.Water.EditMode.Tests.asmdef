@@ -3,7 +3,8 @@
   "rootNamespace": "Rescue.Unity.Water.Tests",
   "references": [
     "Rescue.Core",
-    "Rescue.Unity"
+    "Rescue.Unity",
+    "Unity.TextMeshPro"
   ],
   "includePlatforms": [
     "Editor"
