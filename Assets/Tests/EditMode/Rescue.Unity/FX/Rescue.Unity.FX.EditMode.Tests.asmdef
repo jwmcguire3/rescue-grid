@@ -1,0 +1,22 @@
+{
+  "name": "Rescue.Unity.FX.EditMode.Tests",
+  "rootNamespace": "Rescue.Unity.FX.Tests",
+  "references": [
+    "Rescue.Core",
+    "Rescue.Unity"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false,
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}

@@ -12,16 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9aeff799a05d9e4ab9aff8dd73ef2e2, type: 3}
   m_Name: Phase1FxVisualRegistry
   m_EditorClassIdentifier: Rescue.Unity::Rescue.Unity.Art.Registries.FxVisualRegistry
-  groupClearFx: {fileID: 5991108057842393015, guid: ca6724874e06a764aab584196eaa9072, type: 3}
-  invalidTapFx: {fileID: 427045682555903076, guid: 0516b1b341c43ec49aad69cb62c70a13, type: 3}
-  crateBreakFx: {fileID: 4820611375005162565, guid: 1337d4fb482258740bbfa28d11b9d0e3, type: 3}
-  iceRevealFx: {fileID: 7684765390903557517, guid: fd75980eba2b8e445841c8f3bbd33827, type: 3}
-  vineClearFx: {fileID: 5340929802705694272, guid: ed5809247c3078e4e8223a8d06a3170b, type: 3}
-  vineGrowPreviewFx: {fileID: 4412243311272355299, guid: 14ad4d9ce17a4f14ea5dd45934c0051a, type: 3}
-  dockInsertFx: {fileID: 8063137898028310864, guid: d0a96d080112cad4ca400ae3ab0f2906, type: 3}
-  dockTripleClearFx: {fileID: 1365082267660804408, guid: 05cf99401c9df2f4ba008b4a2804b117, type: 3}
-  waterRiseFx: {fileID: 3584724447509338698, guid: f58ffc1f85453b14b9c8728cc3344420, type: 3}
-  targetExtractionFx: {fileID: 9179580514035847163, guid: a438f2d1f5b79b646bee08e56b6f8431, type: 3}
-  nearRescueReliefFx: {fileID: 6649339063115511105, guid: 46ccec65881726e4a9715c67a7140fd0, type: 3}
-  winFx: {fileID: 2866688043467007699, guid: 045c6228ca678514b8e60843cba8ff07, type: 3}
-  lossFx: {fileID: 2984848692723366034, guid: ffe368de8c408c74daeb0d5de032449a, type: 3}
+  groupClearFx: {fileID: 100000, guid: ca6724874e06a764aab584196eaa9072, type: 3}
+  invalidTapFx: {fileID: 100000, guid: 0516b1b341c43ec49aad69cb62c70a13, type: 3}
+  crateBreakFx: {fileID: 100000, guid: 1337d4fb482258740bbfa28d11b9d0e3, type: 3}
+  iceRevealFx: {fileID: 100000, guid: fd75980eba2b8e445841c8f3bbd33827, type: 3}
+  vineClearFx: {fileID: 100000, guid: ed5809247c3078e4e8223a8d06a3170b, type: 3}
+  vineGrowPreviewFx: {fileID: 100000, guid: 14ad4d9ce17a4f14ea5dd45934c0051a, type: 3}
+  dockInsertFx: {fileID: 100000, guid: d0a96d080112cad4ca400ae3ab0f2906, type: 3}
+  dockTripleClearFx: {fileID: 100000, guid: 05cf99401c9df2f4ba008b4a2804b117, type: 3}
+  waterRiseFx: {fileID: 100000, guid: f58ffc1f85453b14b9c8728cc3344420, type: 3}
+  targetExtractionFx: {fileID: 100000, guid: a438f2d1f5b79b646bee08e56b6f8431, type: 3}
+  nearRescueReliefFx: {fileID: 100000, guid: 46ccec65881726e4a9715c67a7140fd0, type: 3}
+  winFx: {fileID: 100000, guid: 045c6228ca678514b8e60843cba8ff07, type: 3}
+  lossFx: {fileID: 100000, guid: ffe368de8c408c74daeb0d5de032449a, type: 3}
