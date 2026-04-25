@@ -40,6 +40,8 @@ namespace Rescue.Unity.BoardPresentation
                 {
                     TileCoord coord = new TileCoord(row, col);
                     GameObject anchorObject = new GameObject($"Cell_{row:00}_{col:00}");
+                    BoardCellView anchorCellView = anchorObject.AddComponent<BoardCellView>();
+                    anchorCellView.Initialize(coord);
                     Transform anchor = anchorObject.transform;
                     anchor.SetParent(root, false);
                     anchor.localPosition = originOffset + new Vector3(col * cellSize, 0f, -row * cellSize);
@@ -55,6 +57,8 @@ namespace Rescue.Unity.BoardPresentation
 
                     GameObject tileObject = Instantiate(tilePrefab, anchor);
                     tileObject.name = $"Tile_{row:00}_{col:00}";
+                    BoardCellView tileCellView = tileObject.GetComponent<BoardCellView>() ?? tileObject.AddComponent<BoardCellView>();
+                    tileCellView.Initialize(coord);
 
                     Transform tileTransform = tileObject.transform;
                     tileTransform.localPosition = Vector3.zero;

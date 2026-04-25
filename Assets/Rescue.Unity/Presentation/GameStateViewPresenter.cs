@@ -12,6 +12,8 @@ namespace Rescue.Unity.Presentation
         [SerializeField] private WaterViewPresenter? waterView;
         [SerializeField] private DockViewPresenter? dockView;
 
+        public GameState? CurrentState { get; private set; }
+
         public void Rebuild(GameState state)
         {
             if (state is null)
@@ -19,6 +21,8 @@ namespace Rescue.Unity.Presentation
                 Debug.LogWarning($"{nameof(GameStateViewPresenter)} requires a valid {nameof(GameState)} to rebuild.", this);
                 return;
             }
+
+            CurrentState = state;
 
             if (boardGrid is null)
             {
@@ -59,6 +63,8 @@ namespace Rescue.Unity.Presentation
 
         public void ClearAll()
         {
+            CurrentState = null;
+
             if (boardGrid is null)
             {
                 Debug.LogWarning($"{nameof(GameStateViewPresenter)} is missing {nameof(boardGrid)}.", this);
