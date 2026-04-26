@@ -132,6 +132,28 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
+        public void Build_PreservesCanonicalDockEventOrder()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(
+                    new DockInserted(ImmutableArray.Create(DebrisType.A, DebrisType.A), OccupancyAfterInsert: 2, OverflowCount: 0),
+                    new DockCleared(DebrisType.A, SetsCleared: 1, OccupancyAfterClear: 0),
+                    new DockWarningChanged(DockWarningLevel.Safe, DockWarningLevel.Caution),
+                    new DockJamTriggered(OverflowCount: 1)));
+
+            Assert.That(plan.Take(plan.Count - 1).Select(step => (step.SourceEventName, step.StepType)), Is.EqualTo(new[]
+            {
+                (nameof(DockInserted), ActionPlaybackStepType.DockFeedback),
+                (nameof(DockCleared), ActionPlaybackStepType.DockFeedback),
+                (nameof(DockWarningChanged), ActionPlaybackStepType.DockFeedback),
+                (nameof(DockJamTriggered), ActionPlaybackStepType.DockFeedback),
+            }));
+            Assert.That(plan[^1].StepType, Is.EqualTo(ActionPlaybackStepType.FinalSync));
+        }
+
+        [Test]
         public void Build_BlockerBrokenMapsToBreakBlockerOrReveal()
         {
             ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(

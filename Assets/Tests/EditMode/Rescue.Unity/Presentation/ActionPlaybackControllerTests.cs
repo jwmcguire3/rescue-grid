@@ -555,6 +555,87 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(harness.DockPieceContainer.childCount, Is.EqualTo(5));
         }
 
+        [Test]
+        public void ActionPlaybackController_DockClearFeedbackCompactsTrackedPiecesBeforeFinalSync()
+        {
+            ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
+            GameState previousState = CreateBoardState(
+                ImmutableArray.Create(ImmutableArray.Create<Tile>(new EmptyTile())),
+                dockSlots: ImmutableArray.Create<DebrisType?>(DebrisType.A, DebrisType.A, DebrisType.A, DebrisType.B, DebrisType.B, null, null));
+            GameState resultState = CreateBoardState(
+                ImmutableArray.Create(ImmutableArray.Create<Tile>(new EmptyTile())),
+                dockSlots: ImmutableArray.Create<DebrisType?>(DebrisType.B, DebrisType.B, null, null, null, null, null));
+
+            harness.DockPresenter.Rebuild(previousState);
+
+            GameObject? slotThreeBefore = harness.DockPresenter.GetTrackedSlotObject(3);
+            GameObject? slotFourBefore = harness.DockPresenter.GetTrackedSlotObject(4);
+            int finalSyncCalls = 0;
+            GameObject? slotZeroAtFinalSync = null;
+            GameObject? slotOneAtFinalSync = null;
+
+            bool handled = harness.Controller.TryPlayAction(
+                previousState,
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(
+                    resultState,
+                    actionCount: 12,
+                    new DockCleared(DebrisType.A, SetsCleared: 1, OccupancyAfterClear: 2)),
+                syncedResult =>
+                {
+                    finalSyncCalls++;
+                    slotZeroAtFinalSync = harness.DockPresenter.GetTrackedSlotObject(0);
+                    slotOneAtFinalSync = harness.DockPresenter.GetTrackedSlotObject(1);
+                    harness.DockPresenter.ForceSyncToState(syncedResult.State);
+                });
+
+            Assert.That(handled, Is.True);
+            Assert.That(finalSyncCalls, Is.EqualTo(1));
+            Assert.That(slotZeroAtFinalSync, Is.SameAs(slotThreeBefore));
+            Assert.That(slotOneAtFinalSync, Is.SameAs(slotFourBefore));
+            Assert.That(harness.DockPieceContainer.childCount, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void ActionPlaybackController_DockWarningAndJamDoNotCorruptTrackedPieces()
+        {
+            ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
+            GameState previousState = CreateBoardState(
+                ImmutableArray.Create(ImmutableArray.Create<Tile>(new EmptyTile())),
+                dockSlots: ImmutableArray.Create<DebrisType?>(DebrisType.A, DebrisType.B, null, null, null, null, null));
+
+            harness.DockPresenter.Rebuild(previousState);
+
+            GameObject? slotZeroBefore = harness.DockPresenter.GetTrackedSlotObject(0);
+            GameObject? slotOneBefore = harness.DockPresenter.GetTrackedSlotObject(1);
+            int finalSyncCalls = 0;
+            GameObject? slotZeroAtFinalSync = null;
+            GameObject? slotOneAtFinalSync = null;
+
+            bool handled = harness.Controller.TryPlayAction(
+                previousState,
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(
+                    previousState,
+                    actionCount: 13,
+                    new DockWarningChanged(DockWarningLevel.Safe, DockWarningLevel.Caution),
+                    new DockJamTriggered(OverflowCount: 1)),
+                syncedResult =>
+                {
+                    finalSyncCalls++;
+                    slotZeroAtFinalSync = harness.DockPresenter.GetTrackedSlotObject(0);
+                    slotOneAtFinalSync = harness.DockPresenter.GetTrackedSlotObject(1);
+                    harness.DockPresenter.ForceSyncToState(syncedResult.State);
+                });
+
+            Assert.That(handled, Is.True);
+            Assert.That(finalSyncCalls, Is.EqualTo(1));
+            Assert.That(slotZeroAtFinalSync, Is.SameAs(slotZeroBefore));
+            Assert.That(slotOneAtFinalSync, Is.SameAs(slotOneBefore));
+            Assert.That(harness.DockPresenter.GetTrackedSlotType(0), Is.EqualTo(DebrisType.A));
+            Assert.That(harness.DockPresenter.GetTrackedSlotType(1), Is.EqualTo(DebrisType.B));
+        }
+
         [UnityTest]
         public IEnumerator ActionPlaybackController_CancelPlaybackRecoversBoardWaterAndDockToAuthoritativeState()
         {
