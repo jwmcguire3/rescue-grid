@@ -263,7 +263,7 @@ namespace Rescue.Unity.BoardPresentation
                 return null;
             }
 
-            if (!TryGetRowEndpoints(rowIndex, width, out Transform leftAnchor, out Transform rightAnchor))
+            if (!TryGetRowBounds(rowIndex, out BoardGridViewPresenter.RowWorldBounds rowBounds))
             {
                 Debug.LogWarning(
                     $"{nameof(WaterViewPresenter)} could not resolve anchors for row {rowIndex}.",
@@ -275,10 +275,11 @@ namespace Rescue.Unity.BoardPresentation
             overlay.name = objectName;
 
             Transform overlayTransform = overlay.transform;
-            Vector3 center = (leftAnchor.position + rightAnchor.position) * 0.5f;
-            overlayTransform.SetPositionAndRotation(center + new Vector3(0f, overlayYOffset, 0f), leftAnchor.rotation);
+            overlayTransform.SetPositionAndRotation(
+                rowBounds.Center + new Vector3(0f, overlayYOffset, 0f),
+                rowBounds.Rotation);
 
-            float widthScale = ResolveRowWidth(leftAnchor, rightAnchor, rowIndex, width);
+            float widthScale = rowBounds.Width;
             Vector3 localScale = prefab.transform.localScale;
             overlayTransform.localScale = new Vector3(localScale.x * widthScale, localScale.y, localScale.z);
             spawnedObjects.Add(overlay);
@@ -308,7 +309,7 @@ namespace Rescue.Unity.BoardPresentation
             }
 
             int topFloodedRow = resolution.FloodedRowIndices[0];
-            if (!TryGetRowEndpoints(topFloodedRow, width, out Transform leftAnchor, out Transform rightAnchor))
+            if (!TryGetRowBounds(topFloodedRow, out BoardGridViewPresenter.RowWorldBounds rowBounds))
             {
                 return null;
             }
@@ -317,82 +318,28 @@ namespace Rescue.Unity.BoardPresentation
             waterline.name = $"Waterline_{topFloodedRow:00}";
 
             Transform waterlineTransform = waterline.transform;
-            Vector3 center = (leftAnchor.position + rightAnchor.position) * 0.5f;
-            float rowEdgeOffset = ResolveRowDepth(topFloodedRow) * 0.5f;
+            float rowEdgeOffset = rowBounds.Depth * 0.5f;
             waterlineTransform.SetPositionAndRotation(
-                center + new Vector3(0f, overlayYOffset, rowEdgeOffset),
-                leftAnchor.rotation);
+                rowBounds.Center + new Vector3(0f, overlayYOffset, rowEdgeOffset),
+                rowBounds.Rotation);
 
-            float widthScale = ResolveRowWidth(leftAnchor, rightAnchor, topFloodedRow, width);
+            float widthScale = rowBounds.Width;
             Vector3 localScale = prefab.transform.localScale;
             waterlineTransform.localScale = new Vector3(localScale.x * widthScale, localScale.y, localScale.z);
             spawnedObjects.Add(waterline);
             return waterline;
         }
 
-        private bool TryGetRowEndpoints(int rowIndex, int width, out Transform leftAnchor, out Transform rightAnchor)
+        private bool TryGetRowBounds(int rowIndex, out BoardGridViewPresenter.RowWorldBounds rowBounds)
         {
-            leftAnchor = transform;
-            rightAnchor = transform;
+            rowBounds = default;
 
             if (gridView is null)
             {
                 return false;
             }
 
-            return gridView.TryGetCellAnchor(new TileCoord(rowIndex, 0), out leftAnchor)
-                && gridView.TryGetCellAnchor(new TileCoord(rowIndex, width - 1), out rightAnchor);
-        }
-
-        private float ResolveRowWidth(Transform leftAnchor, Transform rightAnchor, int rowIndex, int width)
-        {
-            float span = Vector3.Distance(leftAnchor.position, rightAnchor.position);
-            if (width <= 1)
-            {
-                return Mathf.Max(1f, ResolveCellWidth(rowIndex));
-            }
-
-            float cellWidth = span / (width - 1);
-            return Mathf.Max(1f, span + cellWidth);
-        }
-
-        private float ResolveCellWidth(int rowIndex)
-        {
-            if (gridView is null)
-            {
-                return 1f;
-            }
-
-            if (gridView.TryGetCellAnchor(new TileCoord(rowIndex, 0), out Transform firstAnchor)
-                && gridView.TryGetCellAnchor(new TileCoord(rowIndex, 1), out Transform secondAnchor))
-            {
-                return Vector3.Distance(firstAnchor.position, secondAnchor.position);
-            }
-
-            return 1f;
-        }
-
-        private float ResolveRowDepth(int rowIndex)
-        {
-            if (gridView is null)
-            {
-                return 1f;
-            }
-
-            if (gridView.TryGetCellAnchor(new TileCoord(rowIndex, 0), out Transform currentAnchor))
-            {
-                if (gridView.TryGetCellAnchor(new TileCoord(rowIndex - 1, 0), out Transform aboveAnchor))
-                {
-                    return aboveAnchor.position.z - currentAnchor.position.z;
-                }
-
-                if (gridView.TryGetCellAnchor(new TileCoord(rowIndex + 1, 0), out Transform belowAnchor))
-                {
-                    return currentAnchor.position.z - belowAnchor.position.z;
-                }
-            }
-
-            return 1f;
+            return gridView.TryGetRowWorldBounds(rowIndex, out rowBounds);
         }
 
         private GameObject? ResolveOverlayPrefab(GameObject? preferredPrefab)

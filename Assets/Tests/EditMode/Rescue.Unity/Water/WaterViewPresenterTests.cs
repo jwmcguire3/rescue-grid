@@ -179,6 +179,25 @@ namespace Rescue.Unity.Water.Tests
             Assert.That(waterRoot.childCount, Is.EqualTo(4));
         }
 
+        [Test]
+        public void WaterViewPresenter_RebuildWater_PositionsWaterlineFromSharedRowGeometry()
+        {
+            BoardGridViewPresenter gridPresenter = CreateGridPresenter(out _);
+            GameState state = CreateState(width: 6, height: 7, floodedRows: 2);
+            gridPresenter.RebuildGrid(state);
+
+            WaterViewPresenter presenter = CreateWaterPresenter(gridPresenter, useFallbackOverlay: true);
+            presenter.RebuildWater(state);
+
+            Assert.That(gridPresenter.TryGetRowWorldBounds(5, out BoardGridViewPresenter.RowWorldBounds rowBounds), Is.True);
+
+            Transform waterline = GetNamedChild(GetWaterRoot(presenter), "Waterline_05");
+            Vector3 expectedPosition = rowBounds.Center + new Vector3(0f, 0.1f, rowBounds.Depth * 0.5f);
+
+            Assert.That(waterline.position, Is.EqualTo(expectedPosition));
+            Assert.That(waterline.localScale.x, Is.EqualTo(rowBounds.Width).Within(0.001f));
+        }
+
         private BoardGridViewPresenter CreateGridPresenter(out Transform boardRoot)
         {
             GameObject presenterObject = CreateTrackedObject("BoardPresenter");
@@ -230,6 +249,20 @@ namespace Rescue.Unity.Water.Tests
             }
 
             return waterRoot;
+        }
+
+        private static Transform GetNamedChild(Transform parent, string childName)
+        {
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                Transform child = parent.GetChild(i);
+                if (child.name == childName)
+                {
+                    return child;
+                }
+            }
+
+            throw new AssertionException($"Expected child '{childName}'.");
         }
 
         private GameObject CreateTrackedObject(string name)

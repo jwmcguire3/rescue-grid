@@ -20,6 +20,18 @@ namespace Rescue.Unity.BoardPresentation
 
         private readonly Dictionary<TileCoord, Transform> cellAnchors = new Dictionary<TileCoord, Transform>();
 
+        public readonly record struct RowWorldBounds(
+            Vector3 Left,
+            Vector3 Right,
+            Quaternion Rotation,
+            float CellWidth,
+            float Depth)
+        {
+            public Vector3 Center => (Left + Right) * 0.5f;
+
+            public float Width => Mathf.Max(1f, Vector3.Distance(Left, Right) + CellWidth);
+        }
+
         public void RebuildGrid(GameState state)
         {
             if (state is null)
@@ -99,9 +111,26 @@ namespace Rescue.Unity.BoardPresentation
             return cellAnchors.TryGetValue(coord, out anchor);
         }
 
+        public bool IsCoordVisible(TileCoord coord)
+        {
+            return cellAnchors.ContainsKey(coord);
+        }
+
+        public bool TryGetCellWorldPosition(TileCoord coord, out Vector3 position)
+        {
+            if (TryGetCellAnchor(coord, out Transform anchor))
+            {
+                position = anchor.position;
+                return true;
+            }
+
+            position = transform.position;
+            return false;
+        }
+
         public Vector3 GetCellWorldPosition(TileCoord coord)
         {
-            return TryGetCellAnchor(coord, out Transform anchor) ? anchor.position : transform.position;
+            return TryGetCellWorldPosition(coord, out Vector3 position) ? position : transform.position;
         }
 
         public Vector3 GetColumnEntryWorldPosition(int column)
@@ -135,11 +164,86 @@ namespace Rescue.Unity.BoardPresentation
             return GetCellWorldPosition(new TileCoord(topRow, column)) + (Vector3.up * cellSize);
         }
 
+        public bool TryGetRowWorldBounds(int row, out RowWorldBounds bounds)
+        {
+            bounds = default;
+
+            Transform? leftAnchor = null;
+            Transform? rightAnchor = null;
+            int minCol = int.MaxValue;
+            int maxCol = int.MinValue;
+
+            foreach (KeyValuePair<TileCoord, Transform> entry in cellAnchors)
+            {
+                if (entry.Key.Row != row || entry.Value is null)
+                {
+                    continue;
+                }
+
+                if (entry.Key.Col < minCol)
+                {
+                    minCol = entry.Key.Col;
+                    leftAnchor = entry.Value;
+                }
+
+                if (entry.Key.Col > maxCol)
+                {
+                    maxCol = entry.Key.Col;
+                    rightAnchor = entry.Value;
+                }
+            }
+
+            if (leftAnchor is null || rightAnchor is null)
+            {
+                return false;
+            }
+
+            float cellWidth = ResolveRowCellWidth(row, minCol, maxCol, leftAnchor, rightAnchor);
+            float depth = ResolveRowDepth(row, minCol);
+            bounds = new RowWorldBounds(leftAnchor.position, rightAnchor.position, leftAnchor.rotation, cellWidth, depth);
+            return true;
+        }
+
         private Vector3 CalculateCenteredOffset(int width, int height)
         {
             float xOffset = -((width - 1) * cellSize * 0.5f);
             float zOffset = (height - 1) * cellSize * 0.5f;
             return new Vector3(xOffset, 0f, zOffset);
+        }
+
+        private float ResolveRowCellWidth(int row, int minCol, int maxCol, Transform leftAnchor, Transform rightAnchor)
+        {
+            if (maxCol > minCol)
+            {
+                return Vector3.Distance(leftAnchor.position, rightAnchor.position) / (maxCol - minCol);
+            }
+
+            if (TryGetCellWorldPosition(new TileCoord(row, minCol + 1), out Vector3 adjacentPosition))
+            {
+                return Vector3.Distance(leftAnchor.position, adjacentPosition);
+            }
+
+            return 1f;
+        }
+
+        private float ResolveRowDepth(int row, int referenceCol)
+        {
+            if (!TryGetCellWorldPosition(new TileCoord(row, referenceCol), out Vector3 currentPosition))
+            {
+                return 1f;
+            }
+
+            if (TryGetCellWorldPosition(new TileCoord(row - 1, referenceCol), out Vector3 abovePosition))
+            {
+                return abovePosition.z - currentPosition.z;
+            }
+
+            if (TryGetCellWorldPosition(new TileCoord(row + 1, referenceCol), out Vector3 belowPosition))
+            {
+                return currentPosition.z - belowPosition.z;
+            }
+
+            return 1f;
         }
 
         private Transform ResolveBoardRoot()

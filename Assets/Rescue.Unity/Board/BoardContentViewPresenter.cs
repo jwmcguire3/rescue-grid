@@ -815,6 +815,11 @@ namespace Rescue.Unity.BoardPresentation
                 return false;
             }
 
+            if (!gridView.IsCoordVisible(coord))
+            {
+                return false;
+            }
+
             return gridView.TryGetCellAnchor(coord, out anchor);
         }
 
@@ -835,7 +840,7 @@ namespace Rescue.Unity.BoardPresentation
             else
             {
                 contentTransform.SetPositionAndRotation(
-                    anchor.position + new Vector3(0f, yOffset, 0f),
+                    ResolveCellWorldPositionWithYOffset(coord, yOffset),
                     anchor.rotation);
             }
 
@@ -867,7 +872,7 @@ namespace Rescue.Unity.BoardPresentation
                 contentTransform.SetPositionAndRotation(currentWorldPosition, currentWorldRotation);
             }
 
-            Vector3 targetWorldPosition = anchor.position + new Vector3(0f, yOffset, 0f);
+            Vector3 targetWorldPosition = ResolveCellWorldPositionWithYOffset(coord, yOffset);
             Quaternion targetWorldRotation = anchor.rotation;
             contentObject.name =
                 $"Content_{coord.Row.ToString("00", CultureInfo.InvariantCulture)}_{coord.Col.ToString("00", CultureInfo.InvariantCulture)}_{contentLabel}";
@@ -927,13 +932,22 @@ namespace Rescue.Unity.BoardPresentation
             else
             {
                 contentTransform.SetPositionAndRotation(
-                    anchor.position + new Vector3(0f, yOffset, 0f),
+                    ResolveCellWorldPositionWithYOffset(coord, yOffset),
                     anchor.rotation);
             }
 
             contentTransform.localScale = Vector3.Scale(prefab.transform.localScale, scaleMultiplier);
             spawnedContent.Add(contentObject);
             return contentObject;
+        }
+
+        private Vector3 ResolveCellWorldPositionWithYOffset(TileCoord coord, float yOffset)
+        {
+            Vector3 basePosition = gridView is not null
+                ? gridView.GetCellWorldPosition(coord)
+                : transform.position;
+
+            return basePosition + new Vector3(0f, yOffset, 0f);
         }
 
         private System.Collections.IEnumerator AnimateWorldMoveRoutine(

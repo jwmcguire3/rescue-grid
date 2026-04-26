@@ -6,6 +6,7 @@ using Rescue.Core.State;
 using Rescue.Unity.Art.Registries;
 using Rescue.Unity.BoardPresentation;
 using UnityEngine;
+using UnityEngine.TestTools.Utils;
 using CoreBoard = Rescue.Core.State.Board;
 using CoreDock = Rescue.Core.State.Dock;
 
@@ -149,6 +150,62 @@ namespace Rescue.Unity.BoardPresentation.Tests
 
             Assert.That(topMiddle.localPosition.x, Is.GreaterThan(topLeft.localPosition.x));
             Assert.That(middleLeft.localPosition.z, Is.LessThan(topLeft.localPosition.z));
+        }
+
+        [Test]
+        public void BoardGridViewPresenter_TryGetCellWorldPositionReturnsStableAnchorPosition()
+        {
+            BoardGridViewPresenter presenter = CreatePresenter(out _);
+            presenter.RebuildGrid(CreateState(width: 3, height: 3));
+
+            Assert.That(presenter.TryGetCellAnchor(new TileCoord(1, 2), out Transform anchor), Is.True);
+            Assert.That(presenter.TryGetCellWorldPosition(new TileCoord(1, 2), out Vector3 worldPosition), Is.True);
+
+            Assert.That(worldPosition, Is.EqualTo(anchor.position));
+            Assert.That(presenter.GetCellWorldPosition(new TileCoord(1, 2)), Is.EqualTo(anchor.position));
+        }
+
+        [Test]
+        public void BoardGridViewPresenter_TryGetCellWorldPositionFailsSafelyForInvalidCoord()
+        {
+            BoardGridViewPresenter presenter = CreatePresenter(out _);
+            presenter.transform.position = new Vector3(5f, 6f, 7f);
+            presenter.RebuildGrid(CreateState(width: 3, height: 3));
+
+            Assert.That(presenter.IsCoordVisible(new TileCoord(4, 4)), Is.False);
+            Assert.That(presenter.TryGetCellWorldPosition(new TileCoord(4, 4), out Vector3 worldPosition), Is.False);
+            Assert.That(worldPosition, Is.EqualTo(presenter.transform.position));
+            Assert.That(presenter.GetCellWorldPosition(new TileCoord(4, 4)), Is.EqualTo(presenter.transform.position));
+        }
+
+        [Test]
+        public void BoardGridViewPresenter_GetColumnEntryWorldPositionReturnsTopCellPlusOneCellHeight()
+        {
+            BoardGridViewPresenter presenter = CreatePresenter(out _);
+            presenter.RebuildGrid(CreateState(width: 3, height: 3));
+
+            Assert.That(presenter.TryGetCellWorldPosition(new TileCoord(0, 1), out Vector3 topCellPosition), Is.True);
+
+            Vector3 entryPosition = presenter.GetColumnEntryWorldPosition(1);
+
+            Assert.That(entryPosition, Is.EqualTo(topCellPosition + Vector3.up).Using(Vector3ComparerWithEqualsOperator.Instance));
+        }
+
+        [Test]
+        public void BoardGridViewPresenter_TryGetRowWorldBoundsReturnsStableCenteredGeometry()
+        {
+            BoardGridViewPresenter presenter = CreatePresenter(out _);
+            presenter.RebuildGrid(CreateState(width: 3, height: 3));
+
+            Assert.That(presenter.TryGetRowWorldBounds(1, out BoardGridViewPresenter.RowWorldBounds bounds), Is.True);
+            Assert.That(presenter.TryGetCellWorldPosition(new TileCoord(1, 0), out Vector3 leftCellPosition), Is.True);
+            Assert.That(presenter.TryGetCellWorldPosition(new TileCoord(1, 2), out Vector3 rightCellPosition), Is.True);
+
+            Assert.That(bounds.Left, Is.EqualTo(leftCellPosition));
+            Assert.That(bounds.Right, Is.EqualTo(rightCellPosition));
+            Assert.That(bounds.Center, Is.EqualTo((leftCellPosition + rightCellPosition) * 0.5f));
+            Assert.That(bounds.Width, Is.EqualTo(3f).Within(0.001f));
+            Assert.That(bounds.Depth, Is.EqualTo(1f).Within(0.001f));
         }
 
         private BoardGridViewPresenter CreatePresenter(out Transform boardRoot)
