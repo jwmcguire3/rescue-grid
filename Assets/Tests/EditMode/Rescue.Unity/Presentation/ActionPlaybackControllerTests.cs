@@ -517,6 +517,97 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
+        public void ActionPlaybackController_InvalidWaterRoseRowFailsSoftAndFinalSyncRepairsState()
+        {
+            ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
+            GameState previousState = CreateBoardState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                    ImmutableArray.Create<Tile>(new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                    ImmutableArray.Create<Tile>(new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                    ImmutableArray.Create<Tile>(new EmptyTile(), new EmptyTile(), new EmptyTile())),
+                floodedRows: 1,
+                actionsUntilRise: 1,
+                riseInterval: 3);
+            GameState resultState = previousState with
+            {
+                Water = new WaterState(FloodedRows: 2, ActionsUntilRise: 3, RiseInterval: 3),
+                ActionCount = previousState.ActionCount + 1,
+            };
+
+            harness.GridPresenter.RebuildGrid(previousState);
+            harness.WaterPresenter.SyncImmediate(previousState);
+
+            ActionResult result = CreateResult(
+                resultState,
+                actionCount: resultState.ActionCount,
+                new WaterRose(FloodedRow: 99));
+
+            int finalSyncCalls = 0;
+
+            Assert.DoesNotThrow(() =>
+            {
+                bool handled = harness.Controller.TryPlayAction(previousState, new ActionInput(new TileCoord(0, 0)), result, syncedResult =>
+                {
+                    finalSyncCalls++;
+                    harness.WaterPresenter.ForceSyncToState(syncedResult.State);
+                });
+
+                Assert.That(handled, Is.True);
+            });
+
+            Assert.That(finalSyncCalls, Is.EqualTo(1));
+            Assert.That(harness.WaterRoot.childCount, Is.EqualTo(4));
+            Assert.That(FindChildByName(harness.WaterRoot, "Waterline_02"), Is.Not.Null);
+        }
+
+        [Test]
+        public void ActionPlaybackController_NoWaterRoseSkipsWaterBeatAndStillFinalSyncs()
+        {
+            ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
+            GameState previousState = CreateBoardState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                    ImmutableArray.Create<Tile>(new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                    ImmutableArray.Create<Tile>(new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                    ImmutableArray.Create<Tile>(new EmptyTile(), new EmptyTile(), new EmptyTile())),
+                floodedRows: 1,
+                actionsUntilRise: 1,
+                riseInterval: 3);
+            GameState resultState = previousState with
+            {
+                Water = new WaterState(FloodedRows: 1, ActionsUntilRise: 3, RiseInterval: 3),
+                ActionCount = previousState.ActionCount + 1,
+            };
+
+            harness.GridPresenter.RebuildGrid(previousState);
+            harness.WaterPresenter.SyncImmediate(previousState);
+
+            int initialWaterChildCount = harness.WaterRoot.childCount;
+            int finalSyncCalls = 0;
+
+            bool handled = harness.Controller.TryPlayAction(
+                previousState,
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(
+                    resultState,
+                    actionCount: resultState.ActionCount,
+                    new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0)))),
+                syncedResult =>
+                {
+                    finalSyncCalls++;
+                    harness.WaterPresenter.ForceSyncToState(syncedResult.State);
+                });
+
+            Assert.That(handled, Is.True);
+            Assert.That(finalSyncCalls, Is.EqualTo(1));
+            Assert.That(harness.Controller.CurrentPlan[0].StepType, Is.EqualTo(ActionPlaybackStepType.RemoveGroup));
+            Assert.That(harness.Controller.CurrentPlan[^1].StepType, Is.EqualTo(ActionPlaybackStepType.FinalSync));
+            Assert.That(harness.WaterRoot.childCount, Is.EqualTo(initialWaterChildCount));
+            Assert.That(FindChildByName(harness.WaterRoot, "ForecastRow_02"), Is.Not.Null);
+        }
+
+        [Test]
         public void ActionPlaybackController_DockFeedbackRoutesThroughPlaybackAndFinalSyncRepairsDockState()
         {
             ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
@@ -798,6 +889,8 @@ namespace Rescue.Unity.Presentation.Tests
             ActionPlaybackSettings settings = new ActionPlaybackSettings();
             SetPrivateField(settings, "playbackEnabled", playbackEnabled);
             SetPrivateField(settings, "yieldBetweenSteps", yieldBetweenSteps);
+            SetPrivateField(settings, "waterRiseDurationSeconds", 0.15f);
+            SetPrivateField(settings, "waterForecastTransitionDurationSeconds", 0.10f);
             return settings;
         }
 

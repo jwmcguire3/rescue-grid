@@ -218,6 +218,26 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
+        public void Build_WaterRiseStepComesFromWaterRoseInCanonicalOrder()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(
+                    new TargetExtracted("pup-1", new TileCoord(2, 1)),
+                    new WaterRose(FloodedRow: 3),
+                    new GravitySettled(ImmutableArray.Create((new TileCoord(0, 1), new TileCoord(1, 1))))));
+
+            Assert.That(plan.Take(plan.Count - 1).Select(step => (step.SourceEventName, step.StepType)), Is.EqualTo(new[]
+            {
+                (nameof(TargetExtracted), ActionPlaybackStepType.TargetExtract),
+                (nameof(WaterRose), ActionPlaybackStepType.WaterRise),
+                (nameof(GravitySettled), ActionPlaybackStepType.Gravity),
+            }));
+            Assert.That(plan[^1].StepType, Is.EqualTo(ActionPlaybackStepType.FinalSync));
+        }
+
+        [Test]
         public void Build_PreservesDockAndBreakOrderWithoutBucketSorting()
         {
             ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(

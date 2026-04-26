@@ -180,7 +180,12 @@ namespace Rescue.Unity.Presentation
                     boardContent?.AnimateTargetExtract(extracted, settings.TargetExtractDurationSeconds);
                     break;
                 case WaterRose rose:
-                    ResolveWaterView()?.AnimateWaterRise(previousState, resultState, rose.FloodedRow, settings.WaterRiseDurationSeconds);
+                    ResolveWaterView()?.AnimateWaterRise(
+                        previousState,
+                        resultState,
+                        rose.FloodedRow,
+                        settings.WaterRiseDurationSeconds,
+                        settings.WaterForecastTransitionDurationSeconds);
                     break;
             }
         }
@@ -218,7 +223,7 @@ namespace Rescue.Unity.Presentation
                 case ActionPlaybackStepType.TargetExtract:
                     return settings.TargetExtractDurationSeconds;
                 case ActionPlaybackStepType.WaterRise:
-                    return settings.WaterRiseDurationSeconds;
+                    return Mathf.Max(settings.WaterRiseDurationSeconds, settings.WaterForecastTransitionDurationSeconds);
                 default:
                     return 0f;
             }

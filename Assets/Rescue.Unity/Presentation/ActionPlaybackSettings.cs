@@ -15,6 +15,7 @@ namespace Rescue.Unity.Presentation
         [SerializeField] private float spawnDurationSeconds = 0.12f;
         [SerializeField] private float targetExtractDurationSeconds = 0.12f;
         [SerializeField] private float waterRiseDurationSeconds = 0.15f;
+        [SerializeField] private float waterForecastTransitionDurationSeconds = 0.10f;
 
         public bool PlaybackEnabled => playbackEnabled;
 
@@ -33,5 +34,7 @@ namespace Rescue.Unity.Presentation
         public float TargetExtractDurationSeconds => targetExtractDurationSeconds;
 
         public float WaterRiseDurationSeconds => waterRiseDurationSeconds;
+
+        public float WaterForecastTransitionDurationSeconds => waterForecastTransitionDurationSeconds;
     }
 }

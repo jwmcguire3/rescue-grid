@@ -160,6 +160,64 @@ namespace Rescue.Unity.Water.Tests
         }
 
         [Test]
+        public void WaterViewPresenter_AnimateWaterRisePromotesForecastOverlayWithoutExtraOverlayPop()
+        {
+            BoardGridViewPresenter gridPresenter = CreateGridPresenter(out _);
+            GameState previousState = CreateState(width: 6, height: 7, floodedRows: 1, actionsUntilRise: 1);
+            GameState currentState = CreateState(width: 6, height: 7, floodedRows: 2, actionsUntilRise: 5);
+            gridPresenter.RebuildGrid(currentState);
+
+            WaterViewPresenter presenter = CreateWaterPresenter(gridPresenter, useFallbackOverlay: true);
+            presenter.SyncImmediate(previousState);
+
+            Transform waterRoot = GetWaterRoot(presenter);
+            Transform forecastBeforeRise = GetNamedChild(waterRoot, "ForecastRow_05");
+
+            presenter.AnimateRiseToRow(previousState, currentState, rowIndex: 5, durationSeconds: 0.15f, forecastTransitionDurationSeconds: 0.05f);
+
+            Assert.That(waterRoot.childCount, Is.EqualTo(4));
+            Assert.That(GetNamedChild(waterRoot, "FloodedRow_05"), Is.SameAs(forecastBeforeRise));
+            Assert.That(GetNamedChild(waterRoot, "ForecastRow_04"), Is.Not.Null);
+        }
+
+        [Test]
+        public void WaterViewPresenter_AnimateForecastTransitionHandlesValidStateData()
+        {
+            BoardGridViewPresenter gridPresenter = CreateGridPresenter(out _);
+            GameState previousState = CreateState(width: 6, height: 7, floodedRows: 1, actionsUntilRise: 2);
+            GameState currentState = CreateState(width: 6, height: 7, floodedRows: 1, actionsUntilRise: 1);
+            gridPresenter.RebuildGrid(currentState);
+
+            WaterViewPresenter presenter = CreateWaterPresenter(gridPresenter, useFallbackOverlay: true);
+            presenter.SyncImmediate(previousState);
+
+            Assert.DoesNotThrow(() => presenter.AnimateForecastTransition(previousState, currentState, durationSeconds: 0.05f));
+            Assert.That(GetNamedChild(GetWaterRoot(presenter), "ForecastRow_05"), Is.Not.Null);
+        }
+
+        [Test]
+        public void WaterViewPresenter_AnimateWaterRiseIgnoresInvalidPreferredRowAndStillRepairsAtFinalSync()
+        {
+            BoardGridViewPresenter gridPresenter = CreateGridPresenter(out _);
+            GameState previousState = CreateState(width: 6, height: 7, floodedRows: 1, actionsUntilRise: 1);
+            GameState currentState = CreateState(width: 6, height: 7, floodedRows: 2, actionsUntilRise: 5);
+            gridPresenter.RebuildGrid(currentState);
+
+            WaterViewPresenter presenter = CreateWaterPresenter(gridPresenter, useFallbackOverlay: true);
+            presenter.SyncImmediate(previousState);
+
+            Assert.DoesNotThrow(() => presenter.AnimateWaterRise(previousState, currentState, preferredFloodedRow: 99, durationSeconds: 0.15f));
+
+            Transform waterRoot = GetWaterRoot(presenter);
+            Object.DestroyImmediate(GetNamedChild(waterRoot, "Waterline_05").gameObject);
+
+            presenter.ForceSyncToState(currentState);
+
+            Assert.That(waterRoot.childCount, Is.EqualTo(4));
+            Assert.That(GetNamedChild(waterRoot, "Waterline_05"), Is.Not.Null);
+        }
+
+        [Test]
         public void WaterViewPresenter_ForceSyncToStateRepairsWaterOverlaysAfterPlayback()
         {
             BoardGridViewPresenter gridPresenter = CreateGridPresenter(out _);
