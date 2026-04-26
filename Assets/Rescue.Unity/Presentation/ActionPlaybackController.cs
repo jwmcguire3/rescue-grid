@@ -16,6 +16,8 @@ namespace Rescue.Unity.Presentation
         [SerializeField] private DockViewPresenter? dockView;
 
         private Coroutine? activePlayback;
+        private PlaybackContext? activeContext;
+        private int playbackSessionId;
 
         public bool IsPlaying { get; private set; }
 
@@ -46,13 +48,16 @@ namespace Rescue.Unity.Presentation
 
             CancelPlayback();
 
+            int sessionId = ++playbackSessionId;
+            activeContext = new PlaybackContext(sessionId, result, finalSync);
+
             if (settings.YieldBetweenSteps)
             {
-                activePlayback = StartCoroutine(RunPlayback(previousState, result, finalSync));
+                activePlayback = StartCoroutine(RunPlayback(sessionId, previousState, result, finalSync));
             }
             else
             {
-                RunPlaybackImmediately(previousState, result, finalSync);
+                RunPlaybackImmediately(sessionId, previousState, result, finalSync);
             }
 
             return true;
@@ -60,6 +65,10 @@ namespace Rescue.Unity.Presentation
 
         public void CancelPlayback()
         {
+            PlaybackContext? context = activeContext;
+            activeContext = null;
+            playbackSessionId++;
+
             if (activePlayback is not null)
             {
                 StopCoroutine(activePlayback);
@@ -67,6 +76,14 @@ namespace Rescue.Unity.Presentation
             }
 
             IsPlaying = false;
+
+            if (context is not null)
+            {
+                Debug.Log(
+                    $"{nameof(ActionPlaybackController)} cancelled playback and is recovering presentation to authoritative action count {context.Result.State.ActionCount}.",
+                    this);
+                context.FinalSync(context.Result);
+            }
         }
 
         private bool CanPlay()
@@ -74,7 +91,7 @@ namespace Rescue.Unity.Presentation
             return isActiveAndEnabled && settings.PlaybackEnabled;
         }
 
-        private IEnumerator RunPlayback(GameState previousState, ActionResult result, Action<ActionResult> finalSync)
+        private IEnumerator RunPlayback(int sessionId, GameState previousState, ActionResult result, Action<ActionResult> finalSync)
         {
             IsPlaying = true;
 
@@ -94,11 +111,11 @@ namespace Rescue.Unity.Presentation
             }
             finally
             {
-                CompletePlayback(result, finalSync);
+                CompletePlayback(sessionId, result, finalSync);
             }
         }
 
-        private void RunPlaybackImmediately(GameState previousState, ActionResult result, Action<ActionResult> finalSync)
+        private void RunPlaybackImmediately(int sessionId, GameState previousState, ActionResult result, Action<ActionResult> finalSync)
         {
             IsPlaying = true;
 
@@ -116,7 +133,7 @@ namespace Rescue.Unity.Presentation
             }
             finally
             {
-                CompletePlayback(result, finalSync);
+                CompletePlayback(sessionId, result, finalSync);
             }
         }
 
@@ -207,14 +224,22 @@ namespace Rescue.Unity.Presentation
             }
         }
 
-        private void CompletePlayback(ActionResult result, Action<ActionResult> finalSync)
+        private void CompletePlayback(int sessionId, ActionResult result, Action<ActionResult> finalSync)
         {
+            if (activeContext is null || activeContext.SessionId != sessionId)
+            {
+                activePlayback = null;
+                IsPlaying = false;
+                return;
+            }
+
             try
             {
                 finalSync(result);
             }
             finally
             {
+                activeContext = null;
                 activePlayback = null;
                 IsPlaying = false;
             }
@@ -240,6 +265,22 @@ namespace Rescue.Unity.Presentation
 
             dockView = GetComponent<DockViewPresenter>();
             return dockView;
+        }
+
+        private sealed class PlaybackContext
+        {
+            public PlaybackContext(int sessionId, ActionResult result, Action<ActionResult> finalSync)
+            {
+                SessionId = sessionId;
+                Result = result;
+                FinalSync = finalSync;
+            }
+
+            public int SessionId { get; }
+
+            public ActionResult Result { get; }
+
+            public Action<ActionResult> FinalSync { get; }
         }
     }
 }

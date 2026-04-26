@@ -126,6 +126,42 @@ namespace Rescue.Unity.Input.Tests
             Assert.That(viewPresenter.CurrentState, Is.EqualTo(resultState));
         }
 
+        [UnityTest]
+        public System.Collections.IEnumerator BoardInputPresenter_AllowsInputAgainAfterPlaybackCancellationRecovery()
+        {
+            GameStateViewPresenter viewPresenter = CreateViewPresenterWithPlaybackController(yieldBetweenSteps: true);
+            BoardInputPresenter presenter = CreateInputPresenter(gridView: null, viewPresenter);
+            GameState initialState = CreateValidPairState();
+            GameState playbackState = initialState with { ActionCount = initialState.ActionCount + 1 };
+            ActionResult playbackResult = new ActionResult(
+                playbackState,
+                ImmutableArray.Create<ActionEvent>(
+                    new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1)))),
+                ActionOutcome.Ok,
+                Snapshot: null);
+
+            presenter.SetCurrentState(initialState);
+            viewPresenter.ApplyActionResult(initialState, new ActionInput(new TileCoord(0, 0)), playbackResult);
+
+            Assert.That(viewPresenter.IsPlaybackActive, Is.True);
+            Assert.That(presenter.TryRunActionAt(new TileCoord(0, 0)), Is.False);
+
+            ActionPlaybackController? playbackController = viewPresenter.GetComponent<ActionPlaybackController>();
+            Assert.That(playbackController, Is.Not.Null);
+            playbackController!.CancelPlayback();
+
+            Assert.That(viewPresenter.IsPlaybackActive, Is.False);
+            Assert.That(presenter.CurrentState, Is.EqualTo(playbackState));
+
+            bool handledAfterCancel = presenter.TryRunActionAt(new TileCoord(0, 0));
+
+            Assert.That(handledAfterCancel, Is.True);
+
+            yield return null;
+
+            Assert.That(presenter.CurrentState, Is.Not.Null);
+        }
+
         private BoardInputPresenter CreateInputPresenter(BoardGridViewPresenter? gridView, GameStateViewPresenter? gameStateView)
         {
             GameObject presenterObject = CreateTrackedGameObject("BoardInputPresenter");

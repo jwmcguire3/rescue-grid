@@ -31,54 +31,7 @@ namespace Rescue.Unity.Presentation
                 return;
             }
 
-            GameState? previousState = CurrentState;
-            CurrentState = state;
-
-            if (boardGrid is null)
-            {
-                Debug.LogWarning($"{nameof(GameStateViewPresenter)} is missing {nameof(boardGrid)}.", this);
-            }
-            else
-            {
-                boardGrid.RebuildGrid(state);
-            }
-
-            if (boardContent is null)
-            {
-                Debug.LogWarning($"{nameof(GameStateViewPresenter)} is missing {nameof(boardContent)}.", this);
-            }
-            else
-            {
-                boardContent.SyncImmediate(state);
-            }
-
-            if (waterView is null)
-            {
-                Debug.LogWarning($"{nameof(GameStateViewPresenter)} is missing {nameof(waterView)}.", this);
-            }
-            else
-            {
-                waterView.RebuildWater(state);
-            }
-
-            if (dockView is null)
-            {
-                Debug.LogWarning($"{nameof(GameStateViewPresenter)} is missing {nameof(dockView)}.", this);
-            }
-            else
-            {
-                dockView.Rebuild(state);
-            }
-
-            TargetFeedbackPresenter? resolvedTargetFeedback = ResolveTargetFeedback();
-            if (resolvedTargetFeedback is null)
-            {
-                Debug.LogWarning($"{nameof(GameStateViewPresenter)} is missing {nameof(targetFeedback)}.", this);
-            }
-            else
-            {
-                resolvedTargetFeedback.Apply(previousState, state);
-            }
+            ForceSyncToState(state);
         }
 
         public void ApplyActionResult(GameState previousState, ActionInput input, ActionResult result)
@@ -162,6 +115,65 @@ namespace Rescue.Unity.Presentation
             }
         }
 
+        public void ForceSyncToState(GameState state, string context = "authoritative sync")
+        {
+            if (state is null)
+            {
+                Debug.LogWarning($"{nameof(GameStateViewPresenter)} requires a valid {nameof(GameState)} to sync.", this);
+                return;
+            }
+
+            GameState? previousState = CurrentState;
+            CurrentState = state;
+
+            if (boardGrid is null)
+            {
+                Debug.LogWarning($"{nameof(GameStateViewPresenter)} is missing {nameof(boardGrid)}.", this);
+            }
+            else
+            {
+                boardGrid.RebuildGrid(state);
+            }
+
+            if (boardContent is null)
+            {
+                Debug.LogWarning($"{nameof(GameStateViewPresenter)} is missing {nameof(boardContent)}.", this);
+            }
+            else
+            {
+                boardContent.ForceSyncToState(state);
+            }
+
+            if (waterView is null)
+            {
+                Debug.LogWarning($"{nameof(GameStateViewPresenter)} is missing {nameof(waterView)}.", this);
+            }
+            else
+            {
+                waterView.ForceSyncToState(state);
+            }
+
+            if (dockView is null)
+            {
+                Debug.LogWarning($"{nameof(GameStateViewPresenter)} is missing {nameof(dockView)}.", this);
+            }
+            else
+            {
+                dockView.ForceSyncToState(state);
+            }
+
+            TargetFeedbackPresenter? resolvedTargetFeedback = ResolveTargetFeedback();
+            if (resolvedTargetFeedback is null)
+            {
+                Debug.LogWarning($"{nameof(GameStateViewPresenter)} is missing {nameof(targetFeedback)}.", this);
+            }
+            else
+            {
+                resolvedTargetFeedback.ClearFeedback();
+                resolvedTargetFeedback.Apply(previousState, state);
+            }
+        }
+
         private TargetFeedbackPresenter? ResolveTargetFeedback()
         {
             if (targetFeedback is not null)
@@ -186,7 +198,7 @@ namespace Rescue.Unity.Presentation
 
         private void FinalSyncActionResult(ActionResult result)
         {
-            Rebuild(result.State);
+            ForceSyncToState(result.State, "playback final sync");
 
             if (!dockFeedbackHandledByPlayback && dockView is not null)
             {

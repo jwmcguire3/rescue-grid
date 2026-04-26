@@ -144,6 +144,70 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(harness.Presenter.CurrentState, Is.EqualTo(resultState));
         }
 
+        [UnityTest]
+        public System.Collections.IEnumerator GameStateViewPresenter_CancelPlaybackForceSyncsToAuthoritativeState()
+        {
+            PresenterHarness harness = CreateHarness(withPlaybackController: true, yieldBetweenSteps: true);
+            GameState previousState = CreateState();
+            GameState resultState = previousState with
+            {
+                Board = new CoreBoard(
+                    3,
+                    2,
+                    ImmutableArray.Create(
+                        ImmutableArray.Create<Tile>(
+                            new DebrisTile(DebrisType.B),
+                            new EmptyTile(),
+                            new EmptyTile()),
+                        ImmutableArray.Create<Tile>(
+                            new EmptyTile(),
+                            new EmptyTile(),
+                            new EmptyTile()))),
+                Dock = new CoreDock(
+                    ImmutableArray.Create<DebrisType?>(
+                        DebrisType.A,
+                        DebrisType.B,
+                        DebrisType.C,
+                        DebrisType.A,
+                        null,
+                        null,
+                        null),
+                    Size: 7),
+                Water = new WaterState(FloodedRows: 2, ActionsUntilRise: 4, RiseInterval: 4),
+                ActionCount = previousState.ActionCount + 1,
+            };
+
+            ActionResult result = new ActionResult(
+                resultState,
+                ImmutableArray.Create<ActionEvent>(
+                    new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0))),
+                    new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 4, OverflowCount: 0),
+                    new GravitySettled(ImmutableArray<(TileCoord From, TileCoord To)>.Empty),
+                    new Spawned(ImmutableArray.Create((new TileCoord(0, 0), DebrisType.B))),
+                    new WaterRose(FloodedRow: 0)),
+                ActionOutcome.Ok,
+                Snapshot: null);
+
+            harness.Presenter.Rebuild(previousState);
+            harness.Presenter.ApplyActionResult(previousState, new ActionInput(new TileCoord(0, 0)), result);
+
+            Assert.That(harness.Presenter.IsPlaybackActive, Is.True);
+
+            ActionPlaybackController? playbackController = harness.Presenter.GetComponent<ActionPlaybackController>();
+            Assert.That(playbackController, Is.Not.Null);
+            Assert.DoesNotThrow(() => playbackController!.CancelPlayback());
+
+            Assert.That(harness.Presenter.IsPlaybackActive, Is.False);
+            Assert.That(harness.Presenter.CurrentState, Is.EqualTo(resultState));
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
+            Assert.That(harness.WaterRoot.childCount, Is.EqualTo(3));
+            Assert.That(harness.DockPieceContainer.childCount, Is.EqualTo(4));
+
+            yield return null;
+
+            Assert.That(harness.Presenter.CurrentState, Is.EqualTo(resultState));
+        }
+
         [Test]
         public void GameStateViewPresenter_ApplyActionResultFallsBackToImmediateSyncWhenPlaybackControllerDisabled()
         {
@@ -163,6 +227,52 @@ namespace Rescue.Unity.Presentation.Tests
 
             Assert.That(harness.Presenter.IsPlaybackActive, Is.False);
             Assert.That(harness.Presenter.CurrentState, Is.EqualTo(resultState));
+        }
+
+        [Test]
+        public void GameStateViewPresenter_ForceSyncToStateRepairsVisibleStateAfterMismatch()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState previousState = CreateState();
+            GameState repairedState = previousState with
+            {
+                Board = new CoreBoard(
+                    3,
+                    2,
+                    ImmutableArray.Create(
+                        ImmutableArray.Create<Tile>(
+                            new EmptyTile(),
+                            new DebrisTile(DebrisType.B),
+                            new TargetTile("puppy-1", Extracted: false)),
+                        ImmutableArray.Create<Tile>(
+                            new EmptyTile(),
+                            new EmptyTile(),
+                            new EmptyTile()))),
+                Dock = new CoreDock(
+                    ImmutableArray.Create<DebrisType?>(
+                        DebrisType.B,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null),
+                    Size: 7),
+                Water = new WaterState(FloodedRows: 0, ActionsUntilRise: 4, RiseInterval: 4),
+            };
+
+            harness.Presenter.Rebuild(previousState);
+            harness.ContentRoot.GetChild(0).name = "StaleVisual";
+            Object.DestroyImmediate(harness.ContentRoot.GetChild(0).gameObject);
+            harness.DockPieceContainer.GetChild(0).name = "StaleDockPiece";
+            Object.DestroyImmediate(harness.DockPieceContainer.GetChild(0).gameObject);
+
+            harness.Presenter.ForceSyncToState(repairedState, "test mismatch recovery");
+
+            Assert.That(harness.Presenter.CurrentState, Is.EqualTo(repairedState));
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(2));
+            Assert.That(harness.WaterRoot.childCount, Is.EqualTo(1));
+            Assert.That(harness.DockPieceContainer.childCount, Is.EqualTo(1));
         }
 
         private PresenterHarness CreateHarness(

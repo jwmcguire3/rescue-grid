@@ -53,6 +53,35 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(finalSyncCalls, Is.EqualTo(1));
         }
 
+        [UnityTest]
+        public IEnumerator ActionPlaybackController_CancelPlaybackClearsIsPlayingAndTriggersRecoveryFinalSync()
+        {
+            ActionPlaybackController controller = CreateController(playbackEnabled: true, yieldBetweenSteps: true);
+            ActionResult result = CreateResult(actionCount: 2);
+            int finalSyncCalls = 0;
+            GameState? syncedState = null;
+
+            bool handled = controller.TryPlayAction(CreateState(), new ActionInput(new TileCoord(0, 0)), result, syncedResult =>
+            {
+                finalSyncCalls++;
+                syncedState = syncedResult.State;
+            });
+
+            Assert.That(handled, Is.True);
+            Assert.That(controller.IsPlaying, Is.True);
+
+            Assert.DoesNotThrow(() => controller.CancelPlayback());
+
+            Assert.That(controller.IsPlaying, Is.False);
+            Assert.That(finalSyncCalls, Is.EqualTo(1));
+            Assert.That(syncedState, Is.EqualTo(result.State));
+
+            yield return null;
+
+            Assert.That(finalSyncCalls, Is.EqualTo(1));
+            Assert.That(controller.IsPlaying, Is.False);
+        }
+
         [Test]
         public void ActionPlaybackController_FinalSyncIsCalledAfterImmediatePlayback()
         {
@@ -354,6 +383,71 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(harness.Controller.CurrentPlan[2].StepType, Is.EqualTo(ActionPlaybackStepType.DockFeedback));
             Assert.That(materialAtFinalSync, Is.SameAs(harness.CautionMaterial));
             Assert.That(harness.DockPieceContainer.childCount, Is.EqualTo(5));
+        }
+
+        [UnityTest]
+        public IEnumerator ActionPlaybackController_CancelPlaybackRecoversBoardWaterAndDockToAuthoritativeState()
+        {
+            ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: true);
+            GameState previousState = CreateBoardState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new DebrisTile(DebrisType.A), new EmptyTile(), new EmptyTile()),
+                    ImmutableArray.Create<Tile>(new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                    ImmutableArray.Create<Tile>(new EmptyTile(), new EmptyTile(), new EmptyTile())),
+                dockSlots: ImmutableArray.Create<DebrisType?>(DebrisType.A, DebrisType.B, null, null, null, null, null),
+                floodedRows: 0,
+                actionsUntilRise: 1,
+                riseInterval: 2);
+            GameState resultState = CreateBoardState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new DebrisTile(DebrisType.C), new EmptyTile(), new EmptyTile()),
+                    ImmutableArray.Create<Tile>(new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                    ImmutableArray.Create<Tile>(new FloodedTile(), new FloodedTile(), new FloodedTile())),
+                dockSlots: ImmutableArray.Create<DebrisType?>(DebrisType.A, DebrisType.B, DebrisType.C, null, null, null, null),
+                floodedRows: 1,
+                actionsUntilRise: 2,
+                riseInterval: 2);
+
+            harness.GridPresenter.RebuildGrid(previousState);
+            harness.ContentPresenter.SyncImmediate(previousState);
+            harness.WaterPresenter.SyncImmediate(previousState);
+            harness.DockPresenter.Rebuild(previousState);
+
+            ActionResult result = CreateResult(
+                resultState,
+                actionCount: 9,
+                new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0))),
+                new DockInserted(ImmutableArray.Create(DebrisType.C), OccupancyAfterInsert: 3, OverflowCount: 0),
+                new GravitySettled(ImmutableArray<(TileCoord From, TileCoord To)>.Empty),
+                new Spawned(ImmutableArray.Create((new TileCoord(0, 0), DebrisType.C))),
+                new WaterRose(FloodedRow: 2));
+
+            int finalSyncCalls = 0;
+
+            bool handled = harness.Controller.TryPlayAction(previousState, new ActionInput(new TileCoord(0, 0)), result, syncedResult =>
+            {
+                finalSyncCalls++;
+                harness.ContentPresenter.ForceSyncToState(syncedResult.State);
+                harness.WaterPresenter.ForceSyncToState(syncedResult.State);
+                harness.DockPresenter.ForceSyncToState(syncedResult.State);
+            });
+
+            Assert.That(handled, Is.True);
+            Assert.That(harness.Controller.IsPlaying, Is.True);
+            Assert.That(FindChildByName(harness.ContentRoot, "Debris_A"), Is.Null);
+
+            Assert.DoesNotThrow(() => harness.Controller.CancelPlayback());
+
+            Assert.That(harness.Controller.IsPlaying, Is.False);
+            Assert.That(finalSyncCalls, Is.EqualTo(1));
+            Assert.That(FindChildByName(harness.ContentRoot, "Content_00_00_Debris_C"), Is.Not.Null);
+            Assert.That(harness.DockPieceContainer.childCount, Is.EqualTo(3));
+            Assert.That(harness.WaterRoot.childCount, Is.EqualTo(3));
+
+            yield return null;
+
+            Assert.That(finalSyncCalls, Is.EqualTo(1));
+            Assert.That(harness.Controller.IsPlaying, Is.False);
         }
 
         private ActionPlaybackController CreateController(bool playbackEnabled, bool yieldBetweenSteps)

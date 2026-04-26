@@ -84,6 +84,12 @@ namespace Rescue.Unity.BoardPresentation
             RemoveUntrackedContentObjects();
         }
 
+        public void ForceSyncToState(GameState state)
+        {
+            StopAllCoroutines();
+            SyncImmediate(state);
+        }
+
         public void RebuildContent(GameState state)
         {
             SyncImmediate(state);

@@ -160,6 +160,31 @@ namespace Rescue.Unity.UI
             ResetVisuals();
         }
 
+        public void ForceSyncToState(int occupancy, int dockSize)
+        {
+            if (_activeFeedback != null)
+            {
+                StopCoroutine(_activeFeedback);
+                _activeFeedback = null;
+            }
+
+            DockFeedbackType feedbackType = SelectFeedbackType(occupancy, dockSize);
+            if (feedbackType == DockFeedbackType.Failed)
+            {
+                CacheBaseline();
+                ResetVisuals();
+
+                if (TryGetTarget(out Transform target))
+                {
+                    target.localScale = _baseLocalScale * FailedHoldScaleMultiplier;
+                }
+
+                return;
+            }
+
+            ResetVisuals();
+        }
+
         public void SetFeedbackTarget(Transform? target)
         {
             feedbackTarget = target;
@@ -411,7 +436,7 @@ namespace Rescue.Unity.UI
 
             SetDockVisualState(DockVisualStateResolver.FromOccupancy(CountOccupiedSlots(state.Dock), state.Dock.Size));
             ResolveFeedbackPresenter().SetFeedbackTarget(ResolveFeedbackTarget());
-            ResolveFeedbackPresenter().SyncToState(CountOccupiedSlots(state.Dock), state.Dock.Size);
+            ResolveFeedbackPresenter().ForceSyncToState(CountOccupiedSlots(state.Dock), state.Dock.Size);
 
             ClearSlots();
             Transform container = ResolvePieceContainer();
