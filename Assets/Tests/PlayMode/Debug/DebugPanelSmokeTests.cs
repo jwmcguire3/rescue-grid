@@ -46,6 +46,55 @@ namespace Rescue.PlayMode.Tests.Debug
             Assert.That(panel.CurrentState.ActionCount, Is.EqualTo(0));
             Assert.That(panel.CurrentState.Board.Width, Is.EqualTo(3));
             Assert.That(panel.CurrentWaterForecastSummary, Does.Contain("row 2"));
+            Assert.That(panel.IsPanelMinimized, Is.True);
+        }
+
+        [UnityTest]
+        public System.Collections.IEnumerator PanelStartsMinimizedAndCanBeExpanded()
+        {
+            DebugPanel panel = DebugPanel.EnsureInstance();
+            panel.ConfigureForTest(CreateTestLevel(), seed: 15);
+
+            yield return null;
+
+            Assert.That(panel.IsPanelMinimized, Is.True);
+            panel.SetPanelMinimized(false);
+
+            yield return null;
+
+            Assert.That(panel.IsPanelMinimized, Is.False);
+        }
+
+        [UnityTest]
+        public System.Collections.IEnumerator PanelAutoMinimizesAfterOutsideClick()
+        {
+            DebugPanel panel = DebugPanel.EnsureInstance();
+            panel.ConfigureForTest(CreateTestLevel(), seed: 22);
+
+            yield return null;
+
+            panel.SetPanelMinimized(false);
+            panel.SimulateOutsideClickForTest();
+
+            yield return null;
+
+            Assert.That(panel.IsPanelMinimized, Is.True);
+        }
+
+        [UnityTest]
+        public System.Collections.IEnumerator PanelStaysExpandedAfterInsideClick()
+        {
+            DebugPanel panel = DebugPanel.EnsureInstance();
+            panel.ConfigureForTest(CreateTestLevel(), seed: 27);
+
+            yield return null;
+
+            panel.SetPanelMinimized(false);
+            panel.SimulateInsideClickForTest();
+
+            yield return null;
+
+            Assert.That(panel.IsPanelMinimized, Is.False);
         }
 
         [UnityTest]

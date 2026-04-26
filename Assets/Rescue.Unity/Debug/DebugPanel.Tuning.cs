@@ -400,25 +400,34 @@ namespace Rescue.Unity.Debugging
             root.style.paddingBottom = 12.0f;
             root.style.backgroundColor = new Color(0.07f, 0.10f, 0.14f, 0.93f);
 
-            root.Add(MakeHeader("Rescue Grid Debug"));
-            root.Add(MakeRow(out _statusLabel, "status-label", "Ready."));
+            VisualElement headerRow = new VisualElement();
+            headerRow.AddToClassList("debug-header-row");
+            headerRow.Add(MakeHeader("Rescue Grid Debug"));
+            headerRow.Add(MakeButton("Open", "debug-minimize-button", out _minimizeButton));
+            root.Add(headerRow);
+
+            VisualElement body = new VisualElement { name = "debug-panel-body" };
+            body.style.flexGrow = 1.0f;
+            root.Add(body);
+
+            body.Add(MakeRow(out _statusLabel, "status-label", "Ready."));
 
             VisualElement tabRow = new VisualElement { name = "debug-tab-row" };
             tabRow.AddToClassList("debug-tab-row");
             tabRow.Add(MakeButton("Play", "tab-play-button", out _playTabButton));
             tabRow.Add(MakeButton("Tune", "tab-tune-button", out _tuneTabButton));
-            root.Add(tabRow);
+            body.Add(tabRow);
 
             ScrollView playScroll = new ScrollView(ScrollViewMode.Vertical) { name = "play-tab-content" };
             playScroll.style.flexGrow = 1.0f;
             _playTabContent = playScroll;
-            root.Add(playScroll);
+            body.Add(playScroll);
             BuildPlayFallbackContent(playScroll);
 
             ScrollView tuneScroll = new ScrollView(ScrollViewMode.Vertical) { name = "tune-tab-content" };
             tuneScroll.style.flexGrow = 1.0f;
             _tuneTabContent = tuneScroll;
-            root.Add(tuneScroll);
+            body.Add(tuneScroll);
             BuildTuneFallbackContent(tuneScroll);
 
             return root;

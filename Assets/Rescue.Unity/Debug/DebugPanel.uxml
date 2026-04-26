@@ -1,100 +1,105 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
     <ui:VisualElement name="debug-panel-root" class="debug-panel">
-        <ui:Label text="Rescue Grid Debug" class="debug-title" />
-        <ui:Label name="status-label" text="Ready." class="debug-value" />
-
-        <ui:VisualElement class="debug-tab-row">
-            <ui:Button name="tab-play-button" text="Play" class="debug-tab-button debug-tab-button-active" />
-            <ui:Button name="tab-tune-button" text="Tune" class="debug-tab-button" />
+        <ui:VisualElement class="debug-header-row">
+            <ui:Label text="Rescue Grid Debug" class="debug-title" />
+            <ui:Button name="debug-minimize-button" text="Open" class="debug-minimize-button" />
         </ui:VisualElement>
+        <ui:VisualElement name="debug-panel-body">
+            <ui:Label name="status-label" text="Ready." class="debug-value" />
 
-        <ui:ScrollView name="play-tab-content">
-            <ui:Label text="Level" class="debug-section" />
-            <ui:DropdownField name="level-selector" label="Level" />
-            <ui:IntegerField name="seed-field" label="Seed" />
-            <ui:Button name="random-seed-button" text="Randomize Seed" />
-
-            <ui:Label text="Step Through" class="debug-section" />
-            <ui:VisualElement class="button-row">
-                <ui:Button name="play-pause-button" text="Play" />
-                <ui:Button name="step-button" text="Step 1 Action" />
+            <ui:VisualElement class="debug-tab-row">
+                <ui:Button name="tab-play-button" text="Play" class="debug-tab-button debug-tab-button-active" />
+                <ui:Button name="tab-tune-button" text="Tune" class="debug-tab-button" />
             </ui:VisualElement>
-            <ui:DropdownField name="speed-selector" label="Speed" />
-            <ui:Toggle name="fast-forward-toggle" text="Fast Forward" />
-            <ui:Button name="debug-undo-button" text="Debug Undo" />
-            <ui:Button name="reset-button" text="Reset Level" />
 
-            <ui:Label text="Replay" class="debug-section" />
-            <ui:TextField name="replay-path-field" label="Session" />
-            <ui:VisualElement class="button-row">
-                <ui:Button name="load-replay-button" text="Load Replay" />
-                <ui:Button name="step-replay-button" text="Step Replay" />
-                <ui:Button name="clear-replay-button" text="Clear Replay" />
-            </ui:VisualElement>
-            <ui:Label name="replay-status-value" class="debug-value" />
+            <ui:ScrollView name="play-tab-content">
+                <ui:Label text="Level" class="debug-section" />
+                <ui:DropdownField name="level-selector" label="Level" />
+                <ui:IntegerField name="seed-field" label="Seed" />
+                <ui:Button name="random-seed-button" text="Randomize Seed" />
 
-            <ui:Label text="Hazards" class="debug-section" />
-            <ui:Label name="water-actions-value" class="debug-value" />
-            <ui:Label name="water-rise-interval-value" class="debug-value" />
-            <ui:Label name="water-next-row-value" class="debug-value" />
-            <ui:Label name="water-forecast-value" class="debug-value" />
-            <ui:Label name="rule-teach-value" class="debug-value" />
-            <ui:Label name="vine-actions-value" class="debug-value" />
-            <ui:Label name="vine-threshold-value" class="debug-value" />
-            <ui:Label name="vine-pending-value" class="debug-value" />
+                <ui:Label text="Step Through" class="debug-section" />
+                <ui:VisualElement class="button-row">
+                    <ui:Button name="play-pause-button" text="Play" />
+                    <ui:Button name="step-button" text="Step 1 Action" />
+                </ui:VisualElement>
+                <ui:DropdownField name="speed-selector" label="Speed" />
+                <ui:Toggle name="fast-forward-toggle" text="Fast Forward" />
+                <ui:Button name="debug-undo-button" text="Debug Undo" />
+                <ui:Button name="reset-button" text="Reset Level" />
 
-            <ui:Label text="Dock" class="debug-section" />
-            <ui:Label name="dock-occupancy-value" class="debug-value" />
-            <ui:Label name="dock-warning-value" class="debug-value" />
-            <ui:Label name="dock-contents-value" class="debug-value" />
-            <ui:Label name="dock-jam-used-value" class="debug-value" />
-            <ui:Label name="dock-jam-enabled-value" class="debug-value" />
-            <ui:Label name="near-rescue-targets-value" class="debug-value" />
+                <ui:Label text="Replay" class="debug-section" />
+                <ui:TextField name="replay-path-field" label="Session" />
+                <ui:VisualElement class="button-row">
+                    <ui:Button name="load-replay-button" text="Load Replay" />
+                    <ui:Button name="step-replay-button" text="Step Replay" />
+                    <ui:Button name="clear-replay-button" text="Clear Replay" />
+                </ui:VisualElement>
+                <ui:Label name="replay-status-value" class="debug-value" />
 
-            <ui:Label text="RNG" class="debug-section" />
-            <ui:Label name="rng-state-value" class="debug-value" />
-            <ui:Button name="copy-rng-button" text="Copy RNG State" />
+                <ui:Label text="Hazards" class="debug-section" />
+                <ui:Label name="water-actions-value" class="debug-value" />
+                <ui:Label name="water-rise-interval-value" class="debug-value" />
+                <ui:Label name="water-next-row-value" class="debug-value" />
+                <ui:Label name="water-forecast-value" class="debug-value" />
+                <ui:Label name="rule-teach-value" class="debug-value" />
+                <ui:Label name="vine-actions-value" class="debug-value" />
+                <ui:Label name="vine-threshold-value" class="debug-value" />
+                <ui:Label name="vine-pending-value" class="debug-value" />
 
-            <ui:Label text="Spawn Overrides" class="debug-section" />
-            <ui:DropdownField name="assistance-override-field" label="Assist Chance" />
-            <ui:DropdownField name="force-emergency-field" label="Force Emergency" />
-            <ui:Label name="consecutive-emergency-value" class="debug-value" />
-            <ui:Label name="spawn-recovery-value" class="debug-value" />
+                <ui:Label text="Dock" class="debug-section" />
+                <ui:Label name="dock-occupancy-value" class="debug-value" />
+                <ui:Label name="dock-warning-value" class="debug-value" />
+                <ui:Label name="dock-contents-value" class="debug-value" />
+                <ui:Label name="dock-jam-used-value" class="debug-value" />
+                <ui:Label name="dock-jam-enabled-value" class="debug-value" />
+                <ui:Label name="near-rescue-targets-value" class="debug-value" />
 
-            <ui:Label text="Overflow" class="debug-section" />
-            <ui:Button name="overflow-button" text="Instant Overflow Test" />
+                <ui:Label text="RNG" class="debug-section" />
+                <ui:Label name="rng-state-value" class="debug-value" />
+                <ui:Button name="copy-rng-button" text="Copy RNG State" />
 
-            <ui:Label text="State Export" class="debug-section" />
-            <ui:Button name="copy-state-button" text="Copy State JSON" />
-            <ui:Button name="copy-full-state-button" text="Copy Full GameState JSON" />
+                <ui:Label text="Spawn Overrides" class="debug-section" />
+                <ui:DropdownField name="assistance-override-field" label="Assist Chance" />
+                <ui:DropdownField name="force-emergency-field" label="Force Emergency" />
+                <ui:Label name="consecutive-emergency-value" class="debug-value" />
+                <ui:Label name="spawn-recovery-value" class="debug-value" />
 
-            <ui:Label text="Event Log" class="debug-section" />
-            <ui:VisualElement name="event-log-list" />
-        </ui:ScrollView>
+                <ui:Label text="Overflow" class="debug-section" />
+                <ui:Button name="overflow-button" text="Instant Overflow Test" />
 
-        <ui:ScrollView name="tune-tab-content">
-            <ui:Label text="Tune" class="debug-section" />
-            <ui:IntegerField name="tune-water-rise-interval-field" label="Water Rise Interval" />
-            <ui:IntegerField name="tune-initial-flooded-rows-field" label="Initial Flooded Rows" />
-            <ui:FloatField name="tune-assistance-chance-field" label="Assistance Chance" />
-            <ui:DropdownField name="tune-force-emergency-field" label="Force Emergency" />
-            <ui:Toggle name="tune-dock-jam-enabled-toggle" text="Dock Jam Enabled" />
-            <ui:IntegerField name="tune-dock-size-field" label="Dock Size (Debug)" />
-            <ui:IntegerField name="tune-default-crate-hp-field" label="Default Crate HP" />
-            <ui:IntegerField name="tune-vine-growth-threshold-field" label="Vine Growth Threshold" />
+                <ui:Label text="State Export" class="debug-section" />
+                <ui:Button name="copy-state-button" text="Copy State JSON" />
+                <ui:Button name="copy-full-state-button" text="Copy Full GameState JSON" />
 
-            <ui:Label text="Presets" class="debug-section" />
-            <ui:DropdownField name="tune-preset-selector" label="Available" />
-            <ui:TextField name="tune-preset-name-field" label="Preset Name" />
-            <ui:VisualElement class="button-row">
-                <ui:Button name="tune-apply-button" text="Apply &amp; Reload" />
-                <ui:Button name="tune-reset-button" text="Reset" />
-            </ui:VisualElement>
-            <ui:VisualElement class="button-row">
-                <ui:Button name="tune-save-preset-button" text="Save Preset" />
-                <ui:Button name="tune-load-preset-button" text="Load Preset" />
-            </ui:VisualElement>
-            <ui:Label name="tune-summary-value" class="debug-value" text="Tune overrides active: none" />
-        </ui:ScrollView>
+                <ui:Label text="Event Log" class="debug-section" />
+                <ui:VisualElement name="event-log-list" />
+            </ui:ScrollView>
+
+            <ui:ScrollView name="tune-tab-content">
+                <ui:Label text="Tune" class="debug-section" />
+                <ui:IntegerField name="tune-water-rise-interval-field" label="Water Rise Interval" />
+                <ui:IntegerField name="tune-initial-flooded-rows-field" label="Initial Flooded Rows" />
+                <ui:FloatField name="tune-assistance-chance-field" label="Assistance Chance" />
+                <ui:DropdownField name="tune-force-emergency-field" label="Force Emergency" />
+                <ui:Toggle name="tune-dock-jam-enabled-toggle" text="Dock Jam Enabled" />
+                <ui:IntegerField name="tune-dock-size-field" label="Dock Size (Debug)" />
+                <ui:IntegerField name="tune-default-crate-hp-field" label="Default Crate HP" />
+                <ui:IntegerField name="tune-vine-growth-threshold-field" label="Vine Growth Threshold" />
+
+                <ui:Label text="Presets" class="debug-section" />
+                <ui:DropdownField name="tune-preset-selector" label="Available" />
+                <ui:TextField name="tune-preset-name-field" label="Preset Name" />
+                <ui:VisualElement class="button-row">
+                    <ui:Button name="tune-apply-button" text="Apply &amp; Reload" />
+                    <ui:Button name="tune-reset-button" text="Reset" />
+                </ui:VisualElement>
+                <ui:VisualElement class="button-row">
+                    <ui:Button name="tune-save-preset-button" text="Save Preset" />
+                    <ui:Button name="tune-load-preset-button" text="Load Preset" />
+                </ui:VisualElement>
+                <ui:Label name="tune-summary-value" class="debug-value" text="Tune overrides active: none" />
+            </ui:ScrollView>
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

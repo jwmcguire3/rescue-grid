@@ -9,10 +9,22 @@
     color: rgb(231, 239, 245);
 }
 
+.debug-header-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
 .debug-title {
     font-size: 18px;
     -unity-font-style: bold;
     margin-bottom: 8px;
+    flex-grow: 1;
+}
+
+.debug-minimize-button {
+    min-width: 84px;
+    margin-left: 8px;
 }
 
 .debug-section {

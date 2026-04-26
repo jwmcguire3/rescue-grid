@@ -27,7 +27,7 @@ This panel is dev-only and only compiles when `UNITY_EDITOR` or `DEVELOPMENT_BUI
 
 ## Key Bindings
 
-- `F1`: toggle panel visibility
+- `F1`: toggle minimized state
 - `F2`: step one action
 - `F3`: reset level
 - `F4`: debug undo
@@ -44,3 +44,4 @@ This panel is dev-only and only compiles when `UNITY_EDITOR` or `DEVELOPMENT_BUI
   - `clearColor = transparent`
 - In the editor, the panel tries to load `DebugPanel.uxml` and `DebugPanel.uss`.
 - In development players, it falls back to a code-built visual tree so the panel still works without scene plumbing.
+- The panel starts minimized, stays docked in the top-right corner, and auto-minimizes when you click outside it.

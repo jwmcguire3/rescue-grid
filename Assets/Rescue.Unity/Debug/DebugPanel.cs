@@ -52,8 +52,11 @@ namespace Rescue.Unity.Debugging
         private readonly List<InputAction> _inputActions = new List<InputAction>();
 
         private UIDocument? _document;
+        private VisualElement? _documentRoot;
         private PanelSettings? _panelSettings;
         private VisualElement? _panelRoot;
+        private VisualElement? _panelBody;
+        private Button? _minimizeButton;
         private DropdownField? _levelSelector;
         private IntegerField? _seedField;
         private Button? _randomSeedButton;
@@ -96,7 +99,7 @@ namespace Rescue.Unity.Debugging
         [SerializeField] private GameStateViewPresenter? _gameStateViewPresenter;
 
         private bool _initialized;
-        private bool _panelVisible = true;
+        private bool _isPanelMinimized = true;
         private bool _isPlaying;
         private float _playAccumulator;
         private string _currentLevelId = string.Empty;
@@ -126,6 +129,8 @@ namespace Rescue.Unity.Debugging
         public string CurrentWaterForecastSummary => GetWaterForecastSummary(CurrentState);
 
         public string CurrentNearRescueSummary => GetNearRescueTargetsSummary(CurrentState);
+
+        public bool IsPanelMinimized => _isPanelMinimized;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void BootstrapRuntimePanel()
@@ -562,7 +567,7 @@ namespace Rescue.Unity.Debugging
 
         private void ConfigureInputs()
         {
-            RegisterAction("Toggle Panel", "<Keyboard>/f1", _ => TogglePanelVisibility());
+            RegisterAction("Toggle Panel", "<Keyboard>/f1", _ => TogglePanelMinimized());
             RegisterAction("Step Action", "<Keyboard>/f2", _ => StepOneAction());
             RegisterAction("Reset Level", "<Keyboard>/f3", _ => ResetLevel());
             RegisterAction("Debug Undo", "<Keyboard>/f4", _ => DebugUndo());
@@ -647,11 +652,14 @@ namespace Rescue.Unity.Debugging
             VisualElement root = _document.rootVisualElement;
             root.Clear();
             root.style.flexGrow = 1.0f;
+            root.UnregisterCallback<PointerDownEvent>(OnRootPointerDown);
+            root.RegisterCallback<PointerDownEvent>(OnRootPointerDown);
+            _documentRoot = root;
 
             VisualTreeAsset? asset = TryLoadUxmlAsset();
             VisualElement panel = asset is not null ? asset.CloneTree() : CreatePanelFallback();
             panel.name = "debug-panel-root";
-            panel.style.display = _panelVisible ? DisplayStyle.Flex : DisplayStyle.None;
+            panel.style.display = DisplayStyle.Flex;
             root.Add(panel);
             _panelRoot = panel;
 
@@ -728,6 +736,13 @@ namespace Rescue.Unity.Debugging
             _copyStateButton = panel.Q<Button>("copy-state-button");
             _copyFullStateButton = panel.Q<Button>("copy-full-state-button");
             _eventLogList = panel.Q<VisualElement>("event-log-list");
+            _panelBody = panel.Q<VisualElement>("debug-panel-body");
+            _minimizeButton = panel.Q<Button>("debug-minimize-button");
+
+            if (_minimizeButton is not null)
+            {
+                _minimizeButton.clicked += TogglePanelMinimized;
+            }
 
             if (_levelSelector is not null)
             {
@@ -880,6 +895,7 @@ namespace Rescue.Unity.Debugging
             }
 
             BindTuningUi(panel);
+            SyncPanelMinimizedState();
         }
 
         private VisualElement CreatePanelFallback()
@@ -947,13 +963,58 @@ namespace Rescue.Unity.Debugging
             return button;
         }
 
-        private void TogglePanelVisibility()
+        public void SetPanelMinimized(bool minimized)
         {
-            _panelVisible = !_panelVisible;
-            if (_panelRoot is not null)
+            _isPanelMinimized = minimized;
+            SyncPanelMinimizedState();
+        }
+
+        public void SimulateOutsideClickForTest()
+        {
+            HandleDocumentPointerDown(_documentRoot);
+        }
+
+        public void SimulateInsideClickForTest()
+        {
+            HandleDocumentPointerDown(_panelRoot);
+        }
+
+        private void TogglePanelMinimized()
+        {
+            SetPanelMinimized(!_isPanelMinimized);
+        }
+
+        private void SyncPanelMinimizedState()
+        {
+            if (_panelBody is not null)
             {
-                _panelRoot.style.display = _panelVisible ? DisplayStyle.Flex : DisplayStyle.None;
+                _panelBody.style.display = _isPanelMinimized ? DisplayStyle.None : DisplayStyle.Flex;
             }
+
+            if (_minimizeButton is not null)
+            {
+                _minimizeButton.text = _isPanelMinimized ? "Open" : "Minimize";
+            }
+        }
+
+        private void OnRootPointerDown(PointerDownEvent evt)
+        {
+            HandleDocumentPointerDown(evt.target as VisualElement);
+        }
+
+        private void HandleDocumentPointerDown(VisualElement? clickedElement)
+        {
+            if (_isPanelMinimized || _panelRoot is null || clickedElement is null)
+            {
+                return;
+            }
+
+            if (clickedElement == _panelRoot || _panelRoot.Contains(clickedElement))
+            {
+                return;
+            }
+
+            SetPanelMinimized(true);
         }
 
         private void TogglePlayPause()
