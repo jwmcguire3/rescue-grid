@@ -4,6 +4,7 @@ using Rescue.Core.Pipeline;
 using Rescue.Core.State;
 using Rescue.Unity.Art.Registries;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Rescue.Unity.BoardPresentation
 {
@@ -11,6 +12,8 @@ namespace Rescue.Unity.BoardPresentation
     {
         private const string DefaultContentRootName = "BoardContent";
         private const float HiddenDebrisYOffsetRatio = 0.5f;
+        private const float DefaultTargetExtractLiftDistance = 0.18f;
+        private const float DefaultTargetExtractPulseScale = 1.12f;
         private static readonly Vector3 HiddenDebrisScale = new Vector3(0.75f, 0.75f, 0.75f);
 
         [SerializeField] private BoardGridViewPresenter? gridView;
@@ -141,10 +144,24 @@ namespace Rescue.Unity.BoardPresentation
             }
         }
 
-        public void AnimateTargetExtract(TargetExtracted extraction)
+        public void AnimateTargetExtract(TargetExtracted extraction, float durationSeconds = 0.12f)
         {
-            _ = extraction;
-            // Target extraction animation will be added later once playback owns target removal timing.
+            if (!TryGetTargetInstance(extraction.TargetId, out GameObject? targetObject) || targetObject is null)
+            {
+                return;
+            }
+
+            spawnedTargetsById.Remove(extraction.TargetId);
+
+            if (!Application.isPlaying || !isActiveAndEnabled || durationSeconds <= 0f)
+            {
+                ApplyTargetExtractPose(targetObject.transform, 1f);
+                SetTargetVisualAlpha(targetObject, 0f);
+                DestroyContentObject(targetObject);
+                return;
+            }
+
+            StartCoroutine(AnimateTargetExtractRoutine(targetObject, durationSeconds));
         }
 
         public bool TryGetTargetInstance(string targetId, out GameObject? targetObject)
@@ -174,6 +191,84 @@ namespace Rescue.Unity.BoardPresentation
             else
             {
                 DestroyImmediate(contentObject);
+            }
+        }
+
+        private System.Collections.IEnumerator AnimateTargetExtractRoutine(GameObject targetObject, float durationSeconds)
+        {
+            if (targetObject is null)
+            {
+                yield break;
+            }
+
+            Transform targetTransform = targetObject.transform;
+            Vector3 baseLocalPosition = targetTransform.localPosition;
+            Vector3 baseLocalScale = targetTransform.localScale;
+            float clampedDuration = Mathf.Max(0.01f, durationSeconds);
+            float elapsed = 0f;
+
+            while (elapsed < clampedDuration)
+            {
+                if (targetObject is null)
+                {
+                    yield break;
+                }
+
+                elapsed += Time.deltaTime;
+                float normalized = Mathf.Clamp01(elapsed / clampedDuration);
+                ApplyTargetExtractPose(targetTransform, normalized, baseLocalPosition, baseLocalScale);
+                SetTargetVisualAlpha(targetObject, 1f - normalized);
+                yield return null;
+            }
+
+            if (targetObject is not null)
+            {
+                DestroyContentObject(targetObject);
+            }
+        }
+
+        private static void ApplyTargetExtractPose(Transform targetTransform, float normalized)
+        {
+            ApplyTargetExtractPose(targetTransform, normalized, targetTransform.localPosition, targetTransform.localScale);
+        }
+
+        private static void ApplyTargetExtractPose(
+            Transform targetTransform,
+            float normalized,
+            Vector3 baseLocalPosition,
+            Vector3 baseLocalScale)
+        {
+            float clamped = Mathf.Clamp01(normalized);
+            float eased = 1f - Mathf.Pow(1f - clamped, 3f);
+            float pulse = Mathf.Sin(clamped * Mathf.PI);
+
+            targetTransform.localPosition = baseLocalPosition + new Vector3(0f, DefaultTargetExtractLiftDistance * eased, 0f);
+            targetTransform.localScale = Vector3.LerpUnclamped(
+                baseLocalScale,
+                baseLocalScale * DefaultTargetExtractPulseScale,
+                pulse);
+        }
+
+        private static void SetTargetVisualAlpha(GameObject targetObject, float alpha)
+        {
+            float clampedAlpha = Mathf.Clamp01(alpha);
+
+            SpriteRenderer[] spriteRenderers = targetObject.GetComponentsInChildren<SpriteRenderer>(includeInactive: true);
+            for (int i = 0; i < spriteRenderers.Length; i++)
+            {
+                SpriteRenderer spriteRenderer = spriteRenderers[i];
+                Color color = spriteRenderer.color;
+                color.a = clampedAlpha;
+                spriteRenderer.color = color;
+            }
+
+            Graphic[] graphics = targetObject.GetComponentsInChildren<Graphic>(includeInactive: true);
+            for (int i = 0; i < graphics.Length; i++)
+            {
+                Graphic graphic = graphics[i];
+                Color color = graphic.color;
+                color.a = clampedAlpha;
+                graphic.color = color;
             }
         }
 

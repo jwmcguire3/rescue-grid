@@ -259,7 +259,42 @@ namespace Rescue.Unity.BoardPresentation.Tests
         }
 
         [Test]
-        public void BoardContentViewPresenter_AnimationApisFailSoftWhenVisualsAreMissing()
+        public void BoardContentViewPresenter_AnimateTargetExtractSafelyRemovesTrackedTargetVisual()
+        {
+            PresenterHarness harness = CreateHarness();
+            TargetVisualRegistry targetRegistry = CreateRegistry<TargetVisualRegistry>();
+            targetRegistry.FallbackTargetPrefab = harness.FallbackPrefab;
+            SetPrivateField(harness.ContentPresenter, "targetRegistry", targetRegistry);
+
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new TargetTile("puppy-1", Extracted: false))));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-1", out GameObject? targetBeforeExtract), Is.True);
+            Assert.That(targetBeforeExtract, Is.Not.Null);
+
+            harness.ContentPresenter.AnimateTargetExtract(new TargetExtracted("puppy-1", new TileCoord(0, 0)));
+
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-1", out GameObject? targetAfterExtract), Is.False);
+            Assert.That(targetAfterExtract, Is.Null);
+            Assert.That(FindChildByName(harness.ContentRoot, "Target_puppy-1"), Is.Null);
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_AnimateTargetExtractSkipsMissingTargetVisualSafely()
+        {
+            PresenterHarness harness = CreateHarness();
+
+            Assert.DoesNotThrow(() => harness.ContentPresenter.AnimateTargetExtract(
+                new TargetExtracted("missing-target", new TileCoord(0, 0))));
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_NonTargetAnimationApisFailSoftWhenVisualsAreMissing()
         {
             PresenterHarness harness = CreateHarness();
 
@@ -273,8 +308,6 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Assert.DoesNotThrow(() => harness.ContentPresenter.AnimateSpawn(
                 new Spawned(
                     ImmutableArray.Create((new TileCoord(0, 0), DebrisType.B)))));
-            Assert.DoesNotThrow(() => harness.ContentPresenter.AnimateTargetExtract(
-                new TargetExtracted("missing-target", new TileCoord(0, 0))));
         }
 
         private PresenterHarness CreateHarness()

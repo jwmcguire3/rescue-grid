@@ -152,6 +152,43 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(harness.Controller.IsPlaying, Is.False);
         }
 
+        [Test]
+        public void ActionPlaybackController_TargetExtractRoutesThroughPlaybackAndFinalSyncRepairsState()
+        {
+            ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
+            GameState previousState = CreateBoardState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new TargetTile("pup-1", Extracted: false))));
+            GameState resultState = CreateBoardState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new TargetTile("pup-1", Extracted: true))));
+
+            harness.GridPresenter.RebuildGrid(previousState);
+            harness.ContentPresenter.SyncImmediate(previousState);
+
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("pup-1", out GameObject? targetBeforePlayback), Is.True);
+            Assert.That(targetBeforePlayback, Is.Not.Null);
+
+            ActionResult result = CreateResult(
+                resultState,
+                actionCount: 5,
+                new TargetExtracted("pup-1", new TileCoord(0, 0)));
+
+            int finalSyncCalls = 0;
+
+            bool handled = harness.Controller.TryPlayAction(previousState, new ActionInput(new TileCoord(0, 0)), result, syncedResult =>
+            {
+                finalSyncCalls++;
+                harness.ContentPresenter.SyncImmediate(syncedResult.State);
+            });
+
+            Assert.That(handled, Is.True);
+            Assert.That(finalSyncCalls, Is.EqualTo(1));
+            Assert.That(harness.Controller.CurrentPlan[0].StepType, Is.EqualTo(ActionPlaybackStepType.TargetExtract));
+            Assert.That(harness.Controller.CurrentPlan[^1].StepType, Is.EqualTo(ActionPlaybackStepType.FinalSync));
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("pup-1", out GameObject? targetAfterPlayback), Is.False);
+            Assert.That(targetAfterPlayback, Is.Null);
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(0));
+        }
+
         private ActionPlaybackController CreateController(bool playbackEnabled, bool yieldBetweenSteps)
         {
             GameObject gameObject = CreateTrackedGameObject("ActionPlaybackController");

@@ -78,6 +78,28 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
+        public void Build_TargetExtractComesBeforeWaterRiseAndFinalSync()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(
+                    new GravitySettled(ImmutableArray.Create((new TileCoord(0, 1), new TileCoord(1, 1)))),
+                    new Spawned(ImmutableArray.Create((new TileCoord(0, 1), DebrisType.C))),
+                    new TargetExtracted("pup-1", new TileCoord(2, 1)),
+                    new WaterRose(FloodedRow: 3)));
+
+            int targetExtractIndex = IndexOf(plan, ActionPlaybackStepType.TargetExtract);
+            int waterRiseIndex = IndexOf(plan, ActionPlaybackStepType.WaterRise);
+            int finalSyncIndex = IndexOf(plan, ActionPlaybackStepType.FinalSync);
+
+            Assert.That(targetExtractIndex, Is.GreaterThan(IndexOf(plan, ActionPlaybackStepType.Gravity)));
+            Assert.That(targetExtractIndex, Is.GreaterThan(IndexOf(plan, ActionPlaybackStepType.Spawn)));
+            Assert.That(targetExtractIndex, Is.LessThan(waterRiseIndex));
+            Assert.That(targetExtractIndex, Is.LessThan(finalSyncIndex));
+        }
+
+        [Test]
         public void Build_EmptyEventsStillProduceSafeFinalSync()
         {
             ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(

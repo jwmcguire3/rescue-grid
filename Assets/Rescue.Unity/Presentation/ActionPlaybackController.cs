@@ -136,7 +136,7 @@ namespace Rescue.Unity.Presentation
                     boardContent.AnimateSpawn(spawned);
                     break;
                 case TargetExtracted extracted:
-                    boardContent.AnimateTargetExtract(extracted);
+                    boardContent.AnimateTargetExtract(extracted, settings.TargetExtractDurationSeconds);
                     break;
             }
         }
@@ -167,6 +167,8 @@ namespace Rescue.Unity.Presentation
                     return settings.GravityDurationSeconds;
                 case ActionPlaybackStepType.Spawn:
                     return settings.SpawnDurationSeconds;
+                case ActionPlaybackStepType.TargetExtract:
+                    return settings.TargetExtractDurationSeconds;
                 default:
                     return 0f;
             }
