@@ -102,9 +102,6 @@ namespace Rescue.Unity.Presentation
 
             if (context is not null)
             {
-                Debug.Log(
-                    $"{nameof(ActionPlaybackController)} cancelled playback and is recovering presentation to authoritative action count {context.Result.State.ActionCount}.",
-                    this);
                 context.FinalSync(context.Result);
             }
         }

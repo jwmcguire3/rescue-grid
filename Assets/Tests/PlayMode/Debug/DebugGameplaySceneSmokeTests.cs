@@ -3,6 +3,7 @@ using NUnit.Framework;
 using Rescue.Content;
 using Rescue.Core.State;
 using Rescue.Unity.Debugging;
+using Rescue.Unity.Presentation;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
@@ -86,7 +87,13 @@ namespace Rescue.PlayMode.Tests.Debug
 
             Assert.That(panel.StepOneAction(), Is.True);
 
-            yield return null;
+            GameStateViewPresenter? presenter = Object.FindFirstObjectByType<GameStateViewPresenter>();
+            Assert.That(presenter, Is.Not.Null, "Expected DebugGameplay to include a GameStateViewPresenter.");
+            float timeoutAt = Time.realtimeSinceStartup + 2f;
+            while (presenter is not null && presenter.IsPlaybackActive && Time.realtimeSinceStartup < timeoutAt)
+            {
+                yield return null;
+            }
 
             dockPieces = dockRoot.Find("DockPieces");
             Assert.That(dockPieces, Is.Not.Null, "Expected the dock presenter to materialize a runtime piece container after stepping.");

@@ -131,6 +131,8 @@ GameObject:
   - component: {fileID: 200000002}
   - component: {fileID: 200000003}
   - component: {fileID: 200000004}
+  - component: {fileID: 200000005}
+  - component: {fileID: 200000006}
   m_Layer: 0
   m_Name: GameStateViewRoot
   m_TagString: Untagged
@@ -155,6 +157,7 @@ Transform:
   - {fileID: 200000021}
   - {fileID: 200000031}
   - {fileID: 200000041}
+  - {fileID: 200000051}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &200000002
@@ -174,6 +177,7 @@ MonoBehaviour:
   waterView: {fileID: 200000032}
   dockView: {fileID: 200000042}
   targetFeedback: {fileID: 200000004}
+  playbackController: {fileID: 200000005}
 --- !u!114 &200000003
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -219,6 +223,57 @@ MonoBehaviour:
   nearRescuePulseScale: 1.08
   nearRescueAlphaMultiplier: 1.15
   extractionHoldDuration: 0.55
+--- !u!114 &200000005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 200000000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 855774a7904748db81c1dfb996e2501c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rescue.Unity::Rescue.Unity.Presentation.ActionPlaybackController
+  settings:
+    playbackEnabled: 1
+    yieldBetweenSteps: 1
+    playbackSpeedMultiplier: 1
+    removeDurationSeconds: 0.1
+    breakBlockerOrRevealDurationSeconds: 0.1
+    dockFeedbackDurationSeconds: 0.1
+    dockInsertFeedbackDurationSeconds: 0.08
+    dockClearFeedbackDurationSeconds: 0.08
+    dockWarningCautionDurationSeconds: 0.5
+    dockWarningAcuteDurationSeconds: 0.4
+    dockJamFeedbackDurationSeconds: 0.7
+    gravityDurationSeconds: 0.15
+    spawnDurationSeconds: 0.12
+    targetExtractDurationSeconds: 0.12
+    waterRiseDurationSeconds: 0.15
+    waterForecastTransitionDurationSeconds: 0.1
+    waterForecastPulseDurationSeconds: 0.25
+    waterlinePulseDurationSeconds: 0.2
+  boardGrid: {fileID: 200000012}
+  boardContent: {fileID: 200000022}
+  waterView: {fileID: 200000032}
+  dockView: {fileID: 200000042}
+  fxEventRouter: {fileID: 200000006}
+--- !u!114 &200000006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 200000000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55212a5d2c00af84bbd85c80c2012648, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rescue.Unity::Rescue.Unity.FX.FxEventRouter
+  fxRegistry: {fileID: 11400000, guid: b1429a0b0e5762443944d06aac7a1fbf, type: 2}
+  fxRoot: {fileID: 200000051}
+  boardGrid: {fileID: 200000012}
 --- !u!1 &200000010
 GameObject:
   m_ObjectHideFlags: 0
@@ -322,6 +377,37 @@ MonoBehaviour:
   contentRoot: {fileID: 200000021}
   fallbackContentPrefab: {fileID: 0}
   contentYOffset: 0.05
+--- !u!1 &200000050
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 200000051}
+  m_Layer: 0
+  m_Name: FXRoot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &200000051
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 200000050}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 200000001}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &200000030
 GameObject:
   m_ObjectHideFlags: 0
