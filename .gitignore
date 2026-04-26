@@ -16,6 +16,20 @@ Assets/StreamingAssets/Levels/*_preview.txt
 *.user
 .vs/
 
+# Repo-local tool/runtime state
+.appdata/
+.claude/
+.codex-appdata/
+.codex-dotnet/
+.codex-home/
+.dotnet/
+.nuget/
+UIElementsSchema/
+
+# Test output
+*-results.xml
+*-tests.log
+
 # OS
 .DS_Store
 Thumbs.db
