@@ -31,7 +31,7 @@ namespace Rescue.Unity.Presentation
                 return;
             }
 
-            ForceSyncToState(state);
+            ForceSyncToState(state, "rebuild", cancelActivePlayback: true, clearPlaybackPlan: true);
         }
 
         public void ApplyActionResult(GameState previousState, ActionInput input, ActionResult result)
@@ -115,7 +115,11 @@ namespace Rescue.Unity.Presentation
             }
         }
 
-        public void ForceSyncToState(GameState state, string context = "authoritative sync")
+        public void ForceSyncToState(
+            GameState state,
+            string context = "authoritative sync",
+            bool cancelActivePlayback = true,
+            bool clearPlaybackPlan = true)
         {
             if (state is null)
             {
@@ -123,8 +127,17 @@ namespace Rescue.Unity.Presentation
                 return;
             }
 
+            if (cancelActivePlayback && IsPlaybackActive)
+            {
+                ResolvePlaybackController()?.CancelPlayback();
+            }
+
             GameState? previousState = CurrentState;
             CurrentState = state;
+            if (clearPlaybackPlan)
+            {
+                CurrentPlaybackPlan = ActionPlaybackPlan.Empty;
+            }
 
             if (boardGrid is null)
             {
@@ -198,7 +211,11 @@ namespace Rescue.Unity.Presentation
 
         private void FinalSyncActionResult(ActionResult result)
         {
-            ForceSyncToState(result.State, "playback final sync");
+            ForceSyncToState(
+                result.State,
+                "playback final sync",
+                cancelActivePlayback: false,
+                clearPlaybackPlan: false);
 
             if (!dockFeedbackHandledByPlayback && dockView is not null)
             {

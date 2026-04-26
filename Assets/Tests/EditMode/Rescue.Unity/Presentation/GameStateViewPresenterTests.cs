@@ -208,6 +208,87 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(harness.Presenter.CurrentState, Is.EqualTo(resultState));
         }
 
+        [UnityTest]
+        public System.Collections.IEnumerator GameStateViewPresenter_RebuildDuringPlaybackCancelsStalePlaybackAndKeepsReplacementState()
+        {
+            PresenterHarness harness = CreateHarness(withPlaybackController: true, yieldBetweenSteps: true);
+            GameState previousState = CreateState();
+            GameState playbackState = previousState with { ActionCount = previousState.ActionCount + 1 };
+            GameState replacementState = previousState with
+            {
+                ActionCount = 99,
+                Water = new WaterState(FloodedRows: 0, ActionsUntilRise: 4, RiseInterval: 4),
+            };
+
+            ActionResult result = new ActionResult(
+                playbackState,
+                ImmutableArray.Create<ActionEvent>(
+                    new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0)))),
+                ActionOutcome.Ok,
+                Snapshot: null);
+
+            harness.Presenter.Rebuild(previousState);
+            harness.Presenter.ApplyActionResult(previousState, new ActionInput(new TileCoord(0, 0)), result);
+
+            Assert.That(harness.Presenter.IsPlaybackActive, Is.True);
+
+            harness.Presenter.Rebuild(replacementState);
+
+            Assert.That(harness.Presenter.IsPlaybackActive, Is.False);
+            Assert.That(harness.Presenter.CurrentState, Is.EqualTo(replacementState));
+            Assert.That(harness.Presenter.CurrentPlaybackPlan.Count, Is.EqualTo(0));
+
+            yield return null;
+
+            Assert.That(harness.Presenter.CurrentState, Is.EqualTo(replacementState));
+            Assert.That(harness.Presenter.IsPlaybackActive, Is.False);
+        }
+
+        [UnityTest]
+        public System.Collections.IEnumerator GameStateViewPresenter_ForceSyncDuringPlaybackCancelsStalePlaybackAndKeepsReplacementState()
+        {
+            PresenterHarness harness = CreateHarness(withPlaybackController: true, yieldBetweenSteps: true);
+            GameState previousState = CreateState();
+            GameState playbackState = previousState with { ActionCount = previousState.ActionCount + 1 };
+            GameState replacementState = previousState with
+            {
+                ActionCount = 42,
+                Dock = new CoreDock(
+                    ImmutableArray.Create<DebrisType?>(
+                        DebrisType.B,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null),
+                    Size: 7),
+            };
+
+            ActionResult result = new ActionResult(
+                playbackState,
+                ImmutableArray.Create<ActionEvent>(
+                    new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0)))),
+                ActionOutcome.Ok,
+                Snapshot: null);
+
+            harness.Presenter.Rebuild(previousState);
+            harness.Presenter.ApplyActionResult(previousState, new ActionInput(new TileCoord(0, 0)), result);
+
+            Assert.That(harness.Presenter.IsPlaybackActive, Is.True);
+
+            harness.Presenter.ForceSyncToState(replacementState, "test undo sync");
+
+            Assert.That(harness.Presenter.IsPlaybackActive, Is.False);
+            Assert.That(harness.Presenter.CurrentState, Is.EqualTo(replacementState));
+            Assert.That(harness.Presenter.CurrentPlaybackPlan.Count, Is.EqualTo(0));
+
+            yield return null;
+
+            Assert.That(harness.Presenter.CurrentState, Is.EqualTo(replacementState));
+            Assert.That(harness.Presenter.IsPlaybackActive, Is.False);
+        }
+
         [Test]
         public void GameStateViewPresenter_ApplyActionResultFallsBackToImmediateSyncWhenPlaybackControllerDisabled()
         {

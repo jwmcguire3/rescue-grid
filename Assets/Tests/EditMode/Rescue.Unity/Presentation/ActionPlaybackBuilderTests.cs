@@ -360,6 +360,45 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
+        public void Build_WinStopsPlaybackBeforePostOutcomeHazardFeedback()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(
+                    new TargetExtracted("pup-1", new TileCoord(2, 1)),
+                    new Won("pup-1", TotalActions: 3, ExtractedTargetOrder: ImmutableArray.Create("pup-1")),
+                    new WaterRose(FloodedRow: 2),
+                    new DockWarningChanged(DockWarningLevel.Safe, DockWarningLevel.Caution)));
+
+            Assert.That(plan.Take(plan.Count - 1).Select(step => (step.SourceEventName, step.StepType)), Is.EqualTo(new[]
+            {
+                (nameof(TargetExtracted), ActionPlaybackStepType.TargetExtract),
+            }));
+            Assert.That(plan[^1].StepType, Is.EqualTo(ActionPlaybackStepType.FinalSync));
+        }
+
+        [Test]
+        public void Build_LossStopsPlaybackAfterReadablePreLossFeedback()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(
+                    new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 7, OverflowCount: 1),
+                    new DockJamTriggered(OverflowCount: 1),
+                    new Lost(ActionOutcome.LossDockOverflow),
+                    new DockCleared(DebrisType.A, SetsCleared: 1, OccupancyAfterClear: 4)));
+
+            Assert.That(plan.Take(plan.Count - 1).Select(step => (step.SourceEventName, step.StepType)), Is.EqualTo(new[]
+            {
+                (nameof(DockInserted), ActionPlaybackStepType.DockFeedback),
+                (nameof(DockJamTriggered), ActionPlaybackStepType.DockFeedback),
+            }));
+            Assert.That(plan[^1].StepType, Is.EqualTo(ActionPlaybackStepType.FinalSync));
+        }
+
+        [Test]
         public void Build_NoWaterRoseDoesNotAddWaterRiseButKeepsFinalSync()
         {
             ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(

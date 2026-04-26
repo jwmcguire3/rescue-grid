@@ -26,6 +26,11 @@ namespace Rescue.Unity.Presentation
             List<ActionPlaybackStep> mappedSteps = new List<ActionPlaybackStep>(result.Events.Length);
             foreach (ActionEvent actionEvent in result.Events)
             {
+                if (actionEvent is Won or Lost)
+                {
+                    break;
+                }
+
                 MapSteps(actionEvent, mappedSteps);
             }
 
