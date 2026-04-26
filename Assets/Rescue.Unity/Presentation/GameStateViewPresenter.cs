@@ -63,13 +63,14 @@ namespace Rescue.Unity.Presentation
                 dockView.Rebuild(state);
             }
 
-            if (targetFeedback is null)
+            TargetFeedbackPresenter? resolvedTargetFeedback = ResolveTargetFeedback();
+            if (resolvedTargetFeedback is null)
             {
                 Debug.LogWarning($"{nameof(GameStateViewPresenter)} is missing {nameof(targetFeedback)}.", this);
             }
             else
             {
-                targetFeedback.Apply(previousState, state);
+                resolvedTargetFeedback.Apply(previousState, state);
             }
         }
 
@@ -129,14 +130,26 @@ namespace Rescue.Unity.Presentation
                 dockView.ClearSlots();
             }
 
-            if (targetFeedback is null)
+            TargetFeedbackPresenter? resolvedTargetFeedback = ResolveTargetFeedback();
+            if (resolvedTargetFeedback is null)
             {
                 Debug.LogWarning($"{nameof(GameStateViewPresenter)} is missing {nameof(targetFeedback)}.", this);
             }
             else
             {
-                targetFeedback.ClearFeedback();
+                resolvedTargetFeedback.ClearFeedback();
             }
+        }
+
+        private TargetFeedbackPresenter? ResolveTargetFeedback()
+        {
+            if (targetFeedback is not null)
+            {
+                return targetFeedback;
+            }
+
+            targetFeedback = GetComponent<TargetFeedbackPresenter>();
+            return targetFeedback;
         }
     }
 }

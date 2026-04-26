@@ -130,6 +130,7 @@ GameObject:
   - component: {fileID: 200000001}
   - component: {fileID: 200000002}
   - component: {fileID: 200000003}
+  - component: {fileID: 200000004}
   m_Layer: 0
   m_Name: GameStateViewRoot
   m_TagString: Untagged
@@ -172,6 +173,7 @@ MonoBehaviour:
   boardContent: {fileID: 200000022}
   waterView: {fileID: 200000032}
   dockView: {fileID: 200000042}
+  targetFeedback: {fileID: 200000004}
 --- !u!114 &200000003
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -192,6 +194,31 @@ MonoBehaviour:
     m_Bits: 1
   enableMouseInput: 1
   enableTouchInput: 0
+--- !u!114 &200000004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 200000000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d31d94412d74b8bb1ed8b11b3ce0011, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rescue.Unity::Rescue.Unity.BoardPresentation.TargetFeedbackPresenter
+  gridView: {fileID: 200000012}
+  contentView: {fileID: 200000022}
+  feedbackRoot: {fileID: 0}
+  nearRescueFxPrefab: {fileID: 0}
+  extractionFxPrefab: {fileID: 0}
+  fallbackTargetPrefab: {fileID: 0}
+  maeReactionHook: {fileID: 0}
+  aftercareCardHook: {fileID: 0}
+  feedbackYOffset: 0.1
+  nearRescuePulseDuration: 0.45
+  nearRescuePulseScale: 1.08
+  nearRescueAlphaMultiplier: 1.15
+  extractionHoldDuration: 0.55
 --- !u!1 &200000010
 GameObject:
   m_ObjectHideFlags: 0

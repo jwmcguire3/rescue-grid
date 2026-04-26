@@ -63,7 +63,7 @@ namespace Rescue.Unity.BoardPresentation
             for (int i = transientObjects.Count - 1; i >= 0; i--)
             {
                 GameObject? transientObject = transientObjects[i];
-                if (transientObject is null)
+                if (transientObject == null)
                 {
                     transientObjects.RemoveAt(i);
                     continue;
@@ -85,7 +85,7 @@ namespace Rescue.Unity.BoardPresentation
         private void PlayNearRescue(TargetFeedbackEvent feedbackEvent, GameState? previousState, GameState currentState)
         {
             GameObject? targetObject = ResolveTargetObject(feedbackEvent);
-            if (targetObject is not null)
+            if (targetObject != null)
             {
                 PulseTarget(targetObject);
             }
@@ -103,9 +103,9 @@ namespace Rescue.Unity.BoardPresentation
 
         private GameObject? ResolveTargetObject(TargetFeedbackEvent feedbackEvent)
         {
-            if (contentView is not null
+            if (contentView != null
                 && contentView.TryGetTargetInstance(feedbackEvent.TargetId, out GameObject targetObject)
-                && targetObject is not null)
+                && targetObject != null)
             {
                 return targetObject;
             }
@@ -115,12 +115,12 @@ namespace Rescue.Unity.BoardPresentation
 
         private GameObject? SpawnFeedbackPrefab(GameObject? prefab, TargetFeedbackEvent feedbackEvent, float autoDestroyDelay)
         {
-            if (prefab is null)
+            if (prefab == null)
             {
                 return null;
             }
 
-            if (gridView is null || !gridView.TryGetCellAnchor(feedbackEvent.Coord, out Transform anchor))
+            if (gridView == null || !gridView.TryGetCellAnchor(feedbackEvent.Coord, out Transform anchor))
             {
                 return null;
             }
@@ -142,13 +142,13 @@ namespace Rescue.Unity.BoardPresentation
 
         private Transform ResolveFeedbackRoot()
         {
-            if (feedbackRoot is not null)
+            if (feedbackRoot != null)
             {
                 return feedbackRoot;
             }
 
             Transform existingRoot = transform.Find(DefaultFeedbackRootName);
-            if (existingRoot is not null)
+            if (existingRoot != null)
             {
                 feedbackRoot = existingRoot;
                 return existingRoot;
@@ -221,7 +221,7 @@ namespace Rescue.Unity.BoardPresentation
 
         private IEnumerator AnimatePulse(Transform target, Vector3 from, Vector3 peak, float duration)
         {
-            if (target is null)
+            if (target == null)
             {
                 yield break;
             }
@@ -231,6 +231,11 @@ namespace Rescue.Unity.BoardPresentation
 
             while (elapsed < clampedDuration)
             {
+                if (target == null)
+                {
+                    yield break;
+                }
+
                 elapsed += Time.deltaTime;
                 float normalized = Mathf.Clamp01(elapsed / clampedDuration);
                 float eased = Mathf.Sin(normalized * Mathf.PI);
@@ -238,7 +243,7 @@ namespace Rescue.Unity.BoardPresentation
                 yield return null;
             }
 
-            if (target is not null)
+            if (target != null)
             {
                 target.localScale = from;
             }
@@ -258,7 +263,7 @@ namespace Rescue.Unity.BoardPresentation
                 yield return null;
             }
 
-            if (spriteRenderer is not null)
+            if (spriteRenderer != null)
             {
                 spriteRenderer.color = from;
             }
@@ -278,7 +283,7 @@ namespace Rescue.Unity.BoardPresentation
                 yield return null;
             }
 
-            if (graphic is not null)
+            if (graphic != null)
             {
                 graphic.color = from;
             }
@@ -288,7 +293,7 @@ namespace Rescue.Unity.BoardPresentation
         {
             yield return delay <= 0f ? null : new WaitForSeconds(delay);
 
-            if (targetObject is null)
+            if (targetObject == null)
             {
                 yield break;
             }
@@ -316,13 +321,13 @@ namespace Rescue.Unity.BoardPresentation
 
         private void EnsureFeedbackRoot()
         {
-            if (feedbackRoot is not null)
+            if (feedbackRoot != null)
             {
                 return;
             }
 
             Transform existingRoot = transform.Find(DefaultFeedbackRootName);
-            if (existingRoot is not null)
+            if (existingRoot != null)
             {
                 feedbackRoot = existingRoot;
                 return;

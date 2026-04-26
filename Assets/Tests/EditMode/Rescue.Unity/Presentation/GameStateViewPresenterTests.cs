@@ -62,6 +62,16 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
+        public void GameStateViewPresenter_RebuildAutoResolvesCoLocatedTargetFeedbackPresenter()
+        {
+            PresenterHarness harness = CreateHarness(assignTargetFeedbackToPresenter: false);
+            GameState state = CreateState();
+
+            LogAssert.NoUnexpectedReceived();
+            Assert.DoesNotThrow(() => harness.Presenter.Rebuild(state));
+        }
+
+        [Test]
         public void GameStateViewPresenter_ClearAllClearsGeneratedObjects()
         {
             PresenterHarness harness = CreateHarness();
@@ -76,7 +86,7 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(harness.DockPieceContainer.childCount, Is.EqualTo(0));
         }
 
-        private PresenterHarness CreateHarness()
+        private PresenterHarness CreateHarness(bool assignTargetFeedbackToPresenter = true)
         {
             GameObject presenterObject = CreateTrackedGameObject("GameStateViewRoot");
             GameStateViewPresenter presenter = presenterObject.AddComponent<GameStateViewPresenter>();
@@ -145,7 +155,10 @@ namespace Rescue.Unity.Presentation.Tests
             SetPrivateField(presenter, "boardContent", boardContent);
             SetPrivateField(presenter, "waterView", waterView);
             SetPrivateField(presenter, "dockView", dockView);
-            SetPrivateField(presenter, "targetFeedback", targetFeedback);
+            if (assignTargetFeedbackToPresenter)
+            {
+                SetPrivateField(presenter, "targetFeedback", targetFeedback);
+            }
 
             return new PresenterHarness(presenter, boardRoot, contentRoot, waterRoot, dockPieceContainer);
         }
