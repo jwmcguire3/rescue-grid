@@ -21,9 +21,13 @@ namespace Rescue.Unity.Presentation
         public const float DefaultWaterForecastTransitionDurationSeconds = 0.10f;
         public const float DefaultWaterForecastPulseDurationSeconds = 0.25f;
         public const float DefaultWaterlinePulseDurationSeconds = 0.20f;
+        public const float DefaultPlaybackSpeedMultiplier = 1.0f;
+        public const float MinPlaybackSpeedMultiplier = 0.10f;
+        public const float MaxPlaybackSpeedMultiplier = 8.0f;
 
         [SerializeField] private bool playbackEnabled = true;
         [SerializeField] private bool yieldBetweenSteps;
+        [SerializeField] private float playbackSpeedMultiplier = DefaultPlaybackSpeedMultiplier;
         [SerializeField] private float removeDurationSeconds = DefaultRemoveDurationSeconds;
         [SerializeField] private float breakBlockerOrRevealDurationSeconds = DefaultBreakBlockerOrRevealDurationSeconds;
         [SerializeField] private float dockFeedbackDurationSeconds = DefaultDockFeedbackDurationSeconds;
@@ -44,34 +48,57 @@ namespace Rescue.Unity.Presentation
 
         public bool YieldBetweenSteps => yieldBetweenSteps;
 
-        public float RemoveDurationSeconds => removeDurationSeconds;
+        public float PlaybackSpeedMultiplier => Mathf.Clamp(
+            playbackSpeedMultiplier,
+            MinPlaybackSpeedMultiplier,
+            MaxPlaybackSpeedMultiplier);
 
-        public float BreakBlockerOrRevealDurationSeconds => breakBlockerOrRevealDurationSeconds;
+        public float RemoveDurationSeconds => ScaleDuration(removeDurationSeconds);
 
-        public float DockFeedbackDurationSeconds => dockFeedbackDurationSeconds;
+        public float BreakBlockerOrRevealDurationSeconds => ScaleDuration(breakBlockerOrRevealDurationSeconds);
 
-        public float DockInsertFeedbackDurationSeconds => dockInsertFeedbackDurationSeconds;
+        public float DockFeedbackDurationSeconds => ScaleDuration(dockFeedbackDurationSeconds);
 
-        public float DockClearFeedbackDurationSeconds => dockClearFeedbackDurationSeconds;
+        public float DockInsertFeedbackDurationSeconds => ScaleDuration(dockInsertFeedbackDurationSeconds);
 
-        public float DockWarningCautionDurationSeconds => dockWarningCautionDurationSeconds;
+        public float DockClearFeedbackDurationSeconds => ScaleDuration(dockClearFeedbackDurationSeconds);
 
-        public float DockWarningAcuteDurationSeconds => dockWarningAcuteDurationSeconds;
+        public float DockWarningCautionDurationSeconds => ScaleDuration(dockWarningCautionDurationSeconds);
 
-        public float DockJamFeedbackDurationSeconds => dockJamFeedbackDurationSeconds;
+        public float DockWarningAcuteDurationSeconds => ScaleDuration(dockWarningAcuteDurationSeconds);
 
-        public float GravityDurationSeconds => gravityDurationSeconds;
+        public float DockJamFeedbackDurationSeconds => ScaleDuration(dockJamFeedbackDurationSeconds);
 
-        public float SpawnDurationSeconds => spawnDurationSeconds;
+        public float GravityDurationSeconds => ScaleDuration(gravityDurationSeconds);
 
-        public float TargetExtractDurationSeconds => targetExtractDurationSeconds;
+        public float SpawnDurationSeconds => ScaleDuration(spawnDurationSeconds);
 
-        public float WaterRiseDurationSeconds => waterRiseDurationSeconds;
+        public float TargetExtractDurationSeconds => ScaleDuration(targetExtractDurationSeconds);
 
-        public float WaterForecastTransitionDurationSeconds => waterForecastTransitionDurationSeconds;
+        public float WaterRiseDurationSeconds => ScaleDuration(waterRiseDurationSeconds);
 
-        public float WaterForecastPulseDurationSeconds => waterForecastPulseDurationSeconds;
+        public float WaterForecastTransitionDurationSeconds => ScaleDuration(waterForecastTransitionDurationSeconds);
 
-        public float WaterlinePulseDurationSeconds => waterlinePulseDurationSeconds;
+        public float WaterForecastPulseDurationSeconds => ScaleDuration(waterForecastPulseDurationSeconds);
+
+        public float WaterlinePulseDurationSeconds => ScaleDuration(waterlinePulseDurationSeconds);
+
+        public void SetPlaybackEnabled(bool enabled)
+        {
+            playbackEnabled = enabled;
+        }
+
+        public void SetPlaybackSpeedMultiplier(float multiplier)
+        {
+            playbackSpeedMultiplier = Mathf.Clamp(
+                multiplier,
+                MinPlaybackSpeedMultiplier,
+                MaxPlaybackSpeedMultiplier);
+        }
+
+        private float ScaleDuration(float seconds)
+        {
+            return seconds / PlaybackSpeedMultiplier;
+        }
     }
 }

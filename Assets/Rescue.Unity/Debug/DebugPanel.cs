@@ -64,6 +64,9 @@ namespace Rescue.Unity.Debugging
         private Button? _stepButton;
         private DropdownField? _speedSelector;
         private Toggle? _fastForwardToggle;
+        private Toggle? _playbackEnabledToggle;
+        private DropdownField? _playbackSpeedSelector;
+        private Label? _playbackStepValue;
         private Button? _debugUndoButton;
         private Button? _resetButton;
         private TextField? _replayPathField;
@@ -191,6 +194,8 @@ namespace Rescue.Unity.Debugging
 
         private void Update()
         {
+            RefreshPlaybackDebugUi();
+
             if (!_isPlaying || _currentState is null)
             {
                 return;
@@ -339,7 +344,7 @@ namespace Rescue.Unity.Debugging
             }
 
             SetStatus(status);
-            RefreshVisualPresenter();
+            ApplyActionResultToVisualPresenter(stateBefore, new ActionInput(nextTap.Value), result);
             RefreshUi();
             return true;
         }
@@ -507,6 +512,17 @@ namespace Rescue.Unity.Debugging
             presenter.Rebuild(_currentState);
         }
 
+        private void ApplyActionResultToVisualPresenter(GameState previousState, ActionInput input, ActionResult result)
+        {
+            GameStateViewPresenter? presenter = ResolveGameStateViewPresenter();
+            if (presenter is null)
+            {
+                return;
+            }
+
+            presenter.ApplyActionResult(previousState, input, result);
+        }
+
         private GameStateViewPresenter? ResolveGameStateViewPresenter()
         {
             if (_gameStateViewPresenter != null)
@@ -516,6 +532,105 @@ namespace Rescue.Unity.Debugging
 
             _gameStateViewPresenter = UnityEngine.Object.FindFirstObjectByType<GameStateViewPresenter>();
             return _gameStateViewPresenter;
+        }
+
+        private ActionPlaybackController? ResolveActionPlaybackController()
+        {
+            GameStateViewPresenter? presenter = ResolveGameStateViewPresenter();
+            if (presenter is not null && presenter.TryGetComponent(out ActionPlaybackController controller))
+            {
+                return controller;
+            }
+
+            return UnityEngine.Object.FindFirstObjectByType<ActionPlaybackController>();
+        }
+
+        private void ApplyPlaybackControlsFromUi()
+        {
+            ActionPlaybackController? controller = ResolveActionPlaybackController();
+            if (controller is null)
+            {
+                SetStatus("No action playback controller found.");
+                RefreshPlaybackDebugUi();
+                return;
+            }
+
+            bool enabled = _playbackEnabledToggle?.value ?? controller.Settings.PlaybackEnabled;
+            float speed = ParseSpeedMultiplier(_playbackSpeedSelector?.value);
+            controller.ConfigureDebugPlayback(enabled, speed);
+            SetStatus($"Action playback {(enabled ? "enabled" : "disabled")} at {FormatSpeed(controller.Settings.PlaybackSpeedMultiplier)}.");
+            RefreshPlaybackDebugUi();
+        }
+
+        private void RefreshPlaybackDebugUi()
+        {
+            ActionPlaybackController? controller = ResolveActionPlaybackController();
+            if (controller is null)
+            {
+                if (_playbackStepValue is not null)
+                {
+                    _playbackStepValue.text = "Playback step: unavailable";
+                }
+
+                return;
+            }
+
+            if (_playbackEnabledToggle is not null)
+            {
+                _playbackEnabledToggle.SetValueWithoutNotify(controller.Settings.PlaybackEnabled);
+            }
+
+            if (_playbackSpeedSelector is not null)
+            {
+                if (_playbackSpeedSelector.choices is null || _playbackSpeedSelector.choices.Count == 0)
+                {
+                    _playbackSpeedSelector.choices = new List<string>(SpeedChoices);
+                }
+
+                _playbackSpeedSelector.SetValueWithoutNotify(FormatSpeed(controller.Settings.PlaybackSpeedMultiplier));
+            }
+
+            if (_playbackStepValue is not null)
+            {
+                _playbackStepValue.text = $"Playback step: {controller.CurrentStepName}";
+            }
+        }
+
+        private static float ParseSpeedMultiplier(string? speed)
+        {
+            return speed switch
+            {
+                "0.25x" => 0.25f,
+                "0.5x" => 0.5f,
+                "2x" => 2.0f,
+                "4x" => 4.0f,
+                _ => 1.0f,
+            };
+        }
+
+        private static string FormatSpeed(float speed)
+        {
+            if (Mathf.Approximately(speed, 0.25f))
+            {
+                return "0.25x";
+            }
+
+            if (Mathf.Approximately(speed, 0.5f))
+            {
+                return "0.5x";
+            }
+
+            if (Mathf.Approximately(speed, 2.0f))
+            {
+                return "2x";
+            }
+
+            if (Mathf.Approximately(speed, 4.0f))
+            {
+                return "4x";
+            }
+
+            return "1x";
         }
 
         private void StartTelemetrySession(GameState state, string levelId, int seed)
@@ -704,6 +819,9 @@ namespace Rescue.Unity.Debugging
             _stepButton = panel.Q<Button>("step-button");
             _speedSelector = panel.Q<DropdownField>("speed-selector");
             _fastForwardToggle = panel.Q<Toggle>("fast-forward-toggle");
+            _playbackEnabledToggle = panel.Q<Toggle>("playback-enabled-toggle");
+            _playbackSpeedSelector = panel.Q<DropdownField>("playback-speed-selector");
+            _playbackStepValue = panel.Q<Label>("playback-step-value");
             _debugUndoButton = panel.Q<Button>("debug-undo-button");
             _resetButton = panel.Q<Button>("reset-button");
             _replayPathField = panel.Q<TextField>("replay-path-field");
@@ -813,6 +931,34 @@ namespace Rescue.Unity.Debugging
 
                     SetStatus(evt.newValue ? "Fast-forward enabled." : "Fast-forward disabled.");
                     RefreshUi();
+                });
+            }
+
+            if (_playbackEnabledToggle is not null)
+            {
+                _playbackEnabledToggle.RegisterValueChangedCallback(evt =>
+                {
+                    if (!_initialized || evt.previousValue == evt.newValue)
+                    {
+                        return;
+                    }
+
+                    ApplyPlaybackControlsFromUi();
+                });
+            }
+
+            if (_playbackSpeedSelector is not null)
+            {
+                _playbackSpeedSelector.choices = new List<string>(SpeedChoices);
+                _playbackSpeedSelector.SetValueWithoutNotify("1x");
+                _playbackSpeedSelector.RegisterValueChangedCallback(evt =>
+                {
+                    if (!_initialized || string.Equals(evt.previousValue, evt.newValue, StringComparison.Ordinal))
+                    {
+                        return;
+                    }
+
+                    ApplyPlaybackControlsFromUi();
                 });
             }
 
@@ -1126,10 +1272,13 @@ namespace Rescue.Unity.Debugging
             }
 
             PushDebugUndo("Instant overflow test");
-            ActionResult result = Pipeline.RunAction(preparedState, new ActionInput(tapCoord));
+            GameState stateBefore = preparedState;
+            ActionInput input = new ActionInput(tapCoord);
+            ActionResult result = Pipeline.RunAction(preparedState, input);
             _currentState = result.State;
             AppendActionLog("Instant Overflow Test", result.Events, result.Outcome);
             SetStatus($"Instant overflow test executed -> {result.Outcome}.");
+            ApplyActionResultToVisualPresenter(stateBefore, input, result);
             RefreshUi();
         }
 
@@ -1269,6 +1418,7 @@ namespace Rescue.Unity.Debugging
             SyncLevelSelectorChoices(_currentLevelId);
             SyncOverrideFields();
             RefreshTuningUi();
+            RefreshPlaybackDebugUi();
             UpdatePlayButtonLabel();
 
             if (_replayStatusValue is not null)

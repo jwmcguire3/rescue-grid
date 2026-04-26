@@ -21,10 +21,27 @@ namespace Rescue.Unity.Presentation
         private Coroutine? activePlayback;
         private PlaybackContext? activeContext;
         private int playbackSessionId;
+        private string currentStepName = "Idle";
 
         public bool IsPlaying { get; private set; }
 
         public ActionPlaybackPlan CurrentPlan { get; private set; } = ActionPlaybackPlan.Empty;
+
+        public string CurrentStepName => currentStepName;
+
+        public ActionPlaybackSettings Settings => settings;
+
+        public void ConfigureDebugPlayback(bool playbackEnabled, float playbackSpeedMultiplier)
+        {
+            settings.SetPlaybackEnabled(playbackEnabled);
+            settings.SetPlaybackSpeedMultiplier(playbackSpeedMultiplier);
+            ApplyPlaybackSettingsToPresenters();
+
+            if (!playbackEnabled && IsPlaying)
+            {
+                CancelPlayback();
+            }
+        }
 
         public bool TryPlayAction(GameState previousState, ActionInput input, ActionResult result, Action<ActionResult> finalSync)
         {
@@ -47,6 +64,7 @@ namespace Rescue.Unity.Presentation
             CurrentPlan = ActionPlaybackBuilder.Build(previousState, input, result);
             if (!CanPlay())
             {
+                currentStepName = "Playback disabled";
                 return false;
             }
 
@@ -80,6 +98,7 @@ namespace Rescue.Unity.Presentation
             }
 
             IsPlaying = false;
+            currentStepName = "Idle";
 
             if (context is not null)
             {
@@ -98,6 +117,7 @@ namespace Rescue.Unity.Presentation
         private IEnumerator RunPlayback(int sessionId, GameState previousState, ActionInput input, ActionResult result, Action<ActionResult> finalSync)
         {
             IsPlaying = true;
+            currentStepName = "Starting";
 
             try
             {
@@ -109,6 +129,7 @@ namespace Rescue.Unity.Presentation
                     }
 
                     ActionPlaybackStep step = CurrentPlan[i];
+                    currentStepName = GetStepDebugLabel(step);
                     PlayStep(step, previousState, input, result.State);
                     yield return CreateStepYield(step);
                 }
@@ -122,6 +143,7 @@ namespace Rescue.Unity.Presentation
         private void RunPlaybackImmediately(int sessionId, GameState previousState, ActionInput input, ActionResult result, Action<ActionResult> finalSync)
         {
             IsPlaying = true;
+            currentStepName = "Starting";
 
             try
             {
@@ -132,7 +154,9 @@ namespace Rescue.Unity.Presentation
                         continue;
                     }
 
-                    PlayStep(CurrentPlan[i], previousState, input, result.State);
+                    ActionPlaybackStep step = CurrentPlan[i];
+                    currentStepName = GetStepDebugLabel(step);
+                    PlayStep(step, previousState, input, result.State);
                 }
             }
             finally
@@ -265,6 +289,7 @@ namespace Rescue.Unity.Presentation
 
             try
             {
+                currentStepName = ActionPlaybackStepType.FinalSync.ToString();
                 finalSync(result);
             }
             finally
@@ -272,7 +297,16 @@ namespace Rescue.Unity.Presentation
                 activeContext = null;
                 activePlayback = null;
                 IsPlaying = false;
+                currentStepName = "Idle";
             }
+        }
+
+        private static string GetStepDebugLabel(ActionPlaybackStep step)
+        {
+            string? sourceEventName = step.SourceEventName;
+            return string.IsNullOrWhiteSpace(sourceEventName)
+                ? step.StepType.ToString()
+                : sourceEventName;
         }
 
         private WaterViewPresenter? ResolveWaterView()

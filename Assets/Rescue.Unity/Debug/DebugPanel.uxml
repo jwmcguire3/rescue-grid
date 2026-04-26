@@ -25,6 +25,12 @@
                 </ui:VisualElement>
                 <ui:DropdownField name="speed-selector" label="Speed" />
                 <ui:Toggle name="fast-forward-toggle" text="Fast Forward" />
+
+                <ui:Label text="Action Playback" class="debug-section" />
+                <ui:Toggle name="playback-enabled-toggle" text="Playback Enabled" />
+                <ui:DropdownField name="playback-speed-selector" label="Playback Speed" />
+                <ui:Label name="playback-step-value" text="Playback step: Idle" class="debug-value" />
+
                 <ui:Button name="debug-undo-button" text="Debug Undo" />
                 <ui:Button name="reset-button" text="Reset Level" />
 

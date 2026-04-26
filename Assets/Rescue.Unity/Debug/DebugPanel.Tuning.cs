@@ -450,6 +450,14 @@ namespace Rescue.Unity.Debugging
             Toggle fastForward = new Toggle("Fast Forward") { name = "fast-forward-toggle" };
             _fastForwardToggle = fastForward;
             scroll.Add(fastForward);
+
+            scroll.Add(MakeSection("Action Playback"));
+            Toggle playbackEnabled = new Toggle("Playback Enabled") { name = "playback-enabled-toggle" };
+            _playbackEnabledToggle = playbackEnabled;
+            scroll.Add(playbackEnabled);
+            scroll.Add(MakeFieldRow("Playback Speed", out _playbackSpeedSelector, "playback-speed-selector"));
+            scroll.Add(MakeRow(out _playbackStepValue, "playback-step-value", "Playback step: Idle"));
+
             scroll.Add(MakeButton("Debug Undo", "debug-undo-button", out _debugUndoButton));
             scroll.Add(MakeButton("Reset Level", "reset-button", out _resetButton));
 

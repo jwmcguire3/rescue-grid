@@ -47,11 +47,13 @@ namespace Rescue.Unity.Presentation.Tests
 
             Assert.That(handled, Is.True);
             Assert.That(controller.IsPlaying, Is.True);
+            Assert.That(controller.CurrentStepName, Is.EqualTo(nameof(GroupRemoved)));
             Assert.That(finalSyncCalls, Is.EqualTo(0));
 
             yield return null;
 
             Assert.That(controller.IsPlaying, Is.False);
+            Assert.That(controller.CurrentStepName, Is.EqualTo("Idle"));
             Assert.That(finalSyncCalls, Is.EqualTo(1));
         }
 
@@ -138,6 +140,33 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.Spawn), Is.EqualTo(0.13f));
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.TargetExtract), Is.EqualTo(0.16f));
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.WaterRise), Is.EqualTo(0.19f));
+        }
+
+        [Test]
+        public void ActionPlaybackController_SpeedMultiplierScalesStepDurations()
+        {
+            ActionPlaybackSettings settings = CreateSettings(playbackEnabled: true, yieldBetweenSteps: false);
+            SetPrivateField(settings, "removeDurationSeconds", 0.20f);
+            settings.SetPlaybackSpeedMultiplier(4.0f);
+            ActionPlaybackController controller = CreateController(settings);
+
+            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.RemoveGroup), Is.EqualTo(0.05f));
+        }
+
+        [Test]
+        public void ActionPlaybackController_DisabledPlaybackDoesNotHandleActionButKeepsFinalSyncPlan()
+        {
+            ActionPlaybackController controller = CreateController(playbackEnabled: false, yieldBetweenSteps: false);
+            ActionResult result = CreateResult(actionCount: 2);
+            int finalSyncCalls = 0;
+
+            bool handled = controller.TryPlayAction(CreateState(), new ActionInput(new TileCoord(0, 0)), result, _ => finalSyncCalls++);
+
+            Assert.That(handled, Is.False);
+            Assert.That(finalSyncCalls, Is.EqualTo(0));
+            Assert.That(controller.IsPlaying, Is.False);
+            Assert.That(controller.CurrentStepName, Is.EqualTo("Playback disabled"));
+            Assert.That(controller.CurrentPlan[^1].StepType, Is.EqualTo(ActionPlaybackStepType.FinalSync));
         }
 
         [Test]

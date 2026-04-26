@@ -24,6 +24,7 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(settings.WaterForecastTransitionDurationSeconds, Is.GreaterThan(0f));
             Assert.That(settings.WaterForecastPulseDurationSeconds, Is.GreaterThan(0f));
             Assert.That(settings.WaterlinePulseDurationSeconds, Is.GreaterThan(0f));
+            Assert.That(settings.PlaybackSpeedMultiplier, Is.EqualTo(ActionPlaybackSettings.DefaultPlaybackSpeedMultiplier));
         }
 
         [Test]
@@ -45,6 +46,7 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(settings.WaterForecastTransitionDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultWaterForecastTransitionDurationSeconds));
             Assert.That(settings.WaterForecastPulseDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultWaterForecastPulseDurationSeconds));
             Assert.That(settings.WaterlinePulseDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultWaterlinePulseDurationSeconds));
+            Assert.That(settings.PlaybackSpeedMultiplier, Is.EqualTo(1.0f));
             Assert.That(settings.RemoveDurationSeconds, Is.InRange(0.08f, 0.12f));
             Assert.That(settings.BreakBlockerOrRevealDurationSeconds, Is.InRange(0.08f, 0.12f));
             Assert.That(settings.DockInsertFeedbackDurationSeconds, Is.InRange(0.06f, 0.10f));
@@ -53,6 +55,31 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(settings.SpawnDurationSeconds, Is.InRange(0.10f, 0.16f));
             Assert.That(settings.TargetExtractDurationSeconds, Is.InRange(0.12f, 0.20f));
             Assert.That(settings.WaterRiseDurationSeconds, Is.InRange(0.12f, 0.20f));
+        }
+
+        [Test]
+        public void ActionPlaybackSettings_SpeedMultiplierScalesDurations()
+        {
+            ActionPlaybackSettings settings = new ActionPlaybackSettings();
+
+            settings.SetPlaybackSpeedMultiplier(2.0f);
+
+            Assert.That(settings.PlaybackSpeedMultiplier, Is.EqualTo(2.0f));
+            Assert.That(settings.RemoveDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultRemoveDurationSeconds / 2.0f));
+            Assert.That(settings.GravityDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultGravityDurationSeconds / 2.0f));
+            Assert.That(settings.WaterForecastPulseDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultWaterForecastPulseDurationSeconds / 2.0f));
+        }
+
+        [Test]
+        public void ActionPlaybackSettings_SpeedMultiplierIsClamped()
+        {
+            ActionPlaybackSettings settings = new ActionPlaybackSettings();
+
+            settings.SetPlaybackSpeedMultiplier(0.0f);
+            Assert.That(settings.PlaybackSpeedMultiplier, Is.EqualTo(ActionPlaybackSettings.MinPlaybackSpeedMultiplier));
+
+            settings.SetPlaybackSpeedMultiplier(100.0f);
+            Assert.That(settings.PlaybackSpeedMultiplier, Is.EqualTo(ActionPlaybackSettings.MaxPlaybackSpeedMultiplier));
         }
     }
 }
