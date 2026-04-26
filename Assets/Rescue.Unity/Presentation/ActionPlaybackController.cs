@@ -171,10 +171,10 @@ namespace Rescue.Unity.Presentation
                     ResolveDockView()?.PlayJamFeedback(jamTriggered);
                     break;
                 case GravitySettled gravity:
-                    boardContent?.AnimateGravityMove(gravity);
+                    boardContent?.AnimateGravityMove(gravity, settings.GravityDurationSeconds);
                     break;
                 case Spawned spawned:
-                    boardContent?.AnimateSpawn(spawned);
+                    boardContent?.AnimateSpawn(spawned, settings.SpawnDurationSeconds);
                     break;
                 case TargetExtracted extracted:
                     boardContent?.AnimateTargetExtract(extracted, settings.TargetExtractDurationSeconds);

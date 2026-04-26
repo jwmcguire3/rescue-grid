@@ -16,6 +16,7 @@ namespace Rescue.Unity.BoardPresentation
         private const float DefaultTargetExtractPulseScale = 1.12f;
         private const float DefaultBlockerDamagePulseScale = 1.06f;
         private const float DefaultBlockerDamageAlphaFloor = 0.70f;
+        private const float MinimumTimelineDurationSeconds = 0.01f;
         private static readonly Vector3 HiddenDebrisScale = new Vector3(0.75f, 0.75f, 0.75f);
 
         [SerializeField] private BoardGridViewPresenter? gridView;
@@ -129,8 +130,10 @@ namespace Rescue.Unity.BoardPresentation
             }
         }
 
-        public void AnimateGravityMove(GravitySettled gravity)
+        public void AnimateGravityMove(GravitySettled gravity, float durationSeconds = 0.15f)
         {
+            List<(BoardPieceView View, TileCoord To)> movesToAnimate = new List<(BoardPieceView View, TileCoord To)>();
+
             for (int i = 0; i < gravity.Moves.Length; i++)
             {
                 (TileCoord from, TileCoord to) = gravity.Moves[i];
@@ -141,7 +144,7 @@ namespace Rescue.Unity.BoardPresentation
                     continue;
                 }
 
-                if (!TryGetAnchor(to, out Transform anchor))
+                if (!TryGetAnchor(to, out _))
                 {
                     continue;
                 }
@@ -149,7 +152,18 @@ namespace Rescue.Unity.BoardPresentation
                 visualRegistry.Debris.Remove(from);
                 debrisView.Coord = to;
                 visualRegistry.Debris.Set(to, debrisView);
-                MoveContentObjectToAnchor(debrisView.Object, anchor, to, debrisView.ContentLabel, contentYOffset);
+                movesToAnimate.Add((debrisView, to));
+            }
+
+            for (int i = 0; i < movesToAnimate.Count; i++)
+            {
+                (BoardPieceView debrisView, TileCoord to) = movesToAnimate[i];
+                if (!TryGetAnchor(to, out Transform anchor))
+                {
+                    continue;
+                }
+
+                MovePieceToCoord(debrisView.Object, anchor, to, debrisView.ContentLabel, contentYOffset, durationSeconds);
             }
         }
 
@@ -221,7 +235,7 @@ namespace Rescue.Unity.BoardPresentation
             StartCoroutine(AnimateIceRevealRoutine(hiddenDebrisView.Object, durationSeconds));
         }
 
-        public void AnimateSpawn(Spawned spawned)
+        public void AnimateSpawn(Spawned spawned, float durationSeconds = 0.12f)
         {
             for (int i = 0; i < spawned.Pieces.Length; i++)
             {
@@ -236,18 +250,26 @@ namespace Rescue.Unity.BoardPresentation
                     continue;
                 }
 
+                string contentLabel = $"Debris_{type}";
                 GameObject? debrisObject = SpawnAtAnchor(
                     coord,
-                    $"Debris_{type}",
+                    contentLabel,
                     ResolveDebrisPrefab(type),
                     anchor,
                     contentYOffset,
                     Vector3.one);
 
-                if (debrisObject is not null)
+                if (debrisObject is null)
                 {
-                    visualRegistry.Debris.Set(coord, new BoardPieceView(coord, $"Debris_{type}", debrisObject));
+                    continue;
                 }
+
+                BoardPieceView debrisView = new BoardPieceView(coord, contentLabel, debrisObject);
+                visualRegistry.Debris.Set(coord, debrisView);
+
+                Vector3 entryPosition = GetSpawnEntryWorldPosition(coord);
+                PositionContentObjectAtWorldPose(debrisObject, anchor, entryPosition, anchor.rotation);
+                MovePieceToCoord(debrisObject, anchor, coord, contentLabel, contentYOffset, durationSeconds);
             }
         }
 
@@ -780,6 +802,64 @@ namespace Rescue.Unity.BoardPresentation
                 $"Content_{coord.Row.ToString("00", CultureInfo.InvariantCulture)}_{coord.Col.ToString("00", CultureInfo.InvariantCulture)}_{contentLabel}";
         }
 
+        private void MovePieceToCoord(
+            GameObject contentObject,
+            Transform anchor,
+            TileCoord coord,
+            string contentLabel,
+            float yOffset,
+            float durationSeconds)
+        {
+            if (!Application.isPlaying || !isActiveAndEnabled || durationSeconds <= 0f)
+            {
+                MoveContentObjectToAnchor(contentObject, anchor, coord, contentLabel, yOffset);
+                return;
+            }
+
+            Transform parent = ResolveContentParent(anchor);
+            Transform contentTransform = contentObject.transform;
+            if (contentTransform.parent != parent)
+            {
+                Vector3 currentWorldPosition = contentTransform.position;
+                Quaternion currentWorldRotation = contentTransform.rotation;
+                contentTransform.SetParent(parent, worldPositionStays: false);
+                contentTransform.SetPositionAndRotation(currentWorldPosition, currentWorldRotation);
+            }
+
+            Vector3 targetWorldPosition = anchor.position + new Vector3(0f, yOffset, 0f);
+            Quaternion targetWorldRotation = anchor.rotation;
+            contentObject.name =
+                $"Content_{coord.Row.ToString("00", CultureInfo.InvariantCulture)}_{coord.Col.ToString("00", CultureInfo.InvariantCulture)}_{contentLabel}";
+
+            StartCoroutine(AnimateWorldMoveRoutine(contentObject, targetWorldPosition, targetWorldRotation, durationSeconds));
+        }
+
+        private Vector3 GetSpawnEntryWorldPosition(TileCoord coord)
+        {
+            if (gridView is null)
+            {
+                return transform.position;
+            }
+
+            return gridView.GetColumnEntryWorldPosition(coord.Col) + new Vector3(0f, contentYOffset, 0f);
+        }
+
+        private static void PositionContentObjectAtWorldPose(
+            GameObject contentObject,
+            Transform anchor,
+            Vector3 worldPosition,
+            Quaternion worldRotation)
+        {
+            Transform parent = contentObject.transform.parent;
+            if (parent != anchor && parent is not null)
+            {
+                contentObject.transform.SetPositionAndRotation(worldPosition, worldRotation);
+                return;
+            }
+
+            contentObject.transform.SetPositionAndRotation(worldPosition, worldRotation);
+        }
+
         private GameObject? SpawnAtAnchor(
             TileCoord coord,
             string contentLabel,
@@ -813,6 +893,44 @@ namespace Rescue.Unity.BoardPresentation
             contentTransform.localScale = Vector3.Scale(prefab.transform.localScale, scaleMultiplier);
             spawnedContent.Add(contentObject);
             return contentObject;
+        }
+
+        private System.Collections.IEnumerator AnimateWorldMoveRoutine(
+            GameObject contentObject,
+            Vector3 targetWorldPosition,
+            Quaternion targetWorldRotation,
+            float durationSeconds)
+        {
+            if (contentObject is null)
+            {
+                yield break;
+            }
+
+            Transform contentTransform = contentObject.transform;
+            Vector3 startWorldPosition = contentTransform.position;
+            Quaternion startWorldRotation = contentTransform.rotation;
+            float clampedDuration = Mathf.Max(MinimumTimelineDurationSeconds, durationSeconds);
+            float elapsed = 0f;
+
+            while (elapsed < clampedDuration)
+            {
+                if (contentObject is null)
+                {
+                    yield break;
+                }
+
+                elapsed += Time.deltaTime;
+                float normalized = Mathf.Clamp01(elapsed / clampedDuration);
+                contentTransform.SetPositionAndRotation(
+                    Vector3.Lerp(startWorldPosition, targetWorldPosition, normalized),
+                    Quaternion.Lerp(startWorldRotation, targetWorldRotation, normalized));
+                yield return null;
+            }
+
+            if (contentObject is not null)
+            {
+                contentTransform.SetPositionAndRotation(targetWorldPosition, targetWorldRotation);
+            }
         }
 
         private Transform ResolveContentParent(Transform anchor)

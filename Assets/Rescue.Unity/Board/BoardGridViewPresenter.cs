@@ -99,6 +99,42 @@ namespace Rescue.Unity.BoardPresentation
             return cellAnchors.TryGetValue(coord, out anchor);
         }
 
+        public Vector3 GetCellWorldPosition(TileCoord coord)
+        {
+            return TryGetCellAnchor(coord, out Transform anchor) ? anchor.position : transform.position;
+        }
+
+        public Vector3 GetColumnEntryWorldPosition(int column)
+        {
+            if (cellAnchors.Count == 0)
+            {
+                return transform.position + (Vector3.up * cellSize);
+            }
+
+            int topRow = int.MaxValue;
+            bool found = false;
+            foreach (KeyValuePair<TileCoord, Transform> entry in cellAnchors)
+            {
+                if (entry.Key.Col != column || entry.Value is null)
+                {
+                    continue;
+                }
+
+                if (entry.Key.Row < topRow)
+                {
+                    topRow = entry.Key.Row;
+                    found = true;
+                }
+            }
+
+            if (!found)
+            {
+                return transform.position + (Vector3.up * cellSize);
+            }
+
+            return GetCellWorldPosition(new TileCoord(topRow, column)) + (Vector3.up * cellSize);
+        }
+
         private Vector3 CalculateCenteredOffset(int width, int height)
         {
             float xOffset = -((width - 1) * cellSize * 0.5f);

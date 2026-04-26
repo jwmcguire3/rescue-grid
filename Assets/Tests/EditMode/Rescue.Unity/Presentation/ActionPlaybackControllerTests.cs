@@ -119,6 +119,7 @@ namespace Rescue.Unity.Presentation.Tests
 
             harness.GridPresenter.RebuildGrid(previousState);
             harness.ContentPresenter.SyncImmediate(previousState);
+            GameObject? gravitySourceDebris = GetRegisteredPieceObject(harness.ContentPresenter, new TileCoord(1, 0));
 
             ActionResult result = CreateResult(
                 CreateBoardState(
@@ -156,6 +157,7 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(2));
             Assert.That(FindChildByName(harness.ContentRoot, "Content_00_00_Debris_C"), Is.Not.Null);
             Assert.That(FindChildByName(harness.ContentRoot, "Content_01_01_Debris_B"), Is.Not.Null);
+            Assert.That(GetRegisteredPieceObject(harness.ContentPresenter, new TileCoord(1, 1)), Is.SameAs(gravitySourceDebris));
         }
 
         [Test]
@@ -180,6 +182,60 @@ namespace Rescue.Unity.Presentation.Tests
 
             Assert.That(finalSyncCalls, Is.EqualTo(1));
             Assert.That(harness.Controller.IsPlaying, Is.False);
+        }
+
+        [Test]
+        public void ActionPlaybackController_FinalSyncRepairsMismatchedDebrisVisualsAfterGravityAndSpawn()
+        {
+            ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
+            GameState previousState = CreateBoardState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(
+                        new DebrisTile(DebrisType.A),
+                        new EmptyTile()),
+                    ImmutableArray.Create<Tile>(
+                        new DebrisTile(DebrisType.B),
+                        new EmptyTile())));
+            GameState resultState = CreateBoardState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(
+                        new DebrisTile(DebrisType.C),
+                        new EmptyTile()),
+                    ImmutableArray.Create<Tile>(
+                        new EmptyTile(),
+                        new DebrisTile(DebrisType.B))));
+
+            harness.GridPresenter.RebuildGrid(previousState);
+            harness.ContentPresenter.SyncImmediate(previousState);
+
+            ActionResult result = CreateResult(
+                resultState,
+                actionCount: 10,
+                new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0))),
+                new GravitySettled(ImmutableArray.Create((new TileCoord(1, 0), new TileCoord(1, 1)))),
+                new Spawned(ImmutableArray.Create((new TileCoord(0, 0), DebrisType.C))));
+
+            bool handled = harness.Controller.TryPlayAction(previousState, new ActionInput(new TileCoord(0, 0)), result, syncedResult =>
+            {
+                GameObject? movedDebris = GetRegisteredPieceObject(harness.ContentPresenter, new TileCoord(1, 1));
+                if (movedDebris is not null)
+                {
+                    movedDebris.name = "Content_01_01_Debris_Wrong";
+                }
+
+                GameObject? spawnedDebris = GetRegisteredPieceObject(harness.ContentPresenter, new TileCoord(0, 0));
+                if (spawnedDebris is not null)
+                {
+                    spawnedDebris.name = "Content_00_00_Debris_Wrong";
+                }
+
+                harness.ContentPresenter.SyncImmediate(syncedResult.State);
+            });
+
+            Assert.That(handled, Is.True);
+            Assert.That(FindChildByName(harness.ContentRoot, "Content_01_01_Debris_B"), Is.Not.Null);
+            Assert.That(FindChildByName(harness.ContentRoot, "Content_00_00_Debris_C"), Is.Not.Null);
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(2));
         }
 
         [Test]
@@ -649,6 +705,64 @@ namespace Rescue.Unity.Presentation.Tests
             }
 
             return null;
+        }
+
+        private static GameObject? GetRegisteredPieceObject(BoardContentViewPresenter presenter, TileCoord coord)
+        {
+            object? visualRegistry = GetPrivateFieldValue(presenter, "visualRegistry");
+            Assert.That(visualRegistry, Is.Not.Null);
+            if (visualRegistry is null)
+            {
+                return null;
+            }
+
+            System.Reflection.PropertyInfo? debrisRegistryProperty = visualRegistry.GetType().GetProperty(
+                "Debris",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+            Assert.That(debrisRegistryProperty, Is.Not.Null);
+            if (debrisRegistryProperty is null)
+            {
+                return null;
+            }
+
+            object? debrisRegistry = debrisRegistryProperty.GetValue(visualRegistry);
+            Assert.That(debrisRegistry, Is.Not.Null);
+            if (debrisRegistry is null)
+            {
+                return null;
+            }
+
+            object?[] arguments = { coord, null };
+            System.Reflection.MethodInfo? tryGetMethod = debrisRegistry.GetType().GetMethod(
+                "TryGet",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+            Assert.That(tryGetMethod, Is.Not.Null);
+            if (tryGetMethod is null)
+            {
+                return null;
+            }
+
+            bool found = (bool)tryGetMethod.Invoke(debrisRegistry, arguments)!;
+            if (!found || arguments[1] is null)
+            {
+                return null;
+            }
+
+            System.Reflection.PropertyInfo? objectProperty = arguments[1]!.GetType().GetProperty(
+                "Object",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+            Assert.That(objectProperty, Is.Not.Null);
+            return objectProperty?.GetValue(arguments[1]) as GameObject;
+        }
+
+        private static object? GetPrivateFieldValue(object target, string fieldName)
+        {
+            System.Reflection.FieldInfo? field = target.GetType().GetField(
+                fieldName,
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+            Assert.That(field, Is.Not.Null, $"Expected private field '{fieldName}'.");
+            return field?.GetValue(target);
         }
 
         private readonly struct ControllerHarness

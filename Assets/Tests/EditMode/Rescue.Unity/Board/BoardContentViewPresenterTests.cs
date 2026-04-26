@@ -7,6 +7,7 @@ using Rescue.Core.State;
 using Rescue.Unity.Art.Registries;
 using Rescue.Unity.BoardPresentation;
 using UnityEngine;
+using UnityEngine.TestTools.Utils;
 using CoreBoard = Rescue.Core.State.Board;
 using CoreDock = Rescue.Core.State.Dock;
 
@@ -267,6 +268,8 @@ namespace Rescue.Unity.BoardPresentation.Tests
 
             harness.GridPresenter.RebuildGrid(state);
             harness.ContentPresenter.SyncImmediate(state);
+            GameObject? originalDebris = GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 0));
+            Vector3 targetPosition = harness.GridPresenter.GetCellWorldPosition(new TileCoord(1, 0)) + new Vector3(0f, 0.05f, 0f);
 
             harness.ContentPresenter.AnimateGravityMove(new GravitySettled(
                 ImmutableArray.Create((new TileCoord(0, 0), new TileCoord(1, 0)))));
@@ -275,7 +278,10 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Assert.That(FindChildByName(harness.ContentRoot, "Content_00_00_Debris_A"), Is.Null);
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
             Assert.That(GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 0)), Is.Null);
-            Assert.That(GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(1, 0)), Is.Not.Null);
+            GameObject? movedDebris = GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(1, 0));
+            Assert.That(movedDebris, Is.Not.Null);
+            Assert.That(movedDebris, Is.SameAs(originalDebris));
+            Assert.That(movedDebris!.transform.position, Is.EqualTo(targetPosition).Using(Vector3ComparerWithEqualsOperator.Instance));
         }
 
         [Test]
@@ -295,6 +301,63 @@ namespace Rescue.Unity.BoardPresentation.Tests
 
             Assert.That(FindChildByName(harness.ContentRoot, "Content_00_01_Debris_B"), Is.Not.Null);
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
+            Assert.That(GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 1)), Is.Not.Null);
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_RepeatedSyncAfterGravityDoesNotDuplicateVisuals()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState previousState = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new DebrisTile(DebrisType.A),
+                    new EmptyTile()),
+                ImmutableArray.Create<Tile>(
+                    new EmptyTile(),
+                    new EmptyTile())));
+            GameState resultState = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new EmptyTile(),
+                    new EmptyTile()),
+                ImmutableArray.Create<Tile>(
+                    new DebrisTile(DebrisType.A),
+                    new EmptyTile())));
+
+            harness.GridPresenter.RebuildGrid(previousState);
+            harness.ContentPresenter.SyncImmediate(previousState);
+
+            harness.ContentPresenter.AnimateGravityMove(new GravitySettled(
+                ImmutableArray.Create((new TileCoord(0, 0), new TileCoord(1, 0)))));
+            harness.ContentPresenter.SyncImmediate(resultState);
+            harness.ContentPresenter.SyncImmediate(resultState);
+
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
+            Assert.That(GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(1, 0)), Is.Not.Null);
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_RepeatedSyncAfterSpawnDoesNotDuplicateVisuals()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState previousState = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new EmptyTile(),
+                    new EmptyTile())));
+            GameState resultState = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new EmptyTile(),
+                    new DebrisTile(DebrisType.B))));
+
+            harness.GridPresenter.RebuildGrid(previousState);
+            harness.ContentPresenter.SyncImmediate(previousState);
+
+            harness.ContentPresenter.AnimateSpawn(new Spawned(
+                ImmutableArray.Create((new TileCoord(0, 1), DebrisType.B))));
+            harness.ContentPresenter.SyncImmediate(resultState);
+            harness.ContentPresenter.SyncImmediate(resultState);
+
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
+            Assert.That(GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 1)), Is.Not.Null);
         }
 
         [Test]
@@ -327,6 +390,32 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Assert.That(FindChildByName(harness.ContentRoot, "Extra"), Is.Null);
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
             Assert.That(GetSpawnedContentList(harness.ContentPresenter).Count, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_SyncImmediateRepairsMismatchedDebrisVisuals()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new DebrisTile(DebrisType.B))));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            GameObject? registeredDebris = GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 0));
+            Assert.That(registeredDebris, Is.Not.Null);
+
+            if (registeredDebris is not null)
+            {
+                registeredDebris.name = "Content_00_00_Debris_Wrong";
+            }
+
+            harness.ContentPresenter.SyncImmediate(state);
+
+            GameObject? repairedDebris = GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 0));
+            Assert.That(repairedDebris, Is.Not.Null);
+            Assert.That(repairedDebris!.name, Does.Contain("Debris_B"));
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
         }
 
         [Test]
