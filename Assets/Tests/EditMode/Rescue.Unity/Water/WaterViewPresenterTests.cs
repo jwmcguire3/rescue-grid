@@ -4,6 +4,7 @@ using NUnit.Framework;
 using Rescue.Core.Rng;
 using Rescue.Core.State;
 using Rescue.Unity.BoardPresentation;
+using Rescue.Unity.Presentation;
 using TMPro;
 using UnityEngine;
 using CoreBoard = Rescue.Core.State.Board;
@@ -125,6 +126,25 @@ namespace Rescue.Unity.Water.Tests
             presenter.RebuildWater(state);
 
             Assert.That(label.text, Is.EqualTo("Water: paused until first action"));
+        }
+
+        [Test]
+        public void WaterViewPresenter_ApplyPlaybackSettingsOverridesInternalTimingDefaults()
+        {
+            BoardGridViewPresenter gridPresenter = CreateGridPresenter(out _);
+            WaterViewPresenter presenter = CreateWaterPresenter(gridPresenter, useFallbackOverlay: true);
+            ActionPlaybackSettings settings = new ActionPlaybackSettings();
+            SetPrivateField(settings, "waterRiseDurationSeconds", 0.18f);
+            SetPrivateField(settings, "waterForecastTransitionDurationSeconds", 0.09f);
+            SetPrivateField(settings, "waterForecastPulseDurationSeconds", 0.21f);
+            SetPrivateField(settings, "waterlinePulseDurationSeconds", 0.17f);
+
+            presenter.ApplyPlaybackSettings(settings);
+
+            Assert.That(GetPrivateField(presenter, "waterRiseDurationSeconds"), Is.EqualTo(0.18f));
+            Assert.That(GetPrivateField(presenter, "forecastTransitionDurationSeconds"), Is.EqualTo(0.09f));
+            Assert.That(GetPrivateField(presenter, "forecastPulseDurationSeconds"), Is.EqualTo(0.21f));
+            Assert.That(GetPrivateField(presenter, "waterlinePulseDurationSeconds"), Is.EqualTo(0.17f));
         }
 
         [Test]

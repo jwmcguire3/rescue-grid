@@ -6,6 +6,7 @@ using Rescue.Core.Rng;
 using Rescue.Core.State;
 using Rescue.Unity.Art.Registries;
 using Rescue.Unity.BoardPresentation;
+using Rescue.Unity.Presentation;
 using UnityEngine;
 using UnityEngine.TestTools.Utils;
 using CoreBoard = Rescue.Core.State.Board;
@@ -224,6 +225,26 @@ namespace Rescue.Unity.BoardPresentation.Tests
 
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
             Assert.That(harness.ContentRoot.GetChild(0).name, Does.Contain("Debris_A"));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_ApplyPlaybackSettingsOverridesInternalDurations()
+        {
+            PresenterHarness harness = CreateHarness();
+            ActionPlaybackSettings settings = new ActionPlaybackSettings();
+            SetPrivateField(settings, "gravityDurationSeconds", 0.19f);
+            SetPrivateField(settings, "breakBlockerOrRevealDurationSeconds", 0.09f);
+            SetPrivateField(settings, "spawnDurationSeconds", 0.14f);
+            SetPrivateField(settings, "targetExtractDurationSeconds", 0.17f);
+
+            harness.ContentPresenter.ApplyPlaybackSettings(settings);
+
+            Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "gravityDurationSeconds"), Is.EqualTo(0.19f));
+            Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "blockerDamageDurationSeconds"), Is.EqualTo(0.09f));
+            Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "blockerBreakDurationSeconds"), Is.EqualTo(0.09f));
+            Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "iceRevealDurationSeconds"), Is.EqualTo(0.09f));
+            Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "spawnDurationSeconds"), Is.EqualTo(0.14f));
+            Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "targetExtractDurationSeconds"), Is.EqualTo(0.17f));
         }
 
         [Test]

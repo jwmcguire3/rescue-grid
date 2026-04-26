@@ -30,6 +30,27 @@ namespace Rescue.Unity.BoardPresentation
         private readonly List<GameObject> spawnedContent = new List<GameObject>();
         private readonly BoardContentVisualRegistry visualRegistry = new BoardContentVisualRegistry();
         private readonly Dictionary<string, TargetVisualView> spawnedTargetsById = new Dictionary<string, TargetVisualView>();
+        private float gravityDurationSeconds = 0.15f;
+        private float blockerDamageDurationSeconds = 0.10f;
+        private float blockerBreakDurationSeconds = 0.10f;
+        private float iceRevealDurationSeconds = 0.10f;
+        private float spawnDurationSeconds = 0.12f;
+        private float targetExtractDurationSeconds = 0.12f;
+
+        public void ApplyPlaybackSettings(Presentation.ActionPlaybackSettings settings)
+        {
+            if (settings is null)
+            {
+                return;
+            }
+
+            gravityDurationSeconds = settings.GravityDurationSeconds;
+            blockerDamageDurationSeconds = settings.BreakBlockerOrRevealDurationSeconds;
+            blockerBreakDurationSeconds = settings.BreakBlockerOrRevealDurationSeconds;
+            iceRevealDurationSeconds = settings.BreakBlockerOrRevealDurationSeconds;
+            spawnDurationSeconds = settings.SpawnDurationSeconds;
+            targetExtractDurationSeconds = settings.TargetExtractDurationSeconds;
+        }
 
         public void SyncImmediate(GameState state)
         {
@@ -130,8 +151,9 @@ namespace Rescue.Unity.BoardPresentation
             }
         }
 
-        public void AnimateGravityMove(GravitySettled gravity, float durationSeconds = 0.15f)
+        public void AnimateGravityMove(GravitySettled gravity, float? durationSeconds = null)
         {
+            float effectiveDurationSeconds = durationSeconds ?? gravityDurationSeconds;
             List<(BoardPieceView View, TileCoord To)> movesToAnimate = new List<(BoardPieceView View, TileCoord To)>();
 
             for (int i = 0; i < gravity.Moves.Length; i++)
@@ -163,12 +185,13 @@ namespace Rescue.Unity.BoardPresentation
                     continue;
                 }
 
-                MovePieceToCoord(debrisView.Object, anchor, to, debrisView.ContentLabel, contentYOffset, durationSeconds);
+                MovePieceToCoord(debrisView.Object, anchor, to, debrisView.ContentLabel, contentYOffset, effectiveDurationSeconds);
             }
         }
 
-        public void AnimateBlockerDamage(BlockerDamaged damaged, float durationSeconds = 0.10f)
+        public void AnimateBlockerDamage(BlockerDamaged damaged, float? durationSeconds = null)
         {
+            float effectiveDurationSeconds = durationSeconds ?? blockerDamageDurationSeconds;
             CleanupDestroyedVisualReferences();
 
             if (!TryGetLivePieceView(visualRegistry.Blockers, damaged.Coord, out BoardPieceView? blockerView) ||
@@ -177,16 +200,17 @@ namespace Rescue.Unity.BoardPresentation
                 return;
             }
 
-            if (!Application.isPlaying || !isActiveAndEnabled || durationSeconds <= 0f)
+            if (!Application.isPlaying || !isActiveAndEnabled || effectiveDurationSeconds <= 0f)
             {
                 return;
             }
 
-            StartCoroutine(AnimateBlockerDamageRoutine(blockerView.Object, durationSeconds));
+            StartCoroutine(AnimateBlockerDamageRoutine(blockerView.Object, effectiveDurationSeconds));
         }
 
-        public void AnimateBlockerBreak(BlockerBroken broken, float durationSeconds = 0.10f)
+        public void AnimateBlockerBreak(BlockerBroken broken, float? durationSeconds = null)
         {
+            float effectiveDurationSeconds = durationSeconds ?? blockerBreakDurationSeconds;
             CleanupDestroyedVisualReferences();
 
             if (!RemoveLivePieceView(visualRegistry.Blockers, broken.Coord, out BoardPieceView? blockerView) ||
@@ -195,18 +219,19 @@ namespace Rescue.Unity.BoardPresentation
                 return;
             }
 
-            if (!Application.isPlaying || !isActiveAndEnabled || durationSeconds <= 0f)
+            if (!Application.isPlaying || !isActiveAndEnabled || effectiveDurationSeconds <= 0f)
             {
                 RemoveSpawnedContentReference(blockerView.Object);
                 DestroyContentObject(blockerView.Object);
                 return;
             }
 
-            StartCoroutine(AnimateBlockerBreakRoutine(blockerView.Object, durationSeconds));
+            StartCoroutine(AnimateBlockerBreakRoutine(blockerView.Object, effectiveDurationSeconds));
         }
 
-        public void AnimateIceReveal(IceRevealed revealed, float durationSeconds = 0.10f)
+        public void AnimateIceReveal(IceRevealed revealed, float? durationSeconds = null)
         {
+            float effectiveDurationSeconds = durationSeconds ?? iceRevealDurationSeconds;
             CleanupDestroyedVisualReferences();
 
             if (!RemoveLivePieceView(visualRegistry.HiddenDebris, revealed.Coord, out BoardPieceView? hiddenDebrisView) ||
@@ -229,17 +254,18 @@ namespace Rescue.Unity.BoardPresentation
             MoveContentObjectToAnchor(hiddenDebrisView.Object, anchor, revealed.Coord, hiddenDebrisView.ContentLabel, contentYOffset);
             hiddenDebrisView.Object.transform.localScale = Vector3.one;
 
-            if (!Application.isPlaying || !isActiveAndEnabled || durationSeconds <= 0f)
+            if (!Application.isPlaying || !isActiveAndEnabled || effectiveDurationSeconds <= 0f)
             {
                 SetVisualAlpha(hiddenDebrisView.Object, 1f);
                 return;
             }
 
-            StartCoroutine(AnimateIceRevealRoutine(hiddenDebrisView.Object, durationSeconds));
+            StartCoroutine(AnimateIceRevealRoutine(hiddenDebrisView.Object, effectiveDurationSeconds));
         }
 
-        public void AnimateSpawn(Spawned spawned, float durationSeconds = 0.12f)
+        public void AnimateSpawn(Spawned spawned, float? durationSeconds = null)
         {
+            float effectiveDurationSeconds = durationSeconds ?? spawnDurationSeconds;
             for (int i = 0; i < spawned.Pieces.Length; i++)
             {
                 (TileCoord coord, DebrisType type) = spawned.Pieces[i];
@@ -272,12 +298,13 @@ namespace Rescue.Unity.BoardPresentation
 
                 Vector3 entryPosition = GetSpawnEntryWorldPosition(coord);
                 PositionContentObjectAtWorldPose(debrisObject, anchor, entryPosition, anchor.rotation);
-                MovePieceToCoord(debrisObject, anchor, coord, contentLabel, contentYOffset, durationSeconds);
+                MovePieceToCoord(debrisObject, anchor, coord, contentLabel, contentYOffset, effectiveDurationSeconds);
             }
         }
 
-        public void AnimateTargetExtract(TargetExtracted extraction, float durationSeconds = 0.12f)
+        public void AnimateTargetExtract(TargetExtracted extraction, float? durationSeconds = null)
         {
+            float effectiveDurationSeconds = durationSeconds ?? targetExtractDurationSeconds;
             CleanupDestroyedVisualReferences();
 
             if (!TryGetLiveTargetView(extraction.TargetId, out TargetVisualView? targetView) ||
@@ -289,7 +316,7 @@ namespace Rescue.Unity.BoardPresentation
             GameObject targetObject = targetView.Object;
             targetView.IsExtracting = true;
 
-            if (!Application.isPlaying || !isActiveAndEnabled || durationSeconds <= 0f)
+            if (!Application.isPlaying || !isActiveAndEnabled || effectiveDurationSeconds <= 0f)
             {
                 ApplyTargetExtractPose(targetObject.transform, 1f);
                 SetTargetVisualAlpha(targetObject, 0f);
@@ -297,7 +324,7 @@ namespace Rescue.Unity.BoardPresentation
                 return;
             }
 
-            StartCoroutine(AnimateTargetExtractRoutine(extraction.TargetId, targetObject, durationSeconds));
+            StartCoroutine(AnimateTargetExtractRoutine(extraction.TargetId, targetObject, effectiveDurationSeconds));
         }
 
         public bool TryGetTargetInstance(string targetId, out GameObject? targetObject)

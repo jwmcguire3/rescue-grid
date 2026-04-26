@@ -4,6 +4,7 @@ using Rescue.Core.Pipeline;
 using Rescue.Core.Rng;
 using Rescue.Core.State;
 using Rescue.Unity.Art.Registries;
+using Rescue.Unity.Presentation;
 using Rescue.Unity.UI;
 using UnityEngine;
 using CoreDock = Rescue.Core.State.Dock;
@@ -111,6 +112,27 @@ namespace Rescue.Unity.UI.Tests
             Assert.DoesNotThrow(() => presenter.PlayTripleClearFeedback());
             Assert.DoesNotThrow(() => presenter.SyncToState(5, 7));
             Assert.DoesNotThrow(() => presenter.SetFeedbackTarget(null));
+        }
+
+        [Test]
+        public void DockFeedbackPresenter_ApplyPlaybackSettingsOverridesFeedbackDurations()
+        {
+            GameObject presenterObject = CreateTrackedObject("DockFeedbackPresenter");
+            DockFeedbackPresenter presenter = presenterObject.AddComponent<DockFeedbackPresenter>();
+            ActionPlaybackSettings settings = new ActionPlaybackSettings();
+            SetPrivateField(settings, "dockInsertFeedbackDurationSeconds", 0.09f);
+            SetPrivateField(settings, "dockClearFeedbackDurationSeconds", 0.07f);
+            SetPrivateField(settings, "dockWarningCautionDurationSeconds", 0.42f);
+            SetPrivateField(settings, "dockWarningAcuteDurationSeconds", 0.33f);
+            SetPrivateField(settings, "dockJamFeedbackDurationSeconds", 0.61f);
+
+            presenter.ApplyPlaybackSettings(settings);
+
+            Assert.That(presenter.InsertDuration, Is.EqualTo(0.09f));
+            Assert.That(presenter.ClearDuration, Is.EqualTo(0.07f));
+            Assert.That(presenter.CautionPulseDuration, Is.EqualTo(0.42f));
+            Assert.That(presenter.AcuteShakeDuration, Is.EqualTo(0.33f));
+            Assert.That(presenter.FailedPulseDuration, Is.EqualTo(0.61f));
         }
 
         [Test]

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Rescue.Core.Pipeline;
 using Rescue.Core.State;
 using Rescue.Unity.Art.Registries;
+using Rescue.Unity.Presentation;
 using UnityEngine;
 
 namespace Rescue.Unity.UI
@@ -87,13 +88,9 @@ namespace Rescue.Unity.UI
 
         [Header("Insert")]
         [SerializeField] private float insertPopScale = 1.12f;
-        [SerializeField] private float insertDuration = 0.18f;
 
         [Header("Pressure")]
-        [SerializeField] private float cautionPulseDuration = 0.5f;
         [SerializeField] private float acuteShakeAmount = 0.05f;
-        [SerializeField] private float acuteShakeDuration = 0.4f;
-        [SerializeField] private float failedPulseDuration = 0.7f;
 
         [Header("Curves")]
         [SerializeField] private AnimationCurve? insertCurve;
@@ -105,18 +102,39 @@ namespace Rescue.Unity.UI
         private Vector3 _baseLocalPosition = Vector3.zero;
         private float _baseAlpha = 1f;
         private bool _hasCachedBaseline;
+        private float insertDurationSeconds = 0.08f;
+        private float clearDurationSeconds = 0.08f;
+        private float cautionPulseDurationSeconds = 0.50f;
+        private float acuteShakeDurationSeconds = 0.40f;
+        private float failedPulseDurationSeconds = 0.70f;
 
         public float InsertPopScale => insertPopScale;
 
-        public float InsertDuration => insertDuration;
+        public float InsertDuration => insertDurationSeconds;
 
-        public float CautionPulseDuration => cautionPulseDuration;
+        public float CautionPulseDuration => cautionPulseDurationSeconds;
 
         public float AcuteShakeAmount => acuteShakeAmount;
 
-        public float AcuteShakeDuration => acuteShakeDuration;
+        public float AcuteShakeDuration => acuteShakeDurationSeconds;
 
-        public float FailedPulseDuration => failedPulseDuration;
+        public float FailedPulseDuration => failedPulseDurationSeconds;
+
+        public float ClearDuration => clearDurationSeconds;
+
+        public void ApplyPlaybackSettings(ActionPlaybackSettings settings)
+        {
+            if (settings is null)
+            {
+                return;
+            }
+
+            insertDurationSeconds = settings.DockInsertFeedbackDurationSeconds;
+            clearDurationSeconds = settings.DockClearFeedbackDurationSeconds;
+            cautionPulseDurationSeconds = settings.DockWarningCautionDurationSeconds;
+            acuteShakeDurationSeconds = settings.DockWarningAcuteDurationSeconds;
+            failedPulseDurationSeconds = settings.DockJamFeedbackDurationSeconds;
+        }
 
         public DockFeedbackType SelectFeedbackType(int occupancy, int dockSize)
         {
@@ -125,27 +143,27 @@ namespace Rescue.Unity.UI
 
         public void PlayInsertFeedback()
         {
-            PlayRoutine(CreatePulseRoutine(insertDuration, insertPopScale, ResolveInsertCurve()));
+            PlayRoutine(CreatePulseRoutine(insertDurationSeconds, insertPopScale, ResolveInsertCurve()));
         }
 
         public void PlayCautionFeedback()
         {
-            PlayRoutine(CreatePulseRoutine(cautionPulseDuration, DefaultPulseScaleMultiplier, ResolvePulseCurve()));
+            PlayRoutine(CreatePulseRoutine(cautionPulseDurationSeconds, DefaultPulseScaleMultiplier, ResolvePulseCurve()));
         }
 
         public void PlayAcuteFeedback()
         {
-            PlayRoutine(CreateShakeRoutine(acuteShakeDuration, acuteShakeAmount, ResolveShakeCurve()));
+            PlayRoutine(CreateShakeRoutine(acuteShakeDurationSeconds, acuteShakeAmount, ResolveShakeCurve()));
         }
 
         public void PlayFailedFeedback()
         {
-            PlayRoutine(CreatePulseRoutine(failedPulseDuration, FailedHoldScaleMultiplier, ResolvePulseCurve(), holdAtEnd: true));
+            PlayRoutine(CreatePulseRoutine(failedPulseDurationSeconds, FailedHoldScaleMultiplier, ResolvePulseCurve(), holdAtEnd: true));
         }
 
         public void PlayTripleClearFeedback()
         {
-            PlayRoutine(CreateTripleClearRoutine());
+            PlayRoutine(CreateTripleClearRoutine(clearDurationSeconds));
         }
 
         public void SyncToState(int occupancy, int dockSize)
@@ -279,7 +297,7 @@ namespace Rescue.Unity.UI
             target.localPosition = _baseLocalPosition;
         }
 
-        private IEnumerator CreateTripleClearRoutine()
+        private IEnumerator CreateTripleClearRoutine(float durationSeconds)
         {
             if (!TryGetTarget(out Transform target))
             {
@@ -287,7 +305,7 @@ namespace Rescue.Unity.UI
             }
 
             CanvasGroup? canvasGroup = ResolveFadeTarget();
-            float duration = Mathf.Max(0.01f, insertDuration);
+            float duration = Mathf.Max(0.01f, durationSeconds);
             float elapsed = 0f;
             Vector3 baseScale = _baseLocalScale;
             Vector3 minScale = baseScale * TripleClearMinScaleMultiplier;
@@ -415,6 +433,11 @@ namespace Rescue.Unity.UI
         public void Rebuild(GameState state)
         {
             SyncImmediate(state);
+        }
+
+        public void ApplyPlaybackSettings(ActionPlaybackSettings settings)
+        {
+            ResolveFeedbackPresenter().ApplyPlaybackSettings(settings);
         }
 
         public void SyncImmediate(GameState state)

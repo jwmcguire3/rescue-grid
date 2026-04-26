@@ -107,6 +107,56 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
+        public void ActionPlaybackController_UsesConfiguredStepDurations()
+        {
+            ActionPlaybackSettings settings = CreateSettings(playbackEnabled: true, yieldBetweenSteps: false);
+            SetPrivateField(settings, "removeDurationSeconds", 0.11f);
+            SetPrivateField(settings, "breakBlockerOrRevealDurationSeconds", 0.09f);
+            SetPrivateField(settings, "dockFeedbackDurationSeconds", 0.10f);
+            SetPrivateField(settings, "gravityDurationSeconds", 0.18f);
+            SetPrivateField(settings, "spawnDurationSeconds", 0.13f);
+            SetPrivateField(settings, "targetExtractDurationSeconds", 0.16f);
+            SetPrivateField(settings, "waterRiseDurationSeconds", 0.15f);
+            SetPrivateField(settings, "waterForecastTransitionDurationSeconds", 0.19f);
+
+            ActionPlaybackController controller = CreateController(settings);
+
+            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.RemoveGroup), Is.EqualTo(0.11f));
+            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.BreakBlockerOrReveal), Is.EqualTo(0.09f));
+            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.DockFeedback), Is.EqualTo(0.10f));
+            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.Gravity), Is.EqualTo(0.18f));
+            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.Spawn), Is.EqualTo(0.13f));
+            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.TargetExtract), Is.EqualTo(0.16f));
+            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.WaterRise), Is.EqualTo(0.19f));
+        }
+
+        [Test]
+        public void ActionPlaybackController_AppliesSettingsToPresentersBeforePlayback()
+        {
+            ActionPlaybackSettings settings = CreateSettings(playbackEnabled: true, yieldBetweenSteps: false);
+            SetPrivateField(settings, "gravityDurationSeconds", 0.19f);
+            SetPrivateField(settings, "dockInsertFeedbackDurationSeconds", 0.09f);
+            SetPrivateField(settings, "waterForecastPulseDurationSeconds", 0.21f);
+
+            ControllerHarness harness = CreateControllerHarness(settings);
+            GameState previousState = CreateState();
+            harness.GridPresenter.RebuildGrid(previousState);
+
+            bool handled = harness.Controller.TryPlayAction(
+                previousState,
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(previousState, actionCount: 4, new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1)))),
+                _ => { });
+
+            object? feedbackPresenter = GetPrivateFieldValue(harness.DockPresenter, "feedbackPresenter");
+            Assert.That(handled, Is.True);
+            Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "gravityDurationSeconds"), Is.EqualTo(0.19f));
+            Assert.That(GetPrivateFieldValue(harness.WaterPresenter, "forecastPulseDurationSeconds"), Is.EqualTo(0.21f));
+            Assert.That(feedbackPresenter, Is.Not.Null);
+            Assert.That(GetPropertyValue(feedbackPresenter!, "InsertDuration"), Is.EqualTo(0.09f));
+        }
+
+        [Test]
         public void ActionPlaybackController_FinalSyncRunsAfterRemoveGravityAndSpawnPlan()
         {
             ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
@@ -862,13 +912,23 @@ namespace Rescue.Unity.Presentation.Tests
 
         private ActionPlaybackController CreateController(bool playbackEnabled, bool yieldBetweenSteps)
         {
+            return CreateController(CreateSettings(playbackEnabled, yieldBetweenSteps));
+        }
+
+        private ActionPlaybackController CreateController(ActionPlaybackSettings settings)
+        {
             GameObject gameObject = CreateTrackedGameObject("ActionPlaybackController");
             ActionPlaybackController controller = gameObject.AddComponent<ActionPlaybackController>();
-            SetPrivateField(controller, "settings", CreateSettings(playbackEnabled, yieldBetweenSteps));
+            SetPrivateField(controller, "settings", settings);
             return controller;
         }
 
         private ControllerHarness CreateControllerHarness(bool playbackEnabled, bool yieldBetweenSteps, Type? fxRouterType = null)
+        {
+            return CreateControllerHarness(CreateSettings(playbackEnabled, yieldBetweenSteps), fxRouterType);
+        }
+
+        private ControllerHarness CreateControllerHarness(ActionPlaybackSettings settings, Type? fxRouterType = null)
         {
             GameObject presenterObject = CreateTrackedGameObject("PlaybackHarness");
             BoardGridViewPresenter gridPresenter = presenterObject.AddComponent<BoardGridViewPresenter>();
@@ -930,7 +990,7 @@ namespace Rescue.Unity.Presentation.Tests
             fxRouter.BoardGrid = gridPresenter;
 
             ActionPlaybackController controller = presenterObject.AddComponent<ActionPlaybackController>();
-            SetPrivateField(controller, "settings", CreateSettings(playbackEnabled, yieldBetweenSteps));
+            SetPrivateField(controller, "settings", settings);
             SetPrivateField(controller, "boardGrid", gridPresenter);
             SetPrivateField(controller, "boardContent", contentPresenter);
             SetPrivateField(controller, "waterView", waterPresenter);
@@ -1130,6 +1190,26 @@ namespace Rescue.Unity.Presentation.Tests
 
             Assert.That(field, Is.Not.Null, $"Expected private field '{fieldName}'.");
             return field?.GetValue(target);
+        }
+
+        private static object? GetPropertyValue(object target, string propertyName)
+        {
+            System.Reflection.PropertyInfo? property = target.GetType().GetProperty(
+                propertyName,
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+
+            Assert.That(property, Is.Not.Null, $"Expected public property '{propertyName}'.");
+            return property?.GetValue(target);
+        }
+
+        private static float GetStepDuration(ActionPlaybackController controller, ActionPlaybackStepType stepType)
+        {
+            System.Reflection.MethodInfo? method = controller.GetType().GetMethod(
+                "GetStepDurationSeconds",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+            Assert.That(method, Is.Not.Null, "Expected private method 'GetStepDurationSeconds'.");
+            return (float)(method?.Invoke(controller, new object[] { stepType }) ?? 0f);
         }
 
         private static void AssertVector3Equal(Vector3 expected, Vector3 actual, float tolerance = 0.0001f)

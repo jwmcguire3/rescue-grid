@@ -43,6 +43,7 @@ namespace Rescue.Unity.Presentation
                 throw new ArgumentNullException(nameof(finalSync));
             }
 
+            ApplyPlaybackSettingsToPresenters();
             CurrentPlan = ActionPlaybackBuilder.Build(previousState, input, result);
             if (!CanPlay())
             {
@@ -153,13 +154,13 @@ namespace Rescue.Unity.Presentation
                     boardContent?.RemoveDebrisGroup(removed);
                     break;
                 case BlockerDamaged damaged:
-                    boardContent?.AnimateBlockerDamage(damaged, settings.BreakBlockerOrRevealDurationSeconds);
+                    boardContent?.AnimateBlockerDamage(damaged);
                     break;
                 case BlockerBroken broken:
-                    boardContent?.AnimateBlockerBreak(broken, settings.BreakBlockerOrRevealDurationSeconds);
+                    boardContent?.AnimateBlockerBreak(broken);
                     break;
                 case IceRevealed revealed:
-                    boardContent?.AnimateIceReveal(revealed, settings.BreakBlockerOrRevealDurationSeconds);
+                    boardContent?.AnimateIceReveal(revealed);
                     break;
                 case DockInserted inserted:
                     ResolveDockView()?.PlayInsertFeedback(inserted);
@@ -174,21 +175,19 @@ namespace Rescue.Unity.Presentation
                     ResolveDockView()?.PlayJamFeedback(jamTriggered);
                     break;
                 case GravitySettled gravity:
-                    boardContent?.AnimateGravityMove(gravity, settings.GravityDurationSeconds);
+                    boardContent?.AnimateGravityMove(gravity);
                     break;
                 case Spawned spawned:
-                    boardContent?.AnimateSpawn(spawned, settings.SpawnDurationSeconds);
+                    boardContent?.AnimateSpawn(spawned);
                     break;
                 case TargetExtracted extracted:
-                    boardContent?.AnimateTargetExtract(extracted, settings.TargetExtractDurationSeconds);
+                    boardContent?.AnimateTargetExtract(extracted);
                     break;
                 case WaterRose rose:
                     ResolveWaterView()?.AnimateWaterRise(
                         previousState,
                         resultState,
-                        rose.FloodedRow,
-                        settings.WaterRiseDurationSeconds,
-                        settings.WaterForecastTransitionDurationSeconds);
+                        rose.FloodedRow);
                     break;
             }
 
@@ -319,6 +318,13 @@ namespace Rescue.Unity.Presentation
                     $"{nameof(ActionPlaybackController)} skipped FX for playback step '{step.SourceEventName ?? step.StepType.ToString()}' after an exception: {exception.Message}",
                     this);
             }
+        }
+
+        private void ApplyPlaybackSettingsToPresenters()
+        {
+            boardContent?.ApplyPlaybackSettings(settings);
+            ResolveWaterView()?.ApplyPlaybackSettings(settings);
+            ResolveDockView()?.ApplyPlaybackSettings(settings);
         }
 
         private sealed class PlaybackContext

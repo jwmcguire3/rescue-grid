@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Rescue.Core.State;
+using Rescue.Unity.Presentation;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,11 +19,7 @@ namespace Rescue.Unity.BoardPresentation
         [SerializeField] private TextMeshProUGUI? counterLabel;
         [SerializeField] private GameObject? fallbackOverlayPrefab;
         [SerializeField] private float overlayYOffset = 0.1f;
-        // These remain local because they are micro-accents inside a water beat,
-        // not separate playback timeline steps.
-        [SerializeField] private float forecastPulseDuration = 0.25f;
         [SerializeField] private float forecastPulseScale = 1.08f;
-        [SerializeField] private float waterlinePulseDuration = 0.2f;
 
         private readonly List<GameObject> spawnedObjects = new List<GameObject>();
         private readonly Dictionary<int, GameObject> floodedRowOverlays = new Dictionary<int, GameObject>();
@@ -31,6 +28,23 @@ namespace Rescue.Unity.BoardPresentation
         private GameObject? waterlineInstance;
         private int? waterlineRowIndex;
         private WaterState? previousWaterState;
+        private float waterRiseDurationSeconds = 0.15f;
+        private float forecastTransitionDurationSeconds = 0.10f;
+        private float forecastPulseDurationSeconds = 0.25f;
+        private float waterlinePulseDurationSeconds = 0.20f;
+
+        public void ApplyPlaybackSettings(ActionPlaybackSettings settings)
+        {
+            if (settings is null)
+            {
+                return;
+            }
+
+            waterRiseDurationSeconds = settings.WaterRiseDurationSeconds;
+            forecastTransitionDurationSeconds = settings.WaterForecastTransitionDurationSeconds;
+            forecastPulseDurationSeconds = settings.WaterForecastPulseDurationSeconds;
+            waterlinePulseDurationSeconds = settings.WaterlinePulseDurationSeconds;
+        }
 
         public void RebuildWater(GameState state)
         {
@@ -295,7 +309,7 @@ namespace Rescue.Unity.BoardPresentation
                 return;
             }
 
-            AnimateRiseOverlay(targetOverlay.transform, Mathf.Max(0.01f, customRiseDuration ?? forecastPulseDuration));
+            AnimateRiseOverlay(targetOverlay.transform, Mathf.Max(0.01f, customRiseDuration ?? waterRiseDurationSeconds));
         }
 
         private GameObject? SpawnFloodedRowOverlay(int rowIndex, int width)
@@ -582,14 +596,14 @@ namespace Rescue.Unity.BoardPresentation
         {
             if (feedback.HasNearRiseWarning && forecastOverlay is not null)
             {
-                PulseTransform(forecastOverlay.transform, forecastPulseDuration, forecastPulseScale);
-                PulseAlpha(forecastOverlay, forecastPulseDuration, targetAlphaMultiplier: 1.2f);
+                PulseTransform(forecastOverlay.transform, forecastPulseDurationSeconds, forecastPulseScale);
+                PulseAlpha(forecastOverlay, forecastPulseDurationSeconds, targetAlphaMultiplier: 1.2f);
             }
 
             if (feedback.ShouldPulseWaterline && waterline is not null)
             {
-                PulseTransform(waterline.transform, waterlinePulseDuration, forecastPulseScale);
-                PulseAlpha(waterline, waterlinePulseDuration, targetAlphaMultiplier: 1.25f);
+                PulseTransform(waterline.transform, waterlinePulseDurationSeconds, forecastPulseScale);
+                PulseAlpha(waterline, waterlinePulseDurationSeconds, targetAlphaMultiplier: 1.25f);
             }
 
             if (feedback.HasWaterRise)
@@ -598,14 +612,14 @@ namespace Rescue.Unity.BoardPresentation
                 {
                     if (floodedRowOverlays.TryGetValue(feedback.NewlyFloodedRowIndices[i], out GameObject overlay))
                     {
-                        PulseAlpha(overlay, Mathf.Max(0.01f, customRiseDuration ?? forecastPulseDuration), targetAlphaMultiplier: 1.15f);
+                        PulseAlpha(overlay, Mathf.Max(0.01f, customRiseDuration ?? waterRiseDurationSeconds), targetAlphaMultiplier: 1.15f);
                     }
                 }
             }
 
             if (feedback.ShouldEmphasizeCounter && counterLabel is not null)
             {
-                PulseTransform(counterLabel.transform, forecastPulseDuration, forecastPulseScale);
+                PulseTransform(counterLabel.transform, forecastPulseDurationSeconds, forecastPulseScale);
             }
         }
 
@@ -631,7 +645,7 @@ namespace Rescue.Unity.BoardPresentation
                 return;
             }
 
-            float duration = durationSeconds ?? forecastPulseDuration;
+            float duration = durationSeconds ?? forecastTransitionDurationSeconds;
             PulseTransform(forecastOverlayInstance.transform, duration, forecastPulseScale);
             PulseAlpha(forecastOverlayInstance, duration, targetAlphaMultiplier: 1.15f);
         }
