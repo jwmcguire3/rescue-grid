@@ -144,6 +144,41 @@ namespace Rescue.Unity.Water.Tests
             Assert.That(label.text, Is.Empty);
         }
 
+        [Test]
+        public void WaterViewPresenter_AnimateWaterRiseHandlesValidRiseDataSafely()
+        {
+            BoardGridViewPresenter gridPresenter = CreateGridPresenter(out _);
+            GameState previousState = CreateState(width: 6, height: 7, floodedRows: 1, actionsUntilRise: 1);
+            GameState currentState = CreateState(width: 6, height: 7, floodedRows: 2, actionsUntilRise: 5);
+            gridPresenter.RebuildGrid(currentState);
+
+            WaterViewPresenter presenter = CreateWaterPresenter(gridPresenter, useFallbackOverlay: true);
+            presenter.SyncImmediate(previousState);
+
+            Assert.DoesNotThrow(() => presenter.AnimateWaterRise(previousState, currentState, preferredFloodedRow: 5, durationSeconds: 0.15f));
+            Assert.That(GetWaterRoot(presenter).childCount, Is.EqualTo(4));
+        }
+
+        [Test]
+        public void WaterViewPresenter_ForceSyncToStateRepairsWaterOverlaysAfterPlayback()
+        {
+            BoardGridViewPresenter gridPresenter = CreateGridPresenter(out _);
+            GameState previousState = CreateState(width: 6, height: 7, floodedRows: 1, actionsUntilRise: 1);
+            GameState currentState = CreateState(width: 6, height: 7, floodedRows: 2, actionsUntilRise: 5);
+            gridPresenter.RebuildGrid(currentState);
+
+            WaterViewPresenter presenter = CreateWaterPresenter(gridPresenter, useFallbackOverlay: true);
+            presenter.SyncImmediate(previousState);
+            presenter.AnimateWaterRise(previousState, currentState, preferredFloodedRow: 5, durationSeconds: 0.15f);
+
+            Transform waterRoot = GetWaterRoot(presenter);
+            Object.DestroyImmediate(waterRoot.GetChild(0).gameObject);
+
+            presenter.ForceSyncToState(currentState);
+
+            Assert.That(waterRoot.childCount, Is.EqualTo(4));
+        }
+
         private BoardGridViewPresenter CreateGridPresenter(out Transform boardRoot)
         {
             GameObject presenterObject = CreateTrackedObject("BoardPresenter");

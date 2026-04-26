@@ -24,9 +24,17 @@ namespace Rescue.Unity.BoardPresentation
         [SerializeField] private float waterlinePulseDuration = 0.2f;
 
         private readonly List<GameObject> spawnedObjects = new List<GameObject>();
+        private readonly Dictionary<int, GameObject> floodedRowOverlays = new Dictionary<int, GameObject>();
+        private GameObject? forecastOverlayInstance;
+        private GameObject? waterlineInstance;
         private WaterState? previousWaterState;
 
         public void RebuildWater(GameState state)
+        {
+            SyncImmediate(state);
+        }
+
+        public void SyncImmediate(GameState state)
         {
             if (state is null)
             {
@@ -42,47 +50,53 @@ namespace Rescue.Unity.BoardPresentation
             }
 
             ClearWater();
+            ApplyStateVisuals(state, previousWaterState, animateRise: false, preferredFloodedRow: null, customRiseDuration: null);
+        }
 
-            WaterFeedbackResolution feedback = WaterFeedbackResolver.Resolve(
-                state.Board.Height,
-                previousWaterState,
-                state.Water);
+        public void ForceSyncToState(GameState state)
+        {
+            SyncImmediate(state);
+        }
 
-            WaterRowResolution resolution = WaterRowResolver.Resolve(state.Board.Height, state.Water);
-            Dictionary<int, GameObject> floodedRowOverlays = new Dictionary<int, GameObject>();
-            for (int i = 0; i < resolution.FloodedRowIndices.Length; i++)
+        public void AnimateWaterRise(
+            GameState previousState,
+            GameState state,
+            int? preferredFloodedRow = null,
+            float? durationSeconds = null)
+        {
+            if (previousState is null)
             {
-                GameObject? overlay = SpawnRowOverlay(
-                    rowIndex: resolution.FloodedRowIndices[i],
-                    prefab: ResolveOverlayPrefab(floodedRowOverlayPrefab),
-                    objectName: $"FloodedRow_{resolution.FloodedRowIndices[i]:00}",
-                    width: state.Board.Width);
-
-                if (overlay is not null)
-                {
-                    floodedRowOverlays[resolution.FloodedRowIndices[i]] = overlay;
-                }
+                Debug.LogWarning($"{nameof(WaterViewPresenter)} requires a valid previous GameState to animate water rise.", this);
+                return;
             }
 
-            GameObject? forecastOverlay = null;
-            if (resolution.HasForecastRow)
+            if (state is null)
             {
-                forecastOverlay = SpawnRowOverlay(
-                    rowIndex: resolution.ForecastRowIndex,
-                    prefab: ResolveOverlayPrefab(forecastRowOverlayPrefab),
-                    objectName: $"ForecastRow_{resolution.ForecastRowIndex:00}",
-                    width: state.Board.Width);
+                Debug.LogWarning($"{nameof(WaterViewPresenter)} requires a valid GameState to animate water rise.", this);
+                return;
             }
 
-            GameObject? waterline = null;
-            if (state.Water.FloodedRows > 0)
+            if (gridView is null)
             {
-                waterline = SpawnWaterline(resolution, state.Board.Width);
+                Debug.LogWarning($"{nameof(WaterViewPresenter)} is missing {nameof(gridView)}.", this);
+                ClearWater();
+                return;
             }
 
-            UpdateCounterLabel(state.Water, resolution.NormalizedCounterProgress);
-            ApplyFeedback(feedback, floodedRowOverlays, forecastOverlay, waterline);
-            previousWaterState = state.Water;
+            if (state.Board.Height != previousState.Board.Height || state.Board.Width != previousState.Board.Width)
+            {
+                ForceSyncToState(state);
+                return;
+            }
+
+            WaterState baselineWaterState = previousWaterState ?? previousState.Water;
+            if (state.Water.FloodedRows <= baselineWaterState.FloodedRows)
+            {
+                ForceSyncToState(state);
+                return;
+            }
+
+            ApplyStateVisuals(state, baselineWaterState, animateRise: true, preferredFloodedRow, durationSeconds);
         }
 
         public void ClearWater()
@@ -111,7 +125,135 @@ namespace Rescue.Unity.BoardPresentation
             }
 
             UpdateCounterLabel(null, 0f);
+            floodedRowOverlays.Clear();
+            forecastOverlayInstance = null;
+            waterlineInstance = null;
             previousWaterState = null;
+        }
+
+        private void ApplyStateVisuals(
+            GameState state,
+            WaterState? baselineWaterState,
+            bool animateRise,
+            int? preferredFloodedRow,
+            float? customRiseDuration)
+        {
+            WaterFeedbackResolution feedback = WaterFeedbackResolver.Resolve(
+                state.Board.Height,
+                baselineWaterState,
+                state.Water);
+
+            WaterRowResolution resolution = WaterRowResolver.Resolve(state.Board.Height, state.Water);
+            SyncFloodedRows(state, resolution, animateRise, feedback, preferredFloodedRow, customRiseDuration);
+            SyncForecastOverlay(state, resolution);
+            SyncWaterline(state, resolution);
+            UpdateCounterLabel(state.Water, resolution.NormalizedCounterProgress);
+            ApplyFeedback(feedback, floodedRowOverlays, forecastOverlayInstance, waterlineInstance, customRiseDuration);
+            previousWaterState = state.Water;
+        }
+
+        private void SyncFloodedRows(
+            GameState state,
+            WaterRowResolution resolution,
+            bool animateRise,
+            WaterFeedbackResolution feedback,
+            int? preferredFloodedRow,
+            float? customRiseDuration)
+        {
+            List<int> staleRows = new List<int>();
+            foreach (KeyValuePair<int, GameObject> pair in floodedRowOverlays)
+            {
+                bool keep = false;
+                for (int i = 0; i < resolution.FloodedRowIndices.Length; i++)
+                {
+                    if (resolution.FloodedRowIndices[i] == pair.Key)
+                    {
+                        keep = true;
+                        break;
+                    }
+                }
+
+                if (!keep)
+                {
+                    staleRows.Add(pair.Key);
+                }
+            }
+
+            for (int i = 0; i < staleRows.Count; i++)
+            {
+                if (floodedRowOverlays.TryGetValue(staleRows[i], out GameObject staleOverlay))
+                {
+                    DestroySpawnedObject(staleOverlay);
+                    floodedRowOverlays.Remove(staleRows[i]);
+                }
+            }
+
+            for (int i = 0; i < resolution.FloodedRowIndices.Length; i++)
+            {
+                int rowIndex = resolution.FloodedRowIndices[i];
+                if (!floodedRowOverlays.TryGetValue(rowIndex, out GameObject? overlay) || overlay is null)
+                {
+                    overlay = SpawnFloodedRowOverlay(rowIndex, state.Board.Width);
+                    if (overlay is not null)
+                    {
+                        floodedRowOverlays[rowIndex] = overlay;
+                    }
+                }
+            }
+
+            if (!animateRise)
+            {
+                return;
+            }
+
+            int targetRow = ResolveAnimatedFloodedRow(feedback, preferredFloodedRow);
+            if (targetRow < 0 || !floodedRowOverlays.TryGetValue(targetRow, out GameObject? targetOverlay) || targetOverlay is null)
+            {
+                return;
+            }
+
+            AnimateRiseOverlay(targetOverlay.transform, customRiseDuration ?? waterRiseDuration);
+        }
+
+        private GameObject? SpawnFloodedRowOverlay(int rowIndex, int width)
+        {
+            return SpawnRowOverlay(
+                rowIndex,
+                ResolveOverlayPrefab(floodedRowOverlayPrefab),
+                $"FloodedRow_{rowIndex:00}",
+                width);
+        }
+
+        private void SyncForecastOverlay(GameState state, WaterRowResolution resolution)
+        {
+            if (forecastOverlayInstance is not null)
+            {
+                DestroySpawnedObject(forecastOverlayInstance);
+                forecastOverlayInstance = null;
+            }
+
+            if (resolution.HasForecastRow)
+            {
+                forecastOverlayInstance = SpawnRowOverlay(
+                    resolution.ForecastRowIndex,
+                    ResolveOverlayPrefab(forecastRowOverlayPrefab),
+                    $"ForecastRow_{resolution.ForecastRowIndex:00}",
+                    state.Board.Width);
+            }
+        }
+
+        private void SyncWaterline(GameState state, WaterRowResolution resolution)
+        {
+            if (waterlineInstance is not null)
+            {
+                DestroySpawnedObject(waterlineInstance);
+                waterlineInstance = null;
+            }
+
+            if (state.Water.FloodedRows > 0)
+            {
+                waterlineInstance = SpawnWaterline(resolution, state.Board.Width);
+            }
         }
 
         private GameObject? SpawnRowOverlay(int rowIndex, GameObject? prefab, string objectName, int width)
@@ -141,6 +283,20 @@ namespace Rescue.Unity.BoardPresentation
             overlayTransform.localScale = new Vector3(localScale.x * widthScale, localScale.y, localScale.z);
             spawnedObjects.Add(overlay);
             return overlay;
+        }
+
+        private void DestroySpawnedObject(GameObject spawnedObject)
+        {
+            spawnedObjects.Remove(spawnedObject);
+
+            if (Application.isPlaying)
+            {
+                Destroy(spawnedObject);
+            }
+            else
+            {
+                DestroyImmediate(spawnedObject);
+            }
         }
 
         private GameObject? SpawnWaterline(WaterRowResolution resolution, int width)
@@ -290,7 +446,8 @@ namespace Rescue.Unity.BoardPresentation
             WaterFeedbackResolution feedback,
             IReadOnlyDictionary<int, GameObject> floodedRowOverlays,
             GameObject? forecastOverlay,
-            GameObject? waterline)
+            GameObject? waterline,
+            float? customRiseDuration)
         {
             if (feedback.HasNearRiseWarning && forecastOverlay is not null)
             {
@@ -310,8 +467,7 @@ namespace Rescue.Unity.BoardPresentation
                 {
                     if (floodedRowOverlays.TryGetValue(feedback.NewlyFloodedRowIndices[i], out GameObject overlay))
                     {
-                        AnimateRiseOverlay(overlay.transform);
-                        PulseAlpha(overlay, waterRiseDuration, targetAlphaMultiplier: 1.15f);
+                        PulseAlpha(overlay, customRiseDuration ?? waterRiseDuration, targetAlphaMultiplier: 1.15f);
                     }
                 }
             }
@@ -322,7 +478,22 @@ namespace Rescue.Unity.BoardPresentation
             }
         }
 
-        private void AnimateRiseOverlay(Transform target)
+        private int ResolveAnimatedFloodedRow(WaterFeedbackResolution feedback, int? preferredFloodedRow)
+        {
+            if (preferredFloodedRow.HasValue && floodedRowOverlays.ContainsKey(preferredFloodedRow.Value))
+            {
+                return preferredFloodedRow.Value;
+            }
+
+            if (feedback.NewlyFloodedRowIndices.Length > 0)
+            {
+                return feedback.NewlyFloodedRowIndices[0];
+            }
+
+            return -1;
+        }
+
+        private void AnimateRiseOverlay(Transform target, float durationSeconds)
         {
             if (target is null)
             {
@@ -338,7 +509,7 @@ namespace Rescue.Unity.BoardPresentation
                 return;
             }
 
-            StartCoroutine(AnimateTransformScale(target, initialScale, finalScale, waterRiseDuration));
+            StartCoroutine(AnimateTransformScale(target, initialScale, finalScale, durationSeconds));
         }
 
         private void PulseTransform(Transform target, float duration, float scaleMultiplier)

@@ -11,6 +11,7 @@ namespace Rescue.Unity.Presentation
     {
         [SerializeField] private ActionPlaybackSettings settings = new ActionPlaybackSettings();
         [SerializeField] private BoardContentViewPresenter? boardContent;
+        [SerializeField] private WaterViewPresenter? waterView;
 
         private Coroutine? activePlayback;
 
@@ -45,11 +46,11 @@ namespace Rescue.Unity.Presentation
 
             if (settings.YieldBetweenSteps)
             {
-                activePlayback = StartCoroutine(RunPlayback(result, finalSync));
+                activePlayback = StartCoroutine(RunPlayback(previousState, result, finalSync));
             }
             else
             {
-                RunPlaybackImmediately(result, finalSync);
+                RunPlaybackImmediately(previousState, result, finalSync);
             }
 
             return true;
@@ -71,7 +72,7 @@ namespace Rescue.Unity.Presentation
             return isActiveAndEnabled && settings.PlaybackEnabled;
         }
 
-        private IEnumerator RunPlayback(ActionResult result, Action<ActionResult> finalSync)
+        private IEnumerator RunPlayback(GameState previousState, ActionResult result, Action<ActionResult> finalSync)
         {
             IsPlaying = true;
 
@@ -85,7 +86,7 @@ namespace Rescue.Unity.Presentation
                     }
 
                     ActionPlaybackStep step = CurrentPlan[i];
-                    PlayStep(step);
+                    PlayStep(step, previousState, result.State);
                     yield return CreateStepYield(step.StepType);
                 }
             }
@@ -95,7 +96,7 @@ namespace Rescue.Unity.Presentation
             }
         }
 
-        private void RunPlaybackImmediately(ActionResult result, Action<ActionResult> finalSync)
+        private void RunPlaybackImmediately(GameState previousState, ActionResult result, Action<ActionResult> finalSync)
         {
             IsPlaying = true;
 
@@ -108,7 +109,7 @@ namespace Rescue.Unity.Presentation
                         continue;
                     }
 
-                    PlayStep(CurrentPlan[i]);
+                    PlayStep(CurrentPlan[i], previousState, result.State);
                 }
             }
             finally
@@ -117,9 +118,9 @@ namespace Rescue.Unity.Presentation
             }
         }
 
-        private void PlayStep(ActionPlaybackStep step)
+        private void PlayStep(ActionPlaybackStep step, GameState previousState, GameState resultState)
         {
-            if (boardContent is null || step.SourceEvent is null)
+            if (step.SourceEvent is null)
             {
                 return;
             }
@@ -127,16 +128,19 @@ namespace Rescue.Unity.Presentation
             switch (step.SourceEvent)
             {
                 case GroupRemoved removed:
-                    boardContent.RemoveDebrisGroup(removed);
+                    boardContent?.RemoveDebrisGroup(removed);
                     break;
                 case GravitySettled gravity:
-                    boardContent.AnimateGravityMove(gravity);
+                    boardContent?.AnimateGravityMove(gravity);
                     break;
                 case Spawned spawned:
-                    boardContent.AnimateSpawn(spawned);
+                    boardContent?.AnimateSpawn(spawned);
                     break;
                 case TargetExtracted extracted:
-                    boardContent.AnimateTargetExtract(extracted, settings.TargetExtractDurationSeconds);
+                    boardContent?.AnimateTargetExtract(extracted, settings.TargetExtractDurationSeconds);
+                    break;
+                case WaterRose rose:
+                    ResolveWaterView()?.AnimateWaterRise(previousState, resultState, rose.FloodedRow, settings.WaterRiseDurationSeconds);
                     break;
             }
         }
@@ -169,6 +173,8 @@ namespace Rescue.Unity.Presentation
                     return settings.SpawnDurationSeconds;
                 case ActionPlaybackStepType.TargetExtract:
                     return settings.TargetExtractDurationSeconds;
+                case ActionPlaybackStepType.WaterRise:
+                    return settings.WaterRiseDurationSeconds;
                 default:
                     return 0f;
             }
@@ -185,6 +191,17 @@ namespace Rescue.Unity.Presentation
                 activePlayback = null;
                 IsPlaying = false;
             }
+        }
+
+        private WaterViewPresenter? ResolveWaterView()
+        {
+            if (waterView is not null)
+            {
+                return waterView;
+            }
+
+            waterView = GetComponent<WaterViewPresenter>();
+            return waterView;
         }
     }
 }

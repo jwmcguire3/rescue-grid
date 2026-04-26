@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using Rescue.Core.Pipeline;
 using Rescue.Core.State;
 
@@ -23,17 +24,56 @@ namespace Rescue.Unity.Presentation
             _ = previousState;
             _ = input;
 
-            List<ActionPlaybackStep> steps = new List<ActionPlaybackStep>(result.Events.Length + 1);
+            List<ActionPlaybackStep> mappedSteps = new List<ActionPlaybackStep>(result.Events.Length);
             foreach (ActionEvent actionEvent in result.Events)
             {
                 if (TryMapStepType(actionEvent, out ActionPlaybackStepType stepType))
                 {
-                    steps.Add(new ActionPlaybackStep(stepType, actionEvent.GetType().Name, actionEvent));
+                    mappedSteps.Add(new ActionPlaybackStep(stepType, actionEvent.GetType().Name, actionEvent));
                 }
             }
 
+            List<ActionPlaybackStep> steps = OrderSteps(mappedSteps);
             steps.Add(new ActionPlaybackStep(ActionPlaybackStepType.FinalSync, SourceEventName: null, SourceEvent: null));
             return new ActionPlaybackPlan(ImmutableArray.CreateRange(steps));
+        }
+
+        private static List<ActionPlaybackStep> OrderSteps(List<ActionPlaybackStep> mappedSteps)
+        {
+            if (mappedSteps.Count <= 1)
+            {
+                return mappedSteps;
+            }
+
+            return mappedSteps
+                .Select((step, index) => (step, index))
+                .OrderBy(static pair => GetStepSortOrder(pair.step.StepType))
+                .ThenBy(static pair => pair.index)
+                .Select(static pair => pair.step)
+                .ToList();
+        }
+
+        private static int GetStepSortOrder(ActionPlaybackStepType stepType)
+        {
+            switch (stepType)
+            {
+                case ActionPlaybackStepType.RemoveGroup:
+                    return 0;
+                case ActionPlaybackStepType.BreakBlockerOrReveal:
+                    return 1;
+                case ActionPlaybackStepType.DockFeedback:
+                    return 2;
+                case ActionPlaybackStepType.Gravity:
+                    return 3;
+                case ActionPlaybackStepType.Spawn:
+                    return 4;
+                case ActionPlaybackStepType.TargetExtract:
+                    return 5;
+                case ActionPlaybackStepType.WaterRise:
+                    return 6;
+                default:
+                    return int.MaxValue;
+            }
         }
 
         private static bool TryMapStepType(ActionEvent actionEvent, out ActionPlaybackStepType stepType)

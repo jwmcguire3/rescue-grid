@@ -189,6 +189,50 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(0));
         }
 
+        [Test]
+        public void ActionPlaybackController_WaterRiseRoutesThroughPresenterBeforeFinalSync()
+        {
+            ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
+            GameState previousState = CreateBoardState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                    ImmutableArray.Create<Tile>(new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                    ImmutableArray.Create<Tile>(new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                    ImmutableArray.Create<Tile>(new EmptyTile(), new EmptyTile(), new EmptyTile())),
+                floodedRows: 1,
+                actionsUntilRise: 1,
+                riseInterval: 3);
+            GameState resultState = previousState with
+            {
+                Water = new WaterState(FloodedRows: 2, ActionsUntilRise: 3, RiseInterval: 3),
+                ActionCount = previousState.ActionCount + 1,
+            };
+
+            harness.GridPresenter.RebuildGrid(previousState);
+            harness.WaterPresenter.SyncImmediate(previousState);
+
+            ActionResult result = CreateResult(
+                resultState,
+                actionCount: resultState.ActionCount,
+                new WaterRose(FloodedRow: 2));
+
+            int finalSyncCalls = 0;
+            int waterChildCountAtFinalSync = -1;
+
+            bool handled = harness.Controller.TryPlayAction(previousState, new ActionInput(new TileCoord(0, 0)), result, syncedResult =>
+            {
+                finalSyncCalls++;
+                waterChildCountAtFinalSync = harness.WaterRoot.childCount;
+                harness.WaterPresenter.ForceSyncToState(syncedResult.State);
+            });
+
+            Assert.That(handled, Is.True);
+            Assert.That(finalSyncCalls, Is.EqualTo(1));
+            Assert.That(harness.Controller.CurrentPlan[0].StepType, Is.EqualTo(ActionPlaybackStepType.WaterRise));
+            Assert.That(waterChildCountAtFinalSync, Is.EqualTo(4));
+            Assert.That(harness.WaterRoot.childCount, Is.EqualTo(4));
+        }
+
         private ActionPlaybackController CreateController(bool playbackEnabled, bool yieldBetweenSteps)
         {
             GameObject gameObject = CreateTrackedGameObject("ActionPlaybackController");
@@ -217,11 +261,24 @@ namespace Rescue.Unity.Presentation.Tests
             SetPrivateField(contentPresenter, "fallbackContentPrefab", fallbackPrefab);
             SetPrivateField(contentPresenter, "contentYOffset", 0.05f);
 
+            WaterViewPresenter waterPresenter = presenterObject.AddComponent<WaterViewPresenter>();
+            Transform waterRoot = CreateTrackedGameObject("WaterRoot").transform;
+            waterRoot.SetParent(presenterObject.transform, false);
+            GameObject overlayPrefab = CreateTrackedGameObject("OverlayPrefab");
+            GameObject waterlinePrefab = CreateTrackedGameObject("WaterlinePrefab");
+            SetPrivateField(waterPresenter, "gridView", gridPresenter);
+            SetPrivateField(waterPresenter, "waterRoot", waterRoot);
+            SetPrivateField(waterPresenter, "floodedRowOverlayPrefab", null);
+            SetPrivateField(waterPresenter, "forecastRowOverlayPrefab", null);
+            SetPrivateField(waterPresenter, "waterlinePrefab", waterlinePrefab);
+            SetPrivateField(waterPresenter, "fallbackOverlayPrefab", overlayPrefab);
+
             ActionPlaybackController controller = presenterObject.AddComponent<ActionPlaybackController>();
             SetPrivateField(controller, "settings", CreateSettings(playbackEnabled, yieldBetweenSteps));
             SetPrivateField(controller, "boardContent", contentPresenter);
+            SetPrivateField(controller, "waterView", waterPresenter);
 
-            return new ControllerHarness(controller, gridPresenter, contentPresenter, contentRoot);
+            return new ControllerHarness(controller, gridPresenter, contentPresenter, waterPresenter, contentRoot, waterRoot);
         }
 
         private GameObject CreateTrackedGameObject(string name)
@@ -285,7 +342,11 @@ namespace Rescue.Unity.Presentation.Tests
                     new EmptyTile())));
         }
 
-        private static GameState CreateBoardState(ImmutableArray<ImmutableArray<Tile>> rows)
+        private static GameState CreateBoardState(
+            ImmutableArray<ImmutableArray<Tile>> rows,
+            int floodedRows = 0,
+            int actionsUntilRise = 3,
+            int riseInterval = 3)
         {
             int height = rows.Length;
             int width = height > 0 ? rows[0].Length : 0;
@@ -303,7 +364,7 @@ namespace Rescue.Unity.Presentation.Tests
                         null,
                         null),
                     Size: 7),
-                Water: new WaterState(FloodedRows: 0, ActionsUntilRise: 3, RiseInterval: 3),
+                Water: new WaterState(FloodedRows: floodedRows, ActionsUntilRise: actionsUntilRise, RiseInterval: riseInterval),
                 Vine: new VineState(0, 4, ImmutableArray<TileCoord>.Empty, 0, null),
                 Targets: ImmutableArray<TargetState>.Empty,
                 LevelConfig: new LevelConfig(
@@ -341,12 +402,16 @@ namespace Rescue.Unity.Presentation.Tests
                 ActionPlaybackController controller,
                 BoardGridViewPresenter gridPresenter,
                 BoardContentViewPresenter contentPresenter,
-                Transform contentRoot)
+                WaterViewPresenter waterPresenter,
+                Transform contentRoot,
+                Transform waterRoot)
             {
                 Controller = controller;
                 GridPresenter = gridPresenter;
                 ContentPresenter = contentPresenter;
+                WaterPresenter = waterPresenter;
                 ContentRoot = contentRoot;
+                WaterRoot = waterRoot;
             }
 
             public ActionPlaybackController Controller { get; }
@@ -355,7 +420,11 @@ namespace Rescue.Unity.Presentation.Tests
 
             public BoardContentViewPresenter ContentPresenter { get; }
 
+            public WaterViewPresenter WaterPresenter { get; }
+
             public Transform ContentRoot { get; }
+
+            public Transform WaterRoot { get; }
         }
     }
 }

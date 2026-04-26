@@ -78,6 +78,31 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
+        public void Build_WaterRiseComesAfterRemoveBreakDockGravitySpawnAndExtract()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(
+                    new WaterRose(FloodedRow: 3),
+                    new Spawned(ImmutableArray.Create((new TileCoord(0, 1), DebrisType.C))),
+                    new TargetExtracted("pup-1", new TileCoord(2, 1)),
+                    new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 1, OverflowCount: 0),
+                    new BlockerBroken(new TileCoord(0, 2), BlockerType.Crate),
+                    new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0))),
+                    new GravitySettled(ImmutableArray.Create((new TileCoord(0, 1), new TileCoord(1, 1))))));
+
+            int waterRiseIndex = IndexOf(plan, ActionPlaybackStepType.WaterRise);
+
+            Assert.That(waterRiseIndex, Is.GreaterThan(IndexOf(plan, ActionPlaybackStepType.RemoveGroup)));
+            Assert.That(waterRiseIndex, Is.GreaterThan(IndexOf(plan, ActionPlaybackStepType.BreakBlockerOrReveal)));
+            Assert.That(waterRiseIndex, Is.GreaterThan(IndexOf(plan, ActionPlaybackStepType.DockFeedback)));
+            Assert.That(waterRiseIndex, Is.GreaterThan(IndexOf(plan, ActionPlaybackStepType.Gravity)));
+            Assert.That(waterRiseIndex, Is.GreaterThan(IndexOf(plan, ActionPlaybackStepType.Spawn)));
+            Assert.That(waterRiseIndex, Is.GreaterThan(IndexOf(plan, ActionPlaybackStepType.TargetExtract)));
+        }
+
+        [Test]
         public void Build_TargetExtractComesBeforeWaterRiseAndFinalSync()
         {
             ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
@@ -113,7 +138,25 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
-        public void Build_PreservesExistingEventOrderAsMuchAsPossible()
+        public void Build_NoWaterRoseDoesNotAddWaterRiseButKeepsFinalSync()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(1, 1)),
+                CreateResult(
+                    new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0))),
+                    new GravitySettled(ImmutableArray.Create((new TileCoord(0, 0), new TileCoord(1, 0))))));
+
+            Assert.That(plan.Select(step => step.StepType), Is.EqualTo(new[]
+            {
+                ActionPlaybackStepType.RemoveGroup,
+                ActionPlaybackStepType.Gravity,
+                ActionPlaybackStepType.FinalSync,
+            }));
+        }
+
+        [Test]
+        public void Build_ReordersMappedStepsToPlaybackPipelineOrder()
         {
             ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
                 CreateState(),
@@ -125,8 +168,8 @@ namespace Rescue.Unity.Presentation.Tests
 
             Assert.That(plan.Select(step => step.StepType), Is.EqualTo(new[]
             {
-                ActionPlaybackStepType.DockFeedback,
                 ActionPlaybackStepType.RemoveGroup,
+                ActionPlaybackStepType.DockFeedback,
                 ActionPlaybackStepType.TargetExtract,
                 ActionPlaybackStepType.FinalSync,
             }));
