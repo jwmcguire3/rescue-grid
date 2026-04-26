@@ -30,12 +30,12 @@ namespace Rescue.Unity.BoardPresentation
         private readonly List<GameObject> spawnedContent = new List<GameObject>();
         private readonly BoardContentVisualRegistry visualRegistry = new BoardContentVisualRegistry();
         private readonly Dictionary<string, TargetVisualView> spawnedTargetsById = new Dictionary<string, TargetVisualView>();
-        private float gravityDurationSeconds = 0.15f;
-        private float blockerDamageDurationSeconds = 0.10f;
-        private float blockerBreakDurationSeconds = 0.10f;
-        private float iceRevealDurationSeconds = 0.10f;
-        private float spawnDurationSeconds = 0.12f;
-        private float targetExtractDurationSeconds = 0.12f;
+        private float gravityDurationSeconds = Presentation.ActionPlaybackSettings.DefaultGravityDurationSeconds;
+        private float blockerDamageDurationSeconds = Presentation.ActionPlaybackSettings.DefaultBreakBlockerOrRevealDurationSeconds;
+        private float blockerBreakDurationSeconds = Presentation.ActionPlaybackSettings.DefaultBreakBlockerOrRevealDurationSeconds;
+        private float iceRevealDurationSeconds = Presentation.ActionPlaybackSettings.DefaultBreakBlockerOrRevealDurationSeconds;
+        private float spawnDurationSeconds = Presentation.ActionPlaybackSettings.DefaultSpawnDurationSeconds;
+        private float targetExtractDurationSeconds = Presentation.ActionPlaybackSettings.DefaultTargetExtractDurationSeconds;
 
         public void ApplyPlaybackSettings(Presentation.ActionPlaybackSettings settings)
         {

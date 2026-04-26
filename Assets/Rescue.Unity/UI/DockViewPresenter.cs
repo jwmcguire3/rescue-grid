@@ -102,11 +102,11 @@ namespace Rescue.Unity.UI
         private Vector3 _baseLocalPosition = Vector3.zero;
         private float _baseAlpha = 1f;
         private bool _hasCachedBaseline;
-        private float insertDurationSeconds = 0.08f;
-        private float clearDurationSeconds = 0.08f;
-        private float cautionPulseDurationSeconds = 0.50f;
-        private float acuteShakeDurationSeconds = 0.40f;
-        private float failedPulseDurationSeconds = 0.70f;
+        private float insertDurationSeconds = ActionPlaybackSettings.DefaultDockInsertFeedbackDurationSeconds;
+        private float clearDurationSeconds = ActionPlaybackSettings.DefaultDockClearFeedbackDurationSeconds;
+        private float cautionPulseDurationSeconds = ActionPlaybackSettings.DefaultDockWarningCautionDurationSeconds;
+        private float acuteShakeDurationSeconds = ActionPlaybackSettings.DefaultDockWarningAcuteDurationSeconds;
+        private float failedPulseDurationSeconds = ActionPlaybackSettings.DefaultDockJamFeedbackDurationSeconds;
 
         public float InsertPopScale => insertPopScale;
 

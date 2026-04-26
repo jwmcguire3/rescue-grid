@@ -110,7 +110,7 @@ namespace Rescue.Unity.Presentation
 
                     ActionPlaybackStep step = CurrentPlan[i];
                     PlayStep(step, previousState, input, result.State);
-                    yield return CreateStepYield(step.StepType);
+                    yield return CreateStepYield(step);
                 }
             }
             finally
@@ -194,9 +194,9 @@ namespace Rescue.Unity.Presentation
             TryRoutePlaybackFx(step, previousState, input, resultState);
         }
 
-        private object? CreateStepYield(ActionPlaybackStepType stepType)
+        private object? CreateStepYield(ActionPlaybackStep step)
         {
-            float duration = GetStepDurationSeconds(stepType);
+            float duration = GetStepDurationSeconds(step);
             if (duration <= 0f)
             {
                 return null;
@@ -210,9 +210,30 @@ namespace Rescue.Unity.Presentation
             return null;
         }
 
-        private float GetStepDurationSeconds(ActionPlaybackStepType stepType)
+        private float GetStepDurationSeconds(ActionPlaybackStep step)
         {
-            switch (stepType)
+            if (step.SourceEvent is not null)
+            {
+                switch (step.SourceEvent)
+                {
+                    case DockInserted:
+                        return settings.DockInsertFeedbackDurationSeconds;
+                    case DockCleared:
+                        return settings.DockClearFeedbackDurationSeconds;
+                    case DockWarningChanged warningChanged:
+                        return warningChanged.After switch
+                        {
+                            DockWarningLevel.Caution => settings.DockWarningCautionDurationSeconds,
+                            DockWarningLevel.Acute => settings.DockWarningAcuteDurationSeconds,
+                            DockWarningLevel.Fail => settings.DockJamFeedbackDurationSeconds,
+                            _ => settings.DockFeedbackDurationSeconds,
+                        };
+                    case DockJamTriggered:
+                        return settings.DockJamFeedbackDurationSeconds;
+                }
+            }
+
+            switch (step.StepType)
             {
                 case ActionPlaybackStepType.RemoveGroup:
                     return settings.RemoveDurationSeconds;

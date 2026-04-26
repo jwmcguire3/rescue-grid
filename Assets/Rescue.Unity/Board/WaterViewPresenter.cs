@@ -28,10 +28,10 @@ namespace Rescue.Unity.BoardPresentation
         private GameObject? waterlineInstance;
         private int? waterlineRowIndex;
         private WaterState? previousWaterState;
-        private float waterRiseDurationSeconds = 0.15f;
-        private float forecastTransitionDurationSeconds = 0.10f;
-        private float forecastPulseDurationSeconds = 0.25f;
-        private float waterlinePulseDurationSeconds = 0.20f;
+        private float waterRiseDurationSeconds = ActionPlaybackSettings.DefaultWaterRiseDurationSeconds;
+        private float forecastTransitionDurationSeconds = ActionPlaybackSettings.DefaultWaterForecastTransitionDurationSeconds;
+        private float forecastPulseDurationSeconds = ActionPlaybackSettings.DefaultWaterForecastPulseDurationSeconds;
+        private float waterlinePulseDurationSeconds = ActionPlaybackSettings.DefaultWaterlinePulseDurationSeconds;
 
         public void ApplyPlaybackSettings(ActionPlaybackSettings settings)
         {

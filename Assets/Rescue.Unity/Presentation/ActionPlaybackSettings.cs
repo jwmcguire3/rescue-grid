@@ -6,23 +6,39 @@ namespace Rescue.Unity.Presentation
     [Serializable]
     public sealed class ActionPlaybackSettings
     {
+        public const float DefaultRemoveDurationSeconds = 0.10f;
+        public const float DefaultBreakBlockerOrRevealDurationSeconds = 0.10f;
+        public const float DefaultDockFeedbackDurationSeconds = 0.10f;
+        public const float DefaultDockInsertFeedbackDurationSeconds = 0.08f;
+        public const float DefaultDockClearFeedbackDurationSeconds = 0.08f;
+        public const float DefaultDockWarningCautionDurationSeconds = 0.50f;
+        public const float DefaultDockWarningAcuteDurationSeconds = 0.40f;
+        public const float DefaultDockJamFeedbackDurationSeconds = 0.70f;
+        public const float DefaultGravityDurationSeconds = 0.15f;
+        public const float DefaultSpawnDurationSeconds = 0.12f;
+        public const float DefaultTargetExtractDurationSeconds = 0.12f;
+        public const float DefaultWaterRiseDurationSeconds = 0.15f;
+        public const float DefaultWaterForecastTransitionDurationSeconds = 0.10f;
+        public const float DefaultWaterForecastPulseDurationSeconds = 0.25f;
+        public const float DefaultWaterlinePulseDurationSeconds = 0.20f;
+
         [SerializeField] private bool playbackEnabled = true;
         [SerializeField] private bool yieldBetweenSteps;
-        [SerializeField] private float removeDurationSeconds = 0.10f;
-        [SerializeField] private float breakBlockerOrRevealDurationSeconds = 0.10f;
-        [SerializeField] private float dockFeedbackDurationSeconds = 0.10f;
-        [SerializeField] private float dockInsertFeedbackDurationSeconds = 0.08f;
-        [SerializeField] private float dockClearFeedbackDurationSeconds = 0.08f;
-        [SerializeField] private float dockWarningCautionDurationSeconds = 0.50f;
-        [SerializeField] private float dockWarningAcuteDurationSeconds = 0.40f;
-        [SerializeField] private float dockJamFeedbackDurationSeconds = 0.70f;
-        [SerializeField] private float gravityDurationSeconds = 0.15f;
-        [SerializeField] private float spawnDurationSeconds = 0.12f;
-        [SerializeField] private float targetExtractDurationSeconds = 0.12f;
-        [SerializeField] private float waterRiseDurationSeconds = 0.15f;
-        [SerializeField] private float waterForecastTransitionDurationSeconds = 0.10f;
-        [SerializeField] private float waterForecastPulseDurationSeconds = 0.25f;
-        [SerializeField] private float waterlinePulseDurationSeconds = 0.20f;
+        [SerializeField] private float removeDurationSeconds = DefaultRemoveDurationSeconds;
+        [SerializeField] private float breakBlockerOrRevealDurationSeconds = DefaultBreakBlockerOrRevealDurationSeconds;
+        [SerializeField] private float dockFeedbackDurationSeconds = DefaultDockFeedbackDurationSeconds;
+        [SerializeField] private float dockInsertFeedbackDurationSeconds = DefaultDockInsertFeedbackDurationSeconds;
+        [SerializeField] private float dockClearFeedbackDurationSeconds = DefaultDockClearFeedbackDurationSeconds;
+        [SerializeField] private float dockWarningCautionDurationSeconds = DefaultDockWarningCautionDurationSeconds;
+        [SerializeField] private float dockWarningAcuteDurationSeconds = DefaultDockWarningAcuteDurationSeconds;
+        [SerializeField] private float dockJamFeedbackDurationSeconds = DefaultDockJamFeedbackDurationSeconds;
+        [SerializeField] private float gravityDurationSeconds = DefaultGravityDurationSeconds;
+        [SerializeField] private float spawnDurationSeconds = DefaultSpawnDurationSeconds;
+        [SerializeField] private float targetExtractDurationSeconds = DefaultTargetExtractDurationSeconds;
+        [SerializeField] private float waterRiseDurationSeconds = DefaultWaterRiseDurationSeconds;
+        [SerializeField] private float waterForecastTransitionDurationSeconds = DefaultWaterForecastTransitionDurationSeconds;
+        [SerializeField] private float waterForecastPulseDurationSeconds = DefaultWaterForecastPulseDurationSeconds;
+        [SerializeField] private float waterlinePulseDurationSeconds = DefaultWaterlinePulseDurationSeconds;
 
         public bool PlaybackEnabled => playbackEnabled;
 

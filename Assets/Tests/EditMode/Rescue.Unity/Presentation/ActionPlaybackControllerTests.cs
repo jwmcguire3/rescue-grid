@@ -113,6 +113,11 @@ namespace Rescue.Unity.Presentation.Tests
             SetPrivateField(settings, "removeDurationSeconds", 0.11f);
             SetPrivateField(settings, "breakBlockerOrRevealDurationSeconds", 0.09f);
             SetPrivateField(settings, "dockFeedbackDurationSeconds", 0.10f);
+            SetPrivateField(settings, "dockInsertFeedbackDurationSeconds", 0.08f);
+            SetPrivateField(settings, "dockClearFeedbackDurationSeconds", 0.07f);
+            SetPrivateField(settings, "dockWarningCautionDurationSeconds", 0.42f);
+            SetPrivateField(settings, "dockWarningAcuteDurationSeconds", 0.33f);
+            SetPrivateField(settings, "dockJamFeedbackDurationSeconds", 0.61f);
             SetPrivateField(settings, "gravityDurationSeconds", 0.18f);
             SetPrivateField(settings, "spawnDurationSeconds", 0.13f);
             SetPrivateField(settings, "targetExtractDurationSeconds", 0.16f);
@@ -124,6 +129,11 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.RemoveGroup), Is.EqualTo(0.11f));
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.BreakBlockerOrReveal), Is.EqualTo(0.09f));
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.DockFeedback), Is.EqualTo(0.10f));
+            Assert.That(GetStepDuration(controller, new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 1, OverflowCount: 0)), Is.EqualTo(0.08f));
+            Assert.That(GetStepDuration(controller, new DockCleared(DebrisType.A, SetsCleared: 1, OccupancyAfterClear: 0)), Is.EqualTo(0.07f));
+            Assert.That(GetStepDuration(controller, new DockWarningChanged(DockWarningLevel.Safe, DockWarningLevel.Caution)), Is.EqualTo(0.42f));
+            Assert.That(GetStepDuration(controller, new DockWarningChanged(DockWarningLevel.Caution, DockWarningLevel.Acute)), Is.EqualTo(0.33f));
+            Assert.That(GetStepDuration(controller, new DockJamTriggered(OverflowCount: 1)), Is.EqualTo(0.61f));
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.Gravity), Is.EqualTo(0.18f));
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.Spawn), Is.EqualTo(0.13f));
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.TargetExtract), Is.EqualTo(0.16f));
@@ -1204,12 +1214,22 @@ namespace Rescue.Unity.Presentation.Tests
 
         private static float GetStepDuration(ActionPlaybackController controller, ActionPlaybackStepType stepType)
         {
+            return GetStepDuration(controller, new ActionPlaybackStep(stepType, SourceEventName: null, SourceEvent: null));
+        }
+
+        private static float GetStepDuration(ActionPlaybackController controller, ActionEvent actionEvent)
+        {
+            return GetStepDuration(controller, new ActionPlaybackStep(ActionPlaybackStepType.DockFeedback, actionEvent.GetType().Name, actionEvent));
+        }
+
+        private static float GetStepDuration(ActionPlaybackController controller, ActionPlaybackStep step)
+        {
             System.Reflection.MethodInfo? method = controller.GetType().GetMethod(
                 "GetStepDurationSeconds",
                 System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
 
             Assert.That(method, Is.Not.Null, "Expected private method 'GetStepDurationSeconds'.");
-            return (float)(method?.Invoke(controller, new object[] { stepType }) ?? 0f);
+            return (float)(method?.Invoke(controller, new object[] { step }) ?? 0f);
         }
 
         private static void AssertVector3Equal(Vector3 expected, Vector3 actual, float tolerance = 0.0001f)
