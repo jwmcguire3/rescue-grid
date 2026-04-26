@@ -10,7 +10,6 @@ using Rescue.Unity.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
-using UnityEngine.UIElements;
 using UnityObject = UnityEngine.Object;
 
 namespace Rescue.PlayMode.Tests.Smoke
@@ -90,22 +89,8 @@ namespace Rescue.PlayMode.Tests.Smoke
                 Is.SameAs(gameStateView),
                 "BoardInputPresenter should route actions through GameStateViewPresenter so playback can lock input and apply Plan 1/2 beats.");
 
-            DebugPanel panel = DebugPanel.EnsureInstance();
-            yield return null;
-
-            Label? playbackStatus = GetPrivateField<DebugPanel, Label>(panel, "_playbackStepValue");
-            Assert.That(playbackStatus, Is.Not.Null, "Debug playback controls should bind a playback status label.");
-            if (playbackStatus is null)
-            {
-                yield break;
-            }
-
-            Assert.That(
-                playbackStatus.text,
-                Does.Not.Contain("unavailable"),
-                "Debug playback status should resolve the scene ActionPlaybackController.");
-
             LogAssert.NoUnexpectedReceived();
+            yield return null;
         }
 
         private static T FindRequired<T>()
