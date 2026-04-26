@@ -41,6 +41,20 @@ namespace Rescue.Unity.Water.Tests
         }
 
         [Test]
+        public void WaterFeedbackPresenter_DoesNotThrowWithMissingArt()
+        {
+            BoardGridViewPresenter gridPresenter = CreateGridPresenter(out _);
+            GameState previousState = CreateState(width: 6, height: 7, floodedRows: 1, actionsUntilRise: 2);
+            GameState currentState = CreateState(width: 6, height: 7, floodedRows: 2, actionsUntilRise: 1);
+            gridPresenter.RebuildGrid(currentState);
+
+            WaterViewPresenter presenter = CreateWaterPresenter(gridPresenter, useFallbackOverlay: false);
+
+            presenter.RebuildWater(previousState);
+            Assert.DoesNotThrow(() => presenter.RebuildWater(currentState));
+        }
+
+        [Test]
         public void WaterViewPresenter_RebuildCreatesExpectedOverlayCount()
         {
             BoardGridViewPresenter gridPresenter = CreateGridPresenter(out _);
@@ -221,7 +235,7 @@ namespace Rescue.Unity.Water.Tests
             field.SetValue(target, value);
         }
 
-        private static GameState CreateState(int width, int height, int floodedRows, bool pauseUntilFirstAction = false)
+        private static GameState CreateState(int width, int height, int floodedRows, int actionsUntilRise = 3, bool pauseUntilFirstAction = false)
         {
             ImmutableArray<ImmutableArray<Tile>>.Builder rows = ImmutableArray.CreateBuilder<ImmutableArray<Tile>>(height);
             for (int row = 0; row < height; row++)
@@ -240,7 +254,7 @@ namespace Rescue.Unity.Water.Tests
             return new GameState(
                 Board: board,
                 Dock: new CoreDock(ImmutableArray<DebrisType?>.Empty, Size: 7),
-                Water: new WaterState(FloodedRows: floodedRows, ActionsUntilRise: 3, RiseInterval: 5, PauseUntilFirstAction: pauseUntilFirstAction),
+                Water: new WaterState(FloodedRows: floodedRows, ActionsUntilRise: actionsUntilRise, RiseInterval: 5, PauseUntilFirstAction: pauseUntilFirstAction),
                 Vine: new VineState(0, 4, ImmutableArray<TileCoord>.Empty, 0, null),
                 Targets: ImmutableArray<TargetState>.Empty,
                 LevelConfig: new LevelConfig(

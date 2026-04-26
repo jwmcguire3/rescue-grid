@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Rescue.Core.State;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Rescue.Unity.BoardPresentation
 {
@@ -17,8 +18,13 @@ namespace Rescue.Unity.BoardPresentation
         [SerializeField] private TextMeshProUGUI? counterLabel;
         [SerializeField] private GameObject? fallbackOverlayPrefab;
         [SerializeField] private float overlayYOffset = 0.1f;
+        [SerializeField] private float forecastPulseDuration = 0.25f;
+        [SerializeField] private float forecastPulseScale = 1.08f;
+        [SerializeField] private float waterRiseDuration = 0.3f;
+        [SerializeField] private float waterlinePulseDuration = 0.2f;
 
         private readonly List<GameObject> spawnedObjects = new List<GameObject>();
+        private WaterState? previousWaterState;
 
         public void RebuildWater(GameState state)
         {
@@ -37,35 +43,52 @@ namespace Rescue.Unity.BoardPresentation
 
             ClearWater();
 
+            WaterFeedbackResolution feedback = WaterFeedbackResolver.Resolve(
+                state.Board.Height,
+                previousWaterState,
+                state.Water);
+
             WaterRowResolution resolution = WaterRowResolver.Resolve(state.Board.Height, state.Water);
+            Dictionary<int, GameObject> floodedRowOverlays = new Dictionary<int, GameObject>();
             for (int i = 0; i < resolution.FloodedRowIndices.Length; i++)
             {
-                SpawnRowOverlay(
+                GameObject? overlay = SpawnRowOverlay(
                     rowIndex: resolution.FloodedRowIndices[i],
                     prefab: ResolveOverlayPrefab(floodedRowOverlayPrefab),
                     objectName: $"FloodedRow_{resolution.FloodedRowIndices[i]:00}",
                     width: state.Board.Width);
+
+                if (overlay is not null)
+                {
+                    floodedRowOverlays[resolution.FloodedRowIndices[i]] = overlay;
+                }
             }
 
+            GameObject? forecastOverlay = null;
             if (resolution.HasForecastRow)
             {
-                SpawnRowOverlay(
+                forecastOverlay = SpawnRowOverlay(
                     rowIndex: resolution.ForecastRowIndex,
                     prefab: ResolveOverlayPrefab(forecastRowOverlayPrefab),
                     objectName: $"ForecastRow_{resolution.ForecastRowIndex:00}",
                     width: state.Board.Width);
             }
 
+            GameObject? waterline = null;
             if (state.Water.FloodedRows > 0)
             {
-                SpawnWaterline(resolution, state.Board.Width);
+                waterline = SpawnWaterline(resolution, state.Board.Width);
             }
 
             UpdateCounterLabel(state.Water, resolution.NormalizedCounterProgress);
+            ApplyFeedback(feedback, floodedRowOverlays, forecastOverlay, waterline);
+            previousWaterState = state.Water;
         }
 
         public void ClearWater()
         {
+            StopAllCoroutines();
+
             for (int i = spawnedObjects.Count - 1; i >= 0; i--)
             {
                 GameObject? spawnedObject = spawnedObjects[i];
@@ -88,13 +111,14 @@ namespace Rescue.Unity.BoardPresentation
             }
 
             UpdateCounterLabel(null, 0f);
+            previousWaterState = null;
         }
 
-        private void SpawnRowOverlay(int rowIndex, GameObject? prefab, string objectName, int width)
+        private GameObject? SpawnRowOverlay(int rowIndex, GameObject? prefab, string objectName, int width)
         {
             if (prefab is null || width <= 0)
             {
-                return;
+                return null;
             }
 
             if (!TryGetRowEndpoints(rowIndex, width, out Transform leftAnchor, out Transform rightAnchor))
@@ -102,7 +126,7 @@ namespace Rescue.Unity.BoardPresentation
                 Debug.LogWarning(
                     $"{nameof(WaterViewPresenter)} could not resolve anchors for row {rowIndex}.",
                     this);
-                return;
+                return null;
             }
 
             GameObject overlay = Instantiate(prefab, ResolveWaterRoot());
@@ -116,20 +140,21 @@ namespace Rescue.Unity.BoardPresentation
             Vector3 localScale = prefab.transform.localScale;
             overlayTransform.localScale = new Vector3(localScale.x * widthScale, localScale.y, localScale.z);
             spawnedObjects.Add(overlay);
+            return overlay;
         }
 
-        private void SpawnWaterline(WaterRowResolution resolution, int width)
+        private GameObject? SpawnWaterline(WaterRowResolution resolution, int width)
         {
             GameObject? prefab = ResolveOverlayPrefab(waterlinePrefab);
             if (prefab is null || resolution.FloodedRowIndices.Length <= 0 || width <= 0)
             {
-                return;
+                return null;
             }
 
             int topFloodedRow = resolution.FloodedRowIndices[0];
             if (!TryGetRowEndpoints(topFloodedRow, width, out Transform leftAnchor, out Transform rightAnchor))
             {
-                return;
+                return null;
             }
 
             GameObject waterline = Instantiate(prefab, ResolveWaterRoot());
@@ -146,6 +171,7 @@ namespace Rescue.Unity.BoardPresentation
             Vector3 localScale = prefab.transform.localScale;
             waterlineTransform.localScale = new Vector3(localScale.x * widthScale, localScale.y, localScale.z);
             spawnedObjects.Add(waterline);
+            return waterline;
         }
 
         private bool TryGetRowEndpoints(int rowIndex, int width, out Transform leftAnchor, out Transform rightAnchor)
@@ -258,6 +284,213 @@ namespace Rescue.Unity.BoardPresentation
                     : $"Water: {water.ActionsUntilRise}/{water.RiseInterval} ({Mathf.RoundToInt(normalizedProgress * 100f)}%)";
 
             counterLabel.text = labelText;
+        }
+
+        private void ApplyFeedback(
+            WaterFeedbackResolution feedback,
+            IReadOnlyDictionary<int, GameObject> floodedRowOverlays,
+            GameObject? forecastOverlay,
+            GameObject? waterline)
+        {
+            if (feedback.HasNearRiseWarning && forecastOverlay is not null)
+            {
+                PulseTransform(forecastOverlay.transform, forecastPulseDuration, forecastPulseScale);
+                PulseAlpha(forecastOverlay, forecastPulseDuration, targetAlphaMultiplier: 1.2f);
+            }
+
+            if (feedback.ShouldPulseWaterline && waterline is not null)
+            {
+                PulseTransform(waterline.transform, waterlinePulseDuration, forecastPulseScale);
+                PulseAlpha(waterline, waterlinePulseDuration, targetAlphaMultiplier: 1.25f);
+            }
+
+            if (feedback.HasWaterRise)
+            {
+                for (int i = 0; i < feedback.NewlyFloodedRowIndices.Length; i++)
+                {
+                    if (floodedRowOverlays.TryGetValue(feedback.NewlyFloodedRowIndices[i], out GameObject overlay))
+                    {
+                        AnimateRiseOverlay(overlay.transform);
+                        PulseAlpha(overlay, waterRiseDuration, targetAlphaMultiplier: 1.15f);
+                    }
+                }
+            }
+
+            if (feedback.ShouldEmphasizeCounter && counterLabel is not null)
+            {
+                PulseTransform(counterLabel.transform, forecastPulseDuration, forecastPulseScale);
+            }
+        }
+
+        private void AnimateRiseOverlay(Transform target)
+        {
+            if (target is null)
+            {
+                return;
+            }
+
+            Vector3 finalScale = target.localScale;
+            Vector3 initialScale = new Vector3(finalScale.x, finalScale.y, 0.01f);
+
+            if (!Application.isPlaying || !isActiveAndEnabled)
+            {
+                target.localScale = finalScale;
+                return;
+            }
+
+            StartCoroutine(AnimateTransformScale(target, initialScale, finalScale, waterRiseDuration));
+        }
+
+        private void PulseTransform(Transform target, float duration, float scaleMultiplier)
+        {
+            if (target is null)
+            {
+                return;
+            }
+
+            Vector3 baseScale = target.localScale;
+            Vector3 pulseScale = baseScale * Mathf.Max(1f, scaleMultiplier);
+
+            if (!Application.isPlaying || !isActiveAndEnabled)
+            {
+                target.localScale = baseScale;
+                return;
+            }
+
+            StartCoroutine(AnimatePulse(target, baseScale, pulseScale, duration));
+        }
+
+        private void PulseAlpha(GameObject target, float duration, float targetAlphaMultiplier)
+        {
+            if (target is null)
+            {
+                return;
+            }
+
+            if (target.TryGetComponent(out SpriteRenderer spriteRenderer))
+            {
+                Color baseColor = spriteRenderer.color;
+                Color peakColor = ScaleAlpha(baseColor, targetAlphaMultiplier);
+
+                if (!Application.isPlaying || !isActiveAndEnabled)
+                {
+                    spriteRenderer.color = baseColor;
+                    return;
+                }
+
+                StartCoroutine(AnimateSpriteAlpha(spriteRenderer, baseColor, peakColor, duration));
+                return;
+            }
+
+            if (target.TryGetComponent(out Graphic graphic))
+            {
+                Color baseColor = graphic.color;
+                Color peakColor = ScaleAlpha(baseColor, targetAlphaMultiplier);
+
+                if (!Application.isPlaying || !isActiveAndEnabled)
+                {
+                    graphic.color = baseColor;
+                    return;
+                }
+
+                StartCoroutine(AnimateGraphicAlpha(graphic, baseColor, peakColor, duration));
+            }
+        }
+
+        private System.Collections.IEnumerator AnimatePulse(Transform target, Vector3 from, Vector3 peak, float duration)
+        {
+            if (target is null)
+            {
+                yield break;
+            }
+
+            float clampedDuration = Mathf.Max(0.01f, duration);
+            float elapsed = 0f;
+            while (elapsed < clampedDuration)
+            {
+                elapsed += Time.deltaTime;
+                float normalized = Mathf.Clamp01(elapsed / clampedDuration);
+                float eased = Mathf.Sin(normalized * Mathf.PI);
+                target.localScale = Vector3.LerpUnclamped(from, peak, eased);
+                yield return null;
+            }
+
+            if (target is not null)
+            {
+                target.localScale = from;
+            }
+        }
+
+        private System.Collections.IEnumerator AnimateTransformScale(Transform target, Vector3 from, Vector3 to, float duration)
+        {
+            if (target is null)
+            {
+                yield break;
+            }
+
+            float clampedDuration = Mathf.Max(0.01f, duration);
+            float elapsed = 0f;
+            target.localScale = from;
+
+            while (elapsed < clampedDuration)
+            {
+                elapsed += Time.deltaTime;
+                float normalized = Mathf.Clamp01(elapsed / clampedDuration);
+                float eased = 1f - Mathf.Pow(1f - normalized, 3f);
+                target.localScale = Vector3.LerpUnclamped(from, to, eased);
+                yield return null;
+            }
+
+            if (target is not null)
+            {
+                target.localScale = to;
+            }
+        }
+
+        private System.Collections.IEnumerator AnimateSpriteAlpha(SpriteRenderer spriteRenderer, Color from, Color peak, float duration)
+        {
+            float clampedDuration = Mathf.Max(0.01f, duration);
+            float elapsed = 0f;
+
+            while (elapsed < clampedDuration)
+            {
+                elapsed += Time.deltaTime;
+                float normalized = Mathf.Clamp01(elapsed / clampedDuration);
+                float eased = Mathf.Sin(normalized * Mathf.PI);
+                spriteRenderer.color = Color.LerpUnclamped(from, peak, eased);
+                yield return null;
+            }
+
+            if (spriteRenderer is not null)
+            {
+                spriteRenderer.color = from;
+            }
+        }
+
+        private System.Collections.IEnumerator AnimateGraphicAlpha(Graphic graphic, Color from, Color peak, float duration)
+        {
+            float clampedDuration = Mathf.Max(0.01f, duration);
+            float elapsed = 0f;
+
+            while (elapsed < clampedDuration)
+            {
+                elapsed += Time.deltaTime;
+                float normalized = Mathf.Clamp01(elapsed / clampedDuration);
+                float eased = Mathf.Sin(normalized * Mathf.PI);
+                graphic.color = Color.LerpUnclamped(from, peak, eased);
+                yield return null;
+            }
+
+            if (graphic is not null)
+            {
+                graphic.color = from;
+            }
+        }
+
+        private static Color ScaleAlpha(Color color, float multiplier)
+        {
+            color.a = Mathf.Clamp01(color.a * Mathf.Max(0f, multiplier));
+            return color;
         }
 
 #if UNITY_EDITOR
