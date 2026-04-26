@@ -51,6 +51,54 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
+        public void Build_DockInsertedMapsToDockFeedback()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 1, OverflowCount: 0)));
+
+            Assert.That(plan[0].SourceEventName, Is.EqualTo(nameof(DockInserted)));
+            Assert.That(plan[0].StepType, Is.EqualTo(ActionPlaybackStepType.DockFeedback));
+        }
+
+        [Test]
+        public void Build_DockClearedMapsToDockFeedback()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(new DockCleared(DebrisType.A, SetsCleared: 1, OccupancyAfterClear: 0)));
+
+            Assert.That(plan[0].SourceEventName, Is.EqualTo(nameof(DockCleared)));
+            Assert.That(plan[0].StepType, Is.EqualTo(ActionPlaybackStepType.DockFeedback));
+        }
+
+        [Test]
+        public void Build_DockWarningChangedMapsToDockFeedback()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(new DockWarningChanged(DockWarningLevel.Safe, DockWarningLevel.Caution)));
+
+            Assert.That(plan[0].SourceEventName, Is.EqualTo(nameof(DockWarningChanged)));
+            Assert.That(plan[0].StepType, Is.EqualTo(ActionPlaybackStepType.DockFeedback));
+        }
+
+        [Test]
+        public void Build_DockJamTriggeredMapsToDockFeedback()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(new DockJamTriggered(OverflowCount: 1)));
+
+            Assert.That(plan[0].SourceEventName, Is.EqualTo(nameof(DockJamTriggered)));
+            Assert.That(plan[0].StepType, Is.EqualTo(ActionPlaybackStepType.DockFeedback));
+        }
+
+        [Test]
         public void Build_BlockerBrokenMapsToBreakBlockerOrReveal()
         {
             ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
@@ -152,6 +200,24 @@ namespace Rescue.Unity.Presentation.Tests
 
             Assert.That(IndexOf(plan, ActionPlaybackStepType.BreakBlockerOrReveal), Is.GreaterThan(IndexOf(plan, ActionPlaybackStepType.RemoveGroup)));
             Assert.That(IndexOf(plan, ActionPlaybackStepType.BreakBlockerOrReveal), Is.LessThan(IndexOf(plan, ActionPlaybackStepType.Gravity)));
+        }
+
+        [Test]
+        public void Build_DockFeedbackComesAfterRemoveAndBreakAndBeforeGravity()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(
+                    new GravitySettled(ImmutableArray.Create((new TileCoord(0, 1), new TileCoord(1, 1)))),
+                    new DockWarningChanged(DockWarningLevel.Safe, DockWarningLevel.Caution),
+                    new IceRevealed(new TileCoord(0, 2), DebrisType.C),
+                    new BlockerBroken(new TileCoord(0, 2), BlockerType.Ice),
+                    new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0)))));
+
+            Assert.That(IndexOf(plan, ActionPlaybackStepType.DockFeedback), Is.GreaterThan(IndexOf(plan, ActionPlaybackStepType.RemoveGroup)));
+            Assert.That(IndexOf(plan, ActionPlaybackStepType.DockFeedback), Is.GreaterThan(IndexOf(plan, ActionPlaybackStepType.BreakBlockerOrReveal)));
+            Assert.That(IndexOf(plan, ActionPlaybackStepType.DockFeedback), Is.LessThan(IndexOf(plan, ActionPlaybackStepType.Gravity)));
         }
 
         [Test]

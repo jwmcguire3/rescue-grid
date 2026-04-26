@@ -10,6 +10,7 @@ namespace Rescue.Unity.Presentation
         [SerializeField] private bool yieldBetweenSteps;
         [SerializeField] private float removeDurationSeconds = 0.10f;
         [SerializeField] private float breakBlockerOrRevealDurationSeconds = 0.10f;
+        [SerializeField] private float dockFeedbackDurationSeconds = 0.10f;
         [SerializeField] private float gravityDurationSeconds = 0.15f;
         [SerializeField] private float spawnDurationSeconds = 0.12f;
         [SerializeField] private float targetExtractDurationSeconds = 0.12f;
@@ -22,6 +23,8 @@ namespace Rescue.Unity.Presentation
         public float RemoveDurationSeconds => removeDurationSeconds;
 
         public float BreakBlockerOrRevealDurationSeconds => breakBlockerOrRevealDurationSeconds;
+
+        public float DockFeedbackDurationSeconds => dockFeedbackDurationSeconds;
 
         public float GravityDurationSeconds => gravityDurationSeconds;
 

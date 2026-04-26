@@ -388,6 +388,11 @@ namespace Rescue.Unity.UI
 
         public void Rebuild(GameState state)
         {
+            SyncImmediate(state);
+        }
+
+        public void SyncImmediate(GameState state)
+        {
             if (state is null)
             {
                 Debug.LogWarning($"{nameof(DockViewPresenter)} requires a valid GameState to rebuild.", this);
@@ -446,6 +451,71 @@ namespace Rescue.Unity.UI
             }
         }
 
+        public void ForceSyncToState(GameState state)
+        {
+            SyncImmediate(state);
+        }
+
+        public void PlayInsertFeedback(DockInserted dockInserted)
+        {
+            if (dockInserted is null)
+            {
+                return;
+            }
+
+            DockFeedbackPresenter feedback = PrepareFeedbackPresenter();
+            SetDockVisualState(DockVisualStateResolver.FromOccupancy(dockInserted.OccupancyAfterInsert, Phase1DockSize));
+            feedback.PlayInsertFeedback();
+        }
+
+        public void PlayClearFeedback(DockCleared dockCleared)
+        {
+            if (dockCleared is null)
+            {
+                return;
+            }
+
+            DockFeedbackPresenter feedback = PrepareFeedbackPresenter();
+            SetDockVisualState(DockVisualStateResolver.FromOccupancy(dockCleared.OccupancyAfterClear, Phase1DockSize));
+            feedback.PlayTripleClearFeedback();
+        }
+
+        public void PlayWarningFeedback(DockWarningChanged dockWarningChanged)
+        {
+            if (dockWarningChanged is null)
+            {
+                return;
+            }
+
+            DockFeedbackPresenter feedback = PrepareFeedbackPresenter();
+            SetDockVisualState(MapVisualState(dockWarningChanged.After));
+
+            switch (dockWarningChanged.After)
+            {
+                case DockWarningLevel.Caution:
+                    feedback.PlayCautionFeedback();
+                    break;
+                case DockWarningLevel.Acute:
+                    feedback.PlayAcuteFeedback();
+                    break;
+                default:
+                    feedback.SyncToState(0, Phase1DockSize);
+                    break;
+            }
+        }
+
+        public void PlayJamFeedback(DockJamTriggered dockJamTriggered)
+        {
+            if (dockJamTriggered is null)
+            {
+                return;
+            }
+
+            DockFeedbackPresenter feedback = PrepareFeedbackPresenter();
+            SetDockVisualState(DockVisualState.Failed);
+            feedback.PlayFailedFeedback();
+        }
+
         public void ApplyActionResult(ActionResult result)
         {
             if (result is null)
@@ -460,17 +530,17 @@ namespace Rescue.Unity.UI
             {
                 switch (result.Events[i])
                 {
-                    case DockInserted:
-                        feedback.PlayInsertFeedback();
+                    case DockInserted dockInserted:
+                        PlayInsertFeedback(dockInserted);
                         break;
-                    case DockWarningChanged dockWarningChanged when dockWarningChanged.After == DockWarningLevel.Caution:
-                        feedback.PlayCautionFeedback();
+                    case DockWarningChanged dockWarningChanged:
+                        PlayWarningFeedback(dockWarningChanged);
                         break;
-                    case DockWarningChanged dockWarningChanged when dockWarningChanged.After == DockWarningLevel.Acute:
-                        feedback.PlayAcuteFeedback();
+                    case DockCleared dockCleared:
+                        PlayClearFeedback(dockCleared);
                         break;
-                    case DockCleared:
-                        feedback.PlayTripleClearFeedback();
+                    case DockJamTriggered dockJamTriggered:
+                        PlayJamFeedback(dockJamTriggered);
                         break;
                     case Lost lost when lost.Outcome == ActionOutcome.LossDockOverflow:
                         feedback.PlayFailedFeedback();
@@ -670,6 +740,24 @@ namespace Rescue.Unity.UI
 
             feedbackPresenter = gameObject.AddComponent<DockFeedbackPresenter>();
             return feedbackPresenter;
+        }
+
+        private DockFeedbackPresenter PrepareFeedbackPresenter()
+        {
+            DockFeedbackPresenter feedback = ResolveFeedbackPresenter();
+            feedback.SetFeedbackTarget(ResolveFeedbackTarget());
+            return feedback;
+        }
+
+        private static DockVisualState MapVisualState(DockWarningLevel warningLevel)
+        {
+            return warningLevel switch
+            {
+                DockWarningLevel.Caution => DockVisualState.Caution,
+                DockWarningLevel.Acute => DockVisualState.Acute,
+                DockWarningLevel.Fail => DockVisualState.Failed,
+                _ => DockVisualState.Safe,
+            };
         }
 
         private Material? ResolveLegacyMaterial(DockVisualState state)

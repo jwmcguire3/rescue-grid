@@ -6,6 +6,7 @@ using Rescue.Core.Pipeline;
 using Rescue.Core.Rng;
 using Rescue.Core.State;
 using Rescue.Unity.BoardPresentation;
+using Rescue.Unity.UI;
 using UnityEngine;
 using UnityEngine.TestTools;
 using CoreBoard = Rescue.Core.State.Board;
@@ -316,6 +317,45 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(harness.WaterRoot.childCount, Is.EqualTo(4));
         }
 
+        [Test]
+        public void ActionPlaybackController_DockFeedbackRoutesThroughPlaybackAndFinalSyncRepairsDockState()
+        {
+            ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
+            GameState previousState = CreateBoardState(
+                ImmutableArray.Create(ImmutableArray.Create<Tile>(new EmptyTile())),
+                dockSlots: ImmutableArray.Create<DebrisType?>(DebrisType.A, DebrisType.A, DebrisType.B, DebrisType.B, null, null, null));
+            GameState resultState = CreateBoardState(
+                ImmutableArray.Create(ImmutableArray.Create<Tile>(new EmptyTile())),
+                dockSlots: ImmutableArray.Create<DebrisType?>(DebrisType.A, DebrisType.A, DebrisType.B, DebrisType.B, DebrisType.C, null, null));
+
+            harness.DockPresenter.Rebuild(previousState);
+
+            ActionResult result = CreateResult(
+                resultState,
+                actionCount: 8,
+                new GroupRemoved(DebrisType.C, ImmutableArray.Create(new TileCoord(0, 0))),
+                new DockInserted(ImmutableArray.Create(DebrisType.C), OccupancyAfterInsert: 5, OverflowCount: 0),
+                new DockWarningChanged(DockWarningLevel.Safe, DockWarningLevel.Caution),
+                new GravitySettled(ImmutableArray<(TileCoord From, TileCoord To)>.Empty));
+
+            int finalSyncCalls = 0;
+            Material? materialAtFinalSync = null;
+
+            bool handled = harness.Controller.TryPlayAction(previousState, new ActionInput(new TileCoord(0, 0)), result, syncedResult =>
+            {
+                finalSyncCalls++;
+                materialAtFinalSync = harness.DockRenderer.sharedMaterial;
+                harness.DockPresenter.ForceSyncToState(syncedResult.State);
+            });
+
+            Assert.That(handled, Is.True);
+            Assert.That(finalSyncCalls, Is.EqualTo(1));
+            Assert.That(harness.Controller.CurrentPlan[1].StepType, Is.EqualTo(ActionPlaybackStepType.DockFeedback));
+            Assert.That(harness.Controller.CurrentPlan[2].StepType, Is.EqualTo(ActionPlaybackStepType.DockFeedback));
+            Assert.That(materialAtFinalSync, Is.SameAs(harness.CautionMaterial));
+            Assert.That(harness.DockPieceContainer.childCount, Is.EqualTo(5));
+        }
+
         private ActionPlaybackController CreateController(bool playbackEnabled, bool yieldBetweenSteps)
         {
             GameObject gameObject = CreateTrackedGameObject("ActionPlaybackController");
@@ -356,12 +396,49 @@ namespace Rescue.Unity.Presentation.Tests
             SetPrivateField(waterPresenter, "waterlinePrefab", waterlinePrefab);
             SetPrivateField(waterPresenter, "fallbackOverlayPrefab", overlayPrefab);
 
+            DockViewPresenter dockPresenter = presenterObject.AddComponent<DockViewPresenter>();
+            Transform dockPieceContainer = CreateTrackedGameObject("DockPieces").transform;
+            dockPieceContainer.SetParent(presenterObject.transform, false);
+            GameObject fallbackPiecePrefab = CreateTrackedGameObject("FallbackPiecePrefab");
+            GameObject dockVisual = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            createdObjects.Add(dockVisual);
+            dockVisual.name = "DockVisual";
+            dockVisual.transform.SetParent(presenterObject.transform, false);
+            MeshRenderer dockRenderer = dockVisual.GetComponent<MeshRenderer>();
+            Material safeMaterial = new Material(Shader.Find("Standard"));
+            Material cautionMaterial = new Material(Shader.Find("Standard"));
+            createdObjects.Add(safeMaterial);
+            createdObjects.Add(cautionMaterial);
+            for (int i = 0; i < 7; i++)
+            {
+                Transform anchor = CreateTrackedGameObject($"Slot_{i:00}").transform;
+                anchor.SetParent(presenterObject.transform, false);
+                anchor.localPosition = new Vector3(i, 0f, 0f);
+            }
+
+            SetPrivateField(dockPresenter, "sharedDockRenderer", dockRenderer);
+            SetPrivateField(dockPresenter, "safeMaterial", safeMaterial);
+            SetPrivateField(dockPresenter, "cautionMaterial", cautionMaterial);
+            SetPrivateField(dockPresenter, "pieceContainer", dockPieceContainer);
+            SetPrivateField(dockPresenter, "fallbackPiecePrefab", fallbackPiecePrefab);
+
             ActionPlaybackController controller = presenterObject.AddComponent<ActionPlaybackController>();
             SetPrivateField(controller, "settings", CreateSettings(playbackEnabled, yieldBetweenSteps));
             SetPrivateField(controller, "boardContent", contentPresenter);
             SetPrivateField(controller, "waterView", waterPresenter);
+            SetPrivateField(controller, "dockView", dockPresenter);
 
-            return new ControllerHarness(controller, gridPresenter, contentPresenter, waterPresenter, contentRoot, waterRoot);
+            return new ControllerHarness(
+                controller,
+                gridPresenter,
+                contentPresenter,
+                waterPresenter,
+                dockPresenter,
+                contentRoot,
+                waterRoot,
+                dockPieceContainer,
+                dockRenderer,
+                cautionMaterial);
         }
 
         private GameObject CreateTrackedGameObject(string name)
@@ -427,6 +504,7 @@ namespace Rescue.Unity.Presentation.Tests
 
         private static GameState CreateBoardState(
             ImmutableArray<ImmutableArray<Tile>> rows,
+            ImmutableArray<DebrisType?>? dockSlots = null,
             int floodedRows = 0,
             int actionsUntilRise = 3,
             int riseInterval = 3)
@@ -438,7 +516,7 @@ namespace Rescue.Unity.Presentation.Tests
             return new GameState(
                 Board: board,
                 Dock: new CoreDock(
-                    ImmutableArray.Create<DebrisType?>(
+                    dockSlots ?? ImmutableArray.Create<DebrisType?>(
                         null,
                         null,
                         null,
@@ -486,15 +564,23 @@ namespace Rescue.Unity.Presentation.Tests
                 BoardGridViewPresenter gridPresenter,
                 BoardContentViewPresenter contentPresenter,
                 WaterViewPresenter waterPresenter,
+                DockViewPresenter dockPresenter,
                 Transform contentRoot,
-                Transform waterRoot)
+                Transform waterRoot,
+                Transform dockPieceContainer,
+                MeshRenderer dockRenderer,
+                Material cautionMaterial)
             {
                 Controller = controller;
                 GridPresenter = gridPresenter;
                 ContentPresenter = contentPresenter;
                 WaterPresenter = waterPresenter;
+                DockPresenter = dockPresenter;
                 ContentRoot = contentRoot;
                 WaterRoot = waterRoot;
+                DockPieceContainer = dockPieceContainer;
+                DockRenderer = dockRenderer;
+                CautionMaterial = cautionMaterial;
             }
 
             public ActionPlaybackController Controller { get; }
@@ -505,9 +591,17 @@ namespace Rescue.Unity.Presentation.Tests
 
             public WaterViewPresenter WaterPresenter { get; }
 
+            public DockViewPresenter DockPresenter { get; }
+
             public Transform ContentRoot { get; }
 
             public Transform WaterRoot { get; }
+
+            public Transform DockPieceContainer { get; }
+
+            public MeshRenderer DockRenderer { get; }
+
+            public Material CautionMaterial { get; }
         }
     }
 }

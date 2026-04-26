@@ -15,6 +15,8 @@ namespace Rescue.Unity.Presentation
         [SerializeField] private TargetFeedbackPresenter? targetFeedback;
         [SerializeField] private ActionPlaybackController? playbackController;
 
+        private bool dockFeedbackHandledByPlayback;
+
         public GameState? CurrentState { get; private set; }
 
         public ActionPlaybackPlan CurrentPlaybackPlan { get; private set; } = ActionPlaybackPlan.Empty;
@@ -97,10 +99,12 @@ namespace Rescue.Unity.Presentation
             if (resolvedPlaybackController is not null &&
                 resolvedPlaybackController.TryPlayAction(previousState, input, result, FinalSyncActionResult))
             {
+                dockFeedbackHandledByPlayback = true;
                 CurrentPlaybackPlan = resolvedPlaybackController.CurrentPlan;
                 return;
             }
 
+            dockFeedbackHandledByPlayback = false;
             CurrentPlaybackPlan = ActionPlaybackBuilder.Build(previousState, input, result);
             FinalSyncActionResult(result);
         }
@@ -184,10 +188,12 @@ namespace Rescue.Unity.Presentation
         {
             Rebuild(result.State);
 
-            if (dockView is not null)
+            if (!dockFeedbackHandledByPlayback && dockView is not null)
             {
                 dockView.ApplyActionResult(result);
             }
+
+            dockFeedbackHandledByPlayback = false;
         }
     }
 }

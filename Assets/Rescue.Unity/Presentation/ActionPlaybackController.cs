@@ -3,6 +3,7 @@ using System.Collections;
 using Rescue.Core.Pipeline;
 using Rescue.Core.State;
 using Rescue.Unity.BoardPresentation;
+using Rescue.Unity.UI;
 using UnityEngine;
 
 namespace Rescue.Unity.Presentation
@@ -12,6 +13,7 @@ namespace Rescue.Unity.Presentation
         [SerializeField] private ActionPlaybackSettings settings = new ActionPlaybackSettings();
         [SerializeField] private BoardContentViewPresenter? boardContent;
         [SerializeField] private WaterViewPresenter? waterView;
+        [SerializeField] private DockViewPresenter? dockView;
 
         private Coroutine? activePlayback;
 
@@ -139,6 +141,18 @@ namespace Rescue.Unity.Presentation
                 case IceRevealed revealed:
                     boardContent?.AnimateIceReveal(revealed, settings.BreakBlockerOrRevealDurationSeconds);
                     break;
+                case DockInserted inserted:
+                    ResolveDockView()?.PlayInsertFeedback(inserted);
+                    break;
+                case DockCleared cleared:
+                    ResolveDockView()?.PlayClearFeedback(cleared);
+                    break;
+                case DockWarningChanged warningChanged:
+                    ResolveDockView()?.PlayWarningFeedback(warningChanged);
+                    break;
+                case DockJamTriggered jamTriggered:
+                    ResolveDockView()?.PlayJamFeedback(jamTriggered);
+                    break;
                 case GravitySettled gravity:
                     boardContent?.AnimateGravityMove(gravity);
                     break;
@@ -178,6 +192,8 @@ namespace Rescue.Unity.Presentation
                     return settings.RemoveDurationSeconds;
                 case ActionPlaybackStepType.BreakBlockerOrReveal:
                     return settings.BreakBlockerOrRevealDurationSeconds;
+                case ActionPlaybackStepType.DockFeedback:
+                    return settings.DockFeedbackDurationSeconds;
                 case ActionPlaybackStepType.Gravity:
                     return settings.GravityDurationSeconds;
                 case ActionPlaybackStepType.Spawn:
@@ -213,6 +229,17 @@ namespace Rescue.Unity.Presentation
 
             waterView = GetComponent<WaterViewPresenter>();
             return waterView;
+        }
+
+        private DockViewPresenter? ResolveDockView()
+        {
+            if (dockView is not null)
+            {
+                return dockView;
+            }
+
+            dockView = GetComponent<DockViewPresenter>();
+            return dockView;
         }
     }
 }

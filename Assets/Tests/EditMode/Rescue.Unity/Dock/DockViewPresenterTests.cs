@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using NUnit.Framework;
+using Rescue.Core.Pipeline;
 using Rescue.Core.Rng;
 using Rescue.Core.State;
 using Rescue.Unity.Art.Registries;
@@ -110,6 +111,23 @@ namespace Rescue.Unity.UI.Tests
             Assert.DoesNotThrow(() => presenter.PlayTripleClearFeedback());
             Assert.DoesNotThrow(() => presenter.SyncToState(5, 7));
             Assert.DoesNotThrow(() => presenter.SetFeedbackTarget(null));
+        }
+
+        [Test]
+        public void DockViewPresenter_DockFeedbackMethodsTolerateValidEventData()
+        {
+            GameObject presenterObject = CreateTrackedObject("DockPresenter");
+            DockViewPresenter presenter = presenterObject.AddComponent<DockViewPresenter>();
+
+            for (int i = 0; i < 7; i++)
+            {
+                CreateTrackedAnchor(presenterObject.transform, i);
+            }
+
+            Assert.DoesNotThrow(() => presenter.PlayInsertFeedback(new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 1, OverflowCount: 0)));
+            Assert.DoesNotThrow(() => presenter.PlayClearFeedback(new DockCleared(DebrisType.A, SetsCleared: 1, OccupancyAfterClear: 0)));
+            Assert.DoesNotThrow(() => presenter.PlayWarningFeedback(new DockWarningChanged(DockWarningLevel.Safe, DockWarningLevel.Caution)));
+            Assert.DoesNotThrow(() => presenter.PlayJamFeedback(new DockJamTriggered(OverflowCount: 1)));
         }
 
         [Test]
@@ -251,6 +269,30 @@ namespace Rescue.Unity.UI.Tests
 
             Object.DestroyImmediate(safeMaterial);
             Object.DestroyImmediate(config);
+        }
+
+        [Test]
+        public void DockViewPresenter_ForceSyncToStateRepairsDockPieces()
+        {
+            GameObject presenterObject = CreateTrackedObject("DockPresenter");
+            DockViewPresenter presenter = presenterObject.AddComponent<DockViewPresenter>();
+            Transform pieceContainer = new GameObject("DockPieces").transform;
+            pieceContainer.SetParent(presenterObject.transform, false);
+            Track(pieceContainer.gameObject);
+
+            for (int i = 0; i < 7; i++)
+            {
+                CreateTrackedAnchor(presenterObject.transform, i);
+            }
+
+            GameObject fallbackPrefab = CreateTrackedObject("FallbackPiecePrefab");
+            SetPrivateField(presenter, "pieceContainer", pieceContainer);
+            SetPrivateField(presenter, "fallbackPiecePrefab", fallbackPrefab);
+
+            presenter.Rebuild(CreateState(DebrisType.A, null, null, null, null, null, null));
+            presenter.ForceSyncToState(CreateState(DebrisType.A, DebrisType.B, DebrisType.C, null, null, null, null));
+
+            Assert.That(pieceContainer.childCount, Is.EqualTo(3));
         }
 
         private GameObject CreateTrackedObject(string name)
