@@ -1,0 +1,22 @@
+{
+  "name": "Rescue.Unity.Targets.EditMode.Tests",
+  "rootNamespace": "Rescue.Unity.Targets.Tests",
+  "references": [
+    "Rescue.Core",
+    "Rescue.Unity"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false,
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}

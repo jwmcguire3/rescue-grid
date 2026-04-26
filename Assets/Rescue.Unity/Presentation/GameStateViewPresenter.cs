@@ -12,6 +12,7 @@ namespace Rescue.Unity.Presentation
         [SerializeField] private BoardContentViewPresenter? boardContent;
         [SerializeField] private WaterViewPresenter? waterView;
         [SerializeField] private DockViewPresenter? dockView;
+        [SerializeField] private TargetFeedbackPresenter? targetFeedback;
 
         public GameState? CurrentState { get; private set; }
 
@@ -23,6 +24,7 @@ namespace Rescue.Unity.Presentation
                 return;
             }
 
+            GameState? previousState = CurrentState;
             CurrentState = state;
 
             if (boardGrid is null)
@@ -59,6 +61,15 @@ namespace Rescue.Unity.Presentation
             else
             {
                 dockView.Rebuild(state);
+            }
+
+            if (targetFeedback is null)
+            {
+                Debug.LogWarning($"{nameof(GameStateViewPresenter)} is missing {nameof(targetFeedback)}.", this);
+            }
+            else
+            {
+                targetFeedback.Apply(previousState, state);
             }
         }
 
@@ -116,6 +127,15 @@ namespace Rescue.Unity.Presentation
             else
             {
                 dockView.ClearSlots();
+            }
+
+            if (targetFeedback is null)
+            {
+                Debug.LogWarning($"{nameof(GameStateViewPresenter)} is missing {nameof(targetFeedback)}.", this);
+            }
+            else
+            {
+                targetFeedback.ClearFeedback();
             }
         }
     }

@@ -42,6 +42,7 @@ namespace Rescue.Unity.Presentation.Tests
             LogAssert.Expect(LogType.Warning, "GameStateViewPresenter is missing boardContent.");
             LogAssert.Expect(LogType.Warning, "GameStateViewPresenter is missing waterView.");
             LogAssert.Expect(LogType.Warning, "GameStateViewPresenter is missing dockView.");
+            LogAssert.Expect(LogType.Warning, "GameStateViewPresenter is missing targetFeedback.");
 
             Assert.DoesNotThrow(() => presenter.Rebuild(CreateState()));
         }
@@ -131,10 +132,20 @@ namespace Rescue.Unity.Presentation.Tests
             SetPrivateField(dockView, "pieceContainer", dockPieceContainer);
             SetPrivateField(dockView, "fallbackPiecePrefab", fallbackPiecePrefab);
 
+            TargetFeedbackPresenter targetFeedback = presenterObject.AddComponent<TargetFeedbackPresenter>();
+            Transform targetFeedbackRoot = CreateTrackedGameObject("TargetFeedbackRoot").transform;
+            targetFeedbackRoot.SetParent(presenterObject.transform, false);
+            GameObject fallbackTargetPrefab = CreateTrackedGameObject("FallbackTargetPrefab");
+            SetPrivateField(targetFeedback, "gridView", boardGrid);
+            SetPrivateField(targetFeedback, "contentView", boardContent);
+            SetPrivateField(targetFeedback, "feedbackRoot", targetFeedbackRoot);
+            SetPrivateField(targetFeedback, "fallbackTargetPrefab", fallbackTargetPrefab);
+
             SetPrivateField(presenter, "boardGrid", boardGrid);
             SetPrivateField(presenter, "boardContent", boardContent);
             SetPrivateField(presenter, "waterView", waterView);
             SetPrivateField(presenter, "dockView", dockView);
+            SetPrivateField(presenter, "targetFeedback", targetFeedback);
 
             return new PresenterHarness(presenter, boardRoot, contentRoot, waterRoot, dockPieceContainer);
         }

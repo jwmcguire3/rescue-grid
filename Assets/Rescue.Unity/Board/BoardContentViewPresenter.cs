@@ -20,6 +20,7 @@ namespace Rescue.Unity.BoardPresentation
         [SerializeField] private float contentYOffset = 0.05f;
 
         private readonly List<GameObject> spawnedContent = new List<GameObject>();
+        private readonly Dictionary<string, GameObject> spawnedTargetsById = new Dictionary<string, GameObject>();
 
         public void RebuildContent(GameState state)
         {
@@ -79,6 +80,26 @@ namespace Rescue.Unity.BoardPresentation
 
                 spawnedContent.RemoveAt(i);
             }
+
+            spawnedTargetsById.Clear();
+        }
+
+        public bool TryGetTargetInstance(string targetId, out GameObject? targetObject)
+        {
+            if (string.IsNullOrWhiteSpace(targetId))
+            {
+                targetObject = null;
+                return false;
+            }
+
+            if (spawnedTargetsById.TryGetValue(targetId, out GameObject targetInstance) && targetInstance is not null)
+            {
+                targetObject = targetInstance;
+                return true;
+            }
+
+            targetObject = null;
+            return false;
         }
 
         private void RenderTileContent(TileCoord coord, Tile tile, Transform anchor)
@@ -101,13 +122,19 @@ namespace Rescue.Unity.BoardPresentation
                     RenderBlocker(coord, blockerTile, anchor);
                     return;
                 case TargetTile targetTile when !targetTile.Extracted:
-                    SpawnAtAnchor(
+                    GameObject? targetObject = SpawnAtAnchor(
                         coord,
                         $"Target_{SanitizeName(targetTile.TargetId)}",
                         ResolveTargetPrefab(targetTile.TargetId),
                         anchor,
                         contentYOffset,
                         Vector3.one);
+
+                    if (targetObject is not null && !string.IsNullOrWhiteSpace(targetTile.TargetId))
+                    {
+                        spawnedTargetsById[targetTile.TargetId] = targetObject;
+                    }
+
                     return;
                 default:
                     return;
@@ -136,7 +163,7 @@ namespace Rescue.Unity.BoardPresentation
             }
         }
 
-        private void SpawnAtAnchor(
+        private GameObject? SpawnAtAnchor(
             TileCoord coord,
             string contentLabel,
             GameObject? prefab,
@@ -146,7 +173,7 @@ namespace Rescue.Unity.BoardPresentation
         {
             if (prefab is null)
             {
-                return;
+                return null;
             }
 
             Transform parent = ResolveContentParent(anchor);
@@ -168,6 +195,7 @@ namespace Rescue.Unity.BoardPresentation
 
             contentTransform.localScale = Vector3.Scale(prefab.transform.localScale, scaleMultiplier);
             spawnedContent.Add(contentObject);
+            return contentObject;
         }
 
         private Transform ResolveContentParent(Transform anchor)
