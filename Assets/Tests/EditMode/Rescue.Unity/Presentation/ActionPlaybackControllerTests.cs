@@ -283,6 +283,45 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
+        public void ActionPlaybackController_FinalSyncRepairsBlockerAndIcePresentationMismatch()
+        {
+            ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
+            GameState previousState = CreateBoardState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new BlockerTile(BlockerType.Ice, 1, new DebrisTile(DebrisType.B)))));
+            GameState resultState = CreateBoardState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new DebrisTile(DebrisType.B))));
+
+            harness.GridPresenter.RebuildGrid(previousState);
+            harness.ContentPresenter.SyncImmediate(previousState);
+
+            ActionResult result = CreateResult(
+                resultState,
+                actionCount: 11,
+                new BlockerDamaged(new TileCoord(0, 0), BlockerType.Ice, RemainingHp: 0),
+                new BlockerBroken(new TileCoord(0, 0), BlockerType.Ice),
+                new IceRevealed(new TileCoord(0, 0), DebrisType.B));
+
+            bool handled = harness.Controller.TryPlayAction(previousState, new ActionInput(new TileCoord(0, 0)), result, syncedResult =>
+            {
+                GameObject? revealedDebris = GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 0));
+                if (revealedDebris is not null)
+                {
+                    revealedDebris.name = "Content_00_00_Debris_Wrong";
+                }
+
+                harness.ContentPresenter.SyncImmediate(syncedResult.State);
+            });
+
+            Assert.That(handled, Is.True);
+            Assert.That(FindChildByName(harness.ContentRoot, "Blocker_Ice"), Is.Null);
+            Assert.That(FindChildByName(harness.ContentRoot, "HiddenDebris_B"), Is.Null);
+            Assert.That(FindChildByName(harness.ContentRoot, "Content_00_00_Debris_B"), Is.Not.Null);
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
+        }
+
+        [Test]
         public void ActionPlaybackController_MissingBlockerAndIceVisualsDoNotCrashPlayback()
         {
             ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
@@ -707,7 +746,7 @@ namespace Rescue.Unity.Presentation.Tests
             return null;
         }
 
-        private static GameObject? GetRegisteredPieceObject(BoardContentViewPresenter presenter, TileCoord coord)
+        private static GameObject? GetRegisteredPieceObject(BoardContentViewPresenter presenter, string registryName, TileCoord coord)
         {
             object? visualRegistry = GetPrivateFieldValue(presenter, "visualRegistry");
             Assert.That(visualRegistry, Is.Not.Null);
@@ -717,7 +756,7 @@ namespace Rescue.Unity.Presentation.Tests
             }
 
             System.Reflection.PropertyInfo? debrisRegistryProperty = visualRegistry.GetType().GetProperty(
-                "Debris",
+                registryName,
                 System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
             Assert.That(debrisRegistryProperty, Is.Not.Null);
             if (debrisRegistryProperty is null)
@@ -753,6 +792,11 @@ namespace Rescue.Unity.Presentation.Tests
                 System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
             Assert.That(objectProperty, Is.Not.Null);
             return objectProperty?.GetValue(arguments[1]) as GameObject;
+        }
+
+        private static GameObject? GetRegisteredPieceObject(BoardContentViewPresenter presenter, TileCoord coord)
+        {
+            return GetRegisteredPieceObject(presenter, "Debris", coord);
         }
 
         private static object? GetPrivateFieldValue(object target, string fieldName)

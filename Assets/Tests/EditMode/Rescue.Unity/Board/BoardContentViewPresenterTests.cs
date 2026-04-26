@@ -130,6 +130,26 @@ namespace Rescue.Unity.BoardPresentation.Tests
         }
 
         [Test]
+        public void BoardContentViewPresenter_SyncImmediatePopulatesHiddenDebrisRegistryByCoord()
+        {
+            PresenterHarness harness = CreateHarness();
+            BlockerVisualRegistry blockerRegistry = CreateRegistry<BlockerVisualRegistry>();
+            blockerRegistry.FallbackBlockerPrefab = harness.FallbackPrefab;
+            SetPrivateField(harness.ContentPresenter, "blockerRegistry", blockerRegistry);
+
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new BlockerTile(BlockerType.Ice, 1, new DebrisTile(DebrisType.B)))));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            GameObject? hiddenDebrisObject = GetRegisteredPieceObject(harness.ContentPresenter, "HiddenDebris", new TileCoord(0, 0));
+            Assert.That(hiddenDebrisObject, Is.Not.Null);
+            Assert.That(hiddenDebrisObject!.name, Does.Contain("HiddenDebris_B"));
+        }
+
+        [Test]
         public void BoardContentViewPresenter_DoesNotRenderExtractedTarget()
         {
             PresenterHarness harness = CreateHarness();
@@ -501,6 +521,78 @@ namespace Rescue.Unity.BoardPresentation.Tests
         }
 
         [Test]
+        public void BoardContentViewPresenter_AnimateBlockerDamageUsesRegisteredBlockerVisual()
+        {
+            PresenterHarness harness = CreateHarness();
+            BlockerVisualRegistry blockerRegistry = CreateRegistry<BlockerVisualRegistry>();
+            blockerRegistry.FallbackBlockerPrefab = harness.FallbackPrefab;
+            SetPrivateField(harness.ContentPresenter, "blockerRegistry", blockerRegistry);
+
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new BlockerTile(BlockerType.Crate, 1, null))));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            GameObject? blockerBeforeDamage = GetRegisteredPieceObject(harness.ContentPresenter, "Blockers", new TileCoord(0, 0));
+            Assert.That(blockerBeforeDamage, Is.Not.Null);
+
+            Assert.DoesNotThrow(() => harness.ContentPresenter.AnimateBlockerDamage(
+                new BlockerDamaged(new TileCoord(0, 0), BlockerType.Crate, RemainingHp: 0)));
+
+            GameObject? blockerAfterDamage = GetRegisteredPieceObject(harness.ContentPresenter, "Blockers", new TileCoord(0, 0));
+            Assert.That(blockerAfterDamage, Is.SameAs(blockerBeforeDamage));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_AnimateBlockerBreakRemovesRegisteredBlockerVisual()
+        {
+            PresenterHarness harness = CreateHarness();
+            BlockerVisualRegistry blockerRegistry = CreateRegistry<BlockerVisualRegistry>();
+            blockerRegistry.FallbackBlockerPrefab = harness.FallbackPrefab;
+            SetPrivateField(harness.ContentPresenter, "blockerRegistry", blockerRegistry);
+
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new BlockerTile(BlockerType.Crate, 1, null))));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            Assert.That(GetRegisteredPieceObject(harness.ContentPresenter, "Blockers", new TileCoord(0, 0)), Is.Not.Null);
+
+            harness.ContentPresenter.AnimateBlockerBreak(new BlockerBroken(new TileCoord(0, 0), BlockerType.Crate));
+
+            Assert.That(GetRegisteredPieceObject(harness.ContentPresenter, "Blockers", new TileCoord(0, 0)), Is.Null);
+            Assert.That(FindChildByName(harness.ContentRoot, "Blocker_Crate"), Is.Null);
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_AnimateIceRevealPromotesRegisteredHiddenDebrisToDebris()
+        {
+            PresenterHarness harness = CreateHarness();
+            BlockerVisualRegistry blockerRegistry = CreateRegistry<BlockerVisualRegistry>();
+            blockerRegistry.FallbackBlockerPrefab = harness.FallbackPrefab;
+            SetPrivateField(harness.ContentPresenter, "blockerRegistry", blockerRegistry);
+
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new BlockerTile(BlockerType.Ice, 1, new DebrisTile(DebrisType.B)))));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            GameObject? hiddenBeforeReveal = GetRegisteredPieceObject(harness.ContentPresenter, "HiddenDebris", new TileCoord(0, 0));
+            Assert.That(hiddenBeforeReveal, Is.Not.Null);
+
+            harness.ContentPresenter.AnimateIceReveal(new IceRevealed(new TileCoord(0, 0), DebrisType.B));
+
+            Assert.That(GetRegisteredPieceObject(harness.ContentPresenter, "HiddenDebris", new TileCoord(0, 0)), Is.Null);
+            GameObject? debrisAfterReveal = GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 0));
+            Assert.That(debrisAfterReveal, Is.SameAs(hiddenBeforeReveal));
+            Assert.That(debrisAfterReveal!.name, Does.Contain("Debris_B"));
+        }
+
+        [Test]
         public void BoardContentViewPresenter_BlockerAndIceAnimationApisFailSoftWhenVisualsAreMissing()
         {
             PresenterHarness harness = CreateHarness();
@@ -512,6 +604,47 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Assert.DoesNotThrow(() => harness.ContentPresenter.AnimateIceReveal(
                 new IceRevealed(new TileCoord(0, 0), DebrisType.B)));
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_SyncImmediateRepairsBlockerAndHiddenDebrisMismatches()
+        {
+            PresenterHarness harness = CreateHarness();
+            BlockerVisualRegistry blockerRegistry = CreateRegistry<BlockerVisualRegistry>();
+            blockerRegistry.FallbackBlockerPrefab = harness.FallbackPrefab;
+            SetPrivateField(harness.ContentPresenter, "blockerRegistry", blockerRegistry);
+
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new BlockerTile(BlockerType.Ice, 1, new DebrisTile(DebrisType.B)))));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            GameObject? blocker = GetRegisteredPieceObject(harness.ContentPresenter, "Blockers", new TileCoord(0, 0));
+            GameObject? hiddenDebris = GetRegisteredPieceObject(harness.ContentPresenter, "HiddenDebris", new TileCoord(0, 0));
+            Assert.That(blocker, Is.Not.Null);
+            Assert.That(hiddenDebris, Is.Not.Null);
+
+            if (blocker is not null)
+            {
+                blocker.name = "Content_00_00_Blocker_Wrong";
+            }
+
+            if (hiddenDebris is not null)
+            {
+                hiddenDebris.name = "Content_00_00_HiddenDebris_Wrong";
+            }
+
+            harness.ContentPresenter.SyncImmediate(state);
+
+            GameObject? repairedBlocker = GetRegisteredPieceObject(harness.ContentPresenter, "Blockers", new TileCoord(0, 0));
+            GameObject? repairedHiddenDebris = GetRegisteredPieceObject(harness.ContentPresenter, "HiddenDebris", new TileCoord(0, 0));
+            Assert.That(repairedBlocker, Is.Not.Null);
+            Assert.That(repairedHiddenDebris, Is.Not.Null);
+            Assert.That(repairedBlocker!.name, Does.Contain("Blocker_Ice"));
+            Assert.That(repairedHiddenDebris!.name, Does.Contain("HiddenDebris_B"));
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(2));
         }
 
         private PresenterHarness CreateHarness()

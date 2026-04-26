@@ -169,9 +169,10 @@ namespace Rescue.Unity.BoardPresentation
 
         public void AnimateBlockerDamage(BlockerDamaged damaged, float durationSeconds = 0.10f)
         {
-            if (!visualRegistry.Blockers.TryGet(damaged.Coord, out BoardPieceView? blockerView) ||
-                blockerView is null ||
-                blockerView.Object == null)
+            CleanupDestroyedVisualReferences();
+
+            if (!TryGetLivePieceView(visualRegistry.Blockers, damaged.Coord, out BoardPieceView? blockerView) ||
+                blockerView is null)
             {
                 return;
             }
@@ -186,14 +187,13 @@ namespace Rescue.Unity.BoardPresentation
 
         public void AnimateBlockerBreak(BlockerBroken broken, float durationSeconds = 0.10f)
         {
-            if (!visualRegistry.Blockers.TryGet(broken.Coord, out BoardPieceView? blockerView) ||
-                blockerView is null ||
-                blockerView.Object == null)
+            CleanupDestroyedVisualReferences();
+
+            if (!RemoveLivePieceView(visualRegistry.Blockers, broken.Coord, out BoardPieceView? blockerView) ||
+                blockerView is null)
             {
                 return;
             }
-
-            visualRegistry.Blockers.Remove(broken.Coord);
 
             if (!Application.isPlaying || !isActiveAndEnabled || durationSeconds <= 0f)
             {
@@ -207,9 +207,10 @@ namespace Rescue.Unity.BoardPresentation
 
         public void AnimateIceReveal(IceRevealed revealed, float durationSeconds = 0.10f)
         {
-            if (!visualRegistry.HiddenDebris.TryGet(revealed.Coord, out BoardPieceView? hiddenDebrisView) ||
-                hiddenDebrisView is null ||
-                hiddenDebrisView.Object == null)
+            CleanupDestroyedVisualReferences();
+
+            if (!RemoveLivePieceView(visualRegistry.HiddenDebris, revealed.Coord, out BoardPieceView? hiddenDebrisView) ||
+                hiddenDebrisView is null)
             {
                 return;
             }
@@ -219,7 +220,9 @@ namespace Rescue.Unity.BoardPresentation
                 return;
             }
 
-            visualRegistry.HiddenDebris.Remove(revealed.Coord);
+            RemoveAndDestroyPiece(visualRegistry.Debris, revealed.Coord);
+
+            hiddenDebrisView.Coord = revealed.Coord;
             hiddenDebrisView.ContentLabel = $"Debris_{revealed.RevealedType}";
             visualRegistry.Debris.Set(revealed.Coord, hiddenDebrisView);
 
@@ -674,6 +677,39 @@ namespace Rescue.Unity.BoardPresentation
 
             RemoveSpawnedContentReference(removedView.Object);
             DestroyContentObject(removedView.Object);
+        }
+
+        private static bool TryGetLivePieceView(BoardPieceRegistry registry, TileCoord coord, out BoardPieceView? view)
+        {
+            if (!registry.TryGet(coord, out view) || view is null)
+            {
+                return false;
+            }
+
+            if (view.Object != null)
+            {
+                return true;
+            }
+
+            registry.Remove(coord);
+            view = null;
+            return false;
+        }
+
+        private static bool RemoveLivePieceView(BoardPieceRegistry registry, TileCoord coord, out BoardPieceView? view)
+        {
+            if (!registry.Remove(coord, out view) || view is null)
+            {
+                return false;
+            }
+
+            if (view.Object != null)
+            {
+                return true;
+            }
+
+            view = null;
+            return false;
         }
 
         private void CleanupDestroyedVisualReferences()

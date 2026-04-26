@@ -220,6 +220,31 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
+        public void Build_PreservesCanonicalBlockerAndIceEventOrder()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(
+                    new BlockerDamaged(new TileCoord(0, 0), BlockerType.Ice, RemainingHp: 0),
+                    new BlockerBroken(new TileCoord(0, 0), BlockerType.Ice),
+                    new IceRevealed(new TileCoord(0, 0), DebrisType.B)));
+
+            Assert.That(plan.Take(plan.Count - 1).Select(step => step.SourceEventName), Is.EqualTo(new[]
+            {
+                nameof(BlockerDamaged),
+                nameof(BlockerBroken),
+                nameof(IceRevealed),
+            }));
+            Assert.That(plan.Take(plan.Count - 1).Select(step => step.StepType), Is.EqualTo(new[]
+            {
+                ActionPlaybackStepType.BreakBlockerOrReveal,
+                ActionPlaybackStepType.BreakBlockerOrReveal,
+                ActionPlaybackStepType.BreakBlockerOrReveal,
+            }));
+        }
+
+        [Test]
         public void Build_TargetExtractOrderMatchesSourceEventsAndStillEndsBeforeFinalSync()
         {
             ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
