@@ -130,6 +130,11 @@ namespace Rescue.Unity.FX.Tests
                 state,
                 new ActionInput(new TileCoord(0, 0)),
                 state,
+                CreatePlaybackStep(ActionPlaybackStepType.RemoveGroup, new InvalidInput(new TileCoord(0, 0), InvalidInputReason.SingleTile)));
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
                 CreatePlaybackStep(ActionPlaybackStepType.RemoveGroup, new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1)))));
             router.RoutePlaybackBeat(
                 state,
@@ -150,7 +155,30 @@ namespace Rescue.Unity.FX.Tests
                 state,
                 new ActionInput(new TileCoord(0, 0)),
                 state,
+                CreatePlaybackStep(ActionPlaybackStepType.DockFeedback, new DockInserted(
+                    ImmutableArray.Create(DebrisType.A),
+                    OccupancyAfterInsert: 1,
+                    OverflowCount: 0)));
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
                 CreatePlaybackStep(ActionPlaybackStepType.DockFeedback, new DockCleared(DebrisType.A, SetsCleared: 1, OccupancyAfterClear: 0)));
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.DockFeedback, new DockWarningChanged(DockWarningLevel.Safe, DockWarningLevel.Caution)));
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.DockFeedback, new DockJamTriggered(OverflowCount: 1)));
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.TargetExtract, new TargetOneClearAway("pup-1", new TileCoord(2, 1))));
             router.RoutePlaybackBeat(
                 state,
                 new ActionInput(new TileCoord(0, 0)),
@@ -161,14 +189,68 @@ namespace Rescue.Unity.FX.Tests
                 new ActionInput(new TileCoord(0, 0)),
                 state,
                 CreatePlaybackStep(ActionPlaybackStepType.WaterRise, new WaterRose(FloodedRow: 2)));
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.WaterRise, new VinePreviewChanged(new TileCoord(1, 1))));
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.FinalSync, new Won("pup-1", TotalActions: 4, ExtractedTargetOrder: ImmutableArray.Create("pup-1"))));
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.FinalSync, new Lost(ActionOutcome.LossDockOverflow)));
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.FinalSync, new Lost(ActionOutcome.LossWaterOnTarget)));
 
+            Assert.That(router.InvalidTapCount, Is.EqualTo(1));
             Assert.That(router.GroupClearCount, Is.EqualTo(1));
             Assert.That(router.CrateBreakCount, Is.EqualTo(1));
             Assert.That(router.IceRevealCount, Is.EqualTo(1));
             Assert.That(router.VineClearCount, Is.EqualTo(1));
+            Assert.That(router.DockInsertCount, Is.EqualTo(1));
             Assert.That(router.DockTripleClearCount, Is.EqualTo(1));
+            Assert.That(router.DockWarningCount, Is.EqualTo(2));
+            Assert.That(router.NearRescueReliefCount, Is.EqualTo(1));
             Assert.That(router.TargetExtractionCount, Is.EqualTo(1));
             Assert.That(router.WaterRiseCount, Is.EqualTo(1));
+            Assert.That(router.VineGrowthPreviewCount, Is.EqualTo(1));
+            Assert.That(router.WinCount, Is.EqualTo(1));
+            Assert.That(router.LossDockOverflowCount, Is.EqualTo(1));
+            Assert.That(router.LossWaterOnTargetCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void FxEventRouter_PlaybackBeatSkipsIntentionallyUnsupportedEventsSafely()
+        {
+            GameState state = CreateState();
+            SpyFxEventRouter router = CreateRouter();
+
+            Assert.DoesNotThrow(() => router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.WaterRise, new VineGrown(new TileCoord(1, 1)))));
+            Assert.DoesNotThrow(() => router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.WaterRise, new VinePreviewChanged(PendingTile: null))));
+            Assert.DoesNotThrow(() => router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.DockFeedback, new DockWarningChanged(DockWarningLevel.Caution, DockWarningLevel.Safe))));
+
+            Assert.That(router.VineGrowthPreviewCount, Is.EqualTo(0));
+            Assert.That(router.DockWarningCount, Is.EqualTo(0));
         }
 
         [Test]
@@ -216,6 +298,11 @@ namespace Rescue.Unity.FX.Tests
                 state,
                 new ActionInput(new TileCoord(0, 0)),
                 state,
+                CreatePlaybackStep(ActionPlaybackStepType.RemoveGroup, new InvalidInput(new TileCoord(9, 9), InvalidInputReason.OutOfBounds))));
+            Assert.DoesNotThrow(() => router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
                 CreatePlaybackStep(ActionPlaybackStepType.RemoveGroup, new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(9, 9))))));
             Assert.DoesNotThrow(() => router.RoutePlaybackBeat(
                 state,
@@ -227,6 +314,16 @@ namespace Rescue.Unity.FX.Tests
                 new ActionInput(new TileCoord(0, 0)),
                 state,
                 CreatePlaybackStep(ActionPlaybackStepType.WaterRise, new WaterRose(FloodedRow: 9))));
+            Assert.DoesNotThrow(() => router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.TargetExtract, new TargetOneClearAway("pup-1", new TileCoord(8, 8)))));
+            Assert.DoesNotThrow(() => router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.WaterRise, new VinePreviewChanged(new TileCoord(8, 8)))));
         }
 
         [Test]
@@ -426,13 +523,21 @@ namespace Rescue.Unity.FX.Tests
 
             public int DockTripleClearCount { get; private set; }
 
+            public int DockWarningCount { get; private set; }
+
             public int WaterRiseCount { get; private set; }
 
+            public int NearRescueReliefCount { get; private set; }
+
             public int TargetExtractionCount { get; private set; }
+
+            public int VineGrowthPreviewCount { get; private set; }
 
             public int WinCount { get; private set; }
 
             public int LossDockOverflowCount { get; private set; }
+
+            public int LossWaterOnTargetCount { get; private set; }
 
             public Vector3 LastGroupClearPosition { get; private set; }
 
@@ -466,6 +571,11 @@ namespace Rescue.Unity.FX.Tests
                 InvalidTapCount++;
             }
 
+            protected override void PlayInvalidTap(Vector3 worldPosition)
+            {
+                InvalidTapCount++;
+            }
+
             protected override void PlayDockInsert()
             {
                 DockInsertCount++;
@@ -474,6 +584,11 @@ namespace Rescue.Unity.FX.Tests
             protected override void PlayDockTripleClear(Vector3 worldPosition)
             {
                 DockTripleClearCount++;
+            }
+
+            protected override void PlayDockWarning()
+            {
+                DockWarningCount++;
             }
 
             protected override void PlayWaterRise(Vector3 worldPosition)
@@ -488,6 +603,16 @@ namespace Rescue.Unity.FX.Tests
                 LastTargetExtractionPosition = worldPosition;
             }
 
+            protected override void PlayVineGrowthPreview(Vector3 worldPosition)
+            {
+                VineGrowthPreviewCount++;
+            }
+
+            protected override void PlayNearRescueRelief(Vector3 worldPosition)
+            {
+                NearRescueReliefCount++;
+            }
+
             protected override void PlayWin()
             {
                 WinCount++;
@@ -496,6 +621,11 @@ namespace Rescue.Unity.FX.Tests
             protected override void PlayLossDockOverflow()
             {
                 LossDockOverflowCount++;
+            }
+
+            protected override void PlayLossWaterOnTarget()
+            {
+                LossWaterOnTargetCount++;
             }
         }
     }

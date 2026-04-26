@@ -107,6 +107,9 @@ namespace Rescue.Unity.FX
 
             switch (playbackStep.SourceEvent)
             {
+                case InvalidInput invalidInput:
+                    PlayInvalidTap(ResolveCellWorldPosition(invalidInput.TappedCoord));
+                    break;
                 case GroupRemoved removed:
                     PlayGroupClear(ResolveGroupWorldPosition(removed.Coords));
                     break;
@@ -122,11 +125,39 @@ namespace Rescue.Unity.FX
                 case DockCleared:
                     PlayDockTripleClear(GetSafeFallbackPosition());
                     break;
+                case DockInserted:
+                    PlayDockInsert();
+                    break;
+                case DockWarningChanged warningChanged when warningChanged.After != DockWarningLevel.Safe:
+                    PlayDockWarning();
+                    break;
+                case DockJamTriggered:
+                    // No dock-jam-specific FX prefab exists yet; reuse the optional dock warning fallback.
+                    PlayDockWarning();
+                    break;
+                case TargetOneClearAway oneClearAway:
+                    PlayNearRescueRelief(ResolveCellWorldPosition(oneClearAway.Coord));
+                    break;
                 case TargetExtracted extracted:
                     PlayTargetExtraction(ResolveCellWorldPosition(extracted.Coord));
                     break;
                 case WaterRose rose:
                     PlayWaterRise(ResolveRowWorldPosition(rose.FloodedRow));
+                    break;
+                case VinePreviewChanged previewChanged when previewChanged.PendingTile.HasValue:
+                    PlayVineGrowthPreview(ResolveCellWorldPosition(previewChanged.PendingTile.Value));
+                    break;
+                case VineGrown:
+                    // Intentionally deferred: the registry has preview/clear FX, but no grown-vine FX prefab.
+                    break;
+                case Won:
+                    PlayWin();
+                    break;
+                case Lost lost when lost.Outcome == ActionOutcome.LossDockOverflow:
+                    PlayLossDockOverflow();
+                    break;
+                case Lost lost when lost.Outcome == ActionOutcome.LossWaterOnTarget:
+                    PlayLossWaterOnTarget();
                     break;
             }
         }
@@ -143,7 +174,12 @@ namespace Rescue.Unity.FX
 
         protected virtual void PlayInvalidTap()
         {
-            TrySpawn(fxRegistry?.InvalidTapFx, nameof(FxVisualRegistry.InvalidTapFx));
+            PlayInvalidTap(GetSafeFallbackPosition());
+        }
+
+        protected virtual void PlayInvalidTap(Vector3 worldPosition)
+        {
+            TrySpawn(fxRegistry?.InvalidTapFx, nameof(FxVisualRegistry.InvalidTapFx), worldPosition);
         }
 
         protected virtual void PlayCrateBreak()
@@ -178,7 +214,12 @@ namespace Rescue.Unity.FX
 
         protected virtual void PlayVineGrowthPreview()
         {
-            TrySpawn(fxRegistry?.VineGrowPreviewFx, nameof(FxVisualRegistry.VineGrowPreviewFx));
+            PlayVineGrowthPreview(GetSafeFallbackPosition());
+        }
+
+        protected virtual void PlayVineGrowthPreview(Vector3 worldPosition)
+        {
+            TrySpawn(fxRegistry?.VineGrowPreviewFx, nameof(FxVisualRegistry.VineGrowPreviewFx), worldPosition);
         }
 
         protected virtual void PlayDockInsert()
@@ -213,7 +254,12 @@ namespace Rescue.Unity.FX
 
         protected virtual void PlayNearRescueRelief()
         {
-            TrySpawn(fxRegistry?.NearRescueReliefFx, nameof(FxVisualRegistry.NearRescueReliefFx));
+            PlayNearRescueRelief(GetSafeFallbackPosition());
+        }
+
+        protected virtual void PlayNearRescueRelief(Vector3 worldPosition)
+        {
+            TrySpawn(fxRegistry?.NearRescueReliefFx, nameof(FxVisualRegistry.NearRescueReliefFx), worldPosition);
         }
 
         protected virtual void PlayTargetExtraction()
