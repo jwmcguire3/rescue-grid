@@ -39,6 +39,42 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
+        public void Build_BlockerDamagedMapsToBreakBlockerOrReveal()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(new BlockerDamaged(new TileCoord(0, 1), BlockerType.Crate, RemainingHp: 0)));
+
+            Assert.That(plan[0].SourceEventName, Is.EqualTo(nameof(BlockerDamaged)));
+            Assert.That(plan[0].StepType, Is.EqualTo(ActionPlaybackStepType.BreakBlockerOrReveal));
+        }
+
+        [Test]
+        public void Build_BlockerBrokenMapsToBreakBlockerOrReveal()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(new BlockerBroken(new TileCoord(0, 1), BlockerType.Crate)));
+
+            Assert.That(plan[0].SourceEventName, Is.EqualTo(nameof(BlockerBroken)));
+            Assert.That(plan[0].StepType, Is.EqualTo(ActionPlaybackStepType.BreakBlockerOrReveal));
+        }
+
+        [Test]
+        public void Build_IceRevealedMapsToBreakBlockerOrReveal()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(new IceRevealed(new TileCoord(0, 1), DebrisType.B)));
+
+            Assert.That(plan[0].SourceEventName, Is.EqualTo(nameof(IceRevealed)));
+            Assert.That(plan[0].StepType, Is.EqualTo(ActionPlaybackStepType.BreakBlockerOrReveal));
+        }
+
+        [Test]
         public void Build_RemoveGroupGravitySpawnAndFinalSyncAppearInPipelineOrder()
         {
             ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
@@ -100,6 +136,22 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(waterRiseIndex, Is.GreaterThan(IndexOf(plan, ActionPlaybackStepType.Gravity)));
             Assert.That(waterRiseIndex, Is.GreaterThan(IndexOf(plan, ActionPlaybackStepType.Spawn)));
             Assert.That(waterRiseIndex, Is.GreaterThan(IndexOf(plan, ActionPlaybackStepType.TargetExtract)));
+        }
+
+        [Test]
+        public void Build_BreakBlockerOrRevealComesBeforeGravity()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(
+                    new GravitySettled(ImmutableArray.Create((new TileCoord(0, 1), new TileCoord(1, 1)))),
+                    new IceRevealed(new TileCoord(0, 2), DebrisType.C),
+                    new BlockerBroken(new TileCoord(0, 2), BlockerType.Ice),
+                    new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0)))));
+
+            Assert.That(IndexOf(plan, ActionPlaybackStepType.BreakBlockerOrReveal), Is.GreaterThan(IndexOf(plan, ActionPlaybackStepType.RemoveGroup)));
+            Assert.That(IndexOf(plan, ActionPlaybackStepType.BreakBlockerOrReveal), Is.LessThan(IndexOf(plan, ActionPlaybackStepType.Gravity)));
         }
 
         [Test]

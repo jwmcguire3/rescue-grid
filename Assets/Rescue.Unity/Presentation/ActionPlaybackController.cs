@@ -130,6 +130,15 @@ namespace Rescue.Unity.Presentation
                 case GroupRemoved removed:
                     boardContent?.RemoveDebrisGroup(removed);
                     break;
+                case BlockerDamaged damaged:
+                    boardContent?.AnimateBlockerDamage(damaged, settings.BreakBlockerOrRevealDurationSeconds);
+                    break;
+                case BlockerBroken broken:
+                    boardContent?.AnimateBlockerBreak(broken, settings.BreakBlockerOrRevealDurationSeconds);
+                    break;
+                case IceRevealed revealed:
+                    boardContent?.AnimateIceReveal(revealed, settings.BreakBlockerOrRevealDurationSeconds);
+                    break;
                 case GravitySettled gravity:
                     boardContent?.AnimateGravityMove(gravity);
                     break;
@@ -167,6 +176,8 @@ namespace Rescue.Unity.Presentation
             {
                 case ActionPlaybackStepType.RemoveGroup:
                     return settings.RemoveDurationSeconds;
+                case ActionPlaybackStepType.BreakBlockerOrReveal:
+                    return settings.BreakBlockerOrRevealDurationSeconds;
                 case ActionPlaybackStepType.Gravity:
                     return settings.GravityDurationSeconds;
                 case ActionPlaybackStepType.Spawn:

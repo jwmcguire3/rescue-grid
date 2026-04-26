@@ -153,6 +153,89 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
+        public void ActionPlaybackController_BreakBlockerAndRevealRouteBeforeFinalSyncAndSyncRepairsState()
+        {
+            ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
+            GameState previousState = CreateBoardState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new BlockerTile(BlockerType.Ice, 1, new DebrisTile(DebrisType.B)))));
+            GameState resultState = CreateBoardState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new DebrisTile(DebrisType.B))));
+
+            harness.GridPresenter.RebuildGrid(previousState);
+            harness.ContentPresenter.SyncImmediate(previousState);
+
+            Assert.That(FindChildByName(harness.ContentRoot, "Blocker_Ice"), Is.Not.Null);
+            Assert.That(FindChildByName(harness.ContentRoot, "HiddenDebris_B"), Is.Not.Null);
+
+            ActionResult result = CreateResult(
+                resultState,
+                actionCount: 6,
+                new BlockerDamaged(new TileCoord(0, 0), BlockerType.Ice, RemainingHp: 0),
+                new BlockerBroken(new TileCoord(0, 0), BlockerType.Ice),
+                new IceRevealed(new TileCoord(0, 0), DebrisType.B),
+                new GravitySettled(ImmutableArray<(TileCoord From, TileCoord To)>.Empty));
+
+            int finalSyncCalls = 0;
+
+            bool handled = harness.Controller.TryPlayAction(previousState, new ActionInput(new TileCoord(0, 0)), result, syncedResult =>
+            {
+                finalSyncCalls++;
+                harness.ContentPresenter.SyncImmediate(syncedResult.State);
+            });
+
+            Assert.That(handled, Is.True);
+            Assert.That(finalSyncCalls, Is.EqualTo(1));
+            Assert.That(harness.Controller.CurrentPlan[0].StepType, Is.EqualTo(ActionPlaybackStepType.BreakBlockerOrReveal));
+            Assert.That(harness.Controller.CurrentPlan[1].StepType, Is.EqualTo(ActionPlaybackStepType.BreakBlockerOrReveal));
+            Assert.That(harness.Controller.CurrentPlan[2].StepType, Is.EqualTo(ActionPlaybackStepType.BreakBlockerOrReveal));
+            Assert.That(harness.Controller.CurrentPlan[3].StepType, Is.EqualTo(ActionPlaybackStepType.Gravity));
+            Assert.That(FindChildByName(harness.ContentRoot, "Blocker_Ice"), Is.Null);
+            Assert.That(FindChildByName(harness.ContentRoot, "Debris_B"), Is.Not.Null);
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void ActionPlaybackController_MissingBlockerAndIceVisualsDoNotCrashPlayback()
+        {
+            ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
+            GameState previousState = CreateBoardState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new BlockerTile(BlockerType.Ice, 1, new DebrisTile(DebrisType.B)))));
+            GameState resultState = CreateBoardState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new DebrisTile(DebrisType.B))));
+
+            harness.GridPresenter.RebuildGrid(previousState);
+
+            int finalSyncCalls = 0;
+
+            Assert.DoesNotThrow(() =>
+            {
+                bool handled = harness.Controller.TryPlayAction(
+                    previousState,
+                    new ActionInput(new TileCoord(0, 0)),
+                    CreateResult(
+                        resultState,
+                        actionCount: 7,
+                        new BlockerDamaged(new TileCoord(0, 0), BlockerType.Ice, RemainingHp: 0),
+                        new BlockerBroken(new TileCoord(0, 0), BlockerType.Ice),
+                        new IceRevealed(new TileCoord(0, 0), DebrisType.B)),
+                    syncedResult =>
+                    {
+                        finalSyncCalls++;
+                        harness.ContentPresenter.SyncImmediate(syncedResult.State);
+                    });
+
+                Assert.That(handled, Is.True);
+            });
+
+            Assert.That(finalSyncCalls, Is.EqualTo(1));
+            Assert.That(FindChildByName(harness.ContentRoot, "Debris_B"), Is.Not.Null);
+        }
+
+        [Test]
         public void ActionPlaybackController_TargetExtractRoutesThroughPlaybackAndFinalSyncRepairsState()
         {
             ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);

@@ -310,6 +310,50 @@ namespace Rescue.Unity.BoardPresentation.Tests
                     ImmutableArray.Create((new TileCoord(0, 0), DebrisType.B)))));
         }
 
+        [Test]
+        public void BoardContentViewPresenter_AnimateBlockerDamageBreakAndIceRevealHandleValidVisualsSafely()
+        {
+            PresenterHarness harness = CreateHarness();
+            BlockerVisualRegistry blockerRegistry = CreateRegistry<BlockerVisualRegistry>();
+            blockerRegistry.FallbackBlockerPrefab = harness.FallbackPrefab;
+            SetPrivateField(harness.ContentPresenter, "blockerRegistry", blockerRegistry);
+
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new BlockerTile(BlockerType.Ice, 1, new DebrisTile(DebrisType.B)))));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            Assert.That(FindChildByName(harness.ContentRoot, "Blocker_Ice"), Is.Not.Null);
+            Assert.That(FindChildByName(harness.ContentRoot, "HiddenDebris_B"), Is.Not.Null);
+
+            Assert.DoesNotThrow(() => harness.ContentPresenter.AnimateBlockerDamage(
+                new BlockerDamaged(new TileCoord(0, 0), BlockerType.Ice, RemainingHp: 0)));
+            Assert.DoesNotThrow(() => harness.ContentPresenter.AnimateBlockerBreak(
+                new BlockerBroken(new TileCoord(0, 0), BlockerType.Ice)));
+            Assert.DoesNotThrow(() => harness.ContentPresenter.AnimateIceReveal(
+                new IceRevealed(new TileCoord(0, 0), DebrisType.B)));
+
+            Assert.That(FindChildByName(harness.ContentRoot, "Blocker_Ice"), Is.Null);
+            Assert.That(FindChildByName(harness.ContentRoot, "Debris_B"), Is.Not.Null);
+            Assert.That(FindChildByName(harness.ContentRoot, "HiddenDebris_B"), Is.Null);
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_BlockerAndIceAnimationApisFailSoftWhenVisualsAreMissing()
+        {
+            PresenterHarness harness = CreateHarness();
+
+            Assert.DoesNotThrow(() => harness.ContentPresenter.AnimateBlockerDamage(
+                new BlockerDamaged(new TileCoord(0, 0), BlockerType.Crate, RemainingHp: 0)));
+            Assert.DoesNotThrow(() => harness.ContentPresenter.AnimateBlockerBreak(
+                new BlockerBroken(new TileCoord(0, 0), BlockerType.Crate)));
+            Assert.DoesNotThrow(() => harness.ContentPresenter.AnimateIceReveal(
+                new IceRevealed(new TileCoord(0, 0), DebrisType.B)));
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(0));
+        }
+
         private PresenterHarness CreateHarness()
         {
             GameObject presenterObject = CreateTrackedGameObject("BoardPresenter");

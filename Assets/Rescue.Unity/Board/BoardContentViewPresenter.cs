@@ -14,6 +14,8 @@ namespace Rescue.Unity.BoardPresentation
         private const float HiddenDebrisYOffsetRatio = 0.5f;
         private const float DefaultTargetExtractLiftDistance = 0.18f;
         private const float DefaultTargetExtractPulseScale = 1.12f;
+        private const float DefaultBlockerDamagePulseScale = 1.06f;
+        private const float DefaultBlockerDamageAlphaFloor = 0.70f;
         private static readonly Vector3 HiddenDebrisScale = new Vector3(0.75f, 0.75f, 0.75f);
 
         [SerializeField] private BoardGridViewPresenter? gridView;
@@ -117,6 +119,63 @@ namespace Rescue.Unity.BoardPresentation
 
                 MoveContentObjectToAnchor(debrisObject, anchor, to, "Debris", contentYOffset);
             }
+        }
+
+        public void AnimateBlockerDamage(BlockerDamaged damaged, float durationSeconds = 0.10f)
+        {
+            if (!TryGetBlockerInstance(damaged.Coord, out GameObject? blockerObject) || blockerObject is null)
+            {
+                return;
+            }
+
+            if (!Application.isPlaying || !isActiveAndEnabled || durationSeconds <= 0f)
+            {
+                return;
+            }
+
+            StartCoroutine(AnimateBlockerDamageRoutine(blockerObject, durationSeconds));
+        }
+
+        public void AnimateBlockerBreak(BlockerBroken broken, float durationSeconds = 0.10f)
+        {
+            if (!TryGetBlockerInstance(broken.Coord, out GameObject? blockerObject) || blockerObject is null)
+            {
+                return;
+            }
+
+            spawnedContent.Remove(blockerObject);
+
+            if (!Application.isPlaying || !isActiveAndEnabled || durationSeconds <= 0f)
+            {
+                DestroyContentObject(blockerObject);
+                return;
+            }
+
+            StartCoroutine(AnimateBlockerBreakRoutine(blockerObject, durationSeconds));
+        }
+
+        public void AnimateIceReveal(IceRevealed revealed, float durationSeconds = 0.10f)
+        {
+            if (!TryGetHiddenDebrisInstance(revealed.Coord, out GameObject? hiddenDebrisObject) || hiddenDebrisObject is null)
+            {
+                return;
+            }
+
+            if (!TryGetAnchor(revealed.Coord, out Transform anchor))
+            {
+                return;
+            }
+
+            MoveContentObjectToAnchor(hiddenDebrisObject, anchor, revealed.Coord, "Debris", contentYOffset);
+            hiddenDebrisObject.transform.localScale = Vector3.one;
+
+            if (!Application.isPlaying || !isActiveAndEnabled || durationSeconds <= 0f)
+            {
+                SetVisualAlpha(hiddenDebrisObject, 1f);
+                return;
+            }
+
+            StartCoroutine(AnimateIceRevealRoutine(hiddenDebrisObject, durationSeconds));
         }
 
         public void AnimateSpawn(Spawned spawned)
@@ -227,6 +286,107 @@ namespace Rescue.Unity.BoardPresentation
             }
         }
 
+        private System.Collections.IEnumerator AnimateBlockerDamageRoutine(GameObject blockerObject, float durationSeconds)
+        {
+            if (blockerObject is null)
+            {
+                yield break;
+            }
+
+            Transform blockerTransform = blockerObject.transform;
+            Vector3 baseLocalScale = blockerTransform.localScale;
+            float clampedDuration = Mathf.Max(0.01f, durationSeconds);
+            float elapsed = 0f;
+
+            while (elapsed < clampedDuration)
+            {
+                if (blockerObject is null)
+                {
+                    yield break;
+                }
+
+                elapsed += Time.deltaTime;
+                float normalized = Mathf.Clamp01(elapsed / clampedDuration);
+                float pulse = Mathf.Sin(normalized * Mathf.PI);
+                blockerTransform.localScale = Vector3.LerpUnclamped(baseLocalScale, baseLocalScale * DefaultBlockerDamagePulseScale, pulse);
+                SetVisualAlpha(blockerObject, Mathf.Lerp(1f, DefaultBlockerDamageAlphaFloor, pulse));
+                yield return null;
+            }
+
+            if (blockerObject is not null)
+            {
+                blockerTransform.localScale = baseLocalScale;
+                SetVisualAlpha(blockerObject, 1f);
+            }
+        }
+
+        private System.Collections.IEnumerator AnimateBlockerBreakRoutine(GameObject blockerObject, float durationSeconds)
+        {
+            if (blockerObject is null)
+            {
+                yield break;
+            }
+
+            Transform blockerTransform = blockerObject.transform;
+            Vector3 baseLocalScale = blockerTransform.localScale;
+            float clampedDuration = Mathf.Max(0.01f, durationSeconds);
+            float elapsed = 0f;
+
+            while (elapsed < clampedDuration)
+            {
+                if (blockerObject is null)
+                {
+                    yield break;
+                }
+
+                elapsed += Time.deltaTime;
+                float normalized = Mathf.Clamp01(elapsed / clampedDuration);
+                blockerTransform.localScale = Vector3.Lerp(baseLocalScale, Vector3.zero, normalized);
+                SetVisualAlpha(blockerObject, 1f - normalized);
+                yield return null;
+            }
+
+            if (blockerObject is not null)
+            {
+                DestroyContentObject(blockerObject);
+            }
+        }
+
+        private System.Collections.IEnumerator AnimateIceRevealRoutine(GameObject hiddenDebrisObject, float durationSeconds)
+        {
+            if (hiddenDebrisObject is null)
+            {
+                yield break;
+            }
+
+            Transform debrisTransform = hiddenDebrisObject.transform;
+            Vector3 baseLocalScale = debrisTransform.localScale;
+            float clampedDuration = Mathf.Max(0.01f, durationSeconds);
+            float elapsed = 0f;
+
+            SetVisualAlpha(hiddenDebrisObject, 0f);
+
+            while (elapsed < clampedDuration)
+            {
+                if (hiddenDebrisObject is null)
+                {
+                    yield break;
+                }
+
+                elapsed += Time.deltaTime;
+                float normalized = Mathf.Clamp01(elapsed / clampedDuration);
+                debrisTransform.localScale = Vector3.Lerp(HiddenDebrisScale, baseLocalScale, normalized);
+                SetVisualAlpha(hiddenDebrisObject, normalized);
+                yield return null;
+            }
+
+            if (hiddenDebrisObject is not null)
+            {
+                debrisTransform.localScale = baseLocalScale;
+                SetVisualAlpha(hiddenDebrisObject, 1f);
+            }
+        }
+
         private static void ApplyTargetExtractPose(Transform targetTransform, float normalized)
         {
             ApplyTargetExtractPose(targetTransform, normalized, targetTransform.localPosition, targetTransform.localScale);
@@ -251,9 +411,14 @@ namespace Rescue.Unity.BoardPresentation
 
         private static void SetTargetVisualAlpha(GameObject targetObject, float alpha)
         {
+            SetVisualAlpha(targetObject, alpha);
+        }
+
+        private static void SetVisualAlpha(GameObject contentObject, float alpha)
+        {
             float clampedAlpha = Mathf.Clamp01(alpha);
 
-            SpriteRenderer[] spriteRenderers = targetObject.GetComponentsInChildren<SpriteRenderer>(includeInactive: true);
+            SpriteRenderer[] spriteRenderers = contentObject.GetComponentsInChildren<SpriteRenderer>(includeInactive: true);
             for (int i = 0; i < spriteRenderers.Length; i++)
             {
                 SpriteRenderer spriteRenderer = spriteRenderers[i];
@@ -262,7 +427,7 @@ namespace Rescue.Unity.BoardPresentation
                 spriteRenderer.color = color;
             }
 
-            Graphic[] graphics = targetObject.GetComponentsInChildren<Graphic>(includeInactive: true);
+            Graphic[] graphics = contentObject.GetComponentsInChildren<Graphic>(includeInactive: true);
             for (int i = 0; i < graphics.Length; i++)
             {
                 Graphic graphic = graphics[i];
@@ -302,6 +467,39 @@ namespace Rescue.Unity.BoardPresentation
 
             debrisObject = null;
             return false;
+        }
+
+        private bool TryGetBlockerInstance(TileCoord coord, out GameObject? blockerObject)
+        {
+            string coordPrefix = GetCoordPrefix(coord);
+            for (int i = spawnedContent.Count - 1; i >= 0; i--)
+            {
+                GameObject? contentObject = spawnedContent[i];
+                if (contentObject is null)
+                {
+                    spawnedContent.RemoveAt(i);
+                    continue;
+                }
+
+                if (!contentObject.name.StartsWith(coordPrefix, System.StringComparison.Ordinal) ||
+                    !contentObject.name.Contains("_Blocker_"))
+                {
+                    continue;
+                }
+
+                blockerObject = contentObject;
+                return true;
+            }
+
+            blockerObject = null;
+            return false;
+        }
+
+        private bool TryGetHiddenDebrisInstance(TileCoord coord, out GameObject? hiddenDebrisObject)
+        {
+            return TryGetDebrisInstance(coord, out hiddenDebrisObject, includeHiddenDebris: true) &&
+                   hiddenDebrisObject is not null &&
+                   hiddenDebrisObject.name.Contains("_HiddenDebris_");
         }
 
         private bool TryGetAnchor(TileCoord coord, out Transform anchor)
