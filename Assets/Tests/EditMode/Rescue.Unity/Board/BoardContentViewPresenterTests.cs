@@ -47,6 +47,22 @@ namespace Rescue.Unity.BoardPresentation.Tests
         }
 
         [Test]
+        public void BoardContentViewPresenter_SyncImmediatePopulatesDebrisRegistryCorrectly()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new DebrisTile(DebrisType.A))));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            GameObject? debrisObject = GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 0));
+            Assert.That(debrisObject, Is.Not.Null);
+            Assert.That(debrisObject!.name, Does.Contain("Debris_A"));
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
+        }
+
+        [Test]
         public void BoardContentViewPresenter_RendersCrateIceVine()
         {
             PresenterHarness harness = CreateHarness();
@@ -67,6 +83,25 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Assert.That(FindChildByName(harness.ContentRoot, "Blocker_Crate"), Is.Not.Null);
             Assert.That(FindChildByName(harness.ContentRoot, "Blocker_Ice"), Is.Not.Null);
             Assert.That(FindChildByName(harness.ContentRoot, "Blocker_Vine"), Is.Not.Null);
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_SyncImmediatePopulatesBlockerRegistryCorrectlyWhenBlockersExist()
+        {
+            PresenterHarness harness = CreateHarness();
+            BlockerVisualRegistry blockerRegistry = CreateRegistry<BlockerVisualRegistry>();
+            blockerRegistry.FallbackBlockerPrefab = harness.FallbackPrefab;
+            SetPrivateField(harness.ContentPresenter, "blockerRegistry", blockerRegistry);
+
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new BlockerTile(BlockerType.Crate, 1, null))));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            GameObject? blockerObject = GetRegisteredPieceObject(harness.ContentPresenter, "Blockers", new TileCoord(0, 0));
+            Assert.That(blockerObject, Is.Not.Null);
+            Assert.That(blockerObject!.name, Does.Contain("Blocker_Crate"));
         }
 
         [Test]
@@ -171,7 +206,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
         }
 
         [Test]
-        public void BoardContentViewPresenter_SyncImmediateRefreshesTrackedTargetInstance()
+        public void BoardContentViewPresenter_SyncImmediateKeepsTrackedTargetInstanceStable()
         {
             PresenterHarness harness = CreateHarness();
             TargetVisualRegistry targetRegistry = CreateRegistry<TargetVisualRegistry>();
@@ -191,7 +226,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
 
             Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-1", out GameObject? secondTarget), Is.True);
             Assert.That(secondTarget, Is.Not.Null);
-            Assert.That(secondTarget, Is.Not.SameAs(firstTarget));
+            Assert.That(secondTarget, Is.SameAs(firstTarget));
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
         }
 
@@ -214,6 +249,8 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Assert.That(FindChildByName(harness.ContentRoot, "Debris_A"), Is.Null);
             Assert.That(FindChildByName(harness.ContentRoot, "Debris_B"), Is.Not.Null);
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
+            Assert.That(GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 0)), Is.Null);
+            Assert.That(GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 1)), Is.Not.Null);
         }
 
         [Test]
@@ -237,6 +274,8 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Assert.That(FindChildByName(harness.ContentRoot, "Content_01_00_Debris_A"), Is.Not.Null);
             Assert.That(FindChildByName(harness.ContentRoot, "Content_00_00_Debris_A"), Is.Null);
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
+            Assert.That(GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 0)), Is.Null);
+            Assert.That(GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(1, 0)), Is.Not.Null);
         }
 
         [Test]
@@ -256,6 +295,38 @@ namespace Rescue.Unity.BoardPresentation.Tests
 
             Assert.That(FindChildByName(harness.ContentRoot, "Content_00_01_Debris_B"), Is.Not.Null);
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_SyncImmediateRepairsMissingAndExtraVisualEntries()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new DebrisTile(DebrisType.A))));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            GameObject? registeredDebris = GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 0));
+            Assert.That(registeredDebris, Is.Not.Null);
+
+            if (registeredDebris is not null)
+            {
+                Object.DestroyImmediate(registeredDebris);
+            }
+
+            GameObject extraVisual = CreateTrackedGameObject("Content_00_00_Debris_Extra");
+            extraVisual.transform.SetParent(harness.ContentRoot, false);
+            GetSpawnedContentList(harness.ContentPresenter).Add(extraVisual);
+
+            harness.ContentPresenter.SyncImmediate(state);
+
+            GameObject? repairedDebris = GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 0));
+            Assert.That(repairedDebris, Is.Not.Null);
+            Assert.That(repairedDebris, Is.Not.SameAs(extraVisual));
+            Assert.That(FindChildByName(harness.ContentRoot, "Extra"), Is.Null);
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
+            Assert.That(GetSpawnedContentList(harness.ContentPresenter).Count, Is.EqualTo(1));
         }
 
         [Test]
@@ -424,6 +495,74 @@ namespace Rescue.Unity.BoardPresentation.Tests
             }
 
             field.SetValue(target, value);
+        }
+
+        private static GameObject? GetRegisteredPieceObject(
+            BoardContentViewPresenter presenter,
+            string registryName,
+            TileCoord coord)
+        {
+            object? visualRegistry = GetPrivateFieldValue(presenter, "visualRegistry");
+            Assert.That(visualRegistry, Is.Not.Null);
+            if (visualRegistry is null)
+            {
+                return null;
+            }
+
+            System.Reflection.PropertyInfo? registryProperty = visualRegistry.GetType().GetProperty(
+                registryName,
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+            Assert.That(registryProperty, Is.Not.Null, $"Expected registry '{registryName}'.");
+            if (registryProperty is null)
+            {
+                return null;
+            }
+
+            object? registry = registryProperty.GetValue(visualRegistry);
+            Assert.That(registry, Is.Not.Null);
+            if (registry is null)
+            {
+                return null;
+            }
+
+            object?[] arguments = { coord, null };
+            System.Reflection.MethodInfo? tryGetMethod = registry.GetType().GetMethod(
+                "TryGet",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+            Assert.That(tryGetMethod, Is.Not.Null);
+            if (tryGetMethod is null)
+            {
+                return null;
+            }
+
+            bool found = (bool)tryGetMethod.Invoke(registry, arguments)!;
+            if (!found || arguments[1] is null)
+            {
+                return null;
+            }
+
+            System.Reflection.PropertyInfo? objectProperty = arguments[1]!.GetType().GetProperty(
+                "Object",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+            Assert.That(objectProperty, Is.Not.Null);
+            return objectProperty?.GetValue(arguments[1]) as GameObject;
+        }
+
+        private static List<GameObject> GetSpawnedContentList(BoardContentViewPresenter presenter)
+        {
+            object? value = GetPrivateFieldValue(presenter, "spawnedContent");
+            Assert.That(value, Is.Not.Null);
+            return (List<GameObject>)value!;
+        }
+
+        private static object? GetPrivateFieldValue(object target, string fieldName)
+        {
+            System.Reflection.FieldInfo? field = target.GetType().GetField(
+                fieldName,
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+            Assert.That(field, Is.Not.Null, $"Expected private field '{fieldName}'.");
+            return field?.GetValue(target);
         }
 
         private static GameState CreateState(ImmutableArray<ImmutableArray<Tile>> rows)
