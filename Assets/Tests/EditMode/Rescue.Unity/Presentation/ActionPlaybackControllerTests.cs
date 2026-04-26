@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -6,6 +7,7 @@ using Rescue.Core.Pipeline;
 using Rescue.Core.Rng;
 using Rescue.Core.State;
 using Rescue.Unity.BoardPresentation;
+using Rescue.Unity.FX;
 using Rescue.Unity.UI;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -16,7 +18,7 @@ namespace Rescue.Unity.Presentation.Tests
 {
     public sealed class ActionPlaybackControllerTests
     {
-        private readonly List<Object> createdObjects = new List<Object>();
+        private readonly List<UnityEngine.Object> createdObjects = new List<UnityEngine.Object>();
 
         [TearDown]
         public void TearDown()
@@ -28,7 +30,7 @@ namespace Rescue.Unity.Presentation.Tests
                     continue;
                 }
 
-                Object.DestroyImmediate(createdObjects[i]);
+                UnityEngine.Object.DestroyImmediate(createdObjects[i]);
             }
 
             createdObjects.Clear();
@@ -177,6 +179,72 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.DoesNotThrow(() =>
             {
                 bool handled = harness.Controller.TryPlayAction(CreateState(), new ActionInput(new TileCoord(0, 0)), result, _ => finalSyncCalls++);
+                Assert.That(handled, Is.True);
+            });
+
+            Assert.That(finalSyncCalls, Is.EqualTo(1));
+            Assert.That(harness.Controller.IsPlaying, Is.False);
+        }
+
+        [Test]
+        public void ActionPlaybackController_RoutesFxAtPlaybackBeatUsingBoardLocation()
+        {
+            ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
+            SpyFxEventRouter? fxRouter = harness.FxRouter as SpyFxEventRouter;
+            GameState previousState = CreateState();
+            harness.GridPresenter.RebuildGrid(previousState);
+
+            ActionResult result = CreateResult(
+                previousState,
+                actionCount: 5,
+                new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1))));
+
+            int finalSyncCalls = 0;
+
+            bool handled = harness.Controller.TryPlayAction(
+                previousState,
+                new ActionInput(new TileCoord(0, 0)),
+                result,
+                _ => finalSyncCalls++);
+
+            Vector3 expectedPosition =
+                (harness.GridPresenter.GetCellWorldPosition(new TileCoord(0, 0)) +
+                 harness.GridPresenter.GetCellWorldPosition(new TileCoord(0, 1))) * 0.5f;
+
+            Assert.That(handled, Is.True);
+            Assert.That(finalSyncCalls, Is.EqualTo(1));
+            Assert.That(fxRouter, Is.Not.Null);
+            if (fxRouter is null)
+            {
+                Assert.Fail("Expected a spy FX router.");
+                return;
+            }
+
+            Assert.That(fxRouter.GroupClearCount, Is.EqualTo(1));
+            AssertVector3Equal(expectedPosition, fxRouter.LastGroupClearPosition);
+        }
+
+        [Test]
+        public void ActionPlaybackController_FxFailureDoesNotPreventFinalSync()
+        {
+            ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false, fxRouterType: typeof(ThrowingFxEventRouter));
+            GameState previousState = CreateState();
+            harness.GridPresenter.RebuildGrid(previousState);
+
+            ActionResult result = CreateResult(
+                previousState,
+                actionCount: 6,
+                new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1))));
+
+            int finalSyncCalls = 0;
+
+            Assert.DoesNotThrow(() =>
+            {
+                bool handled = harness.Controller.TryPlayAction(
+                    previousState,
+                    new ActionInput(new TileCoord(0, 0)),
+                    result,
+                    _ => finalSyncCalls++);
                 Assert.That(handled, Is.True);
             });
 
@@ -800,7 +868,7 @@ namespace Rescue.Unity.Presentation.Tests
             return controller;
         }
 
-        private ControllerHarness CreateControllerHarness(bool playbackEnabled, bool yieldBetweenSteps)
+        private ControllerHarness CreateControllerHarness(bool playbackEnabled, bool yieldBetweenSteps, Type? fxRouterType = null)
         {
             GameObject presenterObject = CreateTrackedGameObject("PlaybackHarness");
             BoardGridViewPresenter gridPresenter = presenterObject.AddComponent<BoardGridViewPresenter>();
@@ -858,11 +926,16 @@ namespace Rescue.Unity.Presentation.Tests
             SetPrivateField(dockPresenter, "pieceContainer", dockPieceContainer);
             SetPrivateField(dockPresenter, "fallbackPiecePrefab", fallbackPiecePrefab);
 
+            FxEventRouter fxRouter = (FxEventRouter)presenterObject.AddComponent(fxRouterType ?? typeof(SpyFxEventRouter));
+            fxRouter.BoardGrid = gridPresenter;
+
             ActionPlaybackController controller = presenterObject.AddComponent<ActionPlaybackController>();
             SetPrivateField(controller, "settings", CreateSettings(playbackEnabled, yieldBetweenSteps));
+            SetPrivateField(controller, "boardGrid", gridPresenter);
             SetPrivateField(controller, "boardContent", contentPresenter);
             SetPrivateField(controller, "waterView", waterPresenter);
             SetPrivateField(controller, "dockView", dockPresenter);
+            SetPrivateField(controller, "fxEventRouter", fxRouter);
 
             return new ControllerHarness(
                 controller,
@@ -870,6 +943,7 @@ namespace Rescue.Unity.Presentation.Tests
                 contentPresenter,
                 waterPresenter,
                 dockPresenter,
+                fxRouter,
                 contentRoot,
                 waterRoot,
                 dockPieceContainer,
@@ -1058,6 +1132,11 @@ namespace Rescue.Unity.Presentation.Tests
             return field?.GetValue(target);
         }
 
+        private static void AssertVector3Equal(Vector3 expected, Vector3 actual, float tolerance = 0.0001f)
+        {
+            Assert.That(Vector3.Distance(expected, actual), Is.LessThanOrEqualTo(tolerance));
+        }
+
         private readonly struct ControllerHarness
         {
             public ControllerHarness(
@@ -1066,6 +1145,7 @@ namespace Rescue.Unity.Presentation.Tests
                 BoardContentViewPresenter contentPresenter,
                 WaterViewPresenter waterPresenter,
                 DockViewPresenter dockPresenter,
+                FxEventRouter fxRouter,
                 Transform contentRoot,
                 Transform waterRoot,
                 Transform dockPieceContainer,
@@ -1077,6 +1157,7 @@ namespace Rescue.Unity.Presentation.Tests
                 ContentPresenter = contentPresenter;
                 WaterPresenter = waterPresenter;
                 DockPresenter = dockPresenter;
+                FxRouter = fxRouter;
                 ContentRoot = contentRoot;
                 WaterRoot = waterRoot;
                 DockPieceContainer = dockPieceContainer;
@@ -1094,6 +1175,8 @@ namespace Rescue.Unity.Presentation.Tests
 
             public DockViewPresenter DockPresenter { get; }
 
+            public FxEventRouter FxRouter { get; }
+
             public Transform ContentRoot { get; }
 
             public Transform WaterRoot { get; }
@@ -1103,6 +1186,27 @@ namespace Rescue.Unity.Presentation.Tests
             public MeshRenderer DockRenderer { get; }
 
             public Material CautionMaterial { get; }
+        }
+
+        private sealed class SpyFxEventRouter : FxEventRouter
+        {
+            public int GroupClearCount { get; private set; }
+
+            public Vector3 LastGroupClearPosition { get; private set; }
+
+            protected override void PlayGroupClear(Vector3 worldPosition)
+            {
+                GroupClearCount++;
+                LastGroupClearPosition = worldPosition;
+            }
+        }
+
+        private sealed class ThrowingFxEventRouter : FxEventRouter
+        {
+            protected override void PlayGroupClear(Vector3 worldPosition)
+            {
+                throw new InvalidOperationException("Synthetic FX failure.");
+            }
         }
     }
 }

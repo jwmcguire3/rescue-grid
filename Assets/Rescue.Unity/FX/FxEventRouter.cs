@@ -2,6 +2,8 @@ using System.Collections.Immutable;
 using Rescue.Core.Pipeline;
 using Rescue.Core.State;
 using Rescue.Unity.Art.Registries;
+using Rescue.Unity.BoardPresentation;
+using Rescue.Unity.Presentation;
 using UnityEngine;
 
 namespace Rescue.Unity.FX
@@ -11,6 +13,7 @@ namespace Rescue.Unity.FX
     {
         [SerializeField] private FxVisualRegistry? fxRegistry;
         [SerializeField] private Transform? fxRoot;
+        [SerializeField] private BoardGridViewPresenter? boardGrid;
 
         public FxVisualRegistry? FxRegistry
         {
@@ -22,6 +25,12 @@ namespace Rescue.Unity.FX
         {
             get => fxRoot;
             set => fxRoot = value;
+        }
+
+        public BoardGridViewPresenter? BoardGrid
+        {
+            get => boardGrid;
+            set => boardGrid = value;
         }
 
         public void Route(GameState previousState, ActionInput input, ActionResult result)
@@ -81,9 +90,55 @@ namespace Rescue.Unity.FX
             }
         }
 
+        public void RoutePlaybackBeat(
+            GameState previousState,
+            ActionInput input,
+            GameState resultState,
+            ActionPlaybackStep playbackStep)
+        {
+            _ = previousState;
+            _ = input;
+            _ = resultState;
+
+            if (playbackStep.SourceEvent is null)
+            {
+                return;
+            }
+
+            switch (playbackStep.SourceEvent)
+            {
+                case GroupRemoved removed:
+                    PlayGroupClear(ResolveGroupWorldPosition(removed.Coords));
+                    break;
+                case BlockerBroken broken when broken.Type == BlockerType.Crate:
+                    PlayCrateBreak(ResolveCellWorldPosition(broken.Coord));
+                    break;
+                case BlockerBroken broken when broken.Type == BlockerType.Vine:
+                    PlayVineClear(ResolveCellWorldPosition(broken.Coord));
+                    break;
+                case IceRevealed revealed:
+                    PlayIceReveal(ResolveCellWorldPosition(revealed.Coord));
+                    break;
+                case DockCleared:
+                    PlayDockTripleClear(GetSafeFallbackPosition());
+                    break;
+                case TargetExtracted extracted:
+                    PlayTargetExtraction(ResolveCellWorldPosition(extracted.Coord));
+                    break;
+                case WaterRose rose:
+                    PlayWaterRise(ResolveRowWorldPosition(rose.FloodedRow));
+                    break;
+            }
+        }
+
         protected virtual void PlayGroupClear()
         {
-            TrySpawn(fxRegistry?.GroupClearFx, nameof(FxVisualRegistry.GroupClearFx));
+            PlayGroupClear(GetSafeFallbackPosition());
+        }
+
+        protected virtual void PlayGroupClear(Vector3 worldPosition)
+        {
+            TrySpawn(fxRegistry?.GroupClearFx, nameof(FxVisualRegistry.GroupClearFx), worldPosition);
         }
 
         protected virtual void PlayInvalidTap()
@@ -93,17 +148,32 @@ namespace Rescue.Unity.FX
 
         protected virtual void PlayCrateBreak()
         {
-            TrySpawn(fxRegistry?.CrateBreakFx, nameof(FxVisualRegistry.CrateBreakFx));
+            PlayCrateBreak(GetSafeFallbackPosition());
+        }
+
+        protected virtual void PlayCrateBreak(Vector3 worldPosition)
+        {
+            TrySpawn(fxRegistry?.CrateBreakFx, nameof(FxVisualRegistry.CrateBreakFx), worldPosition);
         }
 
         protected virtual void PlayIceReveal()
         {
-            TrySpawn(fxRegistry?.IceRevealFx, nameof(FxVisualRegistry.IceRevealFx));
+            PlayIceReveal(GetSafeFallbackPosition());
+        }
+
+        protected virtual void PlayIceReveal(Vector3 worldPosition)
+        {
+            TrySpawn(fxRegistry?.IceRevealFx, nameof(FxVisualRegistry.IceRevealFx), worldPosition);
         }
 
         protected virtual void PlayVineClear()
         {
-            TrySpawn(fxRegistry?.VineClearFx, nameof(FxVisualRegistry.VineClearFx));
+            PlayVineClear(GetSafeFallbackPosition());
+        }
+
+        protected virtual void PlayVineClear(Vector3 worldPosition)
+        {
+            TrySpawn(fxRegistry?.VineClearFx, nameof(FxVisualRegistry.VineClearFx), worldPosition);
         }
 
         protected virtual void PlayVineGrowthPreview()
@@ -118,7 +188,12 @@ namespace Rescue.Unity.FX
 
         protected virtual void PlayDockTripleClear()
         {
-            TrySpawn(fxRegistry?.DockTripleClearFx, nameof(FxVisualRegistry.DockTripleClearFx));
+            PlayDockTripleClear(GetSafeFallbackPosition());
+        }
+
+        protected virtual void PlayDockTripleClear(Vector3 worldPosition)
+        {
+            TrySpawn(fxRegistry?.DockTripleClearFx, nameof(FxVisualRegistry.DockTripleClearFx), worldPosition);
         }
 
         protected virtual void PlayDockWarning()
@@ -128,7 +203,12 @@ namespace Rescue.Unity.FX
 
         protected virtual void PlayWaterRise()
         {
-            TrySpawn(fxRegistry?.WaterRiseFx, nameof(FxVisualRegistry.WaterRiseFx));
+            PlayWaterRise(GetSafeFallbackPosition());
+        }
+
+        protected virtual void PlayWaterRise(Vector3 worldPosition)
+        {
+            TrySpawn(fxRegistry?.WaterRiseFx, nameof(FxVisualRegistry.WaterRiseFx), worldPosition);
         }
 
         protected virtual void PlayNearRescueRelief()
@@ -138,7 +218,12 @@ namespace Rescue.Unity.FX
 
         protected virtual void PlayTargetExtraction()
         {
-            TrySpawn(fxRegistry?.TargetExtractionFx, nameof(FxVisualRegistry.TargetExtractionFx));
+            PlayTargetExtraction(GetSafeFallbackPosition());
+        }
+
+        protected virtual void PlayTargetExtraction(Vector3 worldPosition)
+        {
+            TrySpawn(fxRegistry?.TargetExtractionFx, nameof(FxVisualRegistry.TargetExtractionFx), worldPosition);
         }
 
         protected virtual void PlayWin()
@@ -156,7 +241,86 @@ namespace Rescue.Unity.FX
             TrySpawn(fxRegistry?.LossFx, $"{nameof(FxVisualRegistry.LossFx)}_WaterOnTarget");
         }
 
+        private Vector3 ResolveGroupWorldPosition(ImmutableArray<TileCoord> coords)
+        {
+            if (coords.IsDefaultOrEmpty)
+            {
+                return GetSafeFallbackPosition();
+            }
+
+            Vector3 accumulated = Vector3.zero;
+            int resolvedCount = 0;
+            for (int i = 0; i < coords.Length; i++)
+            {
+                if (!TryResolveCellWorldPosition(coords[i], out Vector3 cellPosition))
+                {
+                    continue;
+                }
+
+                accumulated += cellPosition;
+                resolvedCount++;
+            }
+
+            return resolvedCount > 0
+                ? accumulated / resolvedCount
+                : GetSafeFallbackPosition();
+        }
+
+        private Vector3 ResolveCellWorldPosition(TileCoord coord)
+        {
+            return TryResolveCellWorldPosition(coord, out Vector3 worldPosition)
+                ? worldPosition
+                : GetSafeFallbackPosition();
+        }
+
+        private bool TryResolveCellWorldPosition(TileCoord coord, out Vector3 worldPosition)
+        {
+            BoardGridViewPresenter? resolvedBoardGrid = ResolveBoardGrid();
+            if (resolvedBoardGrid is not null &&
+                resolvedBoardGrid.TryGetCellWorldPosition(coord, out worldPosition))
+            {
+                return true;
+            }
+
+            worldPosition = GetSafeFallbackPosition();
+            return false;
+        }
+
+        private Vector3 ResolveRowWorldPosition(int row)
+        {
+            BoardGridViewPresenter? resolvedBoardGrid = ResolveBoardGrid();
+            if (resolvedBoardGrid is not null &&
+                resolvedBoardGrid.TryGetRowWorldBounds(row, out BoardGridViewPresenter.RowWorldBounds bounds))
+            {
+                return bounds.Center;
+            }
+
+            return GetSafeFallbackPosition();
+        }
+
+        private BoardGridViewPresenter? ResolveBoardGrid()
+        {
+            if (boardGrid is not null)
+            {
+                return boardGrid;
+            }
+
+            boardGrid = GetComponent<BoardGridViewPresenter>();
+            return boardGrid;
+        }
+
+        private Vector3 GetSafeFallbackPosition()
+        {
+            Transform parent = fxRoot != null ? fxRoot : transform;
+            return parent.position;
+        }
+
         private GameObject? TrySpawn(GameObject? prefab, string instanceName)
+        {
+            return TrySpawn(prefab, instanceName, GetSafeFallbackPosition());
+        }
+
+        private GameObject? TrySpawn(GameObject? prefab, string instanceName, Vector3 worldPosition)
         {
             if (prefab is null)
             {
@@ -166,6 +330,7 @@ namespace Rescue.Unity.FX
             Transform parent = fxRoot != null ? fxRoot : transform;
             GameObject instance = Instantiate(prefab, parent);
             instance.name = instanceName;
+            instance.transform.position = worldPosition;
             return instance;
         }
     }

@@ -4,6 +4,8 @@ using NUnit.Framework;
 using Rescue.Core.Pipeline;
 using Rescue.Core.Rng;
 using Rescue.Core.State;
+using Rescue.Unity.BoardPresentation;
+using Rescue.Unity.Presentation;
 using UnityEngine;
 
 namespace Rescue.Unity.FX.Tests
@@ -118,6 +120,131 @@ namespace Rescue.Unity.FX.Tests
         }
 
         [Test]
+        public void FxEventRouter_PlaybackBeatRoutesKnownLocationAwareEvents()
+        {
+            GameState state = CreateState();
+            BoardGridViewPresenter grid = CreateGrid(state);
+            SpyFxEventRouter router = CreateRouter(grid);
+
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.RemoveGroup, new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1)))));
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.BreakBlockerOrReveal, new BlockerBroken(new TileCoord(0, 0), BlockerType.Crate)));
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.BreakBlockerOrReveal, new IceRevealed(new TileCoord(0, 1), DebrisType.B)));
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.BreakBlockerOrReveal, new BlockerBroken(new TileCoord(0, 2), BlockerType.Vine)));
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.DockFeedback, new DockCleared(DebrisType.A, SetsCleared: 1, OccupancyAfterClear: 0)));
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.TargetExtract, new TargetExtracted("pup-1", new TileCoord(2, 1))));
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.WaterRise, new WaterRose(FloodedRow: 2)));
+
+            Assert.That(router.GroupClearCount, Is.EqualTo(1));
+            Assert.That(router.CrateBreakCount, Is.EqualTo(1));
+            Assert.That(router.IceRevealCount, Is.EqualTo(1));
+            Assert.That(router.VineClearCount, Is.EqualTo(1));
+            Assert.That(router.DockTripleClearCount, Is.EqualTo(1));
+            Assert.That(router.TargetExtractionCount, Is.EqualTo(1));
+            Assert.That(router.WaterRiseCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void FxEventRouter_PlaybackBeatUsesExpectedGridWorldPositionWhenLocationExists()
+        {
+            GameState state = CreateState();
+            BoardGridViewPresenter grid = CreateGrid(state);
+            SpyFxEventRouter router = CreateRouter(grid);
+
+            Vector3 expectedGroupPosition =
+                (grid.GetCellWorldPosition(new TileCoord(0, 0)) + grid.GetCellWorldPosition(new TileCoord(0, 1))) * 0.5f;
+            Vector3 expectedTargetPosition = grid.GetCellWorldPosition(new TileCoord(2, 1));
+            bool foundRow = grid.TryGetRowWorldBounds(2, out BoardGridViewPresenter.RowWorldBounds rowBounds);
+
+            Assert.That(foundRow, Is.True);
+
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.RemoveGroup, new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1)))));
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(2, 1)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.TargetExtract, new TargetExtracted("pup-1", new TileCoord(2, 1))));
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.WaterRise, new WaterRose(FloodedRow: 2)));
+
+            AssertVector3Equal(expectedGroupPosition, router.LastGroupClearPosition);
+            AssertVector3Equal(expectedTargetPosition, router.LastTargetExtractionPosition);
+            AssertVector3Equal(rowBounds.Center, router.LastWaterRisePosition);
+        }
+
+        [Test]
+        public void FxEventRouter_PlaybackBeatMissingLocationDoesNotThrow()
+        {
+            SpyFxEventRouter router = CreateRouter();
+            GameState state = CreateState();
+
+            Assert.DoesNotThrow(() => router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.RemoveGroup, new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(9, 9))))));
+            Assert.DoesNotThrow(() => router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.TargetExtract, new TargetExtracted("pup-1", new TileCoord(8, 8)))));
+            Assert.DoesNotThrow(() => router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.WaterRise, new WaterRose(FloodedRow: 9))));
+        }
+
+        [Test]
+        public void FxEventRouter_PlaybackBeatMissingPrefabOrConfigDoesNotThrow()
+        {
+            GameState state = CreateState();
+            BoardGridViewPresenter grid = CreateGrid(state);
+            FxEventRouter router = CreateGameObject("FxRouter").AddComponent<FxEventRouter>();
+            router.BoardGrid = grid;
+
+            Assert.DoesNotThrow(() => router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.RemoveGroup, new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1))))));
+        }
+
+        [Test]
         public void FxEventClassifier_DoesNotDuplicateWinWhenOutcomeAndEventMatch()
         {
             GameState state = CreateState();
@@ -186,10 +313,12 @@ namespace Rescue.Unity.FX.Tests
             }));
         }
 
-        private SpyFxEventRouter CreateRouter()
+        private SpyFxEventRouter CreateRouter(BoardGridViewPresenter? grid = null)
         {
             GameObject gameObject = CreateGameObject("SpyFxRouter");
-            return gameObject.AddComponent<SpyFxEventRouter>();
+            SpyFxEventRouter router = gameObject.AddComponent<SpyFxEventRouter>();
+            router.BoardGrid = grid;
+            return router;
         }
 
         private GameObject CreateGameObject(string name)
@@ -206,6 +335,11 @@ namespace Rescue.Unity.FX.Tests
                 ImmutableArray.CreateRange(events),
                 ActionOutcome.Ok,
                 Snapshot: null);
+        }
+
+        private static ActionPlaybackStep CreatePlaybackStep(ActionPlaybackStepType stepType, ActionEvent actionEvent)
+        {
+            return new ActionPlaybackStep(stepType, actionEvent.GetType().Name, actionEvent);
         }
 
         private static GameState CreateState()
@@ -246,21 +380,85 @@ namespace Rescue.Unity.FX.Tests
                 SpawnRecoveryCounter: 0);
         }
 
+        private BoardGridViewPresenter CreateGrid(GameState state)
+        {
+            GameObject gridObject = CreateGameObject("Grid");
+            BoardGridViewPresenter gridPresenter = gridObject.AddComponent<BoardGridViewPresenter>();
+            Transform boardRoot = CreateGameObject("BoardRoot").transform;
+            boardRoot.SetParent(gridObject.transform, false);
+            GameObject tilePrefab = CreateGameObject("TilePrefab");
+
+            SetPrivateField(gridPresenter, "boardRoot", boardRoot);
+            SetPrivateField(gridPresenter, "dryTilePrefab", null);
+            SetPrivateField(gridPresenter, "fallbackTilePrefab", tilePrefab);
+            gridPresenter.RebuildGrid(state);
+            return gridPresenter;
+        }
+
+        private static void SetPrivateField(object target, string fieldName, object? value)
+        {
+            System.Reflection.FieldInfo? field = target.GetType().GetField(
+                fieldName,
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+            Assert.That(field, Is.Not.Null, $"Expected private field '{fieldName}'.");
+            field?.SetValue(target, value);
+        }
+
+        private static void AssertVector3Equal(Vector3 expected, Vector3 actual, float tolerance = 0.0001f)
+        {
+            Assert.That(Vector3.Distance(expected, actual), Is.LessThanOrEqualTo(tolerance));
+        }
+
         private sealed class SpyFxEventRouter : FxEventRouter
         {
             public int GroupClearCount { get; private set; }
+
+            public int CrateBreakCount { get; private set; }
+
+            public int IceRevealCount { get; private set; }
+
+            public int VineClearCount { get; private set; }
 
             public int InvalidTapCount { get; private set; }
 
             public int DockInsertCount { get; private set; }
 
+            public int DockTripleClearCount { get; private set; }
+
+            public int WaterRiseCount { get; private set; }
+
+            public int TargetExtractionCount { get; private set; }
+
             public int WinCount { get; private set; }
 
             public int LossDockOverflowCount { get; private set; }
 
-            protected override void PlayGroupClear()
+            public Vector3 LastGroupClearPosition { get; private set; }
+
+            public Vector3 LastTargetExtractionPosition { get; private set; }
+
+            public Vector3 LastWaterRisePosition { get; private set; }
+
+            protected override void PlayGroupClear(Vector3 worldPosition)
             {
                 GroupClearCount++;
+                LastGroupClearPosition = worldPosition;
+            }
+
+            protected override void PlayCrateBreak(Vector3 worldPosition)
+            {
+                CrateBreakCount++;
+            }
+
+            protected override void PlayIceReveal(Vector3 worldPosition)
+            {
+                IceRevealCount++;
+            }
+
+            protected override void PlayVineClear(Vector3 worldPosition)
+            {
+                VineClearCount++;
             }
 
             protected override void PlayInvalidTap()
@@ -271,6 +469,23 @@ namespace Rescue.Unity.FX.Tests
             protected override void PlayDockInsert()
             {
                 DockInsertCount++;
+            }
+
+            protected override void PlayDockTripleClear(Vector3 worldPosition)
+            {
+                DockTripleClearCount++;
+            }
+
+            protected override void PlayWaterRise(Vector3 worldPosition)
+            {
+                WaterRiseCount++;
+                LastWaterRisePosition = worldPosition;
+            }
+
+            protected override void PlayTargetExtraction(Vector3 worldPosition)
+            {
+                TargetExtractionCount++;
+                LastTargetExtractionPosition = worldPosition;
             }
 
             protected override void PlayWin()

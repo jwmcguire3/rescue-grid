@@ -3,6 +3,7 @@ using System.Collections;
 using Rescue.Core.Pipeline;
 using Rescue.Core.State;
 using Rescue.Unity.BoardPresentation;
+using Rescue.Unity.FX;
 using Rescue.Unity.UI;
 using UnityEngine;
 
@@ -11,9 +12,11 @@ namespace Rescue.Unity.Presentation
     public sealed class ActionPlaybackController : MonoBehaviour
     {
         [SerializeField] private ActionPlaybackSettings settings = new ActionPlaybackSettings();
+        [SerializeField] private BoardGridViewPresenter? boardGrid;
         [SerializeField] private BoardContentViewPresenter? boardContent;
         [SerializeField] private WaterViewPresenter? waterView;
         [SerializeField] private DockViewPresenter? dockView;
+        [SerializeField] private FxEventRouter? fxEventRouter;
 
         private Coroutine? activePlayback;
         private PlaybackContext? activeContext;
@@ -53,11 +56,11 @@ namespace Rescue.Unity.Presentation
 
             if (settings.YieldBetweenSteps)
             {
-                activePlayback = StartCoroutine(RunPlayback(sessionId, previousState, result, finalSync));
+                activePlayback = StartCoroutine(RunPlayback(sessionId, previousState, input, result, finalSync));
             }
             else
             {
-                RunPlaybackImmediately(sessionId, previousState, result, finalSync);
+                RunPlaybackImmediately(sessionId, previousState, input, result, finalSync);
             }
 
             return true;
@@ -91,7 +94,7 @@ namespace Rescue.Unity.Presentation
             return isActiveAndEnabled && settings.PlaybackEnabled;
         }
 
-        private IEnumerator RunPlayback(int sessionId, GameState previousState, ActionResult result, Action<ActionResult> finalSync)
+        private IEnumerator RunPlayback(int sessionId, GameState previousState, ActionInput input, ActionResult result, Action<ActionResult> finalSync)
         {
             IsPlaying = true;
 
@@ -105,7 +108,7 @@ namespace Rescue.Unity.Presentation
                     }
 
                     ActionPlaybackStep step = CurrentPlan[i];
-                    PlayStep(step, previousState, result.State);
+                    PlayStep(step, previousState, input, result.State);
                     yield return CreateStepYield(step.StepType);
                 }
             }
@@ -115,7 +118,7 @@ namespace Rescue.Unity.Presentation
             }
         }
 
-        private void RunPlaybackImmediately(int sessionId, GameState previousState, ActionResult result, Action<ActionResult> finalSync)
+        private void RunPlaybackImmediately(int sessionId, GameState previousState, ActionInput input, ActionResult result, Action<ActionResult> finalSync)
         {
             IsPlaying = true;
 
@@ -128,7 +131,7 @@ namespace Rescue.Unity.Presentation
                         continue;
                     }
 
-                    PlayStep(CurrentPlan[i], previousState, result.State);
+                    PlayStep(CurrentPlan[i], previousState, input, result.State);
                 }
             }
             finally
@@ -137,7 +140,7 @@ namespace Rescue.Unity.Presentation
             }
         }
 
-        private void PlayStep(ActionPlaybackStep step, GameState previousState, GameState resultState)
+        private void PlayStep(ActionPlaybackStep step, GameState previousState, ActionInput input, GameState resultState)
         {
             if (step.SourceEvent is null)
             {
@@ -188,6 +191,8 @@ namespace Rescue.Unity.Presentation
                         settings.WaterForecastTransitionDurationSeconds);
                     break;
             }
+
+            TryRoutePlaybackFx(step, previousState, input, resultState);
         }
 
         private object? CreateStepYield(ActionPlaybackStepType stepType)
@@ -270,6 +275,50 @@ namespace Rescue.Unity.Presentation
 
             dockView = GetComponent<DockViewPresenter>();
             return dockView;
+        }
+
+        private BoardGridViewPresenter? ResolveBoardGrid()
+        {
+            if (boardGrid is not null)
+            {
+                return boardGrid;
+            }
+
+            boardGrid = GetComponent<BoardGridViewPresenter>();
+            return boardGrid;
+        }
+
+        private FxEventRouter? ResolveFxEventRouter()
+        {
+            if (fxEventRouter is not null)
+            {
+                return fxEventRouter;
+            }
+
+            fxEventRouter = GetComponent<FxEventRouter>();
+            return fxEventRouter;
+        }
+
+        private void TryRoutePlaybackFx(ActionPlaybackStep step, GameState previousState, ActionInput input, GameState resultState)
+        {
+            FxEventRouter? router = ResolveFxEventRouter();
+            if (router is null)
+            {
+                return;
+            }
+
+            router.BoardGrid ??= ResolveBoardGrid();
+
+            try
+            {
+                router.RoutePlaybackBeat(previousState, input, resultState, step);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning(
+                    $"{nameof(ActionPlaybackController)} skipped FX for playback step '{step.SourceEventName ?? step.StepType.ToString()}' after an exception: {exception.Message}",
+                    this);
+            }
         }
 
         private sealed class PlaybackContext
