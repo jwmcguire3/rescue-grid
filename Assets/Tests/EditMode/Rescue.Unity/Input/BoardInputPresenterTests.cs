@@ -7,6 +7,7 @@ using Rescue.Core.State;
 using Rescue.Unity.BoardPresentation;
 using Rescue.Unity.Presentation;
 using UnityEngine;
+using UnityEngine.TestTools;
 using CoreBoard = Rescue.Core.State.Board;
 using CoreDock = Rescue.Core.State.Dock;
 
@@ -97,6 +98,34 @@ namespace Rescue.Unity.Input.Tests
             Assert.That(presenter.CurrentState!.ActionCount, Is.EqualTo(initialState.ActionCount));
         }
 
+        [UnityTest]
+        public System.Collections.IEnumerator BoardInputPresenter_IgnoresInputWhilePlaybackIsActive()
+        {
+            GameStateViewPresenter viewPresenter = CreateViewPresenterWithPlaybackController(yieldBetweenSteps: true);
+            BoardInputPresenter presenter = CreateInputPresenter(gridView: null, viewPresenter);
+            GameState initialState = CreateValidPairState();
+            GameState resultState = initialState with { ActionCount = initialState.ActionCount + 1 };
+            ActionResult playbackResult = new ActionResult(
+                resultState,
+                ImmutableArray.Create<ActionEvent>(
+                    new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1)))),
+                ActionOutcome.Ok,
+                Snapshot: null);
+
+            presenter.SetCurrentState(initialState);
+            viewPresenter.ApplyActionResult(initialState, new ActionInput(new TileCoord(0, 0)), playbackResult);
+
+            Assert.That(viewPresenter.IsPlaybackActive, Is.True);
+
+            bool handled = presenter.TryRunActionAt(new TileCoord(0, 0));
+
+            Assert.That(handled, Is.False);
+            Assert.That(presenter.CurrentState, Is.EqualTo(initialState));
+
+            yield return null;
+            Assert.That(viewPresenter.CurrentState, Is.EqualTo(resultState));
+        }
+
         private BoardInputPresenter CreateInputPresenter(BoardGridViewPresenter? gridView, GameStateViewPresenter? gameStateView)
         {
             GameObject presenterObject = CreateTrackedGameObject("BoardInputPresenter");
@@ -126,6 +155,16 @@ namespace Rescue.Unity.Input.Tests
             return presenterObject.AddComponent<GameStateViewPresenter>();
         }
 
+        private GameStateViewPresenter CreateViewPresenterWithPlaybackController(bool yieldBetweenSteps)
+        {
+            GameObject presenterObject = CreateTrackedGameObject("GameStateViewPresenter");
+            GameStateViewPresenter presenter = presenterObject.AddComponent<GameStateViewPresenter>();
+            ActionPlaybackController playbackController = presenterObject.AddComponent<ActionPlaybackController>();
+            SetPrivateField(playbackController, "settings", CreateSettings(playbackEnabled: true, yieldBetweenSteps));
+            SetPrivateField(presenter, "playbackController", playbackController);
+            return presenter;
+        }
+
         private GameObject CreateTrackedGameObject(string name)
         {
             GameObject gameObject = new GameObject(name);
@@ -146,6 +185,14 @@ namespace Rescue.Unity.Input.Tests
             }
 
             field.SetValue(target, value);
+        }
+
+        private static ActionPlaybackSettings CreateSettings(bool playbackEnabled, bool yieldBetweenSteps)
+        {
+            ActionPlaybackSettings settings = new ActionPlaybackSettings();
+            SetPrivateField(settings, "playbackEnabled", playbackEnabled);
+            SetPrivateField(settings, "yieldBetweenSteps", yieldBetweenSteps);
+            return settings;
         }
 
         private static GameState CreateEmptyState(int width, int height)

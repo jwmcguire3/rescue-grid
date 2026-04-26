@@ -118,7 +118,58 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(harness.Presenter.CurrentState!.ActionCount, Is.EqualTo(resultState.ActionCount));
         }
 
-        private PresenterHarness CreateHarness(bool assignTargetFeedbackToPresenter = true)
+        [UnityTest]
+        public System.Collections.IEnumerator GameStateViewPresenter_ApplyActionResultFinalSyncsAfterPlaybackControllerCompletes()
+        {
+            PresenterHarness harness = CreateHarness(withPlaybackController: true, yieldBetweenSteps: true);
+            GameState previousState = CreateState();
+            GameState resultState = previousState with { ActionCount = previousState.ActionCount + 1 };
+            ActionInput input = new ActionInput(new TileCoord(0, 0));
+            ActionResult result = new ActionResult(
+                resultState,
+                ImmutableArray.Create<ActionEvent>(
+                    new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1)))),
+                ActionOutcome.Ok,
+                Snapshot: null);
+
+            harness.Presenter.Rebuild(previousState);
+            harness.Presenter.ApplyActionResult(previousState, input, result);
+
+            Assert.That(harness.Presenter.IsPlaybackActive, Is.True);
+            Assert.That(harness.Presenter.CurrentState, Is.EqualTo(previousState));
+
+            yield return null;
+
+            Assert.That(harness.Presenter.IsPlaybackActive, Is.False);
+            Assert.That(harness.Presenter.CurrentState, Is.EqualTo(resultState));
+        }
+
+        [Test]
+        public void GameStateViewPresenter_ApplyActionResultFallsBackToImmediateSyncWhenPlaybackControllerDisabled()
+        {
+            PresenterHarness harness = CreateHarness(withPlaybackController: true, playbackEnabled: false);
+            GameState previousState = CreateState();
+            GameState resultState = previousState with { ActionCount = previousState.ActionCount + 1 };
+            ActionInput input = new ActionInput(new TileCoord(0, 0));
+            ActionResult result = new ActionResult(
+                resultState,
+                ImmutableArray.Create<ActionEvent>(
+                    new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1)))),
+                ActionOutcome.Ok,
+                Snapshot: null);
+
+            harness.Presenter.Rebuild(previousState);
+            harness.Presenter.ApplyActionResult(previousState, input, result);
+
+            Assert.That(harness.Presenter.IsPlaybackActive, Is.False);
+            Assert.That(harness.Presenter.CurrentState, Is.EqualTo(resultState));
+        }
+
+        private PresenterHarness CreateHarness(
+            bool assignTargetFeedbackToPresenter = true,
+            bool withPlaybackController = false,
+            bool playbackEnabled = true,
+            bool yieldBetweenSteps = false)
         {
             GameObject presenterObject = CreateTrackedGameObject("GameStateViewRoot");
             GameStateViewPresenter presenter = presenterObject.AddComponent<GameStateViewPresenter>();
@@ -192,6 +243,13 @@ namespace Rescue.Unity.Presentation.Tests
                 SetPrivateField(presenter, "targetFeedback", targetFeedback);
             }
 
+            if (withPlaybackController)
+            {
+                ActionPlaybackController playbackController = presenterObject.AddComponent<ActionPlaybackController>();
+                SetPrivateField(playbackController, "settings", CreateSettings(playbackEnabled, yieldBetweenSteps));
+                SetPrivateField(presenter, "playbackController", playbackController);
+            }
+
             return new PresenterHarness(presenter, boardRoot, contentRoot, waterRoot, dockPieceContainer);
         }
 
@@ -226,6 +284,14 @@ namespace Rescue.Unity.Presentation.Tests
             }
 
             field.SetValue(target, value);
+        }
+
+        private static ActionPlaybackSettings CreateSettings(bool playbackEnabled, bool yieldBetweenSteps)
+        {
+            ActionPlaybackSettings settings = new ActionPlaybackSettings();
+            SetPrivateField(settings, "playbackEnabled", playbackEnabled);
+            SetPrivateField(settings, "yieldBetweenSteps", yieldBetweenSteps);
+            return settings;
         }
 
         private static GameState CreateState()

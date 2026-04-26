@@ -13,10 +13,13 @@ namespace Rescue.Unity.Presentation
         [SerializeField] private WaterViewPresenter? waterView;
         [SerializeField] private DockViewPresenter? dockView;
         [SerializeField] private TargetFeedbackPresenter? targetFeedback;
+        [SerializeField] private ActionPlaybackController? playbackController;
 
         public GameState? CurrentState { get; private set; }
 
         public ActionPlaybackPlan CurrentPlaybackPlan { get; private set; } = ActionPlaybackPlan.Empty;
+
+        public bool IsPlaybackActive => ResolvePlaybackController()?.IsPlaying ?? false;
 
         public void Rebuild(GameState state)
         {
@@ -90,17 +93,21 @@ namespace Rescue.Unity.Presentation
                 return;
             }
 
-            CurrentPlaybackPlan = ActionPlaybackBuilder.Build(previousState, input, result);
-            Rebuild(result.State);
-
-            if (dockView is not null)
+            ActionPlaybackController? resolvedPlaybackController = ResolvePlaybackController();
+            if (resolvedPlaybackController is not null &&
+                resolvedPlaybackController.TryPlayAction(previousState, input, result, FinalSyncActionResult))
             {
-                dockView.ApplyActionResult(result);
+                CurrentPlaybackPlan = resolvedPlaybackController.CurrentPlan;
+                return;
             }
+
+            CurrentPlaybackPlan = ActionPlaybackBuilder.Build(previousState, input, result);
+            FinalSyncActionResult(result);
         }
 
         public void ClearAll()
         {
+            ResolvePlaybackController()?.CancelPlayback();
             CurrentState = null;
             CurrentPlaybackPlan = ActionPlaybackPlan.Empty;
 
@@ -160,6 +167,27 @@ namespace Rescue.Unity.Presentation
 
             targetFeedback = GetComponent<TargetFeedbackPresenter>();
             return targetFeedback;
+        }
+
+        private ActionPlaybackController? ResolvePlaybackController()
+        {
+            if (playbackController is not null)
+            {
+                return playbackController;
+            }
+
+            playbackController = GetComponent<ActionPlaybackController>();
+            return playbackController;
+        }
+
+        private void FinalSyncActionResult(ActionResult result)
+        {
+            Rebuild(result.State);
+
+            if (dockView is not null)
+            {
+                dockView.ApplyActionResult(result);
+            }
         }
     }
 }

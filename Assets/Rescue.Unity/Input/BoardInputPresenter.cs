@@ -65,6 +65,11 @@ namespace Rescue.Unity.Input
 
         public bool TryRunActionAt(TileCoord coord)
         {
+            if (gameStateView is not null && gameStateView.IsPlaybackActive)
+            {
+                return false;
+            }
+
             GameState? currentState = CurrentState;
             if (currentState is null)
             {
