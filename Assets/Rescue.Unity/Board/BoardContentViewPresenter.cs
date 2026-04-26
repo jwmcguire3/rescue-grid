@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using Rescue.Core.Pipeline;
 using Rescue.Core.State;
 using Rescue.Unity.Art.Registries;
@@ -84,20 +85,60 @@ namespace Rescue.Unity.BoardPresentation
 
         public void RemoveDebrisGroup(GroupRemoved removal)
         {
-            _ = removal;
-            // Full debris identity is not stable yet. Keep playback safe and let final sync reconcile state.
+            for (int i = 0; i < removal.Coords.Length; i++)
+            {
+                if (!TryGetDebrisInstance(removal.Coords[i], out GameObject? debrisObject) || debrisObject is null)
+                {
+                    continue;
+                }
+
+                spawnedContent.Remove(debrisObject);
+                DestroyContentObject(debrisObject);
+            }
         }
 
         public void AnimateGravityMove(GravitySettled gravity)
         {
-            _ = gravity;
-            // Gravity animation is not implemented yet. Final sync remains authoritative.
+            for (int i = 0; i < gravity.Moves.Length; i++)
+            {
+                (TileCoord from, TileCoord to) = gravity.Moves[i];
+                if (!TryGetDebrisInstance(from, out GameObject? debrisObject) || debrisObject is null)
+                {
+                    continue;
+                }
+
+                if (!TryGetAnchor(to, out Transform anchor))
+                {
+                    continue;
+                }
+
+                MoveContentObjectToAnchor(debrisObject, anchor, to, "Debris", contentYOffset);
+            }
         }
 
         public void AnimateSpawn(Spawned spawned)
         {
-            _ = spawned;
-            // Spawn animation is not implemented yet. Final sync remains authoritative.
+            for (int i = 0; i < spawned.Pieces.Length; i++)
+            {
+                (TileCoord coord, DebrisType type) = spawned.Pieces[i];
+                if (!TryGetAnchor(coord, out Transform anchor))
+                {
+                    continue;
+                }
+
+                if (TryGetDebrisInstance(coord, out _, includeHiddenDebris: false))
+                {
+                    continue;
+                }
+
+                SpawnAtAnchor(
+                    coord,
+                    $"Debris_{type}",
+                    ResolveDebrisPrefab(type),
+                    anchor,
+                    contentYOffset,
+                    Vector3.one);
+            }
         }
 
         public void AnimateTargetExtract(TargetExtracted extraction)
@@ -134,6 +175,89 @@ namespace Rescue.Unity.BoardPresentation
             {
                 DestroyImmediate(contentObject);
             }
+        }
+
+        private bool TryGetDebrisInstance(TileCoord coord, out GameObject? debrisObject, bool includeHiddenDebris = false)
+        {
+            string coordPrefix = GetCoordPrefix(coord);
+            for (int i = spawnedContent.Count - 1; i >= 0; i--)
+            {
+                GameObject? contentObject = spawnedContent[i];
+                if (contentObject is null)
+                {
+                    spawnedContent.RemoveAt(i);
+                    continue;
+                }
+
+                if (!contentObject.name.StartsWith(coordPrefix, System.StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                bool isDebris = contentObject.name.Contains("_Debris_");
+                bool isHiddenDebris = includeHiddenDebris && contentObject.name.Contains("_HiddenDebris_");
+                if (!isDebris && !isHiddenDebris)
+                {
+                    continue;
+                }
+
+                debrisObject = contentObject;
+                return true;
+            }
+
+            debrisObject = null;
+            return false;
+        }
+
+        private bool TryGetAnchor(TileCoord coord, out Transform anchor)
+        {
+            anchor = transform;
+            if (gridView is null)
+            {
+                return false;
+            }
+
+            return gridView.TryGetCellAnchor(coord, out anchor);
+        }
+
+        private void MoveContentObjectToAnchor(GameObject contentObject, Transform anchor, TileCoord coord, string contentLabel, float yOffset)
+        {
+            Transform parent = ResolveContentParent(anchor);
+            Transform contentTransform = contentObject.transform;
+            if (contentTransform.parent != parent)
+            {
+                contentTransform.SetParent(parent, worldPositionStays: false);
+            }
+
+            if (parent == anchor)
+            {
+                contentTransform.localPosition = new Vector3(0f, yOffset, 0f);
+                contentTransform.localRotation = Quaternion.identity;
+            }
+            else
+            {
+                contentTransform.SetPositionAndRotation(
+                    anchor.position + new Vector3(0f, yOffset, 0f),
+                    anchor.rotation);
+            }
+
+            contentObject.name = $"Content_{coord.Row.ToString("00", CultureInfo.InvariantCulture)}_{coord.Col.ToString("00", CultureInfo.InvariantCulture)}_{contentLabel}_{ExtractTypeSuffix(contentObject.name)}";
+        }
+
+        private static string GetCoordPrefix(TileCoord coord)
+        {
+            return $"Content_{coord.Row.ToString("00", CultureInfo.InvariantCulture)}_{coord.Col.ToString("00", CultureInfo.InvariantCulture)}_";
+        }
+
+        private static string ExtractTypeSuffix(string contentName)
+        {
+            int lastUnderscore = contentName.LastIndexOf('_');
+            if (lastUnderscore < 0 || lastUnderscore >= contentName.Length - 1)
+            {
+                return "Unknown";
+            }
+
+            return contentName.Substring(lastUnderscore + 1);
         }
 
         private void RenderTileContent(TileCoord coord, Tile tile, Transform anchor)

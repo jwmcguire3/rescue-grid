@@ -84,8 +84,9 @@ namespace Rescue.Unity.Presentation
                         continue;
                     }
 
-                    PlayStep(CurrentPlan[i]);
-                    yield return null;
+                    ActionPlaybackStep step = CurrentPlan[i];
+                    PlayStep(step);
+                    yield return CreateStepYield(step.StepType);
                 }
             }
             finally
@@ -137,6 +138,37 @@ namespace Rescue.Unity.Presentation
                 case TargetExtracted extracted:
                     boardContent.AnimateTargetExtract(extracted);
                     break;
+            }
+        }
+
+        private object? CreateStepYield(ActionPlaybackStepType stepType)
+        {
+            float duration = GetStepDurationSeconds(stepType);
+            if (duration <= 0f)
+            {
+                return null;
+            }
+
+            if (Application.isPlaying)
+            {
+                return new WaitForSeconds(duration);
+            }
+
+            return null;
+        }
+
+        private float GetStepDurationSeconds(ActionPlaybackStepType stepType)
+        {
+            switch (stepType)
+            {
+                case ActionPlaybackStepType.RemoveGroup:
+                    return settings.RemoveDurationSeconds;
+                case ActionPlaybackStepType.Gravity:
+                    return settings.GravityDurationSeconds;
+                case ActionPlaybackStepType.Spawn:
+                    return settings.SpawnDurationSeconds;
+                default:
+                    return 0f;
             }
         }
 

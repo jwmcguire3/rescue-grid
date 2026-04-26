@@ -5,6 +5,7 @@ using NUnit.Framework;
 using Rescue.Core.Pipeline;
 using Rescue.Core.Rng;
 using Rescue.Core.State;
+using Rescue.Unity.BoardPresentation;
 using UnityEngine;
 using UnityEngine.TestTools;
 using CoreBoard = Rescue.Core.State.Board;
@@ -73,12 +74,117 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(controller.CurrentPlan[^1].StepType, Is.EqualTo(ActionPlaybackStepType.FinalSync));
         }
 
+        [Test]
+        public void ActionPlaybackController_FinalSyncRunsAfterRemoveGravityAndSpawnPlan()
+        {
+            ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
+            GameState previousState = CreateBoardState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(
+                        new DebrisTile(DebrisType.A),
+                        new EmptyTile()),
+                    ImmutableArray.Create<Tile>(
+                        new DebrisTile(DebrisType.B),
+                        new EmptyTile())));
+
+            harness.GridPresenter.RebuildGrid(previousState);
+            harness.ContentPresenter.SyncImmediate(previousState);
+
+            ActionResult result = CreateResult(
+                CreateBoardState(
+                    ImmutableArray.Create(
+                        ImmutableArray.Create<Tile>(
+                            new DebrisTile(DebrisType.C),
+                            new EmptyTile()),
+                        ImmutableArray.Create<Tile>(
+                            new EmptyTile(),
+                            new DebrisTile(DebrisType.B)))),
+                actionCount: 3,
+                new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0))),
+                new GravitySettled(ImmutableArray.Create((new TileCoord(1, 0), new TileCoord(1, 1)))),
+                new Spawned(ImmutableArray.Create((new TileCoord(0, 0), DebrisType.C))));
+
+            int finalSyncCalls = 0;
+            GameState? syncedState = null;
+
+            bool handled = harness.Controller.TryPlayAction(previousState, new ActionInput(new TileCoord(0, 0)), result, syncedResult =>
+            {
+                finalSyncCalls++;
+                syncedState = syncedResult.State;
+                harness.ContentPresenter.SyncImmediate(syncedResult.State);
+            });
+
+            Assert.That(handled, Is.True);
+            Assert.That(harness.Controller.CurrentPlan.Count, Is.EqualTo(4));
+            Assert.That(harness.Controller.CurrentPlan[0].StepType, Is.EqualTo(ActionPlaybackStepType.RemoveGroup));
+            Assert.That(harness.Controller.CurrentPlan[1].StepType, Is.EqualTo(ActionPlaybackStepType.Gravity));
+            Assert.That(harness.Controller.CurrentPlan[2].StepType, Is.EqualTo(ActionPlaybackStepType.Spawn));
+
+            Assert.That(finalSyncCalls, Is.EqualTo(1));
+            Assert.That(syncedState, Is.EqualTo(result.State));
+            Assert.That(harness.Controller.IsPlaying, Is.False);
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(2));
+            Assert.That(FindChildByName(harness.ContentRoot, "Content_00_00_Debris_C"), Is.Not.Null);
+            Assert.That(FindChildByName(harness.ContentRoot, "Content_01_01_Debris_B"), Is.Not.Null);
+        }
+
+        [Test]
+        public void ActionPlaybackController_MissingVisualsDoNotPreventFinalSync()
+        {
+            ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
+            ActionResult result = CreateResult(
+                CreateBoardState(ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new DebrisTile(DebrisType.C)))),
+                actionCount: 4,
+                new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0))),
+                new GravitySettled(ImmutableArray.Create((new TileCoord(1, 0), new TileCoord(1, 1)))),
+                new Spawned(ImmutableArray.Create((new TileCoord(0, 0), DebrisType.C))));
+
+            int finalSyncCalls = 0;
+
+            Assert.DoesNotThrow(() =>
+            {
+                bool handled = harness.Controller.TryPlayAction(CreateState(), new ActionInput(new TileCoord(0, 0)), result, _ => finalSyncCalls++);
+                Assert.That(handled, Is.True);
+            });
+
+            Assert.That(finalSyncCalls, Is.EqualTo(1));
+            Assert.That(harness.Controller.IsPlaying, Is.False);
+        }
+
         private ActionPlaybackController CreateController(bool playbackEnabled, bool yieldBetweenSteps)
         {
             GameObject gameObject = CreateTrackedGameObject("ActionPlaybackController");
             ActionPlaybackController controller = gameObject.AddComponent<ActionPlaybackController>();
             SetPrivateField(controller, "settings", CreateSettings(playbackEnabled, yieldBetweenSteps));
             return controller;
+        }
+
+        private ControllerHarness CreateControllerHarness(bool playbackEnabled, bool yieldBetweenSteps)
+        {
+            GameObject presenterObject = CreateTrackedGameObject("PlaybackHarness");
+            BoardGridViewPresenter gridPresenter = presenterObject.AddComponent<BoardGridViewPresenter>();
+            Transform boardRoot = CreateTrackedGameObject("BoardRoot").transform;
+            boardRoot.SetParent(presenterObject.transform, false);
+            GameObject tileFallbackPrefab = CreateTrackedGameObject("FallbackTilePrefab");
+            SetPrivateField(gridPresenter, "boardRoot", boardRoot);
+            SetPrivateField(gridPresenter, "dryTilePrefab", null);
+            SetPrivateField(gridPresenter, "fallbackTilePrefab", tileFallbackPrefab);
+
+            BoardContentViewPresenter contentPresenter = presenterObject.AddComponent<BoardContentViewPresenter>();
+            Transform contentRoot = CreateTrackedGameObject("BoardContentRoot").transform;
+            contentRoot.SetParent(presenterObject.transform, false);
+            GameObject fallbackPrefab = CreateTrackedGameObject("FallbackContentPrefab");
+            SetPrivateField(contentPresenter, "gridView", gridPresenter);
+            SetPrivateField(contentPresenter, "contentRoot", contentRoot);
+            SetPrivateField(contentPresenter, "fallbackContentPrefab", fallbackPrefab);
+            SetPrivateField(contentPresenter, "contentYOffset", 0.05f);
+
+            ActionPlaybackController controller = presenterObject.AddComponent<ActionPlaybackController>();
+            SetPrivateField(controller, "settings", CreateSettings(playbackEnabled, yieldBetweenSteps));
+            SetPrivateField(controller, "boardContent", contentPresenter);
+
+            return new ControllerHarness(controller, gridPresenter, contentPresenter, contentRoot);
         }
 
         private GameObject CreateTrackedGameObject(string name)
@@ -122,17 +228,31 @@ namespace Rescue.Unity.Presentation.Tests
                 Snapshot: null);
         }
 
+        private static ActionResult CreateResult(GameState state, int actionCount, params ActionEvent[] events)
+        {
+            return new ActionResult(
+                state with { ActionCount = actionCount },
+                ImmutableArray.CreateRange(events),
+                ActionOutcome.Ok,
+                Snapshot: null);
+        }
+
         private static GameState CreateState()
         {
-            ImmutableArray<ImmutableArray<Tile>> rows = ImmutableArray.Create(
+            return CreateBoardState(ImmutableArray.Create(
                 ImmutableArray.Create<Tile>(
                     new DebrisTile(DebrisType.A),
                     new DebrisTile(DebrisType.A)),
                 ImmutableArray.Create<Tile>(
                     new EmptyTile(),
-                    new EmptyTile()));
+                    new EmptyTile())));
+        }
 
-            CoreBoard board = new CoreBoard(2, 2, rows);
+        private static GameState CreateBoardState(ImmutableArray<ImmutableArray<Tile>> rows)
+        {
+            int height = rows.Length;
+            int width = height > 0 ? rows[0].Length : 0;
+            CoreBoard board = new CoreBoard(width, height, rows);
 
             return new GameState(
                 Board: board,
@@ -162,6 +282,43 @@ namespace Rescue.Unity.Presentation.Tests
                 Frozen: false,
                 ConsecutiveEmergencySpawns: 0,
                 SpawnRecoveryCounter: 0);
+        }
+
+        private static Transform? FindChildByName(Transform parent, string partialName)
+        {
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                Transform child = parent.GetChild(i);
+                if (child.name.Contains(partialName))
+                {
+                    return child;
+                }
+            }
+
+            return null;
+        }
+
+        private readonly struct ControllerHarness
+        {
+            public ControllerHarness(
+                ActionPlaybackController controller,
+                BoardGridViewPresenter gridPresenter,
+                BoardContentViewPresenter contentPresenter,
+                Transform contentRoot)
+            {
+                Controller = controller;
+                GridPresenter = gridPresenter;
+                ContentPresenter = contentPresenter;
+                ContentRoot = contentRoot;
+            }
+
+            public ActionPlaybackController Controller { get; }
+
+            public BoardGridViewPresenter GridPresenter { get; }
+
+            public BoardContentViewPresenter ContentPresenter { get; }
+
+            public Transform ContentRoot { get; }
         }
     }
 }

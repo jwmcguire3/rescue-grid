@@ -39,6 +39,26 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
+        public void Build_RemoveGroupGravitySpawnAndFinalSyncAppearInPipelineOrder()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(
+                    new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0))),
+                    new GravitySettled(ImmutableArray.Create((new TileCoord(0, 1), new TileCoord(1, 1)))),
+                    new Spawned(ImmutableArray.Create((new TileCoord(0, 0), DebrisType.C)))));
+
+            Assert.That(plan.Select(step => step.StepType), Is.EqualTo(new[]
+            {
+                ActionPlaybackStepType.RemoveGroup,
+                ActionPlaybackStepType.Gravity,
+                ActionPlaybackStepType.Spawn,
+                ActionPlaybackStepType.FinalSync,
+            }));
+        }
+
+        [Test]
         public void Build_WaterRiseComesAfterGravityAndSpawn()
         {
             ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using NUnit.Framework;
+using Rescue.Core.Pipeline;
 using Rescue.Core.Rng;
 using Rescue.Core.State;
 using Rescue.Unity.Art.Registries;
@@ -195,22 +196,85 @@ namespace Rescue.Unity.BoardPresentation.Tests
         }
 
         [Test]
-        public void BoardContentViewPresenter_AnimationApisDoNotThrowOnValidInputs()
+        public void BoardContentViewPresenter_RemoveDebrisGroupSafelyRemovesMatchingDebris()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new DebrisTile(DebrisType.A),
+                    new DebrisTile(DebrisType.B))));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            harness.ContentPresenter.RemoveDebrisGroup(new GroupRemoved(
+                DebrisType.A,
+                ImmutableArray.Create(new TileCoord(0, 0))));
+
+            Assert.That(FindChildByName(harness.ContentRoot, "Debris_A"), Is.Null);
+            Assert.That(FindChildByName(harness.ContentRoot, "Debris_B"), Is.Not.Null);
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_AnimateGravityMoveSafelyMovesExistingDebris()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new DebrisTile(DebrisType.A),
+                    new EmptyTile()),
+                ImmutableArray.Create<Tile>(
+                    new EmptyTile(),
+                    new EmptyTile())));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            harness.ContentPresenter.AnimateGravityMove(new GravitySettled(
+                ImmutableArray.Create((new TileCoord(0, 0), new TileCoord(1, 0)))));
+
+            Assert.That(FindChildByName(harness.ContentRoot, "Content_01_00_Debris_A"), Is.Not.Null);
+            Assert.That(FindChildByName(harness.ContentRoot, "Content_00_00_Debris_A"), Is.Null);
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_AnimateSpawnSafelyAddsDebrisWhenMissing()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new EmptyTile(),
+                    new EmptyTile())));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            harness.ContentPresenter.AnimateSpawn(new Spawned(
+                ImmutableArray.Create((new TileCoord(0, 1), DebrisType.B))));
+
+            Assert.That(FindChildByName(harness.ContentRoot, "Content_00_01_Debris_B"), Is.Not.Null);
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_AnimationApisFailSoftWhenVisualsAreMissing()
         {
             PresenterHarness harness = CreateHarness();
 
             Assert.DoesNotThrow(() => harness.ContentPresenter.RemoveDebrisGroup(
-                new Rescue.Core.Pipeline.GroupRemoved(
+                new GroupRemoved(
                     DebrisType.A,
                     ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1)))));
             Assert.DoesNotThrow(() => harness.ContentPresenter.AnimateGravityMove(
-                new Rescue.Core.Pipeline.GravitySettled(
+                new GravitySettled(
                     ImmutableArray.Create((new TileCoord(0, 0), new TileCoord(1, 0))))));
             Assert.DoesNotThrow(() => harness.ContentPresenter.AnimateSpawn(
-                new Rescue.Core.Pipeline.Spawned(
+                new Spawned(
                     ImmutableArray.Create((new TileCoord(0, 0), DebrisType.B)))));
             Assert.DoesNotThrow(() => harness.ContentPresenter.AnimateTargetExtract(
-                new Rescue.Core.Pipeline.TargetExtracted("missing-target", new TileCoord(0, 0))));
+                new TargetExtracted("missing-target", new TileCoord(0, 0))));
         }
 
         private PresenterHarness CreateHarness()
