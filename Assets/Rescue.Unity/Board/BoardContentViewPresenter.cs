@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Rescue.Core.Pipeline;
 using Rescue.Core.State;
 using Rescue.Unity.Art.Registries;
 using UnityEngine;
@@ -22,11 +23,11 @@ namespace Rescue.Unity.BoardPresentation
         private readonly List<GameObject> spawnedContent = new List<GameObject>();
         private readonly Dictionary<string, GameObject> spawnedTargetsById = new Dictionary<string, GameObject>();
 
-        public void RebuildContent(GameState state)
+        public void SyncImmediate(GameState state)
         {
             if (state is null)
             {
-                Debug.LogWarning($"{nameof(BoardContentViewPresenter)} requires a valid GameState to rebuild.", this);
+                Debug.LogWarning($"{nameof(BoardContentViewPresenter)} requires a valid GameState to sync.", this);
                 return;
             }
 
@@ -58,6 +59,11 @@ namespace Rescue.Unity.BoardPresentation
             }
         }
 
+        public void RebuildContent(GameState state)
+        {
+            SyncImmediate(state);
+        }
+
         public void ClearContent()
         {
             for (int i = spawnedContent.Count - 1; i >= 0; i--)
@@ -69,19 +75,35 @@ namespace Rescue.Unity.BoardPresentation
                     continue;
                 }
 
-                if (Application.isPlaying)
-                {
-                    Destroy(contentObject);
-                }
-                else
-                {
-                    DestroyImmediate(contentObject);
-                }
-
+                DestroyContentObject(contentObject);
                 spawnedContent.RemoveAt(i);
             }
 
             spawnedTargetsById.Clear();
+        }
+
+        public void RemoveDebrisGroup(GroupRemoved removal)
+        {
+            _ = removal;
+            // Full debris identity is not stable yet. Keep playback safe and let final sync reconcile state.
+        }
+
+        public void AnimateGravityMove(GravitySettled gravity)
+        {
+            _ = gravity;
+            // Gravity animation is not implemented yet. Final sync remains authoritative.
+        }
+
+        public void AnimateSpawn(Spawned spawned)
+        {
+            _ = spawned;
+            // Spawn animation is not implemented yet. Final sync remains authoritative.
+        }
+
+        public void AnimateTargetExtract(TargetExtracted extraction)
+        {
+            _ = extraction;
+            // Target extraction animation will be added later once playback owns target removal timing.
         }
 
         public bool TryGetTargetInstance(string targetId, out GameObject? targetObject)
@@ -100,6 +122,18 @@ namespace Rescue.Unity.BoardPresentation
 
             targetObject = null;
             return false;
+        }
+
+        private void DestroyContentObject(GameObject contentObject)
+        {
+            if (Application.isPlaying)
+            {
+                Destroy(contentObject);
+            }
+            else
+            {
+                DestroyImmediate(contentObject);
+            }
         }
 
         private void RenderTileContent(TileCoord coord, Tile tile, Transform anchor)

@@ -47,7 +47,7 @@ namespace Rescue.Unity.Presentation
             }
             else
             {
-                boardContent.RebuildContent(state);
+                boardContent.SyncImmediate(state);
             }
 
             if (waterView is null)

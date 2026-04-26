@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using Rescue.Core.Pipeline;
 using Rescue.Core.State;
+using Rescue.Unity.BoardPresentation;
 using UnityEngine;
 
 namespace Rescue.Unity.Presentation
@@ -9,6 +10,7 @@ namespace Rescue.Unity.Presentation
     public sealed class ActionPlaybackController : MonoBehaviour
     {
         [SerializeField] private ActionPlaybackSettings settings = new ActionPlaybackSettings();
+        [SerializeField] private BoardContentViewPresenter? boardContent;
 
         private Coroutine? activePlayback;
 
@@ -82,6 +84,7 @@ namespace Rescue.Unity.Presentation
                         continue;
                     }
 
+                    PlayStep(CurrentPlan[i]);
                     yield return null;
                 }
             }
@@ -103,11 +106,37 @@ namespace Rescue.Unity.Presentation
                     {
                         continue;
                     }
+
+                    PlayStep(CurrentPlan[i]);
                 }
             }
             finally
             {
                 CompletePlayback(result, finalSync);
+            }
+        }
+
+        private void PlayStep(ActionPlaybackStep step)
+        {
+            if (boardContent is null || step.SourceEvent is null)
+            {
+                return;
+            }
+
+            switch (step.SourceEvent)
+            {
+                case GroupRemoved removed:
+                    boardContent.RemoveDebrisGroup(removed);
+                    break;
+                case GravitySettled gravity:
+                    boardContent.AnimateGravityMove(gravity);
+                    break;
+                case Spawned spawned:
+                    boardContent.AnimateSpawn(spawned);
+                    break;
+                case TargetExtracted extracted:
+                    boardContent.AnimateTargetExtract(extracted);
+                    break;
             }
         }
 

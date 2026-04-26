@@ -39,7 +39,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
                 ImmutableArray.Create<Tile>(new DebrisTile(DebrisType.A))));
 
             harness.GridPresenter.RebuildGrid(state);
-            harness.ContentPresenter.RebuildContent(state);
+            harness.ContentPresenter.SyncImmediate(state);
 
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
             Assert.That(harness.ContentRoot.GetChild(0).name, Does.Contain("Debris_A"));
@@ -60,7 +60,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
                     new BlockerTile(BlockerType.Vine, 1, null))));
 
             harness.GridPresenter.RebuildGrid(state);
-            harness.ContentPresenter.RebuildContent(state);
+            harness.ContentPresenter.SyncImmediate(state);
 
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(3));
             Assert.That(FindChildByName(harness.ContentRoot, "Blocker_Crate"), Is.Not.Null);
@@ -81,7 +81,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
                     new BlockerTile(BlockerType.Ice, 1, new DebrisTile(DebrisType.B)))));
 
             harness.GridPresenter.RebuildGrid(state);
-            harness.ContentPresenter.RebuildContent(state);
+            harness.ContentPresenter.SyncImmediate(state);
 
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(2));
             Transform? ice = FindChildByName(harness.ContentRoot, "Blocker_Ice");
@@ -100,7 +100,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
                 ImmutableArray.Create<Tile>(new TargetTile("puppy-1", Extracted: true))));
 
             harness.GridPresenter.RebuildGrid(state);
-            harness.ContentPresenter.RebuildContent(state);
+            harness.ContentPresenter.SyncImmediate(state);
 
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(0));
         }
@@ -117,10 +117,12 @@ namespace Rescue.Unity.BoardPresentation.Tests
                 ImmutableArray.Create<Tile>(new TargetTile("puppy-1", Extracted: false))));
 
             harness.GridPresenter.RebuildGrid(state);
-            harness.ContentPresenter.RebuildContent(state);
+            harness.ContentPresenter.SyncImmediate(state);
 
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
             Assert.That(FindChildByName(harness.ContentRoot, "Target_puppy-1"), Is.Not.Null);
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-1", out GameObject? targetObject), Is.True);
+            Assert.That(targetObject, Is.Not.Null);
         }
 
         [Test]
@@ -131,14 +133,14 @@ namespace Rescue.Unity.BoardPresentation.Tests
                 ImmutableArray.Create<Tile>(new DebrisTile(DebrisType.A))));
 
             harness.GridPresenter.RebuildGrid(state);
-            harness.ContentPresenter.RebuildContent(state);
+            harness.ContentPresenter.SyncImmediate(state);
             harness.ContentPresenter.ClearContent();
 
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(0));
         }
 
         [Test]
-        public void BoardContentViewPresenter_RebuildDoesNotDuplicateContent()
+        public void BoardContentViewPresenter_SyncImmediateDoesNotDuplicateContent()
         {
             PresenterHarness harness = CreateHarness();
             GameState state = CreateState(ImmutableArray.Create(
@@ -147,10 +149,68 @@ namespace Rescue.Unity.BoardPresentation.Tests
                     new BlockerTile(BlockerType.Crate, 1, null))));
 
             harness.GridPresenter.RebuildGrid(state);
-            harness.ContentPresenter.RebuildContent(state);
-            harness.ContentPresenter.RebuildContent(state);
+            harness.ContentPresenter.SyncImmediate(state);
+            harness.ContentPresenter.SyncImmediate(state);
 
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_RebuildContentStillPerformsImmediateSync()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new DebrisTile(DebrisType.A))));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.RebuildContent(state);
+
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
+            Assert.That(harness.ContentRoot.GetChild(0).name, Does.Contain("Debris_A"));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_SyncImmediateRefreshesTrackedTargetInstance()
+        {
+            PresenterHarness harness = CreateHarness();
+            TargetVisualRegistry targetRegistry = CreateRegistry<TargetVisualRegistry>();
+            targetRegistry.FallbackTargetPrefab = harness.FallbackPrefab;
+            SetPrivateField(harness.ContentPresenter, "targetRegistry", targetRegistry);
+
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new TargetTile("puppy-1", Extracted: false))));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-1", out GameObject? firstTarget), Is.True);
+            Assert.That(firstTarget, Is.Not.Null);
+
+            harness.ContentPresenter.SyncImmediate(state);
+
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-1", out GameObject? secondTarget), Is.True);
+            Assert.That(secondTarget, Is.Not.Null);
+            Assert.That(secondTarget, Is.Not.SameAs(firstTarget));
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_AnimationApisDoNotThrowOnValidInputs()
+        {
+            PresenterHarness harness = CreateHarness();
+
+            Assert.DoesNotThrow(() => harness.ContentPresenter.RemoveDebrisGroup(
+                new Rescue.Core.Pipeline.GroupRemoved(
+                    DebrisType.A,
+                    ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1)))));
+            Assert.DoesNotThrow(() => harness.ContentPresenter.AnimateGravityMove(
+                new Rescue.Core.Pipeline.GravitySettled(
+                    ImmutableArray.Create((new TileCoord(0, 0), new TileCoord(1, 0))))));
+            Assert.DoesNotThrow(() => harness.ContentPresenter.AnimateSpawn(
+                new Rescue.Core.Pipeline.Spawned(
+                    ImmutableArray.Create((new TileCoord(0, 0), DebrisType.B)))));
+            Assert.DoesNotThrow(() => harness.ContentPresenter.AnimateTargetExtract(
+                new Rescue.Core.Pipeline.TargetExtracted("missing-target", new TileCoord(0, 0))));
         }
 
         private PresenterHarness CreateHarness()
