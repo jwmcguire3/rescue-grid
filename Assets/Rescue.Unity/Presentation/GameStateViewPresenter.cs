@@ -16,6 +16,8 @@ namespace Rescue.Unity.Presentation
 
         public GameState? CurrentState { get; private set; }
 
+        public ActionPlaybackPlan CurrentPlaybackPlan { get; private set; } = ActionPlaybackPlan.Empty;
+
         public void Rebuild(GameState state)
         {
             if (state is null)
@@ -82,6 +84,8 @@ namespace Rescue.Unity.Presentation
                 return;
             }
 
+            GameState previousState = CurrentState ?? result.State;
+            CurrentPlaybackPlan = ActionPlaybackBuilder.Build(previousState, default, result);
             Rebuild(result.State);
 
             if (dockView is not null)
@@ -93,6 +97,7 @@ namespace Rescue.Unity.Presentation
         public void ClearAll()
         {
             CurrentState = null;
+            CurrentPlaybackPlan = ActionPlaybackPlan.Empty;
 
             if (boardGrid is null)
             {

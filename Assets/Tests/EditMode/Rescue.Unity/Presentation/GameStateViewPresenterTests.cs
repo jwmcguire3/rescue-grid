@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using NUnit.Framework;
+using Rescue.Core.Pipeline;
 using Rescue.Core.Rng;
 using Rescue.Core.State;
 using Rescue.Unity.BoardPresentation;
@@ -84,6 +86,32 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(0));
             Assert.That(harness.WaterRoot.childCount, Is.EqualTo(0));
             Assert.That(harness.DockPieceContainer.childCount, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void GameStateViewPresenter_ApplyActionResultBuildsPlaybackPlanWithFinalSync()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState state = CreateState();
+            ActionResult result = new ActionResult(
+                state,
+                ImmutableArray.Create<ActionEvent>(
+                    new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1))),
+                    new GravitySettled(ImmutableArray.Create((new TileCoord(0, 0), new TileCoord(1, 0)))),
+                    new Spawned(ImmutableArray.Create((new TileCoord(0, 0), DebrisType.B)))),
+                ActionOutcome.Ok,
+                Snapshot: null);
+
+            harness.Presenter.Rebuild(state);
+            harness.Presenter.ApplyActionResult(result);
+
+            Assert.That(harness.Presenter.CurrentPlaybackPlan.Select(step => step.StepType), Is.EqualTo(new[]
+            {
+                ActionPlaybackStepType.RemoveGroup,
+                ActionPlaybackStepType.Gravity,
+                ActionPlaybackStepType.Spawn,
+                ActionPlaybackStepType.FinalSync,
+            }));
         }
 
         private PresenterHarness CreateHarness(bool assignTargetFeedbackToPresenter = true)
