@@ -267,6 +267,25 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
+        public void Build_TargetExtractedMapsToTargetExtractWithoutReorderingCanonicalNeighbors()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(
+                    new Spawned(ImmutableArray.Create((new TileCoord(0, 0), DebrisType.C))),
+                    new TargetExtracted("pup-1", new TileCoord(2, 1)),
+                    new WaterRose(FloodedRow: 3)));
+
+            Assert.That(plan.Take(plan.Count - 1).Select(step => (step.SourceEventName, step.StepType)), Is.EqualTo(new[]
+            {
+                (nameof(Spawned), ActionPlaybackStepType.Spawn),
+                (nameof(TargetExtracted), ActionPlaybackStepType.TargetExtract),
+                (nameof(WaterRose), ActionPlaybackStepType.WaterRise),
+            }));
+        }
+
+        [Test]
         public void Build_EmptyEventsStillProduceSafeFinalSync()
         {
             ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(

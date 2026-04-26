@@ -398,6 +398,81 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
+        public void ActionPlaybackController_TargetExtractRemovesOnlyExtractedTargetAndFinalSyncKeepsRemainingTarget()
+        {
+            ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
+            GameState previousState = CreateBoardState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new TargetTile("pup-1", Extracted: false),
+                    new TargetTile("pup-2", Extracted: false))));
+            GameState resultState = CreateBoardState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new TargetTile("pup-1", Extracted: true),
+                    new TargetTile("pup-2", Extracted: false))));
+
+            harness.GridPresenter.RebuildGrid(previousState);
+            harness.ContentPresenter.SyncImmediate(previousState);
+
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("pup-1", out GameObject? extractedBeforePlayback), Is.True);
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("pup-2", out GameObject? remainingBeforePlayback), Is.True);
+            Assert.That(extractedBeforePlayback, Is.Not.Null);
+            Assert.That(remainingBeforePlayback, Is.Not.Null);
+
+            ActionResult result = CreateResult(
+                resultState,
+                actionCount: 12,
+                new TargetExtracted("pup-1", new TileCoord(0, 0)));
+
+            int finalSyncCalls = 0;
+
+            bool handled = harness.Controller.TryPlayAction(previousState, new ActionInput(new TileCoord(0, 0)), result, syncedResult =>
+            {
+                finalSyncCalls++;
+                harness.ContentPresenter.SyncImmediate(syncedResult.State);
+            });
+
+            Assert.That(handled, Is.True);
+            Assert.That(finalSyncCalls, Is.EqualTo(1));
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("pup-1", out GameObject? extractedAfterPlayback), Is.False);
+            Assert.That(extractedAfterPlayback, Is.Null);
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("pup-2", out GameObject? remainingAfterPlayback), Is.True);
+            Assert.That(remainingAfterPlayback, Is.SameAs(remainingBeforePlayback));
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
+            Assert.That(FindChildByName(harness.ContentRoot, "Target_pup-2"), Is.Not.Null);
+        }
+
+        [Test]
+        public void ActionPlaybackController_MissingTargetVisualDoesNotPreventFinalSync()
+        {
+            ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
+            GameState previousState = CreateBoardState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new TargetTile("pup-1", Extracted: false))));
+            GameState resultState = CreateBoardState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new TargetTile("pup-1", Extracted: true))));
+
+            harness.GridPresenter.RebuildGrid(previousState);
+
+            int finalSyncCalls = 0;
+
+            Assert.DoesNotThrow(() =>
+            {
+                bool handled = harness.Controller.TryPlayAction(previousState, new ActionInput(new TileCoord(0, 0)), CreateResult(
+                    resultState,
+                    actionCount: 13,
+                    new TargetExtracted("pup-1", new TileCoord(0, 0))), syncedResult =>
+                {
+                    finalSyncCalls++;
+                    harness.ContentPresenter.SyncImmediate(syncedResult.State);
+                });
+
+                Assert.That(handled, Is.True);
+            });
+
+            Assert.That(finalSyncCalls, Is.EqualTo(1));
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(0));
+        }
+
+        [Test]
         public void ActionPlaybackController_WaterRiseRoutesThroughPresenterBeforeFinalSync()
         {
             ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);

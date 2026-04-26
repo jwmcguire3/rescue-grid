@@ -464,6 +464,37 @@ namespace Rescue.Unity.BoardPresentation.Tests
         }
 
         [Test]
+        public void BoardContentViewPresenter_AnimateTargetExtractRemovesOnlyMatchingTargetId()
+        {
+            PresenterHarness harness = CreateHarness();
+            TargetVisualRegistry targetRegistry = CreateRegistry<TargetVisualRegistry>();
+            targetRegistry.FallbackTargetPrefab = harness.FallbackPrefab;
+            SetPrivateField(harness.ContentPresenter, "targetRegistry", targetRegistry);
+
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new TargetTile("puppy-1", Extracted: false),
+                    new TargetTile("puppy-2", Extracted: false))));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-1", out GameObject? firstTarget), Is.True);
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-2", out GameObject? secondTarget), Is.True);
+            Assert.That(firstTarget, Is.Not.Null);
+            Assert.That(secondTarget, Is.Not.Null);
+
+            harness.ContentPresenter.AnimateTargetExtract(new TargetExtracted("puppy-1", new TileCoord(0, 0)));
+
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-1", out GameObject? removedTarget), Is.False);
+            Assert.That(removedTarget, Is.Null);
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-2", out GameObject? remainingTarget), Is.True);
+            Assert.That(remainingTarget, Is.SameAs(secondTarget));
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
+            Assert.That(FindChildByName(harness.ContentRoot, "Target_puppy-2"), Is.Not.Null);
+        }
+
+        [Test]
         public void BoardContentViewPresenter_AnimateTargetExtractSkipsMissingTargetVisualSafely()
         {
             PresenterHarness harness = CreateHarness();
@@ -604,6 +635,34 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Assert.DoesNotThrow(() => harness.ContentPresenter.AnimateIceReveal(
                 new IceRevealed(new TileCoord(0, 0), DebrisType.B)));
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_SyncImmediateRepairsTargetVisualAfterExtractionMismatch()
+        {
+            PresenterHarness harness = CreateHarness();
+            TargetVisualRegistry targetRegistry = CreateRegistry<TargetVisualRegistry>();
+            targetRegistry.FallbackTargetPrefab = harness.FallbackPrefab;
+            SetPrivateField(harness.ContentPresenter, "targetRegistry", targetRegistry);
+
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new TargetTile("puppy-1", Extracted: false))));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            harness.ContentPresenter.AnimateTargetExtract(new TargetExtracted("puppy-1", new TileCoord(0, 0)));
+
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-1", out _), Is.False);
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(0));
+
+            harness.ContentPresenter.SyncImmediate(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-1", out GameObject? repairedTarget), Is.True);
+            Assert.That(repairedTarget, Is.Not.Null);
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
+            Assert.That(FindChildByName(harness.ContentRoot, "Target_puppy-1"), Is.Not.Null);
         }
 
         [Test]

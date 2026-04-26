@@ -29,7 +29,7 @@ namespace Rescue.Unity.BoardPresentation
 
         private readonly List<GameObject> spawnedContent = new List<GameObject>();
         private readonly BoardContentVisualRegistry visualRegistry = new BoardContentVisualRegistry();
-        private readonly Dictionary<string, GameObject> spawnedTargetsById = new Dictionary<string, GameObject>();
+        private readonly Dictionary<string, TargetVisualView> spawnedTargetsById = new Dictionary<string, TargetVisualView>();
 
         public void SyncImmediate(GameState state)
         {
@@ -278,23 +278,26 @@ namespace Rescue.Unity.BoardPresentation
 
         public void AnimateTargetExtract(TargetExtracted extraction, float durationSeconds = 0.12f)
         {
-            if (!TryGetTargetInstance(extraction.TargetId, out GameObject? targetObject) || targetObject is null)
+            CleanupDestroyedVisualReferences();
+
+            if (!TryGetLiveTargetView(extraction.TargetId, out TargetVisualView? targetView) ||
+                targetView is null)
             {
                 return;
             }
 
-            spawnedTargetsById.Remove(extraction.TargetId);
+            GameObject targetObject = targetView.Object;
+            targetView.IsExtracting = true;
 
             if (!Application.isPlaying || !isActiveAndEnabled || durationSeconds <= 0f)
             {
-                RemoveSpawnedContentReference(targetObject);
                 ApplyTargetExtractPose(targetObject.transform, 1f);
                 SetTargetVisualAlpha(targetObject, 0f);
-                DestroyContentObject(targetObject);
+                UnregisterAndDestroyTarget(extraction.TargetId, targetObject);
                 return;
             }
 
-            StartCoroutine(AnimateTargetExtractRoutine(targetObject, durationSeconds));
+            StartCoroutine(AnimateTargetExtractRoutine(extraction.TargetId, targetObject, durationSeconds));
         }
 
         public bool TryGetTargetInstance(string targetId, out GameObject? targetObject)
@@ -305,13 +308,12 @@ namespace Rescue.Unity.BoardPresentation
                 return false;
             }
 
-            if (spawnedTargetsById.TryGetValue(targetId, out GameObject targetInstance) && targetInstance != null)
+            if (TryGetLiveTargetView(targetId, out TargetVisualView? targetView) &&
+                targetView is not null)
             {
-                targetObject = targetInstance;
+                targetObject = targetView.Object;
                 return true;
             }
-
-            spawnedTargetsById.Remove(targetId);
 
             targetObject = null;
             return false;
@@ -329,7 +331,7 @@ namespace Rescue.Unity.BoardPresentation
             }
         }
 
-        private System.Collections.IEnumerator AnimateTargetExtractRoutine(GameObject targetObject, float durationSeconds)
+        private System.Collections.IEnumerator AnimateTargetExtractRoutine(string targetId, GameObject targetObject, float durationSeconds)
         {
             if (targetObject is null)
             {
@@ -358,7 +360,7 @@ namespace Rescue.Unity.BoardPresentation
 
             if (targetObject is not null)
             {
-                DestroyContentObject(targetObject);
+                UnregisterAndDestroyTarget(targetId, targetObject);
             }
         }
 
@@ -614,10 +616,17 @@ namespace Rescue.Unity.BoardPresentation
             }
 
             string contentLabel = $"Target_{SanitizeName(targetId)}";
-            if (spawnedTargetsById.TryGetValue(targetId, out GameObject targetObject) && targetObject != null)
+            if (TryGetLiveTargetView(targetId, out TargetVisualView? existingView) &&
+                existingView is not null)
             {
-                MoveContentObjectToAnchor(targetObject, anchor, coord, contentLabel, contentYOffset);
-                return;
+                if (!existingView.IsExtracting)
+                {
+                    MoveContentObjectToAnchor(existingView.Object, anchor, coord, contentLabel, contentYOffset);
+                    SetTargetVisualAlpha(existingView.Object, 1f);
+                    return;
+                }
+
+                RemoveRegisteredTarget(targetId);
             }
 
             GameObject? spawnedObject = SpawnAtAnchor(
@@ -630,7 +639,7 @@ namespace Rescue.Unity.BoardPresentation
 
             if (spawnedObject is not null)
             {
-                spawnedTargetsById[targetId] = spawnedObject;
+                spawnedTargetsById[targetId] = new TargetVisualView(spawnedObject);
             }
         }
 
@@ -656,13 +665,7 @@ namespace Rescue.Unity.BoardPresentation
                     continue;
                 }
 
-                if (spawnedTargetsById.TryGetValue(targetId, out GameObject targetObject) && targetObject != null)
-                {
-                    RemoveSpawnedContentReference(targetObject);
-                    DestroyContentObject(targetObject);
-                }
-
-                spawnedTargetsById.Remove(targetId);
+                RemoveRegisteredTarget(targetId);
             }
         }
 
@@ -722,7 +725,9 @@ namespace Rescue.Unity.BoardPresentation
             for (int i = 0; i < targetIds.Count; i++)
             {
                 string targetId = targetIds[i];
-                if (spawnedTargetsById.TryGetValue(targetId, out GameObject targetObject) && targetObject != null)
+                if (spawnedTargetsById.TryGetValue(targetId, out TargetVisualView? targetView) &&
+                    targetView is not null &&
+                    targetView.Object != null)
                 {
                     continue;
                 }
@@ -761,11 +766,11 @@ namespace Rescue.Unity.BoardPresentation
             HashSet<GameObject> trackedObjects = new HashSet<GameObject>();
             visualRegistry.AddTrackedObjects(trackedObjects);
 
-            foreach (KeyValuePair<string, GameObject> entry in spawnedTargetsById)
+            foreach (KeyValuePair<string, TargetVisualView> entry in spawnedTargetsById)
             {
-                if (entry.Value != null)
+                if (entry.Value.Object != null)
                 {
-                    trackedObjects.Add(entry.Value);
+                    trackedObjects.Add(entry.Value.Object);
                 }
             }
 
@@ -1035,6 +1040,52 @@ namespace Rescue.Unity.BoardPresentation
             return value.Replace(' ', '_');
         }
 
+        private bool TryGetLiveTargetView(string targetId, out TargetVisualView? targetView)
+        {
+            if (!spawnedTargetsById.TryGetValue(targetId, out targetView) ||
+                targetView is null)
+            {
+                return false;
+            }
+
+            if (targetView.Object != null)
+            {
+                return true;
+            }
+
+            spawnedTargetsById.Remove(targetId);
+            targetView = null;
+            return false;
+        }
+
+        private void RemoveRegisteredTarget(string targetId)
+        {
+            if (!spawnedTargetsById.TryGetValue(targetId, out TargetVisualView? targetView) ||
+                targetView is null ||
+                targetView.Object == null)
+            {
+                spawnedTargetsById.Remove(targetId);
+                return;
+            }
+
+            spawnedTargetsById.Remove(targetId);
+            RemoveSpawnedContentReference(targetView.Object);
+            DestroyContentObject(targetView.Object);
+        }
+
+        private void UnregisterAndDestroyTarget(string targetId, GameObject targetObject)
+        {
+            if (spawnedTargetsById.TryGetValue(targetId, out TargetVisualView? targetView) &&
+                targetView is not null &&
+                targetView.Object == targetObject)
+            {
+                spawnedTargetsById.Remove(targetId);
+            }
+
+            RemoveSpawnedContentReference(targetObject);
+            DestroyContentObject(targetObject);
+        }
+
         private sealed class BoardPieceView
         {
             public BoardPieceView(TileCoord coord, string contentLabel, GameObject contentObject)
@@ -1047,6 +1098,18 @@ namespace Rescue.Unity.BoardPresentation
             public TileCoord Coord { get; set; }
 
             public string ContentLabel { get; set; }
+
+            public GameObject Object { get; }
+        }
+
+        private sealed class TargetVisualView
+        {
+            public TargetVisualView(GameObject contentObject)
+            {
+                Object = contentObject;
+            }
+
+            public bool IsExtracting { get; set; }
 
             public GameObject Object { get; }
         }
