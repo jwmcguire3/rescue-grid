@@ -92,9 +92,11 @@ namespace Rescue.Unity.Presentation.Tests
         public void GameStateViewPresenter_ApplyActionResultBuildsPlaybackPlanWithFinalSync()
         {
             PresenterHarness harness = CreateHarness();
-            GameState state = CreateState();
+            GameState previousState = CreateState();
+            GameState resultState = previousState with { ActionCount = previousState.ActionCount + 1 };
+            ActionInput input = new ActionInput(new TileCoord(0, 0));
             ActionResult result = new ActionResult(
-                state,
+                resultState,
                 ImmutableArray.Create<ActionEvent>(
                     new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1))),
                     new GravitySettled(ImmutableArray.Create((new TileCoord(0, 0), new TileCoord(1, 0)))),
@@ -102,8 +104,8 @@ namespace Rescue.Unity.Presentation.Tests
                 ActionOutcome.Ok,
                 Snapshot: null);
 
-            harness.Presenter.Rebuild(state);
-            harness.Presenter.ApplyActionResult(result);
+            harness.Presenter.Rebuild(previousState);
+            harness.Presenter.ApplyActionResult(previousState, input, result);
 
             Assert.That(harness.Presenter.CurrentPlaybackPlan.Select(step => step.StepType), Is.EqualTo(new[]
             {
@@ -112,6 +114,8 @@ namespace Rescue.Unity.Presentation.Tests
                 ActionPlaybackStepType.Spawn,
                 ActionPlaybackStepType.FinalSync,
             }));
+            Assert.That(harness.Presenter.CurrentState, Is.EqualTo(resultState));
+            Assert.That(harness.Presenter.CurrentState!.ActionCount, Is.EqualTo(resultState.ActionCount));
         }
 
         private PresenterHarness CreateHarness(bool assignTargetFeedbackToPresenter = true)

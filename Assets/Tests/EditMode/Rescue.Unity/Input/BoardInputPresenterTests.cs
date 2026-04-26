@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using NUnit.Framework;
+using Rescue.Core.Pipeline;
 using Rescue.Core.Rng;
 using Rescue.Core.State;
 using Rescue.Unity.BoardPresentation;
@@ -63,15 +64,23 @@ namespace Rescue.Unity.Input.Tests
             GameStateViewPresenter viewPresenter = CreateViewPresenter();
             BoardInputPresenter presenter = CreateInputPresenter(gridView: null, viewPresenter);
             GameState initialState = CreateValidPairState();
+            TileCoord tappedCoord = new TileCoord(0, 0);
+            ActionInput input = new ActionInput(tappedCoord);
+            ActionResult expectedResult = Pipeline.RunAction(initialState, input);
             presenter.SetCurrentState(initialState);
 
-            bool handled = presenter.TryRunActionAt(new TileCoord(0, 0));
+            bool handled = presenter.TryRunActionAt(tappedCoord);
 
             Assert.That(handled, Is.True);
             Assert.That(presenter.CurrentState, Is.Not.Null);
             Assert.That(presenter.CurrentState, Is.Not.EqualTo(initialState));
-            Assert.That(presenter.CurrentState!.ActionCount, Is.EqualTo(initialState.ActionCount + 1));
+            Assert.That(presenter.CurrentState!.ActionCount, Is.EqualTo(expectedResult.State.ActionCount));
+            Assert.That(presenter.CurrentState.Board.Width, Is.EqualTo(expectedResult.State.Board.Width));
+            Assert.That(presenter.CurrentState.Board.Height, Is.EqualTo(expectedResult.State.Board.Height));
+            Assert.That(presenter.CurrentState.Dock.Slots.Length, Is.EqualTo(expectedResult.State.Dock.Slots.Length));
+            Assert.That(presenter.CurrentState.Frozen, Is.EqualTo(expectedResult.State.Frozen));
             Assert.That(viewPresenter.CurrentState, Is.EqualTo(presenter.CurrentState));
+            Assert.That(viewPresenter.CurrentPlaybackPlan[^1].StepType, Is.EqualTo(ActionPlaybackStepType.FinalSync));
         }
 
         [Test]

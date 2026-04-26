@@ -77,8 +77,10 @@ namespace Rescue.Unity.Input
                 return false;
             }
 
-            ActionResult result = Pipeline.RunAction(currentState, new ActionInput(coord));
-            ApplyResult(result);
+            GameState previousState = currentState;
+            ActionInput input = new ActionInput(coord);
+            ActionResult result = Pipeline.RunAction(previousState, input);
+            ApplyResult(previousState, input, result);
 
             return true;
         }
@@ -105,11 +107,11 @@ namespace Rescue.Unity.Input
             return TryRunActionAt(coord);
         }
 
-        private void ApplyResult(ActionResult result)
+        private void ApplyResult(GameState previousState, ActionInput input, ActionResult result)
         {
             if (gameStateView is not null)
             {
-                gameStateView.ApplyActionResult(result);
+                gameStateView.ApplyActionResult(previousState, input, result);
                 fallbackState = null;
             }
             else

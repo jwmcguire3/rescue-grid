@@ -76,7 +76,7 @@ namespace Rescue.Unity.Presentation
             }
         }
 
-        public void ApplyActionResult(ActionResult result)
+        public void ApplyActionResult(GameState previousState, ActionInput input, ActionResult result)
         {
             if (result is null)
             {
@@ -84,8 +84,13 @@ namespace Rescue.Unity.Presentation
                 return;
             }
 
-            GameState previousState = CurrentState ?? result.State;
-            CurrentPlaybackPlan = ActionPlaybackBuilder.Build(previousState, default, result);
+            if (previousState is null)
+            {
+                Debug.LogWarning($"{nameof(GameStateViewPresenter)} requires a valid previous {nameof(GameState)}.", this);
+                return;
+            }
+
+            CurrentPlaybackPlan = ActionPlaybackBuilder.Build(previousState, input, result);
             Rebuild(result.State);
 
             if (dockView is not null)
