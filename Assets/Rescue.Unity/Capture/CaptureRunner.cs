@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -7,6 +8,7 @@ using System.Text.Json;
 using Rescue.Content;
 using Rescue.Core.Pipeline;
 using Rescue.Core.State;
+using Rescue.Unity.Presentation;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -54,16 +56,66 @@ namespace Rescue.Unity.Capture
             }
 
             _started = true;
+            StartCoroutine(RunCapture());
+        }
 
+        private IEnumerator RunCapture()
+        {
+            CaptureSolveJson solve;
             try
             {
-                CaptureSolveJson solve = LoadSolve();
+                solve = LoadSolve();
                 if (HasArgument(PreviewArgument))
                 {
                     Debug.Log($"[CaptureRunner] Preview {solve.LevelId} seed {solve.Seed}: {FormatActions(solve.Actions)}");
                 }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[CaptureRunner] FAILURE {ex}");
+                ExitWithFailure();
+                yield break;
+            }
 
-                CaptureRunResult result = RunSolve(solve);
+            CaptureRunResult result;
+            GameStateViewPresenter? presenter = FindAnyObjectByType<GameStateViewPresenter>();
+            if (presenter is not null)
+            {
+                CaptureRunResult? visualResult = null;
+                Exception? visualFailure = null;
+                yield return RunSolveThroughPresenter(solve, presenter, value => visualResult = value, ex => visualFailure = ex);
+                if (visualFailure is not null)
+                {
+                    Debug.LogError($"[CaptureRunner] FAILURE {visualFailure}");
+                    ExitWithFailure();
+                    yield break;
+                }
+
+                if (visualResult is null)
+                {
+                    Debug.LogError("[CaptureRunner] FAILURE Capture presenter run did not produce a result.");
+                    ExitWithFailure();
+                    yield break;
+                }
+
+                result = visualResult;
+            }
+            else
+            {
+                try
+                {
+                    result = RunSolve(solve);
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"[CaptureRunner] FAILURE {ex}");
+                    ExitWithFailure();
+                    yield break;
+                }
+            }
+
+            try
+            {
                 WriteCaptureReport(result);
                 Debug.Log($"[CaptureRunner] SUCCESS {result.LevelId} seed {result.Seed}: {FormatActions(result.Actions)} -> {result.Outcome}");
                 for (int i = 0; i < result.StepEvents.Length; i++)
@@ -82,6 +134,73 @@ namespace Rescue.Unity.Capture
             {
                 Debug.LogError($"[CaptureRunner] FAILURE {ex}");
                 ExitWithFailure();
+            }
+        }
+
+        private static IEnumerator RunSolveThroughPresenter(
+            CaptureSolveJson solve,
+            GameStateViewPresenter presenter,
+            Action<CaptureRunResult> completed,
+            Action<Exception> failed)
+        {
+            GameState state;
+            try
+            {
+                state = Loader.LoadLevel(solve.LevelId, solve.Seed);
+            }
+            catch (Exception ex)
+            {
+                failed(ex);
+                yield break;
+            }
+
+            presenter.Rebuild(state);
+            yield return null;
+
+            ImmutableArray<CaptureStepResult>.Builder stepResults = ImmutableArray.CreateBuilder<CaptureStepResult>(solve.Actions.Length);
+            for (int i = 0; i < solve.Actions.Length; i++)
+            {
+                CaptureActionJson action = solve.Actions[i];
+                TileCoord tappedCoord = new TileCoord(action.Row, action.Col);
+                ActionInput input = new ActionInput(tappedCoord);
+                ActionResult result;
+                try
+                {
+                    result = Pipeline.RunAction(state, input, new RunOptions(RecordSnapshot: false));
+                    ThrowIfInvalid(result, i + 1, tappedCoord);
+                }
+                catch (Exception ex)
+                {
+                    failed(ex);
+                    yield break;
+                }
+
+                stepResults.Add(CreateStepResult(i + 1, action, result));
+                presenter.ApplyActionResult(state, input, result);
+
+                float deadline = Time.realtimeSinceStartup + 10.0f;
+                while (presenter.IsPlaybackActive && Time.realtimeSinceStartup < deadline)
+                {
+                    yield return null;
+                }
+
+                if (presenter.IsPlaybackActive)
+                {
+                    failed(new InvalidOperationException($"Capture playback did not finish step {i + 1} within 10 seconds."));
+                    yield break;
+                }
+
+                state = result.State;
+                yield return null;
+            }
+
+            try
+            {
+                completed(BuildCaptureResult(solve, stepResults.ToImmutable(), state));
+            }
+            catch (Exception ex)
+            {
+                failed(ex);
             }
         }
 
@@ -172,32 +291,20 @@ namespace Rescue.Unity.Capture
                 CaptureActionJson action = solve.Actions[i];
                 TileCoord tappedCoord = new TileCoord(action.Row, action.Col);
                 ActionResult result = Pipeline.RunAction(state, new ActionInput(tappedCoord), new RunOptions(RecordSnapshot: false));
-
-                for (int eventIndex = 0; eventIndex < result.Events.Length; eventIndex++)
-                {
-                    if (result.Events[eventIndex] is InvalidInput invalid)
-                    {
-                        throw new InvalidOperationException(
-                            $"Capture solve diverged at step {i + 1} on {tappedCoord}: invalid input {invalid.Reason}.");
-                    }
-                }
-
-                ImmutableArray<string>.Builder eventTypes = ImmutableArray.CreateBuilder<string>(result.Events.Length);
-                for (int eventIndex = 0; eventIndex < result.Events.Length; eventIndex++)
-                {
-                    eventTypes.Add(result.Events[eventIndex].GetType().Name);
-                }
-
-                stepResults.Add(new CaptureStepResult(
-                    StepIndex: i + 1,
-                    Row: action.Row,
-                    Col: action.Col,
-                    Outcome: result.Outcome.ToString(),
-                    EventTypes: eventTypes.ToImmutable()));
+                ThrowIfInvalid(result, i + 1, tappedCoord);
+                stepResults.Add(CreateStepResult(i + 1, action, result));
 
                 state = result.State;
             }
 
+            return BuildCaptureResult(solve, stepResults.ToImmutable(), state);
+        }
+
+        private static CaptureRunResult BuildCaptureResult(
+            CaptureSolveJson solve,
+            ImmutableArray<CaptureStepResult> stepResults,
+            GameState state)
+        {
             ActionOutcome finalOutcome = solve.ExpectedOutcome switch
             {
                 "Win" => ActionOutcome.Win,
@@ -213,9 +320,9 @@ namespace Rescue.Unity.Capture
                     $"Capture solve did not extract every target. Extracted {state.ExtractedTargetOrder.Length}/{state.Targets.Length}.");
             }
 
-            if (stepResults.Count == 0 || !string.Equals(stepResults[^1].Outcome, finalOutcome.ToString(), StringComparison.Ordinal))
+            if (stepResults.Length == 0 || !string.Equals(stepResults[^1].Outcome, finalOutcome.ToString(), StringComparison.Ordinal))
             {
-                string actualOutcome = stepResults.Count == 0 ? "None" : stepResults[^1].Outcome;
+                string actualOutcome = stepResults.Length == 0 ? "None" : stepResults[^1].Outcome;
                 throw new InvalidOperationException(
                     $"Capture solve ended with '{actualOutcome}' instead of '{finalOutcome}'.");
             }
@@ -224,9 +331,37 @@ namespace Rescue.Unity.Capture
                 solve.LevelId,
                 solve.Seed,
                 solve.Actions,
-                stepResults.ToImmutable(),
+                stepResults,
                 finalOutcome.ToString(),
                 state.ExtractedTargetOrder);
+        }
+
+        private static CaptureStepResult CreateStepResult(int stepIndex, CaptureActionJson action, ActionResult result)
+        {
+            ImmutableArray<string>.Builder eventTypes = ImmutableArray.CreateBuilder<string>(result.Events.Length);
+            for (int eventIndex = 0; eventIndex < result.Events.Length; eventIndex++)
+            {
+                eventTypes.Add(result.Events[eventIndex].GetType().Name);
+            }
+
+            return new CaptureStepResult(
+                StepIndex: stepIndex,
+                Row: action.Row,
+                Col: action.Col,
+                Outcome: result.Outcome.ToString(),
+                EventTypes: eventTypes.ToImmutable());
+        }
+
+        private static void ThrowIfInvalid(ActionResult result, int stepIndex, TileCoord tappedCoord)
+        {
+            for (int eventIndex = 0; eventIndex < result.Events.Length; eventIndex++)
+            {
+                if (result.Events[eventIndex] is InvalidInput invalid)
+                {
+                    throw new InvalidOperationException(
+                        $"Capture solve diverged at step {stepIndex} on {tappedCoord}: invalid input {invalid.Reason}.");
+                }
+            }
         }
 
         private static void WriteCaptureReport(CaptureRunResult result)

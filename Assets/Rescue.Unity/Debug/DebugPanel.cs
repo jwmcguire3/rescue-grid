@@ -15,6 +15,7 @@ using Rescue.Unity.Presentation;
 using Rescue.Unity.Telemetry;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -140,7 +141,29 @@ namespace Rescue.Unity.Debugging
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void BootstrapRuntimePanel()
         {
-            EnsureInstance();
+            if (ShouldBootstrapRuntimePanel())
+            {
+                EnsureInstance();
+            }
+        }
+
+        private static bool ShouldBootstrapRuntimePanel()
+        {
+            if (string.Equals(SceneManager.GetActiveScene().name, "DebugGameplay", StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            string[] args = Environment.GetCommandLineArgs();
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (string.Equals(args[i], "-rescue-debug-panel", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public static DebugPanel EnsureInstance()

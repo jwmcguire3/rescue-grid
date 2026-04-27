@@ -134,11 +134,12 @@ The level schema currently supports:
 
 The current Unity-facing project is a prototype/debug gameplay app for player-facing proof work.
 
-Current scene:
+Current scenes:
 
+- `Assets/Scenes/Game.unity`
 - `Assets/Scenes/DebugGameplay.unity`
 
-The committed play scene is `DebugGameplay.unity`; `Game.unity` is still the named main-play scene target in the Phase 1 instructions.
+`Game.unity` is the clean player/capture entry point. It boots L00 through the player-facing level session, progresses through L01-L15 from the victory screen, and keeps the debug panel out of the default player flow. `DebugGameplay.unity` remains the development scene for tuning, replay, and debug UI work.
 
 Unity implementation areas:
 

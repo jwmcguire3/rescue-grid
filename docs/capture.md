@@ -50,6 +50,12 @@ Desktop:
 scripts/record-l15.sh
 ```
 
+Windows PowerShell:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\record-l15.ps1
+```
+
 That launches the capture app with `-capture-l15`, which runs the exact committed solve inside the player.
 
 For repeatable local verification on Windows without leaving the player open, use:

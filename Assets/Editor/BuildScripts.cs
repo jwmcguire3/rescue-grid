@@ -12,7 +12,7 @@ public static class BuildScripts
     private const string DefaultBaseIdentifier = "com.defaultcompany.rescuegrid.dev";
     private const string DefaultAndroidFormat = "apk";
     private const string CaptureDefineSymbol = "CAPTURE_BUILD";
-    private const string CaptureScenePath = "Assets/DebugPanelSettingOnly.unity";
+    private const string CaptureScenePath = "Assets/Scenes/Game.unity";
 
     public static void BuildIos()
     {
