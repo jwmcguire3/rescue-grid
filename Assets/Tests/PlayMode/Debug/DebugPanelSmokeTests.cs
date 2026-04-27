@@ -4,6 +4,7 @@ using System.Reflection;
 using NUnit.Framework;
 using Rescue.Content;
 using Rescue.Unity.Debugging;
+using Rescue.Unity.Presentation;
 using UnityEngine;
 using UnityEngine.TestTools;
 
@@ -19,6 +20,7 @@ namespace Rescue.PlayMode.Tests.Debug
                 UnityEngine.Object.DestroyImmediate(DebugPanel.Instance.gameObject);
             }
 
+            DestroyVictoryScreenIfPresent();
             yield return null;
         }
 
@@ -30,6 +32,7 @@ namespace Rescue.PlayMode.Tests.Debug
                 UnityEngine.Object.DestroyImmediate(DebugPanel.Instance.gameObject);
             }
 
+            DestroyVictoryScreenIfPresent();
             yield return null;
         }
 
@@ -138,6 +141,44 @@ namespace Rescue.PlayMode.Tests.Debug
         }
 
         [UnityTest]
+        public System.Collections.IEnumerator VictoryReplayHidesOverlayAndResetsCurrentLevel()
+        {
+            DebugPanel panel = DebugPanel.EnsureInstance();
+            panel.ConfigureForTest(CreateTestLevel(), seed: 31);
+            VictoryScreenPresenter victoryScreen = VictoryScreenPresenter.EnsureInstance();
+
+            yield return null;
+
+            string initialJson = panel.ExportFullGameStateJson();
+            Assert.That(panel.StepOneAction(), Is.True);
+            victoryScreen.Show();
+
+            panel.ReplayCurrentLevel();
+
+            yield return null;
+
+            Assert.That(victoryScreen.IsVisible, Is.False);
+            Assert.That(panel.ExportFullGameStateJson(), Is.EqualTo(initialJson));
+        }
+
+        [UnityTest]
+        public System.Collections.IEnumerator NextLevelLoadsFollowingStreamingAssetLevel()
+        {
+            DebugPanel panel = DebugPanel.EnsureInstance();
+            panel.LoadLevel(Loader.LoadLevelDefinition("L01"), seed: 7);
+
+            yield return null;
+
+            Assert.That(panel.HasNextLevel(), Is.True);
+            Assert.That(panel.LoadNextLevel(), Is.True);
+
+            yield return null;
+
+            Assert.That(panel.CurrentLevelId, Is.EqualTo("L02"));
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [UnityTest]
         public System.Collections.IEnumerator StateExportProducesValidJson()
         {
             DebugPanel panel = DebugPanel.EnsureInstance();
@@ -195,6 +236,15 @@ namespace Rescue.PlayMode.Tests.Debug
             object? options = Activator.CreateInstance(optionsType);
             object? value = deserializeMethod.Invoke(null, new object?[] { json, typeof(object), options });
             return value is not null;
+        }
+
+        private static void DestroyVictoryScreenIfPresent()
+        {
+            VictoryScreenPresenter? victoryScreen = UnityEngine.Object.FindFirstObjectByType<VictoryScreenPresenter>();
+            if (victoryScreen is not null)
+            {
+                UnityEngine.Object.DestroyImmediate(victoryScreen.gameObject);
+            }
         }
 
         private static LevelJson CreateTestLevel()

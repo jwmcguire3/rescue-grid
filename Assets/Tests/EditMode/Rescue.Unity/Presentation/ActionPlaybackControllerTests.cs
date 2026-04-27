@@ -123,6 +123,7 @@ namespace Rescue.Unity.Presentation.Tests
             SetPrivateField(settings, "gravityDurationSeconds", 0.18f);
             SetPrivateField(settings, "spawnDurationSeconds", 0.13f);
             SetPrivateField(settings, "targetExtractDurationSeconds", 0.16f);
+            SetPrivateField(settings, "winFxDurationSeconds", 0.73f);
             SetPrivateField(settings, "waterRiseDurationSeconds", 0.15f);
             SetPrivateField(settings, "waterForecastTransitionDurationSeconds", 0.19f);
 
@@ -139,6 +140,7 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.Gravity), Is.EqualTo(0.18f));
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.Spawn), Is.EqualTo(0.13f));
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.TargetExtract), Is.EqualTo(0.16f));
+            Assert.That(GetStepDuration(controller, new Won("pup-1", TotalActions: 3, ExtractedTargetOrder: ImmutableArray.Create("pup-1"))), Is.EqualTo(0.73f));
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.WaterRise), Is.EqualTo(0.19f));
         }
 

@@ -14,6 +14,7 @@ namespace Rescue.Unity.Presentation
         [SerializeField] private DockViewPresenter? dockView;
         [SerializeField] private TargetFeedbackPresenter? targetFeedback;
         [SerializeField] private ActionPlaybackController? playbackController;
+        [SerializeField] private VictoryScreenPresenter? victoryScreen;
 
         private bool dockFeedbackHandledByPlayback;
 
@@ -31,6 +32,7 @@ namespace Rescue.Unity.Presentation
                 return;
             }
 
+            victoryScreen?.Hide();
             ForceSyncToState(state, "rebuild", cancelActivePlayback: true, clearPlaybackPlan: true);
         }
 
@@ -67,6 +69,7 @@ namespace Rescue.Unity.Presentation
             ResolvePlaybackController()?.CancelPlayback();
             CurrentState = null;
             CurrentPlaybackPlan = ActionPlaybackPlan.Empty;
+            victoryScreen?.Hide();
 
             if (boardGrid is null)
             {
@@ -139,6 +142,11 @@ namespace Rescue.Unity.Presentation
                 CurrentPlaybackPlan = ActionPlaybackPlan.Empty;
             }
 
+            if (!IsWinStateForPresentation(state))
+            {
+                victoryScreen?.Hide();
+            }
+
             if (boardGrid is null)
             {
                 Debug.LogWarning($"{nameof(GameStateViewPresenter)} is missing {nameof(boardGrid)}.", this);
@@ -209,6 +217,23 @@ namespace Rescue.Unity.Presentation
             return playbackController;
         }
 
+        private VictoryScreenPresenter? ResolveVictoryScreen()
+        {
+            if (victoryScreen is not null)
+            {
+                return victoryScreen;
+            }
+
+            victoryScreen = GetComponent<VictoryScreenPresenter>();
+            if (victoryScreen is not null)
+            {
+                return victoryScreen;
+            }
+
+            victoryScreen = VictoryScreenPresenter.EnsureInstance();
+            return victoryScreen;
+        }
+
         private void FinalSyncActionResult(ActionResult result)
         {
             ForceSyncToState(
@@ -217,12 +242,39 @@ namespace Rescue.Unity.Presentation
                 cancelActivePlayback: false,
                 clearPlaybackPlan: false);
 
+            if (result.Outcome == ActionOutcome.Win && IsWinStateForPresentation(result.State))
+            {
+                boardContent?.ClearContent();
+                dockView?.ClearSlots();
+                ResolveVictoryScreen()?.Show();
+                dockFeedbackHandledByPlayback = false;
+                return;
+            }
+
             if (!dockFeedbackHandledByPlayback && dockView is not null)
             {
                 dockView.ApplyActionResult(result);
             }
 
             dockFeedbackHandledByPlayback = false;
+        }
+
+        private static bool IsWinStateForPresentation(GameState state)
+        {
+            if (state.Targets.IsDefaultOrEmpty)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < state.Targets.Length; i++)
+            {
+                if (!state.Targets[i].Extracted)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

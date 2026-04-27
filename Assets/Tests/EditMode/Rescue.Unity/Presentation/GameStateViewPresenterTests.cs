@@ -10,6 +10,7 @@ using Rescue.Unity.Presentation;
 using Rescue.Unity.UI;
 using UnityEngine;
 using UnityEngine.TestTools;
+using UnityEngine.UIElements;
 using CoreBoard = Rescue.Core.State.Board;
 using CoreDock = Rescue.Core.State.Dock;
 
@@ -86,6 +87,44 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(0));
             Assert.That(harness.WaterRoot.childCount, Is.EqualTo(0));
             Assert.That(harness.DockPieceContainer.childCount, Is.EqualTo(0));
+            Assert.That(harness.VictoryScreen.IsVisible, Is.False);
+        }
+
+        [Test]
+        public void GameStateViewPresenter_WinFinalSyncClearsPiecesAndShowsVictoryScreen()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState previousState = CreateState();
+            GameState resultState = CreateWinState(previousState);
+            ActionResult result = new ActionResult(
+                resultState,
+                ImmutableArray.Create<ActionEvent>(
+                    new TargetExtracted("puppy-1", new TileCoord(0, 2)),
+                    new Won("puppy-1", TotalActions: 4, ExtractedTargetOrder: ImmutableArray.Create("puppy-1"))),
+                ActionOutcome.Win,
+                Snapshot: null);
+
+            harness.Presenter.Rebuild(previousState);
+            Assert.That(harness.ContentRoot.childCount, Is.GreaterThan(0));
+            Assert.That(harness.DockPieceContainer.childCount, Is.GreaterThan(0));
+
+            harness.Presenter.ApplyActionResult(previousState, new ActionInput(new TileCoord(0, 0)), result);
+
+            Assert.That(harness.Presenter.CurrentState, Is.EqualTo(resultState));
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(0));
+            Assert.That(harness.DockPieceContainer.childCount, Is.EqualTo(0));
+            Assert.That(harness.VictoryScreen.IsVisible, Is.True);
+        }
+
+        [Test]
+        public void GameStateViewPresenter_RebuildHidesVictoryScreen()
+        {
+            PresenterHarness harness = CreateHarness();
+            harness.VictoryScreen.Show();
+
+            harness.Presenter.Rebuild(CreateState());
+
+            Assert.That(harness.VictoryScreen.IsVisible, Is.False);
         }
 
         [Test]
@@ -425,6 +464,11 @@ namespace Rescue.Unity.Presentation.Tests
             SetPrivateField(targetFeedback, "feedbackRoot", targetFeedbackRoot);
             SetPrivateField(targetFeedback, "fallbackTargetPrefab", fallbackTargetPrefab);
 
+            GameObject victoryObject = CreateTrackedGameObject("VictoryScreen");
+            victoryObject.AddComponent<UIDocument>();
+            VictoryScreenPresenter victoryScreen = victoryObject.AddComponent<VictoryScreenPresenter>();
+            SetPrivateField(presenter, "victoryScreen", victoryScreen);
+
             SetPrivateField(presenter, "boardGrid", boardGrid);
             SetPrivateField(presenter, "boardContent", boardContent);
             SetPrivateField(presenter, "waterView", waterView);
@@ -441,7 +485,7 @@ namespace Rescue.Unity.Presentation.Tests
                 SetPrivateField(presenter, "playbackController", playbackController);
             }
 
-            return new PresenterHarness(presenter, boardRoot, contentRoot, waterRoot, dockPieceContainer);
+            return new PresenterHarness(presenter, boardRoot, contentRoot, waterRoot, dockPieceContainer, victoryScreen);
         }
 
         private GameObject CreateTrackedGameObject(string name)
@@ -529,6 +573,27 @@ namespace Rescue.Unity.Presentation.Tests
                 SpawnRecoveryCounter: 0);
         }
 
+        private static GameState CreateWinState(GameState previousState)
+        {
+            ImmutableArray<ImmutableArray<Tile>> rows = ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new DebrisTile(DebrisType.A),
+                    new BlockerTile(BlockerType.Crate, 1, null),
+                    new TargetTile("puppy-1", Extracted: true)),
+                ImmutableArray.Create<Tile>(
+                    new EmptyTile(),
+                    new EmptyTile(),
+                    new EmptyTile()));
+
+            return previousState with
+            {
+                Board = new CoreBoard(3, 2, rows),
+                Targets = ImmutableArray.Create(new TargetState("puppy-1", new TileCoord(0, 2), Extracted: true, OneClearAway: false)),
+                ExtractedTargetOrder = ImmutableArray.Create("puppy-1"),
+                Frozen = true,
+            };
+        }
+
         private readonly struct PresenterHarness
         {
             public PresenterHarness(
@@ -536,13 +601,15 @@ namespace Rescue.Unity.Presentation.Tests
                 Transform boardRoot,
                 Transform contentRoot,
                 Transform waterRoot,
-                Transform dockPieceContainer)
+                Transform dockPieceContainer,
+                VictoryScreenPresenter victoryScreen)
             {
                 Presenter = presenter;
                 BoardRoot = boardRoot;
                 ContentRoot = contentRoot;
                 WaterRoot = waterRoot;
                 DockPieceContainer = dockPieceContainer;
+                VictoryScreen = victoryScreen;
             }
 
             public GameStateViewPresenter Presenter { get; }
@@ -554,6 +621,8 @@ namespace Rescue.Unity.Presentation.Tests
             public Transform WaterRoot { get; }
 
             public Transform DockPieceContainer { get; }
+
+            public VictoryScreenPresenter VictoryScreen { get; }
         }
     }
 }

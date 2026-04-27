@@ -237,6 +237,8 @@ namespace Rescue.Unity.Presentation
             {
                 switch (step.SourceEvent)
                 {
+                    case Won:
+                        return settings.WinFxDurationSeconds;
                     case DockInserted:
                         return settings.DockInsertFeedbackDurationSeconds;
                     case DockCleared:

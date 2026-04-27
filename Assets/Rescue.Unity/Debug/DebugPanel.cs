@@ -99,6 +99,7 @@ namespace Rescue.Unity.Debugging
         private Button? _copyStateButton;
         private Button? _copyFullStateButton;
         private VisualElement? _eventLogList;
+        private VictoryScreenPresenter? _victoryScreenPresenter;
         [SerializeField] private GameStateViewPresenter? _gameStateViewPresenter;
 
         private bool _initialized;
@@ -169,6 +170,7 @@ namespace Rescue.Unity.Debugging
             _document.panelSettings = CreatePanelSettings();
             _panelSettings = _document.panelSettings;
             BuildPanelTree();
+            BindVictoryScreen();
             ConfigureInputs();
             InitializeDefaultStateIfNeeded();
             RefreshUi();
@@ -185,6 +187,12 @@ namespace Rescue.Unity.Debugging
             _inputActions.Clear();
             _telemetryLogger?.Dispose();
             _telemetryLogger = null;
+
+            if (_victoryScreenPresenter is not null)
+            {
+                _victoryScreenPresenter.ReplayRequested -= ReplayCurrentLevel;
+                _victoryScreenPresenter.NextLevelRequested -= HandleVictoryNextLevelRequested;
+            }
 
             if (_instance == this)
             {
@@ -263,6 +271,8 @@ namespace Rescue.Unity.Debugging
 
         public void ResetLevel()
         {
+            ResolveVictoryScreenPresenter()?.Hide();
+
             if (_loadedReplay is not null)
             {
                 _replayFrameIndex = 0;
@@ -292,6 +302,36 @@ namespace Rescue.Unity.Debugging
             SetStatus($"Reset {_currentLevelId} to initial state for seed {_currentSeed}.");
             RefreshVisualPresenter();
             RefreshUi();
+        }
+
+        public void ReplayCurrentLevel()
+        {
+            ResetLevel();
+        }
+
+        public bool HasNextLevel()
+        {
+            return GetNextLevelId() is not null;
+        }
+
+        public bool LoadNextLevel()
+        {
+            string? nextLevelId = GetNextLevelId();
+            if (string.IsNullOrWhiteSpace(nextLevelId))
+            {
+                SetStatus("No next level available.");
+                SyncVictoryScreenNextAvailability();
+                RefreshUi();
+                return false;
+            }
+
+            ResolveVictoryScreenPresenter()?.Hide();
+            ClearReplayState();
+            _testLevel = null;
+            _currentLevelId = nextLevelId;
+            GameState loaded = LoadLevelById(_currentLevelId, _currentSeed);
+            SetLoadedState(loaded, _currentLevelId, _currentSeed, $"Loaded {_currentLevelId} with seed {_currentSeed}.");
+            return true;
         }
 
         public bool StepOneAction()
@@ -477,6 +517,7 @@ namespace Rescue.Unity.Debugging
 
         private void SetLoadedState(GameState state, string levelId, int seed, string status)
         {
+            ResolveVictoryScreenPresenter()?.Hide();
             ClearReplayState();
             _currentState = state;
             _initialState = state;
@@ -492,6 +533,7 @@ namespace Rescue.Unity.Debugging
             SetStatus(status);
             RefreshVisualPresenter();
             RefreshUi();
+            SyncVictoryScreenNextAvailability();
             StartTelemetrySession(state, levelId, seed);
             OnLevelLoadedForTuning();
         }
@@ -543,6 +585,42 @@ namespace Rescue.Unity.Debugging
             }
 
             return UnityEngine.Object.FindFirstObjectByType<ActionPlaybackController>();
+        }
+
+        private VictoryScreenPresenter? ResolveVictoryScreenPresenter()
+        {
+            if (_victoryScreenPresenter is not null)
+            {
+                return _victoryScreenPresenter;
+            }
+
+            _victoryScreenPresenter = VictoryScreenPresenter.EnsureInstance();
+            return _victoryScreenPresenter;
+        }
+
+        private void BindVictoryScreen()
+        {
+            VictoryScreenPresenter? presenter = ResolveVictoryScreenPresenter();
+            if (presenter is null)
+            {
+                return;
+            }
+
+            presenter.ReplayRequested -= ReplayCurrentLevel;
+            presenter.ReplayRequested += ReplayCurrentLevel;
+            presenter.NextLevelRequested -= HandleVictoryNextLevelRequested;
+            presenter.NextLevelRequested += HandleVictoryNextLevelRequested;
+            SyncVictoryScreenNextAvailability();
+        }
+
+        private void HandleVictoryNextLevelRequested()
+        {
+            LoadNextLevel();
+        }
+
+        private void SyncVictoryScreenNextAvailability()
+        {
+            ResolveVictoryScreenPresenter()?.SetNextLevelAvailable(HasNextLevel());
         }
 
         private void ApplyPlaybackControlsFromUi()
@@ -1668,6 +1746,23 @@ namespace Rescue.Unity.Debugging
             List<string> sorted = new List<string>(ids);
             sorted.Sort(StringComparer.Ordinal);
             return sorted;
+        }
+
+        private string? GetNextLevelId()
+        {
+            if (string.IsNullOrWhiteSpace(_currentLevelId))
+            {
+                return null;
+            }
+
+            List<string> levels = EnumerateLevelIds();
+            int currentIndex = levels.IndexOf(_currentLevelId);
+            if (currentIndex < 0 || currentIndex >= levels.Count - 1)
+            {
+                return null;
+            }
+
+            return levels[currentIndex + 1];
         }
 
         private static void AddIdsFromDirectory(string directoryPath, ISet<string> ids)

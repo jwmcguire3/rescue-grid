@@ -17,6 +17,7 @@ namespace Rescue.Unity.Presentation
         public const float DefaultGravityDurationSeconds = 0.15f;
         public const float DefaultSpawnDurationSeconds = 0.12f;
         public const float DefaultTargetExtractDurationSeconds = 0.12f;
+        public const float DefaultWinFxDurationSeconds = 0.60f;
         public const float DefaultWaterRiseDurationSeconds = 0.15f;
         public const float DefaultWaterForecastTransitionDurationSeconds = 0.10f;
         public const float DefaultWaterForecastPulseDurationSeconds = 0.25f;
@@ -39,6 +40,7 @@ namespace Rescue.Unity.Presentation
         [SerializeField] private float gravityDurationSeconds = DefaultGravityDurationSeconds;
         [SerializeField] private float spawnDurationSeconds = DefaultSpawnDurationSeconds;
         [SerializeField] private float targetExtractDurationSeconds = DefaultTargetExtractDurationSeconds;
+        [SerializeField] private float winFxDurationSeconds = DefaultWinFxDurationSeconds;
         [SerializeField] private float waterRiseDurationSeconds = DefaultWaterRiseDurationSeconds;
         [SerializeField] private float waterForecastTransitionDurationSeconds = DefaultWaterForecastTransitionDurationSeconds;
         [SerializeField] private float waterForecastPulseDurationSeconds = DefaultWaterForecastPulseDurationSeconds;
@@ -74,6 +76,8 @@ namespace Rescue.Unity.Presentation
         public float SpawnDurationSeconds => ScaleDuration(spawnDurationSeconds);
 
         public float TargetExtractDurationSeconds => ScaleDuration(targetExtractDurationSeconds);
+
+        public float WinFxDurationSeconds => ScaleDuration(winFxDurationSeconds);
 
         public float WaterRiseDurationSeconds => ScaleDuration(waterRiseDurationSeconds);
 

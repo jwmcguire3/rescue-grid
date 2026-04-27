@@ -24,6 +24,12 @@ namespace Rescue.PlayMode.Tests.Smoke
                 UnityObject.DestroyImmediate(DebugPanel.Instance.gameObject);
             }
 
+            VictoryScreenPresenter? victoryScreen = UnityObject.FindFirstObjectByType<VictoryScreenPresenter>();
+            if (victoryScreen is not null)
+            {
+                UnityObject.DestroyImmediate(victoryScreen.gameObject);
+            }
+
             yield return SceneManager.LoadSceneAsync("DebugGameplay", LoadSceneMode.Single);
             yield return null;
         }
@@ -36,6 +42,12 @@ namespace Rescue.PlayMode.Tests.Smoke
                 UnityObject.DestroyImmediate(DebugPanel.Instance.gameObject);
             }
 
+            VictoryScreenPresenter? victoryScreen = UnityObject.FindFirstObjectByType<VictoryScreenPresenter>();
+            if (victoryScreen is not null)
+            {
+                UnityObject.DestroyImmediate(victoryScreen.gameObject);
+            }
+
             yield return null;
         }
 
@@ -46,6 +58,7 @@ namespace Rescue.PlayMode.Tests.Smoke
             BoardInputPresenter boardInput = FindRequired<BoardInputPresenter>();
             ActionPlaybackController playbackController = FindRequired<ActionPlaybackController>();
             FxEventRouter fxEventRouter = FindRequired<FxEventRouter>();
+            VictoryScreenPresenter victoryScreen = VictoryScreenPresenter.EnsureInstance();
 
             Assert.That(
                 GetSerializedReference<GameStateViewPresenter, ActionPlaybackController>(gameStateView, "playbackController")
@@ -94,6 +107,7 @@ namespace Rescue.PlayMode.Tests.Smoke
                 GetSerializedReference<BoardInputPresenter, GameStateViewPresenter>(boardInput, "gameStateView"),
                 Is.SameAs(gameStateView),
                 "BoardInputPresenter should route actions through GameStateViewPresenter so playback can lock input and apply Plan 1/2 beats.");
+            Assert.That(victoryScreen.IsVisible, Is.False, "Victory screen should be present for terminal wins but hidden before a win.");
 
             LogAssert.NoUnexpectedReceived();
             yield return null;
