@@ -507,7 +507,11 @@ namespace Rescue.SolveAuthoringTool
 
                 blockedNeighbors += CountBlockedRequiredNeighbors(state.Board, target.Coord);
                 score -= target.Coord.Row * 20;
-                if (target.OneClearAway)
+                if (target.Readiness == TargetReadiness.Progressing)
+                {
+                    score += 250;
+                }
+                else if (target.OneClearAway)
                 {
                     score += 600;
                 }
@@ -525,7 +529,9 @@ namespace Rescue.SolveAuthoringTool
                 score += events[i] switch
                 {
                     TargetExtracted => 2500,
+                    TargetExtractionLatched => 900,
                     TargetOneClearAway => 500,
+                    TargetProgressed => 220,
                     BlockerBroken => 180,
                     DockCleared => 220,
                     WaterRose => -350,
@@ -619,6 +625,13 @@ namespace Rescue.SolveAuthoringTool
                 dock.Add(state.Dock.Slots[i]?.ToString() ?? ".");
             }
 
+            List<string> targets = new List<string>(state.Targets.Length);
+            for (int i = 0; i < state.Targets.Length; i++)
+            {
+                TargetState target = state.Targets[i];
+                targets.Add($"{target.TargetId}@{target.Coord.Row},{target.Coord.Col}:{target.Readiness}");
+            }
+
             return string.Join("|", new[]
             {
                 string.Join("/", rows),
@@ -629,6 +642,7 @@ namespace Rescue.SolveAuthoringTool
                 state.Vine.ActionsSinceLastClear.ToString(),
                 state.Vine.PriorityCursor.ToString(),
                 state.Vine.PendingGrowthTile?.ToString() ?? "none",
+                string.Join(";", targets),
                 string.Join(",", state.ExtractedTargetOrder),
                 state.RngState.S0.ToString(),
                 state.RngState.S1.ToString(),

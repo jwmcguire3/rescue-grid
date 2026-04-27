@@ -1945,6 +1945,7 @@ namespace Rescue.Unity.Debugging
                     state.Targets[i].TargetId,
                     state.Targets[i].Coord.Row,
                     state.Targets[i].Coord.Col,
+                    state.Targets[i].Readiness.ToString(),
                     state.Targets[i].Extracted,
                     state.Targets[i].OneClearAway);
             }
@@ -2094,6 +2095,7 @@ namespace Rescue.Unity.Debugging
         string TargetId,
         int Row,
         int Col,
+        string Readiness,
         bool Extracted,
         bool OneClearAway);
 

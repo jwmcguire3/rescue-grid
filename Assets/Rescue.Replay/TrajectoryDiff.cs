@@ -90,7 +90,8 @@ namespace Rescue.Replay
             for (int i = 0; i < targets.Length; i++)
             {
                 TargetState target = targets[i];
-                values.Add($"{target.TargetId}@{target.Coord.Row},{target.Coord.Col}:{target.Extracted}:{target.OneClearAway}");
+                // Target readiness is player-visible rules state, so replay diffs must catch it.
+                values.Add($"{target.TargetId}@{target.Coord.Row},{target.Coord.Col}:{target.Readiness}");
             }
 
             return string.Join(";", values);

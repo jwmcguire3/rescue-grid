@@ -210,11 +210,25 @@ namespace Rescue.Content
                 int blockedNeighbors = CountBlockedRequiredNeighbors(board, target.Coord);
                 initialized.Add(target with
                 {
-                    OneClearAway = blockedNeighbors == 1,
+                    Readiness = CalculateInitialReadiness(board, target.Coord, blockedNeighbors),
                 });
             }
 
             return initialized.ToImmutable();
+        }
+
+        private static TargetReadiness CalculateInitialReadiness(Board board, TileCoord targetCoord, int blockedRequiredNeighbors)
+        {
+            if (blockedRequiredNeighbors == 1)
+            {
+                return TargetReadiness.OneClearAway;
+            }
+
+            int requiredNeighbors = BoardHelpers.OrthogonalNeighbors(board, targetCoord).Length;
+            int openNeighbors = requiredNeighbors - blockedRequiredNeighbors;
+            return openNeighbors * 2 >= requiredNeighbors
+                ? TargetReadiness.Progressing
+                : TargetReadiness.Trapped;
         }
 
         private static int CountBlockedRequiredNeighbors(Board board, TileCoord targetCoord)

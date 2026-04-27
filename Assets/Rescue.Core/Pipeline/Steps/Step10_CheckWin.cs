@@ -7,6 +7,11 @@ namespace Rescue.Core.Pipeline.Steps
     {
         public static StepResult Run(GameState state, StepContext context)
         {
+            if (state.Targets.Length == 0)
+            {
+                return new StepResult(state, context, ImmutableArray<ActionEvent>.Empty);
+            }
+
             bool isWin = true;
             for (int i = 0; i < state.Targets.Length; i++)
             {

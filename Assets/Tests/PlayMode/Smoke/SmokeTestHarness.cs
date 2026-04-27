@@ -97,7 +97,7 @@ namespace Rescue.PlayMode.Tests.Smoke
 
             string dock = string.Join(",", state.Dock.Slots.Select(static slot => slot?.ToString() ?? "."));
             string targets = string.Join(";", state.Targets.Select(static target =>
-                $"{target.TargetId}@{target.Coord.Row},{target.Coord.Col}:{target.Extracted}:{target.OneClearAway}"));
+                $"{target.TargetId}@{target.Coord.Row},{target.Coord.Col}:{target.Readiness}"));
             string extracted = string.Join(",", state.ExtractedTargetOrder);
 
             return string.Join("|", new[]
@@ -159,6 +159,7 @@ namespace Rescue.PlayMode.Tests.Smoke
                 if (target.Extracted)
                 {
                     Assert.That(target.OneClearAway, Is.False, $"{levelId} extracted target {target.TargetId} should not remain one-clear-away.");
+                    Assert.That(target.ExtractableLatched, Is.False, $"{levelId} extracted target {target.TargetId} should not remain latched.");
                     continue;
                 }
 

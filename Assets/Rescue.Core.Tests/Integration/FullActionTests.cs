@@ -37,6 +37,7 @@ namespace Rescue.Core.Tests.Integration
             IntegrationTestFixtures.AssertEventTypeOrder(result.Events,
                 nameof(GroupRemoved),
                 nameof(BlockerDamaged),
+                nameof(TargetExtractionLatched),
                 nameof(DockInserted),
                 nameof(DockInserted),
                 nameof(DockInserted),

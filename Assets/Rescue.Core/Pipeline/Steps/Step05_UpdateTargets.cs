@@ -20,17 +20,17 @@ namespace Rescue.Core.Pipeline.Steps
                 if (!before.Extracted)
                 {
                     int blockedRequiredNeighbors = CountBlockedRequiredNeighbors(board, before.Coord);
-                    bool nowLatched = before.ExtractableLatched || blockedRequiredNeighbors == 0;
-                    bool oneClearAway = !nowLatched && blockedRequiredNeighbors == 1;
+                    TargetReadiness readiness = before.ExtractableLatched
+                        ? TargetReadiness.ExtractableLatched
+                        : CalculateReadiness(board, before.Coord, blockedRequiredNeighbors);
                     after = before with
                     {
-                        ExtractableLatched = nowLatched,
-                        OneClearAway = oneClearAway,
+                        Readiness = readiness,
                     };
 
-                    if (!before.OneClearAway && after.OneClearAway)
+                    if (before.Readiness != after.Readiness)
                     {
-                        events.Add(new TargetOneClearAway(after.TargetId, after.Coord));
+                        AddReadinessTransitionEvent(events, after);
                     }
 
                     if (!before.ExtractableLatched && after.ExtractableLatched)
@@ -51,6 +51,43 @@ namespace Rescue.Core.Pipeline.Steps
                 LatchedTargetIdsThisAction = latchedTargetIds.ToImmutable(),
             };
             return new StepResult(updatedState, updatedContext, events.ToImmutable());
+        }
+
+        private static TargetReadiness CalculateReadiness(Board board, TileCoord targetCoord, int blockedRequiredNeighbors)
+        {
+            if (blockedRequiredNeighbors == 0)
+            {
+                return TargetReadiness.ExtractableLatched;
+            }
+
+            if (blockedRequiredNeighbors == 1)
+            {
+                return TargetReadiness.OneClearAway;
+            }
+
+            int requiredNeighbors = BoardHelpers.OrthogonalNeighbors(board, targetCoord).Length;
+            int openNeighbors = requiredNeighbors - blockedRequiredNeighbors;
+            return openNeighbors * 2 >= requiredNeighbors
+                ? TargetReadiness.Progressing
+                : TargetReadiness.Trapped;
+        }
+
+        private static void AddReadinessTransitionEvent(
+            ImmutableArray<ActionEvent>.Builder events,
+            TargetState target)
+        {
+            switch (target.Readiness)
+            {
+                case TargetReadiness.Progressing:
+                    events.Add(new TargetProgressed(target.TargetId, target.Coord));
+                    break;
+                case TargetReadiness.OneClearAway:
+                    events.Add(new TargetOneClearAway(target.TargetId, target.Coord));
+                    break;
+                case TargetReadiness.ExtractableLatched:
+                    events.Add(new TargetExtractionLatched(target.TargetId, target.Coord));
+                    break;
+            }
         }
 
         private static int CountBlockedRequiredNeighbors(Board board, TileCoord targetCoord)

@@ -22,9 +22,9 @@ namespace Rescue.Core.Pipeline.Steps
                 {
                     after = before with
                     {
-                        Extracted = before.ExtractableLatched,
-                        OneClearAway = before.ExtractableLatched ? false : before.OneClearAway,
-                        ExtractableLatched = false,
+                        Readiness = before.ExtractableLatched
+                            ? TargetReadiness.Extracted
+                            : before.Readiness,
                     };
 
                     if (!before.Extracted && after.Extracted)

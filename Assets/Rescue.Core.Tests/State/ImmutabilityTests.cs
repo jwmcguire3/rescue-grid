@@ -65,7 +65,7 @@ namespace Rescue.Core.Tests.State
             Dock updatedDock = dock with { Size = 5 };
             WaterState updatedWater = water with { ActionsUntilRise = 1 };
             VineState updatedVine = vine with { PriorityCursor = 1 };
-            TargetState updatedTargetState = targetState with { OneClearAway = true };
+            TargetState updatedTargetState = targetState with { Readiness = TargetReadiness.OneClearAway };
             GameState updatedGameState = gameState with { Frozen = true, ActionCount = 6 };
 
             Assert.That(coord, Is.EqualTo(new TileCoord(1, 2)));
@@ -149,7 +149,7 @@ namespace Rescue.Core.Tests.State
             ImmutableArray<ImmutableArray<Tile>> updatedTiles = board.Tiles.SetItem(0, board.Tiles[0].SetItem(0, new EmptyTile()));
             ImmutableArray<DebrisType?> updatedSlots = dock.Slots.SetItem(1, DebrisType.B);
             ImmutableArray<TileCoord> updatedGrowthList = vine.GrowthPriorityList.Add(new TileCoord(1, 1));
-            ImmutableArray<TargetState> updatedTargets = gameState.Targets.SetItem(0, gameState.Targets[0] with { Extracted = true });
+            ImmutableArray<TargetState> updatedTargets = gameState.Targets.SetItem(0, gameState.Targets[0] with { Readiness = TargetReadiness.Extracted });
             ImmutableArray<string> updatedOrder = gameState.ExtractedTargetOrder.Add("target-1");
 
             Assert.That(board.Tiles[0][0], Is.EqualTo(new DebrisTile(DebrisType.A)));

@@ -39,7 +39,11 @@ namespace Rescue.Core.Pipeline
 
     public sealed record Spawned(ImmutableArray<(TileCoord Coord, DebrisType Type)> Pieces) : ActionEvent;
 
+    public sealed record TargetProgressed(string TargetId, TileCoord Coord) : ActionEvent;
+
     public sealed record TargetOneClearAway(string TargetId, TileCoord Coord) : ActionEvent;
+
+    public sealed record TargetExtractionLatched(string TargetId, TileCoord Coord) : ActionEvent;
 
     public sealed record TargetExtracted(string TargetId, TileCoord Coord) : ActionEvent;
 

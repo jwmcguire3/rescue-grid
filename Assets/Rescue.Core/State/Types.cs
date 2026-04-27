@@ -54,12 +54,52 @@ namespace Rescue.Core.State
         bool? ForceEmergency,
         double? OverrideAssistanceChance);
 
-    public sealed record TargetState(
-        string TargetId,
-        TileCoord Coord,
-        bool Extracted,
-        bool OneClearAway,
-        bool ExtractableLatched = false);
+    public enum TargetReadiness
+    {
+        Trapped,
+        Progressing,
+        OneClearAway,
+        ExtractableLatched,
+        Extracted,
+        Distressed,
+    }
+
+    public sealed record TargetState(string TargetId, TileCoord Coord, TargetReadiness Readiness)
+    {
+        public TargetState(
+            string targetId,
+            TileCoord coord,
+            bool Extracted,
+            bool OneClearAway,
+            bool ExtractableLatched = false)
+            : this(targetId, coord, FromLegacyState(Extracted, OneClearAway, ExtractableLatched))
+        {
+        }
+
+        public bool Extracted => Readiness == TargetReadiness.Extracted;
+
+        public bool OneClearAway => Readiness == TargetReadiness.OneClearAway;
+
+        public bool ExtractableLatched => Readiness == TargetReadiness.ExtractableLatched;
+
+        private static TargetReadiness FromLegacyState(
+            bool extracted,
+            bool oneClearAway,
+            bool extractableLatched)
+        {
+            if (extracted)
+            {
+                return TargetReadiness.Extracted;
+            }
+
+            if (extractableLatched)
+            {
+                return TargetReadiness.ExtractableLatched;
+            }
+
+            return oneClearAway ? TargetReadiness.OneClearAway : TargetReadiness.Trapped;
+        }
+    }
 
     public sealed record GameState(
         Board Board,
