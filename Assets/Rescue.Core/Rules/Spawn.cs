@@ -23,6 +23,7 @@ namespace Rescue.Core.Rules
         bool HasAdjacency);
 
     internal readonly record struct UrgentRoute(
+        string TargetId,
         TileCoord TargetCoord,
         int WaterRisesRemaining,
         int BlockedRequiredNeighbors,
@@ -103,6 +104,39 @@ namespace Rescue.Core.Rules
             return rng.WeightedPick(weightedItems);
         }
 
+        internal static SpawnedPiece DescribeSpawnedPiece(
+            GameState state,
+            TileCoord spawnCoord,
+            DebrisType debrisType,
+            int lineageId)
+        {
+            SpawnBias bias = ComputeSpawnBias(state, state.LevelConfig, state.DebugSpawnOverride, spawnCoord);
+            bool emergencyRequested = IsEmergencyRequested(state, state.DebugSpawnOverride);
+            ImmutableArray<SpawnAssistReason> reasons = BuildAssistReasons(
+                state,
+                spawnCoord,
+                debrisType,
+                emergencyRequested,
+                bias.IsEmergency,
+                bias.EffectiveAssistanceChance);
+            UrgentRoute? urgentRoute = FindUrgentRoute(state);
+
+            return new SpawnedPiece(
+                spawnCoord,
+                debrisType,
+                lineageId,
+                reasons,
+                BuildTriggerContext(state, emergencyRequested),
+                urgentRoute?.TargetId,
+                urgentRoute?.TargetCoord,
+                urgentRoute?.WaterRisesRemaining ?? 0,
+                DockHelpers.Occupancy(state.Dock),
+                state.SpawnRecoveryCounter,
+                emergencyRequested,
+                bias.IsEmergency,
+                bias.EffectiveAssistanceChance);
+        }
+
         internal static bool IsEmergencyActive(GameState state, LevelConfig config, SpawnOverride? spawnOverride = null)
         {
             if (!IsEmergencyRequested(state, spawnOverride))
@@ -142,6 +176,7 @@ namespace Rescue.Core.Rules
                 }
 
                 UrgentRoute candidate = new UrgentRoute(
+                    target.TargetId,
                     target.Coord,
                     CountFutureWaterRisesBeforeFlood(state, target.Coord),
                     CountBlockedRequiredNeighbors(state.Board, target.Coord),
@@ -342,6 +377,120 @@ namespace Rescue.Core.Rules
             }
 
             return DockHelpers.Occupancy(state.Dock) >= 5 || HasTargetOneWaterRiseFromLoss(state);
+        }
+
+        internal static bool IsEmergencyDockPressure(GameState state)
+        {
+            return DockHelpers.Occupancy(state.Dock) >= 5;
+        }
+
+        internal static bool IsEmergencyWaterPressure(GameState state)
+        {
+            return HasTargetOneWaterRiseFromLoss(state);
+        }
+
+        private static ImmutableArray<SpawnAssistReason> BuildAssistReasons(
+            GameState state,
+            TileCoord spawnCoord,
+            DebrisType debrisType,
+            bool emergencyRequested,
+            bool emergencyApplied,
+            double effectiveAssistanceChance)
+        {
+            ImmutableArray<SpawnAssistReason>.Builder reasons = ImmutableArray.CreateBuilder<SpawnAssistReason>();
+            if (state.DebugSpawnOverride is not null)
+            {
+                reasons.Add(SpawnAssistReason.DebugOverride);
+            }
+
+            if (emergencyRequested && emergencyApplied)
+            {
+                if (IsEmergencyWaterPressure(state))
+                {
+                    reasons.Add(SpawnAssistReason.EmergencyWaterPressure);
+                }
+
+                if (IsEmergencyDockPressure(state))
+                {
+                    reasons.Add(SpawnAssistReason.EmergencyDockPressure);
+                }
+            }
+
+            int[] dockCounts = CountDockPieces(state.Dock);
+            if (dockCounts[(int)debrisType] == 2)
+            {
+                reasons.Add(SpawnAssistReason.DockCompletion);
+            }
+
+            if (state.SpawnRecoveryCounter > 0
+                && FindPairCompletingTypesAt(state.Board, spawnCoord).Contains(debrisType))
+            {
+                reasons.Add(SpawnAssistReason.SingletonRecovery);
+            }
+
+            UrgentRoute? urgentRoute = FindUrgentRoute(state);
+            if (urgentRoute.HasValue)
+            {
+                RouteAssistResult routeAssist = EvaluateRouteAssist(state.Board, spawnCoord, debrisType, urgentRoute.Value);
+                if (routeAssist.PairQuality == RoutePairQuality.Hard)
+                {
+                    reasons.Add(SpawnAssistReason.RouteHardPair);
+                }
+                else if (routeAssist.PairQuality == RoutePairQuality.Soft)
+                {
+                    reasons.Add(SpawnAssistReason.RouteSoftPair);
+                }
+                else if (routeAssist.HasAdjacency)
+                {
+                    reasons.Add(SpawnAssistReason.RouteAdjacency);
+                }
+            }
+
+            if (reasons.Count == 0 && effectiveAssistanceChance > 0.0d)
+            {
+                reasons.Add(SpawnAssistReason.BaselineAssistance);
+            }
+
+            return reasons.ToImmutable();
+        }
+
+        private static ImmutableArray<string> BuildTriggerContext(GameState state, bool emergencyRequested)
+        {
+            ImmutableArray<string>.Builder context = ImmutableArray.CreateBuilder<string>();
+            if (state.DebugSpawnOverride is not null)
+            {
+                context.Add("debug_override");
+            }
+
+            if (emergencyRequested)
+            {
+                if (IsEmergencyDockPressure(state))
+                {
+                    context.Add("dock_pressure");
+                }
+
+                if (IsEmergencyWaterPressure(state))
+                {
+                    context.Add("water_pressure");
+                }
+            }
+
+            if (state.SpawnRecoveryCounter > 0)
+            {
+                context.Add("singleton_recovery_active");
+            }
+
+            if (FindUrgentRoute(state).HasValue)
+            {
+                context.Add("urgent_route_available");
+            }
+
+            if (context.Count == 0)
+            {
+                context.Add("baseline");
+            }
+
+            return context.ToImmutable();
         }
 
         private static bool HasTargetOneWaterRiseFromLoss(GameState state)

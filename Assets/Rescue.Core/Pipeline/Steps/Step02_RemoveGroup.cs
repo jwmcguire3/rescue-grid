@@ -13,22 +13,36 @@ namespace Rescue.Core.Pipeline.Steps
             }
 
             Board updatedBoard = state.Board;
+            ImmutableDictionary<TileCoord, SpawnLineage> lineageByCoord = state.SpawnLineageByCoord;
             ImmutableArray<DebrisType>.Builder removedDebris = ImmutableArray.CreateBuilder<DebrisType>(context.ValidatedGroupCoords.Length);
+            ImmutableArray<int>.Builder removedLineages = ImmutableArray.CreateBuilder<int>();
             for (int i = 0; i < context.ValidatedGroupCoords.Length; i++)
             {
                 TileCoord coord = context.ValidatedGroupCoords[i];
                 updatedBoard = BoardHelpers.SetTile(updatedBoard, coord, new EmptyTile());
                 removedDebris.Add(context.ValidatedGroupType.Value);
+                if (lineageByCoord.TryGetValue(coord, out SpawnLineage lineage))
+                {
+                    removedLineages.Add(lineage.LineageId);
+                    lineageByCoord = lineageByCoord.Remove(coord);
+                }
             }
 
-            GameState updatedState = state with { Board = updatedBoard };
+            GameState updatedState = state with
+            {
+                Board = updatedBoard,
+                SpawnLineageByCoord = lineageByCoord,
+            };
             StepContext updatedContext = context with
             {
                 RemovedDebris = removedDebris.ToImmutable(),
             };
 
             ImmutableArray<ActionEvent> events = ImmutableArray.Create<ActionEvent>(
-                new GroupRemoved(context.ValidatedGroupType.Value, context.ValidatedGroupCoords));
+                new GroupRemoved(
+                    context.ValidatedGroupType.Value,
+                    context.ValidatedGroupCoords,
+                    removedLineages.ToImmutable()));
             return new StepResult(updatedState, updatedContext, events);
         }
     }

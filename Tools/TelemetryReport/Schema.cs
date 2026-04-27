@@ -107,6 +107,7 @@ namespace TelemetryReport
         public int? NextFloodRow { get; set; }
         public bool ForecastAvailable { get; set; }
         public int ActionsUntilRise { get; set; }
+        public string Timing { get; set; } = "PostAction";
     }
 
     internal sealed class DockOccupancyEvent : ITelemetryEvent
@@ -207,6 +208,14 @@ namespace TelemetryReport
         public bool EmergencyRequested { get; set; }
         public bool EmergencyApplied { get; set; }
         public double EffectiveAssistanceChance { get; set; }
+        public AssistedSpawnPieceTelemetry[]? Pieces { get; set; }
+    }
+
+    internal sealed class AssistedSpawnPieceTelemetry
+    {
+        public int LineageId { get; set; }
+        public string Type { get; set; } = string.Empty;
+        public string[] Reasons { get; set; } = Array.Empty<string>();
     }
 
     internal sealed class AssistedSpawnFollowUpEvent : ITelemetryEvent
@@ -218,6 +227,7 @@ namespace TelemetryReport
         public int OriginalActionIndex { get; set; }
         public int FollowUpActionIndex { get; set; }
         public string UsedType { get; set; } = string.Empty;
+        public int SpawnLineageId { get; set; }
     }
 
     internal sealed class DeadboardLikeStateEvent : ITelemetryEvent
@@ -228,6 +238,7 @@ namespace TelemetryReport
         public long TimestampMs { get; set; }
         public int ActionIndex { get; set; }
         public string Reason { get; set; } = string.Empty;
+        public string? TargetId { get; set; }
     }
 
     internal sealed class UndoUsedEvent : ITelemetryEvent

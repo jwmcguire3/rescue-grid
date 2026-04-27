@@ -268,7 +268,8 @@ namespace Rescue.Unity.BoardPresentation
             float effectiveDurationSeconds = durationSeconds ?? spawnDurationSeconds;
             for (int i = 0; i < spawned.Pieces.Length; i++)
             {
-                (TileCoord coord, DebrisType type) = spawned.Pieces[i];
+                TileCoord coord = spawned.Pieces[i].Coord;
+                DebrisType type = spawned.Pieces[i].Type;
                 if (!TryGetAnchor(coord, out Transform anchor))
                 {
                     continue;

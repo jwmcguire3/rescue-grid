@@ -21,6 +21,7 @@ namespace Rescue.Core.Pipeline.Steps
 
                 int floodedRow = nextFloodRow.Value;
                 Board floodedBoard = updatedState.Board;
+                ImmutableDictionary<TileCoord, SpawnLineage> lineageByCoord = updatedState.SpawnLineageByCoord;
                 for (int col = 0; col < floodedBoard.Width; col++)
                 {
                     TileCoord coord = new TileCoord(floodedRow, col);
@@ -30,11 +31,13 @@ namespace Rescue.Core.Pipeline.Steps
                     }
 
                     floodedBoard = BoardHelpers.SetTile(floodedBoard, coord, new FloodedTile());
+                    lineageByCoord = lineageByCoord.Remove(coord);
                 }
 
                 updatedState = updatedState with
                 {
                     Board = floodedBoard,
+                    SpawnLineageByCoord = lineageByCoord,
                     Water = updatedState.Water with
                     {
                         FloodedRows = updatedState.Water.FloodedRows + 1,
@@ -60,6 +63,7 @@ namespace Rescue.Core.Pipeline.Steps
                     updatedState = updatedState with
                     {
                         Board = boardWithVine,
+                        SpawnLineageByCoord = updatedState.SpawnLineageByCoord.Remove(pendingTile),
                         Vine = updatedState.Vine with
                         {
                             ActionsSinceLastClear = 0,

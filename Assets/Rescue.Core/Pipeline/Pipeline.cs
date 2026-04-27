@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using Rescue.Core.Pipeline.Steps;
+using Rescue.Core.Rules;
 using Rescue.Core.State;
 using Rescue.Core.Undo;
 
@@ -90,6 +91,11 @@ namespace Rescue.Core.Pipeline
             CheckLossResult waterResult = WaterTargetConsequence.Run(result.State, result.Context);
             EmitTrace(observer, StepOrder[14], waterResult.State, result.Context, waterResult.Events);
             Append(events, waterResult.Events);
+            if (waterResult.Outcome == ActionOutcome.Ok)
+            {
+                Append(events, DetectDeadboardDiagnostics(waterResult.State));
+            }
+
             return new ActionResult(IncrementActionCount(waterResult.State), events.ToImmutable(), waterResult.Outcome, snapshot);
         }
 
@@ -141,6 +147,124 @@ namespace Rescue.Core.Pipeline
         private static GameState IncrementActionCount(GameState state)
         {
             return state with { ActionCount = state.ActionCount + 1 };
+        }
+
+        private static ImmutableArray<ActionEvent> DetectDeadboardDiagnostics(GameState state)
+        {
+            ImmutableArray<ActionEvent>.Builder events = ImmutableArray.CreateBuilder<ActionEvent>();
+            bool hasValidGroup = HasValidGroup(state.Board);
+            string? impossibleTargetId = FindRescueImpossibleTarget(state);
+            if (impossibleTargetId is not null)
+            {
+                events.Add(new DeadboardDiagnosticDetected(
+                    DeadboardDiagnosticReason.RescueImpossibleStatic,
+                    impossibleTargetId));
+            }
+
+            if (!hasValidGroup)
+            {
+                events.Add(new DeadboardDiagnosticDetected(
+                    DeadboardDiagnosticReason.HardNoValidGroups,
+                    TargetId: null));
+                return events.ToImmutable();
+            }
+
+            if (!HasImmediateRescueProgressMove(state))
+            {
+                events.Add(new DeadboardDiagnosticDetected(
+                    DeadboardDiagnosticReason.SoftNoRescueProgressMove,
+                    TargetId: null));
+            }
+
+            return events.ToImmutable();
+        }
+
+        private static bool HasValidGroup(Board board)
+        {
+            for (int row = 0; row < board.Height; row++)
+            {
+                for (int col = 0; col < board.Width; col++)
+                {
+                    if (GroupOps.FindGroup(board, new TileCoord(row, col)).HasValue)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private static string? FindRescueImpossibleTarget(GameState state)
+        {
+            for (int i = 0; i < state.Targets.Length; i++)
+            {
+                TargetState target = state.Targets[i];
+                if (target.Extracted)
+                {
+                    continue;
+                }
+
+                ImmutableArray<TileCoord> neighbors = BoardHelpers.OrthogonalNeighbors(state.Board, target.Coord);
+                for (int j = 0; j < neighbors.Length; j++)
+                {
+                    if (BoardHelpers.GetTile(state.Board, neighbors[j]) is FloodedTile)
+                    {
+                        return target.TargetId;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private static bool HasImmediateRescueProgressMove(GameState state)
+        {
+            for (int i = 0; i < state.Targets.Length; i++)
+            {
+                TargetState target = state.Targets[i];
+                if (target.Extracted)
+                {
+                    continue;
+                }
+
+                ImmutableArray<TileCoord> neighbors = BoardHelpers.OrthogonalNeighbors(state.Board, target.Coord);
+                for (int j = 0; j < neighbors.Length; j++)
+                {
+                    TileCoord neighbor = neighbors[j];
+                    Tile tile = BoardHelpers.GetTile(state.Board, neighbor);
+                    if (tile is EmptyTile)
+                    {
+                        continue;
+                    }
+
+                    if (tile is DebrisTile && GroupOps.FindGroup(state.Board, neighbor).HasValue)
+                    {
+                        return true;
+                    }
+
+                    if (tile is BlockerTile && HasValidGroupAdjacentTo(state.Board, neighbor))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private static bool HasValidGroupAdjacentTo(Board board, TileCoord coord)
+        {
+            ImmutableArray<TileCoord> neighbors = BoardHelpers.OrthogonalNeighbors(board, coord);
+            for (int i = 0; i < neighbors.Length; i++)
+            {
+                if (GroupOps.FindGroup(board, neighbors[i]).HasValue)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

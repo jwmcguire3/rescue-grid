@@ -271,8 +271,8 @@ namespace Rescue.Core.Tests.Determinism
         }
 
         private static void AssertSpawnSequenceEqual(
-            ImmutableArray<(TileCoord Coord, DebrisType Type)> expected,
-            ImmutableArray<(TileCoord Coord, DebrisType Type)> actual,
+            ImmutableArray<SpawnedPiece> expected,
+            ImmutableArray<SpawnedPiece> actual,
             string messagePrefix)
         {
             Assert.That(actual.Length, Is.EqualTo(expected.Length), $"{messagePrefix} length.");

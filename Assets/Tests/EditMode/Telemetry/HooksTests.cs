@@ -46,14 +46,16 @@ namespace Rescue.Telemetry.Tests
 
             List<ITelemetryEvent> events = ReadEvents(path);
 
-            Assert.That(events, Has.Count.EqualTo(1));
-            LevelStartEvent ev = (LevelStartEvent)events[0];
+            Assert.That(events, Has.Count.EqualTo(2));
+            LevelStartEvent ev = FindEvent<LevelStartEvent>(events)!;
+            WaterForecastEvent forecast = FindEvent<WaterForecastEvent>(events)!;
             Assert.That(ev.LevelId, Is.EqualTo("L1"));
             Assert.That(ev.Seed, Is.EqualTo(999UL));
             Assert.That(ev.TargetCount, Is.EqualTo(state.Targets.Length));
             Assert.That(ev.VineGrowthThreshold, Is.EqualTo(state.Vine.GrowthThreshold));
             Assert.That(ev.RiseInterval, Is.EqualTo(state.Water.RiseInterval));
             Assert.That(ev.WaterMode, Is.EqualTo(state.LevelConfig.WaterContactMode.ToString()));
+            Assert.That(forecast.Timing, Is.EqualTo(WaterForecastTiming.LevelStart));
         }
 
         [Test]
@@ -170,12 +172,14 @@ namespace Rescue.Telemetry.Tests
             }
 
             List<ITelemetryEvent> events = ReadEvents(path);
-            WaterForecastEvent? forecast = FindEvent<WaterForecastEvent>(events);
+            List<WaterForecastEvent> forecasts = FindEvents<WaterForecastEvent>(events);
             GraceEvent? grace = FindEvent<GraceEvent>(events);
 
-            Assert.That(forecast, Is.Not.Null);
-            Assert.That(forecast!.WaterMode, Is.EqualTo(WaterContactMode.OneTickGrace.ToString()));
-            Assert.That(forecast.NextFloodRow, Is.EqualTo(0));
+            Assert.That(forecasts, Has.Count.EqualTo(2));
+            Assert.That(forecasts[0].Timing, Is.EqualTo(WaterForecastTiming.PreAction));
+            Assert.That(forecasts[1].Timing, Is.EqualTo(WaterForecastTiming.PostAction));
+            Assert.That(forecasts[0].WaterMode, Is.EqualTo(WaterContactMode.OneTickGrace.ToString()));
+            Assert.That(forecasts[1].NextFloodRow, Is.EqualTo(0));
             Assert.That(grace, Is.Not.Null);
             Assert.That(grace!.Outcome, Is.EqualTo("entered"));
         }
@@ -191,13 +195,29 @@ namespace Rescue.Telemetry.Tests
                 state with { ActionCount = 1 },
                 ImmutableArray.Create<ActionEvent>(
                     new DebugSpawnOverrideApplied(new SpawnOverride(true, 1.0d), true, true, 1.0d),
-                    new Spawned(ImmutableArray.Create((new TileCoord(0, 0), DebrisType.A)))),
+                    new Spawned(ImmutableArray.Create(new SpawnedPiece(
+                        new TileCoord(0, 0),
+                        DebrisType.A,
+                        LineageId: 12,
+                        Reasons: ImmutableArray.Create(SpawnAssistReason.DebugOverride),
+                        TriggerContext: ImmutableArray.Create("debug_override"),
+                        UrgentTargetId: null,
+                        UrgentTargetCoord: null,
+                        WaterRisesRemaining: 0,
+                        DockOccupancy: 0,
+                        RecoveryCounterBefore: 0,
+                        EmergencyRequested: true,
+                        EmergencyApplied: true,
+                        EffectiveAssistanceChance: 1.0d)))),
                 ActionOutcome.Ok,
                 Snapshot: null);
             ActionResult followUpResult = new ActionResult(
                 spawnResult.State with { ActionCount = 2 },
                 ImmutableArray.Create<ActionEvent>(
-                    new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1)))),
+                    new GroupRemoved(
+                        DebrisType.A,
+                        ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1)),
+                        ImmutableArray.Create(12))),
                 ActionOutcome.Ok,
                 Snapshot: null);
 
@@ -217,6 +237,7 @@ namespace Rescue.Telemetry.Tests
             Assert.That(followUp, Is.Not.Null);
             Assert.That(followUp!.OriginalActionIndex, Is.EqualTo(1));
             Assert.That(followUp.FollowUpActionIndex, Is.EqualTo(2));
+            Assert.That(followUp.SpawnLineageId, Is.EqualTo(12));
         }
 
         [Test]
@@ -468,6 +489,20 @@ namespace Rescue.Telemetry.Tests
             }
 
             return null;
+        }
+
+        private static List<T> FindEvents<T>(List<ITelemetryEvent> events) where T : class, ITelemetryEvent
+        {
+            List<T> result = new List<T>();
+            foreach (ITelemetryEvent ev in events)
+            {
+                if (ev is T typed)
+                {
+                    result.Add(typed);
+                }
+            }
+
+            return result;
         }
 
         // ── state fixtures ────────────────────────────────────────────────────

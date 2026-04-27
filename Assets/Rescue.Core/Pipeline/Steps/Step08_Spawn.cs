@@ -18,7 +18,7 @@ namespace Rescue.Core.Pipeline.Steps
             SeededRng rng = SeededRng.FromState(state.RngState);
             GameState updatedState = state;
             ImmutableArray<ActionEvent>.Builder events = ImmutableArray.CreateBuilder<ActionEvent>();
-            ImmutableArray<(TileCoord Coord, DebrisType Type)>.Builder spawnedPieces = ImmutableArray.CreateBuilder<(TileCoord Coord, DebrisType Type)>(spawnCoords.Length);
+            ImmutableArray<SpawnedPiece>.Builder spawnedPieces = ImmutableArray.CreateBuilder<SpawnedPiece>(spawnCoords.Length);
 
             if (state.DebugSpawnOverride is not null)
             {
@@ -37,8 +37,13 @@ namespace Rescue.Core.Pipeline.Steps
                 bool usedRecoveryBias = updatedState.SpawnRecoveryCounter > 0;
                 bool emergencyActive = SpawnOps.IsEmergencyActive(updatedState, updatedState.LevelConfig, updatedState.DebugSpawnOverride);
                 DebrisType debrisType = SpawnOps.ChooseNextSpawn(updatedState, coord, rng);
+                int lineageId = updatedState.NextSpawnLineageId;
+                SpawnedPiece spawnedPiece = SpawnOps.DescribeSpawnedPiece(updatedState, coord, debrisType, lineageId);
 
                 Board boardWithSpawn = BoardHelpers.SetTile(updatedState.Board, coord, new DebrisTile(debrisType));
+                ImmutableDictionary<TileCoord, SpawnLineage> lineageByCoord = updatedState.SpawnLineageByCoord.SetItem(
+                    coord,
+                    new SpawnLineage(lineageId, debrisType, coord));
                 int recoveryCounter = usedRecoveryBias
                     ? updatedState.SpawnRecoveryCounter - 1
                     : updatedState.SpawnRecoveryCounter;
@@ -51,6 +56,8 @@ namespace Rescue.Core.Pipeline.Steps
                 updatedState = updatedState with
                 {
                     Board = boardWithSpawn,
+                    SpawnLineageByCoord = lineageByCoord,
+                    NextSpawnLineageId = lineageId + 1,
                     RngState = rng.GetState(),
                     ConsecutiveEmergencySpawns = emergencyActive
                         ? updatedState.ConsecutiveEmergencySpawns + 1
@@ -60,7 +67,7 @@ namespace Rescue.Core.Pipeline.Steps
 
                 // TODO(B4.5 follow-up): update LastRouteBoostedType/ConsecutiveRouteBoosts here if safeguard state is accepted into scope.
 
-                spawnedPieces.Add((coord, debrisType));
+                spawnedPieces.Add(spawnedPiece);
             }
 
             events.Add(new Spawned(spawnedPieces.ToImmutable()));

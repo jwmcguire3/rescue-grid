@@ -40,6 +40,28 @@ namespace Rescue.Telemetry
         public const string Frozen = "frozen";
     }
 
+    public enum WaterForecastTiming
+    {
+        LevelStart,
+        PreAction,
+        PostAction,
+    }
+
+    public sealed record AssistedSpawnPieceTelemetry(
+        TileCoord Coord,
+        DebrisType Type,
+        int LineageId,
+        string[] Reasons,
+        string[] TriggerContext,
+        string? UrgentTargetId,
+        TileCoord? UrgentTargetCoord,
+        int WaterRisesRemaining,
+        int DockOccupancy,
+        int RecoveryCounterBefore,
+        bool EmergencyRequested,
+        bool EmergencyApplied,
+        double EffectiveAssistanceChance);
+
     public sealed record LevelStartEvent(
         string LevelId,
         long TimestampMs,
@@ -96,7 +118,8 @@ namespace Rescue.Telemetry
         string WaterMode,
         int? NextFloodRow,
         bool ForecastAvailable,
-        int ActionsUntilRise) : ITelemetryEvent
+        int ActionsUntilRise,
+        WaterForecastTiming Timing = WaterForecastTiming.PostAction) : ITelemetryEvent
     {
         public string EventType => "water_forecast";
         public int SchemaVersion => 1;
@@ -310,7 +333,8 @@ namespace Rescue.Telemetry
         bool EmergencyRequested,
         bool EmergencyApplied,
         double EffectiveAssistanceChance,
-        int FollowUpWindowActions = 2) : ITelemetryEvent
+        int FollowUpWindowActions = 2,
+        AssistedSpawnPieceTelemetry[]? Pieces = null) : ITelemetryEvent
     {
         public string EventType => "assisted_spawn";
         public int SchemaVersion => 1;
@@ -321,7 +345,10 @@ namespace Rescue.Telemetry
         long TimestampMs,
         int OriginalActionIndex,
         int FollowUpActionIndex,
-        DebrisType UsedType) : ITelemetryEvent
+        DebrisType UsedType,
+        int SpawnLineageId = 0,
+        TileCoord? OriginalCoord = null,
+        TileCoord[]? RemovedGroupCoords = null) : ITelemetryEvent
     {
         public string EventType => "assisted_spawn_follow_up";
         public int SchemaVersion => 1;
@@ -331,7 +358,8 @@ namespace Rescue.Telemetry
         string LevelId,
         long TimestampMs,
         int ActionIndex,
-        string Reason) : ITelemetryEvent
+        string Reason,
+        string? TargetId = null) : ITelemetryEvent
     {
         public string EventType => "deadboard_like_state";
         public int SchemaVersion => 1;

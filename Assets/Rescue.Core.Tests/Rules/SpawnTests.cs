@@ -497,6 +497,180 @@ namespace Rescue.Core.Tests.Rules
             AssertSpawnEventsEqual(first.Events, second.Events);
         }
 
+        [Test]
+        public void DescribeSpawnedPiece_ReportsBaselineWhenNoSpecificBonusApplies()
+        {
+            GameState state = CreateSpawnState(
+                PipelineTestFixtures.CreateBoard(PipelineTestFixtures.EmptyRow(1)),
+                assistanceChance: 0.5d);
+
+            SpawnedPiece piece = SpawnOps.DescribeSpawnedPiece(state, new TileCoord(0, 0), DebrisType.A, lineageId: 7);
+
+            Assert.That(piece.LineageId, Is.EqualTo(7));
+            Assert.That(piece.Reasons, Is.EqualTo(new[] { SpawnAssistReason.BaselineAssistance }).AsCollection);
+        }
+
+        [Test]
+        public void DescribeSpawnedPiece_ReportsDockAndEmergencyReasons()
+        {
+            GameState state = CreateSpawnState(
+                PipelineTestFixtures.CreateBoard(PipelineTestFixtures.EmptyRow(1)),
+                assistanceChance: 0.3d,
+                dock: new Dock(
+                    ImmutableArray.Create<DebrisType?>(
+                        DebrisType.C,
+                        DebrisType.C,
+                        DebrisType.A,
+                        DebrisType.B,
+                        DebrisType.D,
+                        null,
+                        null),
+                    Size: 7));
+
+            SpawnedPiece piece = SpawnOps.DescribeSpawnedPiece(state, new TileCoord(0, 0), DebrisType.C, lineageId: 1);
+
+            Assert.That(piece.Reasons, Has.Member(SpawnAssistReason.DockCompletion));
+            Assert.That(piece.Reasons, Has.Member(SpawnAssistReason.EmergencyDockPressure));
+            Assert.That(piece.EmergencyRequested, Is.True);
+            Assert.That(piece.EmergencyApplied, Is.True);
+        }
+
+        [Test]
+        public void DescribeSpawnedPiece_ReportsWaterAndDebugReasons()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                Row(new EmptyTile(), new EmptyTile()),
+                Row(new TargetTile("target", Extracted: false), new EmptyTile()));
+            GameState state = CreateSpawnState(board, assistanceChance: 0.3d) with
+            {
+                Targets = ImmutableArray.Create(new TargetState("target", new TileCoord(1, 0), Extracted: false, OneClearAway: false)),
+                DebugSpawnOverride = new SpawnOverride(ForceEmergency: null, OverrideAssistanceChance: null),
+            };
+
+            SpawnedPiece piece = SpawnOps.DescribeSpawnedPiece(state, new TileCoord(0, 0), DebrisType.A, lineageId: 1);
+
+            Assert.That(piece.Reasons, Has.Member(SpawnAssistReason.EmergencyWaterPressure));
+            Assert.That(piece.Reasons, Has.Member(SpawnAssistReason.DebugOverride));
+            Assert.That(piece.UrgentTargetId, Is.EqualTo("target"));
+        }
+
+        [Test]
+        public void DescribeSpawnedPiece_ReportsRouteReasonPrecision()
+        {
+            GameState hardRouteState = CreateSpawnState(BuildHardRoutePairBoard(), assistanceChance: 1.0d) with
+            {
+                Targets = ImmutableArray.Create(new TargetState("target", new TileCoord(1, 2), Extracted: false, OneClearAway: false)),
+            };
+            GameState softRouteState = CreateSpawnState(BuildSoftRouteBoard(), assistanceChance: 1.0d) with
+            {
+                Targets = ImmutableArray.Create(new TargetState("target", new TileCoord(1, 3), Extracted: false, OneClearAway: false)),
+            };
+
+            SpawnedPiece hard = SpawnOps.DescribeSpawnedPiece(hardRouteState, new TileCoord(0, 1), DebrisType.B, lineageId: 1);
+            SpawnedPiece soft = SpawnOps.DescribeSpawnedPiece(softRouteState, new TileCoord(0, 2), DebrisType.B, lineageId: 2);
+            SpawnedPiece adjacent = SpawnOps.DescribeSpawnedPiece(softRouteState, new TileCoord(0, 2), DebrisType.A, lineageId: 3);
+
+            Assert.That(hard.Reasons, Has.Member(SpawnAssistReason.RouteHardPair));
+            Assert.That(soft.Reasons, Has.Member(SpawnAssistReason.RouteSoftPair));
+            Assert.That(adjacent.Reasons, Has.Member(SpawnAssistReason.RouteAdjacency));
+        }
+
+        [Test]
+        public void DescribeSpawnedPiece_ReportsSingletonRecoveryReason()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                Row(new EmptyTile()),
+                Row(new DebrisTile(DebrisType.B)));
+            GameState state = CreateSpawnState(board, assistanceChance: 0.0d) with
+            {
+                SpawnRecoveryCounter = 2,
+            };
+
+            SpawnedPiece piece = SpawnOps.DescribeSpawnedPiece(state, new TileCoord(0, 0), DebrisType.B, lineageId: 1);
+
+            Assert.That(piece.Reasons, Has.Member(SpawnAssistReason.SingletonRecovery));
+        }
+
+        [Test]
+        public void Step08SpawnAssignsLineageSidecarWithoutChangingSpawnedType()
+        {
+            GameState state = CreateSpawnState(
+                PipelineTestFixtures.CreateBoard(PipelineTestFixtures.EmptyRow(1)),
+                assistanceChance: 1.0d)
+                with
+                {
+                    RngState = new RngState(0x12345678u, 0x9ABCDEF0u),
+                };
+
+            StepResult result = Step08_Spawn.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
+            Spawned spawned = (Spawned)result.Events[0];
+            SpawnedPiece piece = spawned.Pieces[0];
+
+            Assert.That(piece.LineageId, Is.EqualTo(1));
+            Assert.That(result.State.NextSpawnLineageId, Is.EqualTo(2));
+            Assert.That(result.State.SpawnLineageByCoord[new TileCoord(0, 0)].LineageId, Is.EqualTo(1));
+            Assert.That(result.State.SpawnLineageByCoord[new TileCoord(0, 0)].Type, Is.EqualTo(piece.Type));
+        }
+
+        [Test]
+        public void GroupRemovalCarriesAndRemovesSpawnLineageIds()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                Row(new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A)));
+            GameState state = CreateSpawnState(board, assistanceChance: 0.0d) with
+            {
+                SpawnLineageByCoord = ImmutableDictionary<TileCoord, SpawnLineage>.Empty
+                    .Add(new TileCoord(0, 0), new SpawnLineage(4, DebrisType.A, new TileCoord(0, 0)))
+                    .Add(new TileCoord(0, 1), new SpawnLineage(5, DebrisType.A, new TileCoord(0, 1))),
+            };
+            StepResult accepted = Step01_AcceptInput.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
+
+            StepResult removed = Step02_RemoveGroup.Run(accepted.State, accepted.Context);
+            GroupRemoved ev = (GroupRemoved)removed.Events[0];
+
+            Assert.That(ev.SpawnLineageIds, Is.EqualTo(new[] { 4, 5 }).AsCollection);
+            Assert.That(removed.State.SpawnLineageByCoord, Is.Empty);
+        }
+
+        [Test]
+        public void GravityMovesSpawnLineageWithDebris()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                Row(new DebrisTile(DebrisType.A)),
+                Row(new EmptyTile()));
+            GameState state = CreateSpawnState(board, assistanceChance: 0.0d) with
+            {
+                SpawnLineageByCoord = ImmutableDictionary<TileCoord, SpawnLineage>.Empty
+                    .Add(new TileCoord(0, 0), new SpawnLineage(8, DebrisType.A, new TileCoord(0, 0))),
+            };
+
+            StepResult result = Step07_Gravity.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
+
+            Assert.That(result.State.SpawnLineageByCoord.ContainsKey(new TileCoord(0, 0)), Is.False);
+            Assert.That(result.State.SpawnLineageByCoord[new TileCoord(1, 0)].LineageId, Is.EqualTo(8));
+        }
+
+        [Test]
+        public void WaterOverwriteRemovesSpawnLineage()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                Row(new EmptyTile()),
+                Row(new DebrisTile(DebrisType.A)));
+            GameState state = CreateSpawnState(board, assistanceChance: 0.0d) with
+            {
+                SpawnLineageByCoord = ImmutableDictionary<TileCoord, SpawnLineage>.Empty
+                    .Add(new TileCoord(1, 0), new SpawnLineage(9, DebrisType.A, new TileCoord(1, 0))),
+            };
+            StepContext context = StepContext.Create(state, new ActionInput(new TileCoord(0, 0))) with
+            {
+                WaterRisePending = true,
+            };
+
+            StepResult result = Step12_ResolveHazards.Run(state, context);
+
+            Assert.That(result.State.SpawnLineageByCoord.ContainsKey(new TileCoord(1, 0)), Is.False);
+        }
+
         private static GameState CreateSpawnState(
             Board board,
             double assistanceChance,

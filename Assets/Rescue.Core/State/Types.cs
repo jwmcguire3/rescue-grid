@@ -60,6 +60,39 @@ namespace Rescue.Core.State
         bool? ForceEmergency,
         double? OverrideAssistanceChance);
 
+    public enum SpawnAssistReason
+    {
+        BaselineAssistance,
+        DockCompletion,
+        RouteHardPair,
+        RouteSoftPair,
+        RouteAdjacency,
+        SingletonRecovery,
+        EmergencyWaterPressure,
+        EmergencyDockPressure,
+        DebugOverride,
+    }
+
+    public readonly record struct SpawnLineage(
+        int LineageId,
+        DebrisType Type,
+        TileCoord OriginalCoord);
+
+    public sealed record SpawnedPiece(
+        TileCoord Coord,
+        DebrisType Type,
+        int LineageId,
+        ImmutableArray<SpawnAssistReason> Reasons,
+        ImmutableArray<string> TriggerContext,
+        string? UrgentTargetId,
+        TileCoord? UrgentTargetCoord,
+        int WaterRisesRemaining,
+        int DockOccupancy,
+        int RecoveryCounterBefore,
+        bool EmergencyRequested,
+        bool EmergencyApplied,
+        double EffectiveAssistanceChance);
+
     public enum TargetReadiness
     {
         Trapped,
@@ -124,5 +157,11 @@ namespace Rescue.Core.State
         int SpawnRecoveryCounter,
         bool DockJamEnabled = false,
         bool DockJamActive = false,
-        SpawnOverride? DebugSpawnOverride = null);
+        SpawnOverride? DebugSpawnOverride = null,
+        ImmutableDictionary<TileCoord, SpawnLineage>? SpawnLineageByCoord = null,
+        int NextSpawnLineageId = 1)
+    {
+        public ImmutableDictionary<TileCoord, SpawnLineage> SpawnLineageByCoord { get; init; }
+            = SpawnLineageByCoord ?? ImmutableDictionary<TileCoord, SpawnLineage>.Empty;
+    }
 }

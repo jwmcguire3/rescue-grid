@@ -8,6 +8,7 @@ namespace Rescue.Core.Pipeline.Steps
         public static StepResult Run(GameState state, StepContext context)
         {
             Board updatedBoard = state.Board;
+            ImmutableDictionary<TileCoord, SpawnLineage> lineageByCoord = state.SpawnLineageByCoord;
             ImmutableArray<ActionEvent>.Builder events = ImmutableArray.CreateBuilder<ActionEvent>();
             int dryHeight = state.Board.Height - state.Water.FloodedRows;
 
@@ -29,24 +30,36 @@ namespace Rescue.Core.Pipeline.Steps
                     }
 
                     int segmentStart = row + 1;
-                    updatedBoard = CollapseSegment(updatedBoard, col, segmentStart, segmentEnd, events);
+                    (updatedBoard, lineageByCoord) = CollapseSegment(
+                        updatedBoard,
+                        lineageByCoord,
+                        col,
+                        segmentStart,
+                        segmentEnd,
+                        events);
                 }
             }
 
             return new StepResult(
-                state with { Board = updatedBoard },
+                state with
+                {
+                    Board = updatedBoard,
+                    SpawnLineageByCoord = lineageByCoord,
+                },
                 context,
                 events.ToImmutable());
         }
 
-        private static Board CollapseSegment(
+        private static (Board Board, ImmutableDictionary<TileCoord, SpawnLineage> LineageByCoord) CollapseSegment(
             Board board,
+            ImmutableDictionary<TileCoord, SpawnLineage> lineageByCoord,
             int col,
             int segmentStart,
             int segmentEnd,
             ImmutableArray<ActionEvent>.Builder events)
         {
             Board updatedBoard = board;
+            ImmutableDictionary<TileCoord, SpawnLineage> updatedLineage = lineageByCoord;
             int targetRow = segmentEnd;
 
             for (int row = segmentEnd; row >= segmentStart; row--)
@@ -62,6 +75,11 @@ namespace Rescue.Core.Pipeline.Steps
                 {
                     updatedBoard = BoardHelpers.SetTile(updatedBoard, sourceCoord, new EmptyTile());
                     updatedBoard = BoardHelpers.SetTile(updatedBoard, targetCoord, debris);
+                    if (updatedLineage.TryGetValue(sourceCoord, out SpawnLineage lineage))
+                    {
+                        updatedLineage = updatedLineage.Remove(sourceCoord).SetItem(targetCoord, lineage);
+                    }
+
                     events.Add(new GravitySettled(ImmutableArray.Create((sourceCoord, targetCoord))));
                 }
 
@@ -74,10 +92,11 @@ namespace Rescue.Core.Pipeline.Steps
                 if (BoardHelpers.GetTile(updatedBoard, coord) is not EmptyTile)
                 {
                     updatedBoard = BoardHelpers.SetTile(updatedBoard, coord, new EmptyTile());
+                    updatedLineage = updatedLineage.Remove(coord);
                 }
             }
 
-            return updatedBoard;
+            return (updatedBoard, updatedLineage);
         }
 
         private static bool IsGravityBarrier(Tile tile)

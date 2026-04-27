@@ -48,6 +48,7 @@ namespace Rescue.Replay
             builder.Append("|dockJam=").Append(state.DockJamUsed).Append('/').Append(state.DockJamEnabled).Append('/').Append(state.DockJamActive);
             builder.Append("|frozen=").Append(state.Frozen);
             builder.Append("|emergency=").Append(state.ConsecutiveEmergencySpawns).Append('/').Append(state.SpawnRecoveryCounter);
+            builder.Append("|spawnLineage=").Append(state.NextSpawnLineageId).Append('/').Append(SpawnLineageFingerprint(state.SpawnLineageByCoord));
             builder.Append("|extracted=").Append(string.Join(",", state.ExtractedTargetOrder));
             builder.Append("|spawnOverride=").Append(SpawnOverrideFingerprint(state.DebugSpawnOverride));
             return builder.ToString();
@@ -103,6 +104,20 @@ namespace Rescue.Replay
             return spawnOverride is null
                 ? "none"
                 : $"{spawnOverride.ForceEmergency?.ToString() ?? "null"}/{spawnOverride.OverrideAssistanceChance?.ToString("G17") ?? "null"}";
+        }
+
+        private static string SpawnLineageFingerprint(ImmutableDictionary<TileCoord, SpawnLineage> lineageByCoord)
+        {
+            List<string> entries = new List<string>(lineageByCoord.Count);
+            foreach (KeyValuePair<TileCoord, SpawnLineage> entry in lineageByCoord)
+            {
+                TileCoord coord = entry.Key;
+                SpawnLineage lineage = entry.Value;
+                entries.Add($"{coord.Row},{coord.Col}:{lineage.LineageId}:{lineage.Type}:{lineage.OriginalCoord.Row},{lineage.OriginalCoord.Col}");
+            }
+
+            entries.Sort(StringComparer.Ordinal);
+            return string.Join(";", entries);
         }
 
         private static string TileCode(Tile tile)

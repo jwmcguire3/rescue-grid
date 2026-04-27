@@ -19,7 +19,16 @@ namespace Rescue.Core.Pipeline
 
     public sealed record InvalidInput(TileCoord TappedCoord, InvalidInputReason Reason) : ActionEvent;
 
-    public sealed record GroupRemoved(DebrisType Type, ImmutableArray<TileCoord> Coords) : ActionEvent;
+    public sealed record GroupRemoved(
+        DebrisType Type,
+        ImmutableArray<TileCoord> Coords,
+        ImmutableArray<int> SpawnLineageIds) : ActionEvent
+    {
+        public GroupRemoved(DebrisType type, ImmutableArray<TileCoord> coords)
+            : this(type, coords, ImmutableArray<int>.Empty)
+        {
+        }
+    }
 
     public sealed record BlockerDamaged(TileCoord Coord, BlockerType Type, int RemainingHp) : ActionEvent;
 
@@ -37,7 +46,49 @@ namespace Rescue.Core.Pipeline
 
     public sealed record GravitySettled(ImmutableArray<(TileCoord From, TileCoord To)> Moves) : ActionEvent;
 
-    public sealed record Spawned(ImmutableArray<(TileCoord Coord, DebrisType Type)> Pieces) : ActionEvent;
+    public sealed record Spawned(ImmutableArray<SpawnedPiece> Pieces) : ActionEvent
+    {
+        public Spawned(ImmutableArray<(TileCoord Coord, DebrisType Type)> pieces)
+            : this(ConvertLegacyPieces(pieces))
+        {
+        }
+
+        private static ImmutableArray<SpawnedPiece> ConvertLegacyPieces(ImmutableArray<(TileCoord Coord, DebrisType Type)> pieces)
+        {
+            ImmutableArray<SpawnedPiece>.Builder converted = ImmutableArray.CreateBuilder<SpawnedPiece>(pieces.Length);
+            for (int i = 0; i < pieces.Length; i++)
+            {
+                (TileCoord coord, DebrisType type) = pieces[i];
+                converted.Add(new SpawnedPiece(
+                    coord,
+                    type,
+                    LineageId: 0,
+                    Reasons: ImmutableArray<SpawnAssistReason>.Empty,
+                    TriggerContext: ImmutableArray<string>.Empty,
+                    UrgentTargetId: null,
+                    UrgentTargetCoord: null,
+                    WaterRisesRemaining: 0,
+                    DockOccupancy: 0,
+                    RecoveryCounterBefore: 0,
+                    EmergencyRequested: false,
+                    EmergencyApplied: false,
+                    EffectiveAssistanceChance: 0.0d));
+            }
+
+            return converted.ToImmutable();
+        }
+    }
+
+    public enum DeadboardDiagnosticReason
+    {
+        HardNoValidGroups,
+        SoftNoRescueProgressMove,
+        RescueImpossibleStatic,
+    }
+
+    public sealed record DeadboardDiagnosticDetected(
+        DeadboardDiagnosticReason Reason,
+        string? TargetId) : ActionEvent;
 
     public sealed record TargetProgressed(string TargetId, TileCoord Coord) : ActionEvent;
 

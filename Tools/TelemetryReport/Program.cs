@@ -144,6 +144,9 @@ namespace TelemetryReport
                 sb.AppendLine($"| Water rises | {lvl.WaterRiseCount} |");
                 sb.AppendLine($"| Water modes | {FormatReasons(lvl.WaterModes)} |");
                 sb.AppendLine($"| Last next flood row | {FormatNullableInt(lvl.LastNextFloodRow)} |");
+                sb.AppendLine($"| Water forecast timings | {FormatReasons(lvl.WaterForecastTimings)} |");
+                sb.AppendLine($"| Last pre-action flood row | {FormatNullableInt(lvl.LastPreActionNextFloodRow)} |");
+                sb.AppendLine($"| Last post-action flood row | {FormatNullableInt(lvl.LastPostActionNextFloodRow)} |");
                 sb.AppendLine($"| Vine growth events | {lvl.VineGrowthCount} |");
                 sb.AppendLine($"| Vine preview events | {lvl.VinePreviewCount} |");
                 sb.AppendLine($"| Target transitions | {FormatReasons(lvl.TargetTransitions)} |");
@@ -159,6 +162,7 @@ namespace TelemetryReport
                 sb.AppendLine($"| Dock warning states | {FormatReasons(lvl.DockWarningStates)} |");
                 sb.AppendLine($"| Peak dock occupancy | {FormatNullableInt(lvl.PeakDockOccupancy)} |");
                 sb.AppendLine($"| Deadboard-like states | {lvl.DeadboardLikeCount} |");
+                sb.AppendLine($"| Deadboard reasons | {FormatReasons(lvl.DeadboardReasons)} |");
 
                 if (lvl.IdleTimes.Count > 0)
                 {
@@ -247,6 +251,15 @@ namespace TelemetryReport
                         }
 
                         lvl.LastNextFloodRow = forecast.NextFloodRow;
+                        Increment(lvl.WaterForecastTimings, forecast.Timing);
+                        if (string.Equals(forecast.Timing, "PreAction", StringComparison.Ordinal))
+                        {
+                            lvl.LastPreActionNextFloodRow = forecast.NextFloodRow;
+                        }
+                        else if (string.Equals(forecast.Timing, "PostAction", StringComparison.Ordinal))
+                        {
+                            lvl.LastPostActionNextFloodRow = forecast.NextFloodRow;
+                        }
                         break;
 
                     case WaterRiseEvent:
@@ -296,7 +309,20 @@ namespace TelemetryReport
                     case AssistedSpawnEvent assisted:
                         lvl.AssistedSpawnCount++;
                         lvl.AssistedSpawnPieces += assisted.SpawnCount;
-                        Increment(lvl.AssistedSpawnReasons, assisted.Reason);
+                        if (assisted.Pieces is { Length: > 0 })
+                        {
+                            foreach (AssistedSpawnPieceTelemetry piece in assisted.Pieces)
+                            {
+                                foreach (string reason in piece.Reasons)
+                                {
+                                    Increment(lvl.AssistedSpawnReasons, reason);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Increment(lvl.AssistedSpawnReasons, assisted.Reason);
+                        }
                         break;
 
                     case AssistedSpawnFollowUpEvent:
@@ -305,6 +331,7 @@ namespace TelemetryReport
 
                     case DeadboardLikeStateEvent:
                         lvl.DeadboardLikeCount++;
+                        Increment(lvl.DeadboardReasons, ((DeadboardLikeStateEvent)ev).Reason);
                         break;
                 }
             }
@@ -404,6 +431,8 @@ namespace TelemetryReport
         public int AssistedSpawnFollowUpCount;
         public int DeadboardLikeCount;
         public int? LastNextFloodRow;
+        public int? LastPreActionNextFloodRow;
+        public int? LastPostActionNextFloodRow;
         public int? PeakDockOccupancy;
         public List<int> WinActionCounts { get; } = new List<int>();
         public List<int> LossActionCounts { get; } = new List<int>();
@@ -412,10 +441,12 @@ namespace TelemetryReport
         public List<long> FirstActionTimes { get; } = new List<long>();
         public Dictionary<string, int> LossReasons { get; } = new Dictionary<string, int>();
         public Dictionary<string, int> WaterModes { get; } = new Dictionary<string, int>();
+        public Dictionary<string, int> WaterForecastTimings { get; } = new Dictionary<string, int>();
         public Dictionary<string, int> TargetTransitions { get; } = new Dictionary<string, int>();
         public Dictionary<string, int> GraceOutcomes { get; } = new Dictionary<string, int>();
         public Dictionary<string, int> AssistedSpawnReasons { get; } = new Dictionary<string, int>();
         public Dictionary<string, int> DockWarningStates { get; } = new Dictionary<string, int>();
+        public Dictionary<string, int> DeadboardReasons { get; } = new Dictionary<string, int>();
         public Dictionary<string, int> OneClearAwayActionByTarget { get; } = new Dictionary<string, int>();
         public Dictionary<string, int> ExtractionLatchActionByTarget { get; } = new Dictionary<string, int>();
     }
