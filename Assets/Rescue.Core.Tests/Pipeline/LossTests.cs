@@ -28,6 +28,7 @@ namespace Rescue.Core.Tests.Pipeline
             CheckLossResult result = CheckLoss.Run(state, context);
 
             Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.LossWaterOnTarget));
+            Assert.That(result.State.Frozen, Is.True);
             Assert.That(result.Events, Is.EqualTo(new ActionEvent[]
             {
                 new Lost(ActionOutcome.LossWaterOnTarget),
@@ -51,6 +52,7 @@ namespace Rescue.Core.Tests.Pipeline
             CheckLossResult result = CheckLoss.Run(state, context);
 
             Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.LossDockOverflow));
+            Assert.That(result.State.Frozen, Is.True);
             Assert.That(result.Events, Is.EqualTo(new ActionEvent[]
             {
                 new Lost(ActionOutcome.LossDockOverflow),
@@ -132,6 +134,7 @@ namespace Rescue.Core.Tests.Pipeline
 
             Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.LossDockOverflow));
             Assert.That(result.State.DockJamUsed, Is.True);
+            Assert.That(result.State.Frozen, Is.True);
             Assert.That(result.Events, Is.EqualTo(new ActionEvent[]
             {
                 new Lost(ActionOutcome.LossDockOverflow),
@@ -153,6 +156,7 @@ namespace Rescue.Core.Tests.Pipeline
 
             Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.LossDockOverflow));
             Assert.That(result.State.DockJamUsed, Is.False);
+            Assert.That(result.State.Frozen, Is.True);
             Assert.That(result.Events, Is.EqualTo(new ActionEvent[]
             {
                 new Lost(ActionOutcome.LossDockOverflow),

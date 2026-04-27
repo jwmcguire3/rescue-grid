@@ -32,7 +32,10 @@ namespace Rescue.Core.Pipeline.Steps
                 {
                     ImmutableArray<ActionEvent> waterLossEvents = ImmutableArray.Create<ActionEvent>(
                         new Lost(ActionOutcome.LossWaterOnTarget));
-                    return new CheckLossResult(resolvedState, waterLossEvents, ActionOutcome.LossWaterOnTarget);
+                    return new CheckLossResult(
+                        resolvedState with { Frozen = true },
+                        waterLossEvents,
+                        ActionOutcome.LossWaterOnTarget);
                 }
             }
 
@@ -67,7 +70,10 @@ namespace Rescue.Core.Pipeline.Steps
 
                 ImmutableArray<ActionEvent> dockLossEvents = ImmutableArray.Create<ActionEvent>(
                     new Lost(ActionOutcome.LossDockOverflow));
-                return new CheckLossResult(state, dockLossEvents, ActionOutcome.LossDockOverflow);
+                return new CheckLossResult(
+                    state with { Frozen = true },
+                    dockLossEvents,
+                    ActionOutcome.LossDockOverflow);
             }
 
             return new CheckLossResult(resolvedState, ImmutableArray<ActionEvent>.Empty, ActionOutcome.Ok);
