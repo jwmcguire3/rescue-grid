@@ -16,14 +16,15 @@ namespace Rescue.Unity.Presentation
         private const string DefaultImageAssetPath = "Assets/Rescue.Unity/Art/Loss/RescueStalledLoss.png";
         private const string RuntimeThemeResourcePath = "Rescue.Unity/Debug/UnityDefaultRuntimeTheme";
         private const int PanelSortingOrder = 1095;
+        private const float LossImageWidth = 941.0f;
+        private const float LossImageHeight = 1672.0f;
 
         [SerializeField] private Texture2D? lossImage;
         [SerializeField] private MonoBehaviour? maeReactionHook;
 
         private UIDocument? document;
         private VisualElement? overlayRoot;
-        private Label? headlineLabel;
-        private Label? explanationLabel;
+        private VisualElement? lossFrame;
         private Button? replayButton;
         private Button? tryAgainButton;
         private bool isVisible;
@@ -88,11 +89,6 @@ namespace Rescue.Unity.Presentation
                 ActionOutcome.LossDistressedExpired => "Distressed puppy was not rescued in time.",
                 _ => "Rescue stalled.",
             };
-
-            if (explanationLabel is not null)
-            {
-                explanationLabel.text = explanationText;
-            }
 
             NotifyTerminalHook(outcome);
             Show();
@@ -225,11 +221,17 @@ namespace Rescue.Unity.Presentation
             overlayRoot.style.justifyContent = Justify.Center;
             overlayRoot.style.backgroundColor = new Color(0f, 0f, 0f, 0.72f);
 
+            lossFrame = new VisualElement { name = "loss-frame" };
+            lossFrame.style.position = Position.Relative;
+            lossFrame.style.width = Length.Percent(100.0f);
+            lossFrame.style.height = Length.Percent(100.0f);
+            lossFrame.RegisterCallback<GeometryChangedEvent>(HandleLossFrameGeometryChanged);
+
             Image image = new Image
             {
                 name = "loss-screen-image",
                 image = ResolveLossImage(),
-                scaleMode = ScaleMode.ScaleToFit,
+                scaleMode = ScaleMode.StretchToFill,
             };
             image.style.position = Position.Absolute;
             image.style.left = 0f;
@@ -237,42 +239,48 @@ namespace Rescue.Unity.Presentation
             image.style.right = 0f;
             image.style.bottom = 0f;
 
-            headlineLabel = new Label("Rescue stalled") { name = "loss-headline-label" };
-            headlineLabel.style.position = Position.Absolute;
-            headlineLabel.style.left = Length.Percent(8.0f);
-            headlineLabel.style.right = Length.Percent(8.0f);
-            headlineLabel.style.top = Length.Percent(8.0f);
-            headlineLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
-            headlineLabel.style.whiteSpace = WhiteSpace.Normal;
-            headlineLabel.style.color = Color.white;
-            headlineLabel.style.fontSize = 34;
-
-            replayButton = CreateHitZoneButton("loss-replay-button", "Replay", 7.5f, 87.5f, 35.0f, 8.5f);
+            replayButton = CreateHitZoneButton("loss-replay-button", "Replay", 6.5f, 84.7f, 38.5f, 8.9f);
             replayButton.clicked += RequestReplay;
 
-            tryAgainButton = CreateHitZoneButton("loss-try-again-button", "Retry", 48.0f, 87.5f, 44.0f, 8.5f);
+            tryAgainButton = CreateHitZoneButton("loss-try-again-button", "Retry", 47.5f, 84.7f, 43.5f, 8.9f);
             tryAgainButton.clicked += RequestTryAgain;
 
-            explanationLabel = new Label(explanationText) { name = "loss-explanation-label" };
-            explanationLabel.style.position = Position.Absolute;
-            explanationLabel.style.left = Length.Percent(11.0f);
-            explanationLabel.style.right = Length.Percent(11.0f);
-            explanationLabel.style.top = Length.Percent(74.0f);
-            explanationLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
-            explanationLabel.style.whiteSpace = WhiteSpace.Normal;
-            explanationLabel.style.color = Color.white;
-            explanationLabel.style.backgroundColor = new Color(0f, 0f, 0f, 0.55f);
-            explanationLabel.style.paddingTop = 8f;
-            explanationLabel.style.paddingRight = 10f;
-            explanationLabel.style.paddingBottom = 8f;
-            explanationLabel.style.paddingLeft = 10f;
-
-            overlayRoot.Add(image);
-            overlayRoot.Add(headlineLabel);
-            overlayRoot.Add(explanationLabel);
-            overlayRoot.Add(replayButton);
-            overlayRoot.Add(tryAgainButton);
+            lossFrame.Add(image);
+            lossFrame.Add(replayButton);
+            lossFrame.Add(tryAgainButton);
+            overlayRoot.Add(lossFrame);
             root.Add(overlayRoot);
+        }
+
+        private void HandleLossFrameGeometryChanged(GeometryChangedEvent evt)
+        {
+            if (lossFrame is null || overlayRoot is null)
+            {
+                return;
+            }
+
+            float availableWidth = overlayRoot.resolvedStyle.width;
+            float availableHeight = overlayRoot.resolvedStyle.height;
+            if (availableWidth <= 0f || availableHeight <= 0f)
+            {
+                return;
+            }
+
+            float imageAspect = LossImageWidth / LossImageHeight;
+            float availableAspect = availableWidth / availableHeight;
+            float frameWidth = availableWidth;
+            float frameHeight = availableHeight;
+            if (availableAspect > imageAspect)
+            {
+                frameWidth = availableHeight * imageAspect;
+            }
+            else
+            {
+                frameHeight = availableWidth / imageAspect;
+            }
+
+            lossFrame.style.width = frameWidth;
+            lossFrame.style.height = frameHeight;
         }
 
         private Texture2D? ResolveLossImage()
@@ -321,8 +329,12 @@ namespace Rescue.Unity.Presentation
             button.style.top = Length.Percent(topPercent);
             button.style.width = Length.Percent(widthPercent);
             button.style.height = Length.Percent(heightPercent);
-            button.style.backgroundColor = new Color(0.08f, 0.10f, 0.13f, 0.88f);
-            button.style.color = Color.white;
+            button.style.backgroundColor = Color.clear;
+            button.style.borderTopWidth = 0f;
+            button.style.borderRightWidth = 0f;
+            button.style.borderBottomWidth = 0f;
+            button.style.borderLeftWidth = 0f;
+            button.style.color = Color.clear;
             button.style.unityFontStyleAndWeight = FontStyle.Bold;
             button.style.fontSize = 18;
             return button;

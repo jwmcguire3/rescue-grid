@@ -60,6 +60,37 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(presenter.ExplanationText, Is.EqualTo(expected));
         }
 
+        [Test]
+        public void LossScreenPresenter_UsesPngOnlyWithoutGeneratedCopyLayers()
+        {
+            LossScreenPresenter presenter = CreatePresenter();
+
+            presenter.Show(ActionOutcome.LossWaterOnTarget);
+
+            VisualElement rootElement = root!.GetComponent<UIDocument>().rootVisualElement;
+            Assert.That(rootElement.Q<VisualElement>("loss-frame"), Is.Not.Null);
+            Assert.That(rootElement.Q<Label>("loss-headline-label"), Is.Null);
+            Assert.That(rootElement.Q<Label>("loss-explanation-label"), Is.Null);
+        }
+
+        [Test]
+        public void LossScreenPresenter_KeepsReplayAndTryAgainHitZones()
+        {
+            LossScreenPresenter presenter = CreatePresenter();
+
+            presenter.Show();
+
+            VisualElement rootElement = root!.GetComponent<UIDocument>().rootVisualElement;
+            VisualElement? frame = rootElement.Q<VisualElement>("loss-frame");
+            Button? replayButton = frame?.Q<Button>("loss-replay-button");
+            Button? tryAgainButton = frame?.Q<Button>("loss-try-again-button");
+
+            Assert.That(frame, Is.Not.Null);
+            Assert.That(rootElement.Q<Image>("loss-screen-image"), Is.Not.Null);
+            Assert.That(replayButton, Is.Not.Null);
+            Assert.That(tryAgainButton, Is.Not.Null);
+        }
+
         private LossScreenPresenter CreatePresenter()
         {
             root = new GameObject("LossScreenTest");
