@@ -106,6 +106,27 @@ namespace Rescue.Core.Tests.Pipeline
             }).AsCollection);
         }
 
+        [TestCase(true, ActionOutcome.Ok)]
+        [TestCase(false, ActionOutcome.LossDockOverflow)]
+        public void DockJamAppliesOnlyWhenConfiguredForTeachingLevels(
+            bool dockJamEnabled,
+            ActionOutcome expectedOutcome)
+        {
+            GameState state = CreateState(
+                PipelineTestFixtures.CreateBoard(PipelineTestFixtures.EmptyRow(1)),
+                dockJamEnabled: dockJamEnabled);
+            StepContext context = StepContext.Create(state, new ActionInput(new TileCoord(0, 0))) with
+            {
+                PendingDockOverflowCount = 1,
+            };
+
+            CheckLossResult result = CheckLoss.Run(state, context);
+
+            Assert.That(result.Outcome, Is.EqualTo(expectedOutcome));
+            Assert.That(result.State.DockJamUsed, Is.EqualTo(dockJamEnabled));
+            Assert.That(result.State.DockJamActive, Is.EqualTo(dockJamEnabled));
+        }
+
         [Test]
         public void RecoveryActionThatClearsTripleUnfreezesAndContinues()
         {

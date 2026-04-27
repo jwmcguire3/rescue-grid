@@ -76,6 +76,23 @@ namespace Rescue.Core.Tests.Integration
         }
 
         [Test]
+        public void NonFinalDockOverflowBeatsSameActionWaterRise()
+        {
+            GameState state = IntegrationTestFixtures.CreateDockOverflowLossState() with
+            {
+                Water = new WaterState(FloodedRows: 0, ActionsUntilRise: 1, RiseInterval: 3),
+            };
+
+            ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(state, new ActionInput(new TileCoord(0, 0)));
+
+            Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.LossDockOverflow));
+            Assert.That(result.Events, Has.Some.TypeOf<DockOverflowTriggered>());
+            Assert.That(result.Events, Has.None.TypeOf<WaterRose>());
+            Assert.That(result.Events, Has.None.EqualTo(new Lost(ActionOutcome.LossWaterOnTarget)));
+            Assert.That(result.Events[^1], Is.EqualTo(new Lost(ActionOutcome.LossDockOverflow)));
+        }
+
+        [Test]
         public void TemporaryDockOverflowThatClearsTripleDoesNotLose()
         {
             GameState state = IntegrationTestFixtures.CreateTemporaryDockOverflowClearState();
