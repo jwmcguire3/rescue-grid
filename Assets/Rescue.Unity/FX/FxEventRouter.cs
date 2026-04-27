@@ -156,7 +156,8 @@ namespace Rescue.Unity.FX
                 case Lost lost when lost.Outcome == ActionOutcome.LossDockOverflow:
                     PlayLossDockOverflow();
                     break;
-                case Lost lost when lost.Outcome == ActionOutcome.LossWaterOnTarget:
+                case Lost lost when lost.Outcome == ActionOutcome.LossWaterOnTarget
+                    || lost.Outcome == ActionOutcome.LossDistressedExpired:
                     PlayLossWaterOnTarget();
                     break;
             }

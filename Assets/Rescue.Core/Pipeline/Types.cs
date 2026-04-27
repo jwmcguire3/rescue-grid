@@ -20,6 +20,7 @@ namespace Rescue.Core.Pipeline
         Win,
         LossDockOverflow,
         LossWaterOnTarget,
+        LossDistressedExpired,
     }
 
     internal sealed record StepResult(

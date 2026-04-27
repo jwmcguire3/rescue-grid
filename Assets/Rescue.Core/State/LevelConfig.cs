@@ -7,5 +7,6 @@ namespace Rescue.Core.State
         ImmutableDictionary<DebrisType, double>? BaseDistribution,
         double AssistanceChance,
         int ConsecutiveEmergencyCap = 2,
-        bool IsRuleTeach = false);
+        bool IsRuleTeach = false,
+        WaterContactMode WaterContactMode = WaterContactMode.ImmediateLoss);
 }

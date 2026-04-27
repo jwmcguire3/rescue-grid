@@ -55,6 +55,34 @@ namespace Rescue.Replay.Tests
             Assert.That(replay.FinalFrame.Outcome, Is.EqualTo(ActionOutcome.LossWaterOnTarget));
         }
 
+        [TestCase(WaterContactMode.ImmediateLoss, ActionOutcome.LossWaterOnTarget)]
+        [TestCase(WaterContactMode.OneTickGrace, ActionOutcome.LossDistressedExpired)]
+        public void WaterModeReplay_ReproducesConfiguredContactMode(
+            WaterContactMode waterContactMode,
+            ActionOutcome expectedOutcome)
+        {
+            LevelJson level = CreateWaterModeReplayLevel(waterContactMode);
+            int seed = 778;
+            ActionInput[] script = waterContactMode == WaterContactMode.ImmediateLoss
+                ? new[] { new ActionInput(new TileCoord(0, 0)) }
+                : new[]
+                {
+                    new ActionInput(new TileCoord(0, 0)),
+                    new ActionInput(new TileCoord(1, 0)),
+                };
+
+            string sessionPath = Path.Combine(_testDir, $"water-mode-{waterContactMode}.jsonl");
+            WriteSession(level, seed, script, sessionPath);
+
+            ReplayResult replay = ReplayRunner.ReplaySession(
+                sessionPath,
+                (_, replaySeed) => Loader.LoadLevel(level, replaySeed));
+
+            Assert.That(replay.Verified, Is.True);
+            Assert.That(replay.InitialFrame.State.LevelConfig.WaterContactMode, Is.EqualTo(waterContactMode));
+            Assert.That(replay.FinalFrame.Outcome, Is.EqualTo(expectedOutcome));
+        }
+
         [Test]
         public void CaptureOnLossDump_PreservesEnoughDataToReplayIdenticalFailure()
         {
@@ -153,6 +181,57 @@ namespace Rescue.Replay.Tests
                     ExpectedPath = "Clear the opening pair and flood the bottom row.",
                     ExpectedFailMode = "Immediate water loss.",
                     WhatItProves = "Loss dumps carry enough data for exact replay.",
+                    IsRuleTeach = false,
+                },
+            };
+        }
+
+        private static LevelJson CreateWaterModeReplayLevel(WaterContactMode waterContactMode)
+        {
+            return new LevelJson
+            {
+                Id = "LWaterMode",
+                Name = "Water Mode Replay",
+                Board = new BoardJson
+                {
+                    Width = 3,
+                    Height = 3,
+                    Tiles = new[]
+                    {
+                        new[] { "A", "A", "." },
+                        new[] { "C", "C", "B" },
+                        new[] { ".", ".", "T0" },
+                    },
+                },
+                DebrisTypePool = new[] { DebrisType.A, DebrisType.B, DebrisType.C, DebrisType.D },
+                Targets = new[] { new TargetJson { Id = "0", Row = 2, Col = 2 } },
+                InitialFloodedRows = 0,
+                Water = new WaterJson
+                {
+                    RiseInterval = 1,
+                    ContactMode = waterContactMode,
+                },
+                Vine = new VineJson
+                {
+                    GrowthThreshold = 4,
+                    GrowthPriority = Array.Empty<TileCoordJson>(),
+                },
+                Dock = new DockJson
+                {
+                    Size = 7,
+                    JamEnabled = false,
+                },
+                Assistance = new AssistanceJson
+                {
+                    Chance = 0.5d,
+                    ConsecutiveEmergencyCap = 2,
+                },
+                Meta = new MetaJson
+                {
+                    Intent = "Replay both water contact modes.",
+                    ExpectedPath = "Immediate loses on first contact; grace expires on the second unresolved action.",
+                    ExpectedFailMode = "Configured water mode is not replayed.",
+                    WhatItProves = "Replay keeps water mode in the authoritative loaded state.",
                     IsRuleTeach = false,
                 },
             };

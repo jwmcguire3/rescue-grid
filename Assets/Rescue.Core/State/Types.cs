@@ -43,6 +43,12 @@ namespace Rescue.Core.State
         int RiseInterval,
         bool PauseUntilFirstAction = false);
 
+    public enum WaterContactMode
+    {
+        ImmediateLoss,
+        OneTickGrace,
+    }
+
     public sealed record VineState(
         int ActionsSinceLastClear,
         int GrowthThreshold,

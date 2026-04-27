@@ -47,6 +47,12 @@ namespace Rescue.Core.Pipeline
 
     public sealed record TargetExtracted(string TargetId, TileCoord Coord) : ActionEvent;
 
+    public sealed record TargetDistressedEntered(string TargetId, TileCoord Coord) : ActionEvent;
+
+    public sealed record TargetDistressedRecovered(string TargetId, TileCoord Coord) : ActionEvent;
+
+    public sealed record TargetDistressedExpired(string TargetId, TileCoord Coord) : ActionEvent;
+
     public sealed record WaterWarning(int ActionsUntilRise, int NextFloodRow) : ActionEvent;
 
     public sealed record WaterRose(int FloodedRow) : ActionEvent;

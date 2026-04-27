@@ -207,6 +207,46 @@ namespace Rescue.Core.Tests.Integration
         }
 
         [Test]
+        public void GraceModeExtractionBeforeExpiryRecoversAndRescuesDistressedTarget()
+        {
+            GameState state = IntegrationTestFixtures.CreateGraceRecoveryState();
+
+            ActionResult firstAction = Rescue.Core.Pipeline.Pipeline.RunAction(state, new ActionInput(new TileCoord(0, 0)));
+            ActionResult secondAction = Rescue.Core.Pipeline.Pipeline.RunAction(firstAction.State, new ActionInput(new TileCoord(0, 2)));
+
+            Assert.That(firstAction.Outcome, Is.EqualTo(ActionOutcome.Ok));
+            Assert.That(firstAction.State.Targets[0].Readiness, Is.EqualTo(TargetReadiness.Distressed));
+            Assert.That(firstAction.Events, Has.Some.EqualTo(new TargetDistressedEntered("pup", new TileCoord(2, 2))));
+
+            Assert.That(secondAction.Outcome, Is.EqualTo(ActionOutcome.Win));
+            Assert.That(secondAction.Events, Has.Some.EqualTo(new TargetDistressedRecovered("pup", new TileCoord(2, 2))));
+            Assert.That(secondAction.Events, Has.Some.EqualTo(new TargetExtracted("pup", new TileCoord(2, 2))));
+            Assert.That(secondAction.Events, Has.None.TypeOf<TargetDistressedExpired>());
+            Assert.That(secondAction.Events, Has.None.TypeOf<Lost>());
+        }
+
+        [TestCase(WaterContactMode.ImmediateLoss)]
+        [TestCase(WaterContactMode.OneTickGrace)]
+        public void FinalRescueSkipsWaterConsequenceInConfiguredMode(WaterContactMode waterContactMode)
+        {
+            GameState state = IntegrationTestFixtures.CreateSingleActionWinState() with
+            {
+                Water = new WaterState(FloodedRows: 0, ActionsUntilRise: 1, RiseInterval: 3),
+                LevelConfig = PipelineTestFixtures.CreateLevelConfig(0.0d, null, DebrisType.A) with
+                {
+                    WaterContactMode = waterContactMode,
+                },
+            };
+
+            ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(state, new ActionInput(new TileCoord(3, 1)));
+
+            Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.Win));
+            Assert.That(result.Events, Has.None.TypeOf<WaterRose>());
+            Assert.That(result.Events, Has.None.TypeOf<TargetDistressedEntered>());
+            Assert.That(result.Events, Has.None.TypeOf<Lost>());
+        }
+
+        [Test]
         public void WonEventIncludesFinalTargetIdTotalActionsAndExtractionOrder()
         {
             GameState state = IntegrationTestFixtures.CreateSingleActionWinState() with
@@ -349,6 +389,24 @@ namespace Rescue.Core.Tests.Integration
             {
                 Dock = OverflowDock(),
             };
+        }
+
+        public static GameState CreateGraceRecoveryState()
+        {
+            return PipelineTestFixtures.CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    PipelineTestFixtures.Row(new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.B)),
+                    PipelineTestFixtures.Row(new EmptyTile(), new EmptyTile(), new DebrisTile(DebrisType.B)),
+                    PipelineTestFixtures.Row(new EmptyTile(), new EmptyTile(), new TargetTile("pup", Extracted: false))),
+                targets: ImmutableArray.Create(new TargetState("pup", new TileCoord(2, 2), Extracted: false, OneClearAway: false)))
+                with
+                {
+                    Water = new WaterState(FloodedRows: 0, ActionsUntilRise: 1, RiseInterval: 1),
+                    LevelConfig = PipelineTestFixtures.CreateLevelConfig(0.0d, null, DebrisType.A, DebrisType.B) with
+                    {
+                        WaterContactMode = WaterContactMode.OneTickGrace,
+                    },
+                };
         }
 
         private static Dock OverflowDock()

@@ -60,6 +60,44 @@ namespace Rescue.Core.Tests.Pipeline
         }
 
         [Test]
+        public void GraceModeFirstWaterContactMarksDistressedWithoutLoss()
+        {
+            GameState state = CreateFloodedTargetState(WaterContactMode.OneTickGrace);
+            StepContext context = StepContext.Create(state, new ActionInput(new TileCoord(0, 0)));
+
+            CheckLossResult result = WaterTargetConsequence.Run(state, context);
+
+            Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.Ok));
+            Assert.That(result.State.Frozen, Is.False);
+            Assert.That(result.State.Targets[0].Readiness, Is.EqualTo(TargetReadiness.Distressed));
+            Assert.That(result.Events, Is.EqualTo(new ActionEvent[]
+            {
+                new TargetDistressedEntered("target", new TileCoord(1, 0)),
+            }).AsCollection);
+        }
+
+        [Test]
+        public void GraceModeSecondUnresolvedWaterConsequenceExpiresDistressedTarget()
+        {
+            GameState state = CreateFloodedTargetState(WaterContactMode.OneTickGrace) with
+            {
+                Targets = ImmutableArray.Create(
+                    new TargetState("target", new TileCoord(1, 0), TargetReadiness.Distressed)),
+            };
+            StepContext context = StepContext.Create(state, new ActionInput(new TileCoord(0, 0)));
+
+            CheckLossResult result = WaterTargetConsequence.Run(state, context);
+
+            Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.LossDistressedExpired));
+            Assert.That(result.State.Frozen, Is.True);
+            Assert.That(result.Events, Is.EqualTo(new ActionEvent[]
+            {
+                new TargetDistressedExpired("target", new TileCoord(1, 0)),
+                new Lost(ActionOutcome.LossDistressedExpired),
+            }).AsCollection);
+        }
+
+        [Test]
         public void DockOverflowWithoutDockJamEligibilityLosesImmediately()
         {
             GameState state = CreateState(
@@ -214,6 +252,23 @@ namespace Rescue.Core.Tests.Pipeline
             bool dockJamEnabled = false)
         {
             return PipelineTestFixtures.CreateState(board, targets, dockJamEnabled: dockJamEnabled);
+        }
+
+        private static GameState CreateFloodedTargetState(WaterContactMode waterContactMode)
+        {
+            return CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    PipelineTestFixtures.Row(new EmptyTile(), new EmptyTile()),
+                    PipelineTestFixtures.Row(new TargetTile("target", Extracted: false), new EmptyTile())),
+                targets: ImmutableArray.Create(new TargetState("target", new TileCoord(1, 0), Extracted: false, OneClearAway: false)))
+                with
+                {
+                    Water = new WaterState(FloodedRows: 1, ActionsUntilRise: 2, RiseInterval: 2),
+                    LevelConfig = PipelineTestFixtures.CreateLevelConfig() with
+                    {
+                        WaterContactMode = waterContactMode,
+                    },
+                };
         }
 
         private static GameState CreateActiveDockJamState()

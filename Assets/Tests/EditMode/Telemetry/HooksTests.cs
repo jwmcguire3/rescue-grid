@@ -53,6 +53,7 @@ namespace Rescue.Telemetry.Tests
             Assert.That(ev.TargetCount, Is.EqualTo(state.Targets.Length));
             Assert.That(ev.VineGrowthThreshold, Is.EqualTo(state.Vine.GrowthThreshold));
             Assert.That(ev.RiseInterval, Is.EqualTo(state.Water.RiseInterval));
+            Assert.That(ev.WaterMode, Is.EqualTo(state.LevelConfig.WaterContactMode.ToString()));
         }
 
         [Test]
@@ -273,6 +274,36 @@ namespace Rescue.Telemetry.Tests
         }
 
         [Test]
+        public void OnAction_DistressedEventsAndExpiredLoss_EmitTelemetry()
+        {
+            GameState state = CreateDistressedExpiredLossState();
+            string path = TempPath();
+
+            ActionInput input = new ActionInput(new TileCoord(0, 0));
+            ActionResult result = Pipeline.RunAction(state, input);
+
+            using (TelemetryLogger logger = new TelemetryLogger(path, TelemetryConfig.DevDefaults))
+            {
+                TelemetrySessionState session = new TelemetrySessionState { LevelStartMs = 0 };
+                TelemetryHooks.OnAction("L1", state, input, result, 1UL, 0, 100, session, logger);
+            }
+
+            List<ITelemetryEvent> events = ReadEvents(path);
+
+            TargetDistressedEvent? distressed = FindEvent<TargetDistressedEvent>(events);
+            LevelLossEvent? loss = FindEvent<LevelLossEvent>(events);
+            TargetLostEvent? targetLost = FindEvent<TargetLostEvent>(events);
+
+            Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.LossDistressedExpired));
+            Assert.That(distressed, Is.Not.Null);
+            Assert.That(distressed!.Transition, Is.EqualTo("expired"));
+            Assert.That(loss, Is.Not.Null);
+            Assert.That(loss!.Reason, Is.EqualTo(LossReasons.DistressedExpired));
+            Assert.That(targetLost, Is.Not.Null);
+            Assert.That(targetLost!.TargetId, Is.EqualTo("pup"));
+        }
+
+        [Test]
         public void OnLevelAbandoned_EmitsLossWithManualAbandonReason()
         {
             string path = TempPath();
@@ -458,6 +489,32 @@ namespace Rescue.Telemetry.Tests
                 Vine: NoVine(),
                 Targets: ImmutableArray.Create(new TargetState("pup", new TileCoord(1, 1), false, false)),
                 LevelConfig: SimpleConfig(),
+                RngState: new RngState(1u, 2u),
+                ActionCount: 0,
+                DockJamUsed: false,
+                UndoAvailable: true,
+                ExtractedTargetOrder: ImmutableArray<string>.Empty,
+                Frozen: false,
+                ConsecutiveEmergencySpawns: 0,
+                SpawnRecoveryCounter: 0);
+        }
+
+        private static GameState CreateDistressedExpiredLossState()
+        {
+            ImmutableArray<Tile> row0 = ImmutableArray.Create<Tile>(
+                new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A));
+            ImmutableArray<Tile> row1 = ImmutableArray.Create<Tile>(
+                new TargetTile("pup", Extracted: false), new BlockerTile(BlockerType.Crate, 2, Hidden: null));
+
+            Board board = new Board(2, 2, ImmutableArray.Create(row0, row1));
+
+            return new GameState(
+                Board: board,
+                Dock: EmptyDock(),
+                Water: new WaterState(FloodedRows: 1, ActionsUntilRise: 10, RiseInterval: 10),
+                Vine: NoVine(),
+                Targets: ImmutableArray.Create(new TargetState("pup", new TileCoord(1, 0), TargetReadiness.Distressed)),
+                LevelConfig: SimpleConfig() with { WaterContactMode = WaterContactMode.OneTickGrace },
                 RngState: new RngState(1u, 2u),
                 ActionCount: 0,
                 DockJamUsed: false,

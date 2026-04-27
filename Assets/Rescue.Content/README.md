@@ -25,7 +25,8 @@
   ],
   "initialFloodedRows": 0,
   "water": {
-    "riseInterval": 10
+    "riseInterval": 10,
+    "contactMode": "ImmediateLoss"
   },
   "vine": {
     "growthThreshold": 4,
@@ -85,3 +86,4 @@ The validator is pure .NET and operates on raw JSON strings. It checks:
 - `WaterState.ActionsUntilRise` starts at `riseInterval`
 - `meta.isRuleTeach = true` keeps the waterline in its teach state until the first valid action, then normal ticking resumes
 - `riseInterval = 0` means water is disabled for the level
+- `water.contactMode` is optional and defaults to `ImmediateLoss`; set it to `OneTickGrace` to make first contact mark a target distressed before unresolved contact expires.

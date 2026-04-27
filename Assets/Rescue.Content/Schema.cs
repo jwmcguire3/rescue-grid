@@ -51,6 +51,8 @@ namespace Rescue.Content
     public sealed record WaterJson
     {
         public int RiseInterval { get; init; }
+
+        public WaterContactMode ContactMode { get; init; } = WaterContactMode.ImmediateLoss;
     }
 
     public sealed record VineJson

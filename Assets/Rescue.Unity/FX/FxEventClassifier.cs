@@ -67,7 +67,8 @@ namespace Rescue.Unity.FX
                         sawLossDockOverflow = true;
                         hooks.Add(FxEventHook.LossDockOverflow);
                         break;
-                    case Lost lost when lost.Outcome == ActionOutcome.LossWaterOnTarget:
+                    case Lost lost when lost.Outcome == ActionOutcome.LossWaterOnTarget
+                        || lost.Outcome == ActionOutcome.LossDistressedExpired:
                         sawLossWaterOnTarget = true;
                         hooks.Add(FxEventHook.LossWaterOnTarget);
                         break;
@@ -84,7 +85,9 @@ namespace Rescue.Unity.FX
                 hooks.Add(FxEventHook.LossDockOverflow);
             }
 
-            if (!sawLossWaterOnTarget && result.Outcome == ActionOutcome.LossWaterOnTarget)
+            if (!sawLossWaterOnTarget
+                && (result.Outcome == ActionOutcome.LossWaterOnTarget
+                    || result.Outcome == ActionOutcome.LossDistressedExpired))
             {
                 hooks.Add(FxEventHook.LossWaterOnTarget);
             }

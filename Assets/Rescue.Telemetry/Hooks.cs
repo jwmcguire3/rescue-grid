@@ -36,7 +36,8 @@ namespace Rescue.Telemetry
                 RiseInterval: initialState.Water.RiseInterval,
                 InitialFloodedRows: initialState.Water.FloodedRows,
                 VineGrowthThreshold: initialState.Vine.GrowthThreshold,
-                TargetCount: initialState.Targets.Length));
+                TargetCount: initialState.Targets.Length,
+                WaterMode: initialState.LevelConfig.WaterContactMode.ToString()));
         }
 
         public static void OnAction(
@@ -148,6 +149,33 @@ namespace Rescue.Telemetry
                             TargetId: te.TargetId));
                         break;
 
+                    case TargetDistressedEntered entered:
+                        logger.Append(new TargetDistressedEvent(
+                            LevelId: levelId,
+                            TimestampMs: timestampMs,
+                            ActionIndex: actionIndex,
+                            TargetId: entered.TargetId,
+                            Transition: "entered"));
+                        break;
+
+                    case TargetDistressedRecovered recovered:
+                        logger.Append(new TargetDistressedEvent(
+                            LevelId: levelId,
+                            TimestampMs: timestampMs,
+                            ActionIndex: actionIndex,
+                            TargetId: recovered.TargetId,
+                            Transition: "recovered"));
+                        break;
+
+                    case TargetDistressedExpired expired:
+                        logger.Append(new TargetDistressedEvent(
+                            LevelId: levelId,
+                            TimestampMs: timestampMs,
+                            ActionIndex: actionIndex,
+                            TargetId: expired.TargetId,
+                            Transition: "expired"));
+                        break;
+
                     case DockJamTriggered _:
                         logger.Append(new DockJamTriggeredEvent(
                             LevelId: levelId,
@@ -172,7 +200,8 @@ namespace Rescue.Telemetry
             }
 
             // target_lost (water on target)
-            if (result.Outcome == ActionOutcome.LossWaterOnTarget)
+            if (result.Outcome == ActionOutcome.LossWaterOnTarget
+                || result.Outcome == ActionOutcome.LossDistressedExpired)
             {
                 string? lostTargetId = FindLostTarget(stateBefore, result.State);
                 if (lostTargetId is not null)
@@ -226,6 +255,7 @@ namespace Rescue.Telemetry
             {
                 string reason = MapLossReason(result.Outcome, dockJamWasActive);
                 string? lostTargetId = result.Outcome == ActionOutcome.LossWaterOnTarget
+                    || result.Outcome == ActionOutcome.LossDistressedExpired
                     ? FindLostTarget(stateBefore, result.State)
                     : null;
 
@@ -311,7 +341,8 @@ namespace Rescue.Telemetry
                 DockJamEnabled: overrides.DockJamEnabled,
                 DockSize: overrides.DockSize,
                 DefaultCrateHp: overrides.DefaultCrateHp,
-                VineGrowthThreshold: overrides.VineGrowthThreshold));
+                VineGrowthThreshold: overrides.VineGrowthThreshold,
+                WaterContactMode: overrides.WaterContactMode?.ToString()));
         }
 
         private static string MapInvalidReason(InvalidInputReason reason)
@@ -337,6 +368,7 @@ namespace Rescue.Telemetry
                 ActionOutcome.LossDockOverflow when dockJamWasActive => LossReasons.DockJamUnresolved,
                 ActionOutcome.LossDockOverflow => LossReasons.DockOverflow,
                 ActionOutcome.LossWaterOnTarget => LossReasons.WaterOnTarget,
+                ActionOutcome.LossDistressedExpired => LossReasons.DistressedExpired,
                 _ => LossReasons.DockOverflow,
             };
         }

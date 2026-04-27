@@ -665,7 +665,9 @@ namespace Rescue.Unity.Debugging
 
         private static bool IsLossOutcome(ActionOutcome outcome)
         {
-            return outcome == ActionOutcome.LossDockOverflow || outcome == ActionOutcome.LossWaterOnTarget;
+            return outcome == ActionOutcome.LossDockOverflow
+                || outcome == ActionOutcome.LossWaterOnTarget
+                || outcome == ActionOutcome.LossDistressedExpired;
         }
 
         private void SyncVictoryScreenNextAvailability()
@@ -788,7 +790,9 @@ namespace Rescue.Unity.Debugging
 
         private string? CaptureLossReplayIfNeeded(ActionOutcome outcome)
         {
-            if (outcome != ActionOutcome.LossDockOverflow && outcome != ActionOutcome.LossWaterOnTarget)
+            if (outcome != ActionOutcome.LossDockOverflow
+                && outcome != ActionOutcome.LossWaterOnTarget
+                && outcome != ActionOutcome.LossDistressedExpired)
             {
                 return null;
             }
@@ -1994,7 +1998,8 @@ namespace Rescue.Unity.Debugging
                     baseDistribution,
                     state.LevelConfig.AssistanceChance,
                     state.LevelConfig.ConsecutiveEmergencyCap,
-                    state.LevelConfig.IsRuleTeach),
+                    state.LevelConfig.IsRuleTeach,
+                    state.LevelConfig.WaterContactMode.ToString()),
                 new RngExport(state.RngState.S0, state.RngState.S1),
                 state.ActionCount,
                 state.DockJamUsed,
@@ -2104,7 +2109,8 @@ namespace Rescue.Unity.Debugging
         Dictionary<string, double>? BaseDistribution,
         double AssistanceChance,
         int ConsecutiveEmergencyCap,
-        bool IsRuleTeach);
+        bool IsRuleTeach,
+        string WaterContactMode);
 
     internal sealed record RngExport(uint S0, uint S1);
 

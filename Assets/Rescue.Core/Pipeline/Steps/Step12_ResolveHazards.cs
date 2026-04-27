@@ -23,7 +23,13 @@ namespace Rescue.Core.Pipeline.Steps
                 Board floodedBoard = updatedState.Board;
                 for (int col = 0; col < floodedBoard.Width; col++)
                 {
-                    floodedBoard = BoardHelpers.SetTile(floodedBoard, new TileCoord(floodedRow, col), new FloodedTile());
+                    TileCoord coord = new TileCoord(floodedRow, col);
+                    if (BoardHelpers.GetTile(floodedBoard, coord) is TargetTile)
+                    {
+                        continue;
+                    }
+
+                    floodedBoard = BoardHelpers.SetTile(floodedBoard, coord, new FloodedTile());
                 }
 
                 updatedState = updatedState with

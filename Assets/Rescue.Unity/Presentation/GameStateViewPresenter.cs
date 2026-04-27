@@ -309,7 +309,9 @@ namespace Rescue.Unity.Presentation
 
         private static bool IsLossOutcome(ActionOutcome outcome)
         {
-            return outcome == ActionOutcome.LossDockOverflow || outcome == ActionOutcome.LossWaterOnTarget;
+            return outcome == ActionOutcome.LossDockOverflow
+                || outcome == ActionOutcome.LossWaterOnTarget
+                || outcome == ActionOutcome.LossDistressedExpired;
         }
     }
 }

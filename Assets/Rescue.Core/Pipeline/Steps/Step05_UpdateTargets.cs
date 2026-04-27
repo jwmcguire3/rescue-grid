@@ -19,10 +19,17 @@ namespace Rescue.Core.Pipeline.Steps
 
                 if (!before.Extracted)
                 {
-                    int blockedRequiredNeighbors = CountBlockedRequiredNeighbors(board, before.Coord);
-                    TargetReadiness readiness = before.ExtractableLatched
+                    int blockedRequiredNeighbors = CountBlockedRequiredNeighbors(
+                        board,
+                        before.Coord,
+                        treatFloodedAsOpen: before.Readiness == TargetReadiness.Distressed);
+                    TargetReadiness calculatedReadiness = before.ExtractableLatched
                         ? TargetReadiness.ExtractableLatched
                         : CalculateReadiness(board, before.Coord, blockedRequiredNeighbors);
+                    TargetReadiness readiness = before.Readiness == TargetReadiness.Distressed
+                        && calculatedReadiness != TargetReadiness.ExtractableLatched
+                            ? TargetReadiness.Distressed
+                            : calculatedReadiness;
                     after = before with
                     {
                         Readiness = readiness,
@@ -30,6 +37,12 @@ namespace Rescue.Core.Pipeline.Steps
 
                     if (before.Readiness != after.Readiness)
                     {
+                        if (before.Readiness == TargetReadiness.Distressed
+                            && after.Readiness == TargetReadiness.ExtractableLatched)
+                        {
+                            events.Add(new TargetDistressedRecovered(after.TargetId, after.Coord));
+                        }
+
                         AddReadinessTransitionEvent(events, after);
                     }
 
@@ -90,13 +103,15 @@ namespace Rescue.Core.Pipeline.Steps
             }
         }
 
-        private static int CountBlockedRequiredNeighbors(Board board, TileCoord targetCoord)
+        private static int CountBlockedRequiredNeighbors(Board board, TileCoord targetCoord, bool treatFloodedAsOpen)
         {
             int blocked = 0;
             ImmutableArray<TileCoord> neighbors = BoardHelpers.OrthogonalNeighbors(board, targetCoord);
             for (int i = 0; i < neighbors.Length; i++)
             {
-                if (BoardHelpers.GetTile(board, neighbors[i]) is not EmptyTile)
+                Tile tile = BoardHelpers.GetTile(board, neighbors[i]);
+                bool open = tile is EmptyTile || (treatFloodedAsOpen && tile is FloodedTile);
+                if (!open)
                 {
                     blocked++;
                 }

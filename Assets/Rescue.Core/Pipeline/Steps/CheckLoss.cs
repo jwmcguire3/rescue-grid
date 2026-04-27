@@ -70,21 +70,45 @@ namespace Rescue.Core.Pipeline.Steps
     {
         public static CheckLossResult Run(GameState state, StepContext context)
         {
+            ImmutableArray<TargetState>.Builder? updatedTargets = null;
+            ImmutableArray<ActionEvent>.Builder events = ImmutableArray.CreateBuilder<ActionEvent>();
+
             for (int i = 0; i < state.Targets.Length; i++)
             {
                 TargetState target = state.Targets[i];
                 if (!target.Extracted && IsFloodedTarget(state.Board, state.Water, target.Coord))
                 {
-                    ImmutableArray<ActionEvent> waterLossEvents = ImmutableArray.Create<ActionEvent>(
-                        new Lost(ActionOutcome.LossWaterOnTarget));
+                    if (state.LevelConfig.WaterContactMode == WaterContactMode.OneTickGrace)
+                    {
+                        if (target.Readiness == TargetReadiness.Distressed)
+                        {
+                            events.Add(new TargetDistressedExpired(target.TargetId, target.Coord));
+                            events.Add(new Lost(ActionOutcome.LossDistressedExpired));
+                            return new CheckLossResult(
+                                state with { Frozen = true },
+                                events.ToImmutable(),
+                                ActionOutcome.LossDistressedExpired);
+                        }
+
+                        updatedTargets ??= state.Targets.ToBuilder();
+                        TargetState distressed = target with { Readiness = TargetReadiness.Distressed };
+                        updatedTargets[i] = distressed;
+                        events.Add(new TargetDistressedEntered(distressed.TargetId, distressed.Coord));
+                        continue;
+                    }
+
+                    events.Add(new Lost(ActionOutcome.LossWaterOnTarget));
                     return new CheckLossResult(
                         state with { Frozen = true },
-                        waterLossEvents,
+                        events.ToImmutable(),
                         ActionOutcome.LossWaterOnTarget);
                 }
             }
 
-            return new CheckLossResult(state, ImmutableArray<ActionEvent>.Empty, ActionOutcome.Ok);
+            GameState resolvedState = updatedTargets is null
+                ? state
+                : state with { Targets = updatedTargets.ToImmutable() };
+            return new CheckLossResult(resolvedState, events.ToImmutable(), ActionOutcome.Ok);
         }
 
         private static bool IsFloodedTarget(Board board, WaterState water, TileCoord coord)

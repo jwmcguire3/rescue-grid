@@ -18,6 +18,7 @@ namespace Rescue.Telemetry
     {
         public const string DockOverflow = "dock_overflow";
         public const string WaterOnTarget = "water_on_target";
+        public const string DistressedExpired = "distressed_expired";
         public const string DockJamUnresolved = "dock_jam_unresolved";
         public const string ManualAbandon = "manual_abandon";
     }
@@ -47,7 +48,8 @@ namespace Rescue.Telemetry
         int RiseInterval,
         int InitialFloodedRows,
         int VineGrowthThreshold,
-        int TargetCount) : ITelemetryEvent
+        int TargetCount,
+        string WaterMode = "ImmediateLoss") : ITelemetryEvent
     {
         public string EventType => "level_start";
         public int SchemaVersion => 1;
@@ -205,6 +207,17 @@ namespace Rescue.Telemetry
         public int SchemaVersion => 1;
     }
 
+    public sealed record TargetDistressedEvent(
+        string LevelId,
+        long TimestampMs,
+        int ActionIndex,
+        string TargetId,
+        string Transition) : ITelemetryEvent
+    {
+        public string EventType => "target_distressed";
+        public int SchemaVersion => 1;
+    }
+
     public sealed record TuningChangedEvent(
         string LevelId,
         long TimestampMs,
@@ -218,7 +231,8 @@ namespace Rescue.Telemetry
         bool? DockJamEnabled,
         int? DockSize,
         int? DefaultCrateHp,
-        int? VineGrowthThreshold) : ITelemetryEvent
+        int? VineGrowthThreshold,
+        string? WaterContactMode = null) : ITelemetryEvent
     {
         public string EventType => "tuning_changed";
         public int SchemaVersion => 1;
@@ -275,6 +289,7 @@ namespace Rescue.Telemetry
                 "undo_used" => JsonSerializer.Deserialize<UndoUsedEvent>(rawJson, InnerOptions),
                 "target_extracted" => JsonSerializer.Deserialize<TargetExtractedEvent>(rawJson, InnerOptions),
                 "target_lost" => JsonSerializer.Deserialize<TargetLostEvent>(rawJson, InnerOptions),
+                "target_distressed" => JsonSerializer.Deserialize<TargetDistressedEvent>(rawJson, InnerOptions),
                 "invalid_tap" => JsonSerializer.Deserialize<InvalidTapEvent>(rawJson, InnerOptions),
                 "idle_time" => JsonSerializer.Deserialize<IdleTimeEvent>(rawJson, InnerOptions),
                 "time_to_first_action" => JsonSerializer.Deserialize<TimeToFirstActionEvent>(rawJson, InnerOptions),

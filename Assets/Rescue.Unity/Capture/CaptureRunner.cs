@@ -203,6 +203,7 @@ namespace Rescue.Unity.Capture
                 "Win" => ActionOutcome.Win,
                 "LossDockOverflow" => ActionOutcome.LossDockOverflow,
                 "LossWaterOnTarget" => ActionOutcome.LossWaterOnTarget,
+                "LossDistressedExpired" => ActionOutcome.LossDistressedExpired,
                 _ => throw new InvalidOperationException($"Unsupported expected outcome '{solve.ExpectedOutcome}'."),
             };
 

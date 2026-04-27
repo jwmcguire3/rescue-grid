@@ -19,6 +19,7 @@
     <Compile Include="..\..\Assets\Rescue.Content\AsciiPreview.cs" Link="Rescue.Content\AsciiPreview.cs" />
     <Compile Include="..\..\Assets\Rescue.Content\ContentJson.cs" Link="Rescue.Content\ContentJson.cs" />
     <Compile Include="..\..\Assets\Rescue.Content\Schema.cs" Link="Rescue.Content\Schema.cs" />
+    <Compile Include="..\..\Assets\Rescue.Content\Tuning.cs" Link="Rescue.Content\Tuning.cs" />
     <Compile Include="..\..\Assets\Rescue.Content\Validator.cs" Link="Rescue.Content\Validator.cs" />
     <Compile Include="..\..\Assets\Rescue.Content\Loader.cs" Link="Rescue.Content\Loader.cs" />
   </ItemGroup>

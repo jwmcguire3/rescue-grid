@@ -92,6 +92,7 @@
                 <ui:IntegerField name="tune-dock-size-field" label="Dock Size (Debug)" />
                 <ui:IntegerField name="tune-default-crate-hp-field" label="Default Crate HP" />
                 <ui:IntegerField name="tune-vine-growth-threshold-field" label="Vine Growth Threshold" />
+                <ui:DropdownField name="tune-water-contact-mode-field" label="Water Mode" />
 
                 <ui:Label text="Presets" class="debug-section" />
                 <ui:DropdownField name="tune-preset-selector" label="Available" />

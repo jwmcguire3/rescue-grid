@@ -240,6 +240,8 @@ namespace Rescue.Core.Tests.Determinism
             }
             Assert.That(actual.AssistanceChance, Is.EqualTo(expected.AssistanceChance), $"LevelConfig assistance mismatch at {label}.");
             Assert.That(actual.ConsecutiveEmergencyCap, Is.EqualTo(expected.ConsecutiveEmergencyCap), $"LevelConfig cap mismatch at {label}.");
+            Assert.That(actual.IsRuleTeach, Is.EqualTo(expected.IsRuleTeach), $"LevelConfig rule teach mismatch at {label}.");
+            Assert.That(actual.WaterContactMode, Is.EqualTo(expected.WaterContactMode), $"LevelConfig water contact mode mismatch at {label}.");
             Assert.That(actual.BaseDistribution?.Count ?? 0, Is.EqualTo(expected.BaseDistribution?.Count ?? 0), $"LevelConfig distribution size mismatch at {label}.");
 
             if (expected.BaseDistribution is null || actual.BaseDistribution is null)

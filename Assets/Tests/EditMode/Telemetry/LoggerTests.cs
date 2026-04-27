@@ -152,6 +152,7 @@ namespace Rescue.Telemetry.Tests
             yield return new UndoUsedEvent("L1", 110, 3);
             yield return new TargetExtractedEvent("L1", 120, 4, "t0");
             yield return new TargetLostEvent("L1", 130, 6, "t1");
+            yield return new TargetDistressedEvent("L1", 135, 6, "t1", "entered");
             yield return new InvalidTapEvent("L1", 40, coord, InvalidTapReasons.IsolatedTile);
             yield return new IdleTimeEvent("L1", 60, 3, 1500);
             yield return new TimeToFirstActionEvent("L1", 30, 3000);

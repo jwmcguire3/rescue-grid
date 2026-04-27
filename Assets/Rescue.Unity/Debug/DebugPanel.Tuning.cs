@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Rescue.Content;
+using Rescue.Core.State;
 using Rescue.Telemetry;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -30,6 +31,7 @@ namespace Rescue.Unity.Debugging
         private IntegerField? _tuneDockSizeField;
         private IntegerField? _tuneDefaultCrateHpField;
         private IntegerField? _tuneVineGrowthThresholdField;
+        private DropdownField? _tuneWaterContactModeField;
         private DropdownField? _tunePresetSelector;
         private TextField? _tunePresetNameField;
         private Button? _tuneApplyButton;
@@ -81,6 +83,7 @@ namespace Rescue.Unity.Debugging
             _tuneDockSizeField = panel.Q<IntegerField>("tune-dock-size-field");
             _tuneDefaultCrateHpField = panel.Q<IntegerField>("tune-default-crate-hp-field");
             _tuneVineGrowthThresholdField = panel.Q<IntegerField>("tune-vine-growth-threshold-field");
+            _tuneWaterContactModeField = panel.Q<DropdownField>("tune-water-contact-mode-field");
             _tunePresetSelector = panel.Q<DropdownField>("tune-preset-selector");
             _tunePresetNameField = panel.Q<TextField>("tune-preset-name-field");
             _tuneApplyButton = panel.Q<Button>("tune-apply-button");
@@ -123,6 +126,24 @@ namespace Rescue.Unity.Debugging
             {
                 _tuneForceEmergencyField.choices = new List<string>(EmergencyChoices);
                 _tuneForceEmergencyField.RegisterValueChangedCallback(evt =>
+                {
+                    if (!_initialized || string.Equals(evt.previousValue, evt.newValue, StringComparison.Ordinal))
+                    {
+                        return;
+                    }
+
+                    ApplyTuneOverridesFromUi();
+                });
+            }
+
+            if (_tuneWaterContactModeField is not null)
+            {
+                _tuneWaterContactModeField.choices = new List<string>
+                {
+                    WaterContactMode.ImmediateLoss.ToString(),
+                    WaterContactMode.OneTickGrace.ToString(),
+                };
+                _tuneWaterContactModeField.RegisterValueChangedCallback(evt =>
                 {
                     if (!_initialized || string.Equals(evt.previousValue, evt.newValue, StringComparison.Ordinal))
                     {
@@ -240,6 +261,11 @@ namespace Rescue.Unity.Debugging
                 _tuneVineGrowthThresholdField.SetValueWithoutNotify(_tuningOverrides.VineGrowthThreshold ?? baseLevel.Vine.GrowthThreshold);
             }
 
+            if (_tuneWaterContactModeField is not null)
+            {
+                _tuneWaterContactModeField.SetValueWithoutNotify((_tuningOverrides.WaterContactMode ?? baseLevel.Water.ContactMode).ToString());
+            }
+
             if (_tuneSummaryValue is not null)
             {
                 _tuneSummaryValue.text = _tuningOverrides.HasValues
@@ -299,6 +325,9 @@ namespace Rescue.Unity.Debugging
             int dockSize = _tuneDockSizeField?.value ?? baseLevel.Dock.Size;
             int defaultCrateHp = _tuneDefaultCrateHpField?.value ?? 1;
             int vineGrowthThreshold = _tuneVineGrowthThresholdField?.value ?? baseLevel.Vine.GrowthThreshold;
+            WaterContactMode waterContactMode = ParseWaterContactMode(
+                _tuneWaterContactModeField?.value,
+                baseLevel.Water.ContactMode);
 
             return new LevelTuningOverrides(
                 WaterRiseInterval: waterRiseInterval == baseLevel.Water.RiseInterval ? null : waterRiseInterval,
@@ -308,7 +337,8 @@ namespace Rescue.Unity.Debugging
                 DockJamEnabled: dockJamEnabled == baseLevel.Dock.JamEnabled ? null : dockJamEnabled,
                 DockSize: dockSize == baseLevel.Dock.Size ? null : dockSize,
                 DefaultCrateHp: defaultCrateHp == 1 ? null : defaultCrateHp,
-                VineGrowthThreshold: vineGrowthThreshold == baseLevel.Vine.GrowthThreshold ? null : vineGrowthThreshold);
+                VineGrowthThreshold: vineGrowthThreshold == baseLevel.Vine.GrowthThreshold ? null : vineGrowthThreshold,
+                WaterContactMode: waterContactMode == baseLevel.Water.ContactMode ? null : waterContactMode);
         }
 
         private void EmitTuningTelemetry(string changeSource, string? presetName)
@@ -525,6 +555,7 @@ namespace Rescue.Unity.Debugging
             scroll.Add(MakeFieldRow("Dock Size", out _tuneDockSizeField, "tune-dock-size-field"));
             scroll.Add(MakeFieldRow("Crate HP", out _tuneDefaultCrateHpField, "tune-default-crate-hp-field"));
             scroll.Add(MakeFieldRow("Vine Threshold", out _tuneVineGrowthThresholdField, "tune-vine-growth-threshold-field"));
+            scroll.Add(MakeFieldRow("Water Mode", out _tuneWaterContactModeField, "tune-water-contact-mode-field"));
 
             scroll.Add(MakeSection("Presets"));
             scroll.Add(MakeFieldRow("Preset", out _tunePresetSelector, "tune-preset-selector"));
@@ -599,7 +630,19 @@ namespace Rescue.Unity.Debugging
                 parts.Add($"vine threshold={overrides.VineGrowthThreshold.Value}");
             }
 
+            if (overrides.WaterContactMode.HasValue)
+            {
+                parts.Add($"water mode={overrides.WaterContactMode.Value}");
+            }
+
             return parts.Count == 0 ? "none" : string.Join(", ", parts);
+        }
+
+        private static WaterContactMode ParseWaterContactMode(string? value, WaterContactMode fallback)
+        {
+            return Enum.TryParse(value, ignoreCase: true, out WaterContactMode parsed)
+                ? parsed
+                : fallback;
         }
 
         private void SaveTunePresetFromUi()

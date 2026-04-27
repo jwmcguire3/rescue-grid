@@ -1,3 +1,5 @@
+using Rescue.Core.State;
+
 namespace Rescue.Content
 {
     public sealed record LevelTuningOverrides(
@@ -8,7 +10,8 @@ namespace Rescue.Content
         bool? DockJamEnabled = null,
         int? DockSize = null,
         int? DefaultCrateHp = null,
-        int? VineGrowthThreshold = null)
+        int? VineGrowthThreshold = null,
+        WaterContactMode? WaterContactMode = null)
     {
         public bool HasValues =>
             WaterRiseInterval.HasValue
@@ -18,7 +21,8 @@ namespace Rescue.Content
             || DockJamEnabled.HasValue
             || DockSize.HasValue
             || DefaultCrateHp.HasValue
-            || VineGrowthThreshold.HasValue;
+            || VineGrowthThreshold.HasValue
+            || WaterContactMode.HasValue;
 
         public static LevelTuningOverrides None { get; } = new();
     }
@@ -31,5 +35,6 @@ namespace Rescue.Content
         bool DockJamEnabled,
         int DockSize,
         int DefaultCrateHp,
-        int VineGrowthThreshold);
+        int VineGrowthThreshold,
+        WaterContactMode WaterContactMode);
 }

@@ -1,4 +1,5 @@
 using Rescue.Content;
+using Rescue.Core.State;
 using UnityEngine;
 
 namespace Rescue.Unity.Debugging
@@ -21,6 +22,8 @@ namespace Rescue.Unity.Debugging
         [SerializeField] private bool overrideDefaultCrateHp;
         [SerializeField] private int vineGrowthThreshold;
         [SerializeField] private bool overrideVineGrowthThreshold;
+        [SerializeField] private WaterContactMode waterContactMode = WaterContactMode.ImmediateLoss;
+        [SerializeField] private bool overrideWaterContactMode;
 
         public string PresetName
         {
@@ -38,7 +41,8 @@ namespace Rescue.Unity.Debugging
                 DockJamEnabled: overrideDockJamEnabled ? dockJamEnabled : null,
                 DockSize: overrideDockSize ? dockSize : null,
                 DefaultCrateHp: overrideDefaultCrateHp ? defaultCrateHp : null,
-                VineGrowthThreshold: overrideVineGrowthThreshold ? vineGrowthThreshold : null);
+                VineGrowthThreshold: overrideVineGrowthThreshold ? vineGrowthThreshold : null,
+                WaterContactMode: overrideWaterContactMode ? waterContactMode : null);
         }
 
         public void Apply(LevelTuningOverrides overrides)
@@ -59,6 +63,8 @@ namespace Rescue.Unity.Debugging
             defaultCrateHp = overrides.DefaultCrateHp.GetValueOrDefault();
             overrideVineGrowthThreshold = overrides.VineGrowthThreshold.HasValue;
             vineGrowthThreshold = overrides.VineGrowthThreshold.GetValueOrDefault();
+            overrideWaterContactMode = overrides.WaterContactMode.HasValue;
+            waterContactMode = overrides.WaterContactMode.GetValueOrDefault(WaterContactMode.ImmediateLoss);
         }
     }
 

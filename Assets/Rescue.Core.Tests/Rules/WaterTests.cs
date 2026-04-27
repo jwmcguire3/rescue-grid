@@ -50,7 +50,7 @@ namespace Rescue.Core.Tests.Rules
         }
 
         [Test]
-        public void FloodedRowTilesBecomeFloodedAndPriorContentsAreLost()
+        public void FloodedRowTilesBecomeFloodedAndUnextractedTargetsRemainAddressable()
         {
             GameState state = CreateState(
                 PipelineTestFixtures.CreateBoard(
@@ -66,7 +66,10 @@ namespace Rescue.Core.Tests.Rules
             StepResult tick = Step11_TickHazards.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
             StepResult resolve = Step12_ResolveHazards.Run(tick.State, tick.Context);
 
-            AssertFloodedRow(resolve.State.Board, 1);
+            Assert.That(BoardHelpers.GetTile(resolve.State.Board, new TileCoord(1, 0)), Is.TypeOf<FloodedTile>());
+            Assert.That(BoardHelpers.GetTile(resolve.State.Board, new TileCoord(1, 1)), Is.TypeOf<FloodedTile>());
+            Assert.That(BoardHelpers.GetTile(resolve.State.Board, new TileCoord(1, 2)), Is.EqualTo(new TargetTile("target", Extracted: false)));
+            Assert.That(BoardHelpers.GetTile(resolve.State.Board, new TileCoord(1, 3)), Is.TypeOf<FloodedTile>());
         }
 
         [Test]

@@ -89,7 +89,8 @@ namespace Rescue.Content
                     BaseDistribution: json.BaseDistribution?.ToImmutableDictionary(),
                     AssistanceChance: tuning.AssistanceChance,
                     ConsecutiveEmergencyCap: json.Assistance.ConsecutiveEmergencyCap,
-                    IsRuleTeach: json.Meta.IsRuleTeach),
+                    IsRuleTeach: json.Meta.IsRuleTeach,
+                    WaterContactMode: tuning.WaterContactMode),
                 RngState: rng.GetState(),
                 ActionCount: 0,
                 DockJamUsed: false,
@@ -151,7 +152,8 @@ namespace Rescue.Content
                 DockJamEnabled: overrides.DockJamEnabled ?? json.Dock.JamEnabled,
                 DockSize: dockSize,
                 DefaultCrateHp: defaultCrateHp,
-                VineGrowthThreshold: vineGrowthThreshold);
+                VineGrowthThreshold: vineGrowthThreshold,
+                WaterContactMode: overrides.WaterContactMode ?? json.Water.ContactMode);
         }
 
         private static ImmutableArray<TileCoord> BuildGrowthPriority(LevelJson json)

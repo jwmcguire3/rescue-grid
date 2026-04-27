@@ -114,6 +114,37 @@ namespace Rescue.Core.Tests.Undo
         }
 
         [Test]
+        public void UndoRestoresDistressedTargetStateExactly()
+        {
+            GameState original = PipelineTestFixtures.CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    PipelineTestFixtures.DebrisRow(DebrisType.A, DebrisType.A, DebrisType.B),
+                    PipelineTestFixtures.Row(new EmptyTile(), new EmptyTile(), new TargetTile("target", Extracted: false))),
+                targets: ImmutableArray.Create(
+                    new TargetState("target", new TileCoord(1, 2), TargetReadiness.Distressed)))
+                with
+                {
+                    LevelConfig = PipelineTestFixtures.CreateLevelConfig() with
+                    {
+                        WaterContactMode = WaterContactMode.OneTickGrace,
+                    },
+                };
+
+            ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(original, new ActionInput(new TileCoord(0, 0)));
+            GameState postAction = result.State with
+            {
+                Targets = ImmutableArray.Create(
+                    new TargetState("target", new TileCoord(1, 2), TargetReadiness.Extracted)),
+            };
+
+            GameState restored = UndoGuard.PerformUndo(postAction, result.Snapshot!);
+
+            Assert.That(restored.Targets, Is.EqualTo(original.Targets));
+            Assert.That(restored.LevelConfig.WaterContactMode, Is.EqualTo(WaterContactMode.OneTickGrace));
+            Assert.That(restored, Is.EqualTo(original with { UndoAvailable = false }));
+        }
+
+        [Test]
         public void UndoRestoresVineStateExactly()
         {
             ImmutableArray<TileCoord> growthPriority = ImmutableArray.Create(
@@ -322,6 +353,8 @@ namespace Rescue.Core.Tests.Undo
             }
             Assert.That(actual.AssistanceChance, Is.EqualTo(expected.AssistanceChance));
             Assert.That(actual.ConsecutiveEmergencyCap, Is.EqualTo(expected.ConsecutiveEmergencyCap));
+            Assert.That(actual.IsRuleTeach, Is.EqualTo(expected.IsRuleTeach));
+            Assert.That(actual.WaterContactMode, Is.EqualTo(expected.WaterContactMode));
             Assert.That(actual.BaseDistribution?.Count ?? 0, Is.EqualTo(expected.BaseDistribution?.Count ?? 0));
 
             if (expected.BaseDistribution is null || actual.BaseDistribution is null)

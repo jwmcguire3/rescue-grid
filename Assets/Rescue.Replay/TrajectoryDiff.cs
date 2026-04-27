@@ -39,6 +39,7 @@ namespace Rescue.Replay
             builder.Append("board=").Append(BoardFingerprint(state.Board));
             builder.Append("|dock=").Append(DockFingerprint(state.Dock));
             builder.Append("|water=").Append(state.Water.FloodedRows).Append('/').Append(state.Water.ActionsUntilRise).Append('/').Append(state.Water.RiseInterval).Append('/').Append(state.Water.PauseUntilFirstAction);
+            builder.Append("|waterMode=").Append(state.LevelConfig.WaterContactMode);
             builder.Append("|vine=").Append(state.Vine.ActionsSinceLastClear).Append('/').Append(state.Vine.GrowthThreshold).Append('/').Append(state.Vine.PriorityCursor).Append('/').Append(FormatCoord(state.Vine.PendingGrowthTile));
             builder.Append("|targets=").Append(TargetFingerprint(state.Targets));
             builder.Append("|rng=").Append(state.RngState.S0).Append(':').Append(state.RngState.S1);
