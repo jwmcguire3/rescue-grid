@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Phase1TileVisualRegistry
   m_EditorClassIdentifier: Rescue.Unity::Rescue.Unity.Art.Registries.TileVisualRegistry
   dryTilePrefab: {fileID: 7912822185736670360, guid: 193e6b5afbcf8234fa266f6bfc011546, type: 3}
-  floodedRowOverlayPrefab: {fileID: 7988795128387851316, guid: e2a7754c843cc894381acd1edf7f64f7, type: 3}
+  floodedRowOverlayPrefab: {fileID: 5329403659457984179, guid: 252c2eaf459f895449fa6e26983e015f, type: 3}
   forecastRowOverlayPrefab: {fileID: 5903940901079056650, guid: cf18c0f28174f2f478e92c64181b4bcc, type: 3}
   waterlinePrefab: {fileID: 1084044274064967119, guid: d7e1df9846c63434a8ad3e83692055ff, type: 3}
   fallbackTilePrefab: {fileID: 7912822185736670360, guid: 193e6b5afbcf8234fa266f6bfc011546, type: 3}

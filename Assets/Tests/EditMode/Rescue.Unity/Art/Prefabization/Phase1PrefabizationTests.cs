@@ -16,11 +16,16 @@ namespace Rescue.Unity.Art.Tests
         private const string Phase1PrefabsPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1";
         private const string Phase1DockPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Dock/Dock_Shared_7Slot_Phase1.prefab";
         private const string DirectDryTilePrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Board/DryTile_Phase1.prefab";
+        private const string Phase1IceBlockPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Blockers/Ice_Block_Phase1.prefab";
+        private const string Phase1VinePrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Blockers/Vine_Phase1.prefab";
+        private const string Phase1FloodedRowPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Water/FloodedRowOverlay_Phase1.prefab";
+        private const string Phase1IceRevealFxPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/FX/IceRevealFx_Phase1.prefab";
         private const string TileRegistryPath = "Assets/Rescue.Unity/Art/Registries/Phase1TileVisualRegistry.asset";
         private const string PieceRegistryPath = "Assets/Rescue.Unity/Art/Registries/Phase1PieceVisualRegistry.asset";
         private const string BlockerRegistryPath = "Assets/Rescue.Unity/Art/Registries/Phase1BlockerVisualRegistry.asset";
         private const string TargetRegistryPath = "Assets/Rescue.Unity/Art/Registries/Phase1TargetVisualRegistry.asset";
         private const string DockConfigPath = "Assets/Rescue.Unity/Art/Registries/Phase1DockVisualConfig.asset";
+        private const string FxRegistryPath = "Assets/Rescue.Unity/Art/Registries/Phase1FxVisualRegistry.asset";
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -124,6 +129,28 @@ namespace Rescue.Unity.Art.Tests
             Assert.That(registry.GetPrefab(DebrisType.C), Is.Not.Null);
             Assert.That(registry.GetPrefab(DebrisType.D), Is.Not.Null);
             Assert.That(registry.GetPrefab(DebrisType.E), Is.Not.Null);
+        }
+
+        [Test]
+        public void Phase1Factory_CreatesNewMeshyProductionPrefabs()
+        {
+            Assert.That(LoadAsset<GameObject>(Phase1IceBlockPrefabPath), Is.Not.Null);
+            Assert.That(LoadAsset<GameObject>(Phase1VinePrefabPath), Is.Not.Null);
+            Assert.That(LoadAsset<GameObject>(Phase1FloodedRowPrefabPath), Is.Not.Null);
+            Assert.That(LoadAsset<GameObject>(Phase1IceRevealFxPrefabPath), Is.Not.Null);
+        }
+
+        [Test]
+        public void Phase1Registries_UseNewMeshyProductionPrefabs()
+        {
+            BlockerVisualRegistry blockerRegistry = LoadAsset<BlockerVisualRegistry>(BlockerRegistryPath);
+            TileVisualRegistry tileRegistry = LoadAsset<TileVisualRegistry>(TileRegistryPath);
+            FxVisualRegistry fxRegistry = LoadAsset<FxVisualRegistry>(FxRegistryPath);
+
+            Assert.That(blockerRegistry.GetPrefab(BlockerType.Ice), Is.SameAs(LoadAsset<GameObject>(Phase1IceBlockPrefabPath)));
+            Assert.That(blockerRegistry.GetPrefab(BlockerType.Vine), Is.SameAs(LoadAsset<GameObject>(Phase1VinePrefabPath)));
+            Assert.That(tileRegistry.GetFloodedRowOverlayPrefab(), Is.SameAs(LoadAsset<GameObject>(Phase1FloodedRowPrefabPath)));
+            Assert.That(fxRegistry.IceRevealFx, Is.SameAs(LoadAsset<GameObject>(Phase1IceRevealFxPrefabPath)));
         }
 
         [Test]

@@ -13,6 +13,8 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
         public const float DefaultBoardCellSize = 1.0f;
 
         private const string PrefabsFolderName = "Prefabs";
+        private const string ModelsFolderName = "Models";
+        private const string TexturesFolderName = "Textures";
         private const string MaterialsFolderName = "Materials";
         private const string RegistriesFolderName = "Registries";
         private const string BoardFolderName = "Board";
@@ -40,6 +42,12 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             $"{PrefabsFolderName}/{Phase1FolderName}/{DockFolderName}",
             $"{PrefabsFolderName}/{Phase1FolderName}/{WaterFolderName}",
             $"{PrefabsFolderName}/{Phase1FolderName}/{FxFolderName}",
+            $"{ModelsFolderName}/{BlockersFolderName}",
+            $"{ModelsFolderName}/{WaterFolderName}",
+            $"{ModelsFolderName}/{FxFolderName}",
+            $"{TexturesFolderName}/{BlockersFolderName}",
+            $"{TexturesFolderName}/{WaterFolderName}",
+            $"{TexturesFolderName}/{FxFolderName}",
             MaterialsFolderName,
             $"{MaterialsFolderName}/{Phase1FolderName}",
             RegistriesFolderName,
@@ -48,7 +56,11 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
         private static readonly AssetSizingProfile TileSizingProfile = new AssetSizingProfile(DefaultBoardCellSize);
         private static readonly AssetSizingProfile DebrisSizingProfile = new AssetSizingProfile(0.92f);
         private static readonly AssetSizingProfile CrateSizingProfile = new AssetSizingProfile(0.96f);
+        private static readonly AssetSizingProfile IceSizingProfile = new AssetSizingProfile(0.96f);
+        private static readonly AssetSizingProfile VineSizingProfile = new AssetSizingProfile(0.92f);
         private static readonly AssetSizingProfile TargetSizingProfile = new AssetSizingProfile(0.90f);
+        private static readonly AssetSizingProfile RowOverlaySizingProfile = new AssetSizingProfile(1.0f);
+        private static readonly AssetSizingProfile FxSizingProfile = new AssetSizingProfile(1.0f);
 
         [MenuItem("Rescue Grid/Art/Create Phase 1 Placeholder Prefabs")]
         public static void CreateDefaultPhase1Placeholders()
@@ -236,10 +248,30 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 CombinePath(materialsPath, "Crate_Phase1.mat"),
                 shader,
                 CombinePath(artRootPath, "Textures", "Blockers", "Meshy_AI_Pawprint_Wooden_Crate_0424155503_texture.png"));
+            Material? iceBlockMaterial = CreateOrUpdateTexturedMaterial(
+                CombinePath(materialsPath, "Ice_Block_Phase1.mat"),
+                shader,
+                CombinePath(artRootPath, "Textures", "Blockers", "Meshy_AI_Ice_Block_0425081828_texture.png"),
+                CombinePath(artRootPath, "Textures", "Blockers", "Meshy_AI_Ice_Block_0425081828_texture_normal.png"));
+            Material? vineMaterial = CreateOrUpdateTexturedMaterial(
+                CombinePath(materialsPath, "Vine_Phase1.mat"),
+                shader,
+                CombinePath(artRootPath, "Textures", "Blockers", "Meshy_AI_Entwined_Ivy_0425081715_texture.png"),
+                CombinePath(artRootPath, "Textures", "Blockers", "Meshy_AI_Entwined_Ivy_0425081715_texture_normal.png"));
             Material? puppyMaterial = CreateOrUpdateTexturedMaterial(
                 CombinePath(materialsPath, "PuppyTarget_Phase1.mat"),
                 shader,
                 CombinePath(artRootPath, "Textures", "Targets", "Meshy_AI_Curious_Wet_Puppy_0424155427_texture.png"));
+            Material? floodedRowMaterial = CreateOrUpdateTexturedMaterial(
+                CombinePath(materialsPath, "Water_Flooded_Row_Phase1.mat"),
+                shader,
+                CombinePath(artRootPath, "Textures", "Water", "Meshy_AI_Blue_Puddle_0425081657_texture.png"),
+                CombinePath(artRootPath, "Textures", "Water", "Meshy_AI_Blue_Puddle_0425081657_texture_normal.png"));
+            Material? iceRevealFxMaterial = CreateOrUpdateTexturedMaterial(
+                CombinePath(materialsPath, "IceRevealFx_Phase1.mat"),
+                shader,
+                CombinePath(artRootPath, "Textures", "FX", "Meshy_AI_Cracked_Ice_Tile_0425081737_texture.png"),
+                CombinePath(artRootPath, "Textures", "FX", "Meshy_AI_Cracked_Ice_Tile_0425081737_texture_normal.png"));
 
             Material safeDockMaterial = CreateOrUpdateTexturedMaterial(
                 CombinePath(materialsPath, "Dock_Safe_Phase1.mat"),
@@ -309,10 +341,20 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 CombinePath(artRootPath, "Models", "Blockers", "Meshy_AI_Pawprint_Wooden_Crate_0424155503_texture.fbx"),
                 crateMaterial,
                 CrateSizingProfile);
-            GameObject icePrefab = CreateOrUpdatePrefab(
+            GameObject? iceBlockPrefab = CreateMeshWrapperPrefab(
+                CombinePath(prefabsPath, BlockersFolderName, "Ice_Block_Phase1.prefab"),
+                CombinePath(artRootPath, "Models", "Blockers", "Meshy_AI_Ice_Block_0425081828_texture.fbx"),
+                iceBlockMaterial,
+                IceSizingProfile);
+            GameObject iceOverlayPrefab = CreateOrUpdatePrefab(
                 CombinePath(prefabsPath, BlockersFolderName, "Ice_Overlay_Phase1.prefab"),
                 () => CreateFlatOverlayPlaceholder("Ice", iceOverlayMaterial, new Vector3(0.96f, 0.96f, 1.0f), 0.03f));
-            GameObject vinePrefab = CreateOrUpdatePrefab(
+            GameObject? vineMeshPrefab = CreateMeshWrapperPrefab(
+                CombinePath(prefabsPath, BlockersFolderName, "Vine_Phase1.prefab"),
+                CombinePath(artRootPath, "Models", "Blockers", "Meshy_AI_Entwined_Ivy_0425081715_texture.fbx"),
+                vineMaterial,
+                VineSizingProfile);
+            GameObject vineOverlayPrefab = CreateOrUpdatePrefab(
                 CombinePath(prefabsPath, BlockersFolderName, "Vine_Overlay_Phase1.prefab"),
                 () => CreateFlatOverlayPlaceholder("Vine", vineOverlayMaterial, new Vector3(0.86f, 0.86f, 1.0f), 0.04f));
 
@@ -321,6 +363,16 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 CombinePath(artRootPath, "Models", "Targets", "Meshy_AI_Curious_Wet_Puppy_0424155427_texture.fbx"),
                 puppyMaterial,
                 TargetSizingProfile);
+            GameObject? floodedRowOverlayPrefab = CreateMeshWrapperPrefab(
+                CombinePath(prefabsPath, WaterFolderName, "FloodedRowOverlay_Phase1.prefab"),
+                CombinePath(artRootPath, "Models", "Water", "Meshy_AI_Blue_Puddle_0425081657_texture.fbx"),
+                floodedRowMaterial,
+                RowOverlaySizingProfile);
+            GameObject? iceRevealFxPrefab = CreateMeshWrapperPrefab(
+                CombinePath(prefabsPath, FxFolderName, "IceRevealFx_Phase1.prefab"),
+                CombinePath(artRootPath, "Models", "FX", "Meshy_AI_Cracked_Ice_Tile_0425081737_texture.fbx"),
+                iceRevealFxMaterial,
+                FxSizingProfile);
 
             string sharedDockModelPath = CombinePath(artRootPath, "Models", "Dock", "Meshy_AI_Dock_Safe_0424154642_texture_fbx.fbx");
             GameObject? sharedDockPrefab = CreateDockPrefab(
@@ -340,9 +392,11 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 debrisDPrefab,
                 debrisEPrefab,
                 cratePrefab,
-                icePrefab,
-                vinePrefab,
+                iceBlockPrefab ?? iceOverlayPrefab,
+                vineMeshPrefab ?? vineOverlayPrefab,
                 puppyPrefab,
+                floodedRowOverlayPrefab,
+                iceRevealFxPrefab,
                 sharedDockPrefab,
                 safeDockPrefab,
                 cautionDockPrefab,
@@ -364,7 +418,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             // Keep the direct dry tile as the canonical board entry. Phase 1 wrappers are optional visuals,
             // not a registry-level transform compensation layer.
             tileRegistry.DryTilePrefab = canonicalDryTilePrefab;
-            tileRegistry.FloodedRowOverlayPrefab = placeholderAssets.FloodedRowOverlayPrefab;
+            tileRegistry.FloodedRowOverlayPrefab = productionAssets.FloodedRowOverlayPrefab ?? placeholderAssets.FloodedRowOverlayPrefab;
             tileRegistry.ForecastRowOverlayPrefab = placeholderAssets.ForecastRowOverlayPrefab;
             tileRegistry.WaterlinePrefab = placeholderAssets.WaterlinePrefab;
             tileRegistry.FallbackTilePrefab = canonicalDryTilePrefab;
@@ -408,7 +462,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             fxRegistry.GroupClearFx = placeholderAssets.GroupClearFxPrefab;
             fxRegistry.InvalidTapFx = placeholderAssets.InvalidTapFxPrefab;
             fxRegistry.CrateBreakFx = placeholderAssets.CrateBreakFxPrefab;
-            fxRegistry.IceRevealFx = placeholderAssets.IceRevealFxPrefab;
+            fxRegistry.IceRevealFx = productionAssets.IceRevealFxPrefab ?? placeholderAssets.IceRevealFxPrefab;
             fxRegistry.VineClearFx = placeholderAssets.VineClearFxPrefab;
             fxRegistry.VineGrowPreviewFx = placeholderAssets.VineGrowPreviewFxPrefab;
             fxRegistry.DockInsertFx = placeholderAssets.DockInsertFxPrefab;
@@ -421,7 +475,12 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             EditorUtility.SetDirty(fxRegistry);
         }
 
-        private static Material? CreateOrUpdateTexturedMaterial(string assetPath, Shader shader, string texturePath, bool transparent = false)
+        private static Material? CreateOrUpdateTexturedMaterial(
+            string assetPath,
+            Shader shader,
+            string texturePath,
+            string? normalTexturePath = null,
+            bool transparent = false)
         {
             Texture2D? texture = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
             if (texture is null)
@@ -431,8 +490,38 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
 
             Material material = CreateOrUpdateMaterial(assetPath, shader, Color.white, transparent);
             material.mainTexture = texture;
+
+            if (!string.IsNullOrWhiteSpace(normalTexturePath))
+            {
+                Texture2D? normalTexture = LoadNormalTexture(normalTexturePath);
+                if (normalTexture is not null)
+                {
+                    material.SetTexture("_BumpMap", normalTexture);
+                    material.EnableKeyword("_NORMALMAP");
+                }
+            }
+
             EditorUtility.SetDirty(material);
             return material;
+        }
+
+        private static Texture2D? LoadNormalTexture(string normalTexturePath)
+        {
+            Texture2D? normalTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(normalTexturePath);
+            if (normalTexture is null)
+            {
+                return null;
+            }
+
+            TextureImporter? importer = AssetImporter.GetAtPath(normalTexturePath) as TextureImporter;
+            if (importer is not null && importer.textureType != TextureImporterType.NormalMap)
+            {
+                importer.textureType = TextureImporterType.NormalMap;
+                importer.SaveAndReimport();
+                normalTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(normalTexturePath);
+            }
+
+            return normalTexture;
         }
 
         private static Material CreateOrUpdateMaterial(string assetPath, Shader shader, Color color, bool transparent = false)
@@ -995,6 +1084,8 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 GameObject icePrefab,
                 GameObject vinePrefab,
                 GameObject? puppyPrefab,
+                GameObject? floodedRowOverlayPrefab,
+                GameObject? iceRevealFxPrefab,
                 GameObject? sharedDockPrefab,
                 GameObject? safeDockPrefab,
                 GameObject? cautionDockPrefab,
@@ -1016,6 +1107,8 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 IcePrefab = icePrefab;
                 VinePrefab = vinePrefab;
                 PuppyPrefab = puppyPrefab;
+                FloodedRowOverlayPrefab = floodedRowOverlayPrefab;
+                IceRevealFxPrefab = iceRevealFxPrefab;
                 SharedDockPrefab = sharedDockPrefab;
                 SafeDockPrefab = safeDockPrefab;
                 CautionDockPrefab = cautionDockPrefab;
@@ -1038,6 +1131,8 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             public GameObject IcePrefab { get; }
             public GameObject VinePrefab { get; }
             public GameObject? PuppyPrefab { get; }
+            public GameObject? FloodedRowOverlayPrefab { get; }
+            public GameObject? IceRevealFxPrefab { get; }
             public GameObject? SharedDockPrefab { get; }
             public GameObject? SafeDockPrefab { get; }
             public GameObject? CautionDockPrefab { get; }

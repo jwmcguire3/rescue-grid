@@ -15,7 +15,7 @@ MonoBehaviour:
   groupClearFx: {fileID: 100000, guid: ca6724874e06a764aab584196eaa9072, type: 3}
   invalidTapFx: {fileID: 100000, guid: 0516b1b341c43ec49aad69cb62c70a13, type: 3}
   crateBreakFx: {fileID: 100000, guid: 1337d4fb482258740bbfa28d11b9d0e3, type: 3}
-  iceRevealFx: {fileID: 100000, guid: fd75980eba2b8e445841c8f3bbd33827, type: 3}
+  iceRevealFx: {fileID: 2615509257608576913, guid: 3ff167f4ae73dfb489f0d70419398703, type: 3}
   vineClearFx: {fileID: 100000, guid: ed5809247c3078e4e8223a8d06a3170b, type: 3}
   vineGrowPreviewFx: {fileID: 100000, guid: 14ad4d9ce17a4f14ea5dd45934c0051a, type: 3}
   dockInsertFx: {fileID: 100000, guid: d0a96d080112cad4ca400ae3ab0f2906, type: 3}

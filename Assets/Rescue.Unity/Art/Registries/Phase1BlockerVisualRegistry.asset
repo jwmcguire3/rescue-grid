@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Phase1BlockerVisualRegistry
   m_EditorClassIdentifier: Rescue.Unity::Rescue.Unity.Art.Registries.BlockerVisualRegistry
   cratePrefab: {fileID: 1296269316121185555, guid: 6c606d435f2e8d14d91c5a1df88a7f91, type: 3}
-  icePrefab: {fileID: 2092634583136599001, guid: a33b3bbf0685947438d460deb6dfa049, type: 3}
-  vinePrefab: {fileID: 8064058537776116626, guid: 9a1eaa6886695d642ad97e21fdf07c97, type: 3}
+  icePrefab: {fileID: 2650964864736059869, guid: becebbbf60a23a64ea9558d6e060fb82, type: 3}
+  vinePrefab: {fileID: 7924273279486029333, guid: c7dcdfa6a3bcd884498dfd6457f2bb98, type: 3}
   fallbackBlockerPrefab: {fileID: 1296269316121185555, guid: 6c606d435f2e8d14d91c5a1df88a7f91, type: 3}
