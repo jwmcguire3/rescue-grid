@@ -47,6 +47,11 @@ namespace Rescue.SolveAuthoringTool
                     return MovesScript(args);
                 }
 
+                if (args.Length >= 1 && string.Equals(args[0], "--verify-solves", StringComparison.Ordinal))
+                {
+                    return VerifySolvesScript(args);
+                }
+
                 IReadOnlyList<string> levelIds = ParseLevelIds(args);
                 Directory.CreateDirectory(OutputDirectory);
 
@@ -99,6 +104,66 @@ namespace Rescue.SolveAuthoringTool
             }
 
             return 0;
+        }
+
+        private static int VerifySolvesScript(string[] args)
+        {
+            IReadOnlyList<string> solvePaths = args.Length >= 2
+                ? args.Skip(1).ToArray()
+                : Directory.GetFiles(OutputDirectory, "*.solve.json", SearchOption.TopDirectoryOnly)
+                    .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+
+            bool failed = false;
+            for (int i = 0; i < solvePaths.Count; i++)
+            {
+                string path = solvePaths[i];
+                string json = File.ReadAllText(path);
+                SolveScript solve = JsonSerializer.Deserialize<SolveScript>(json)
+                    ?? throw new InvalidOperationException($"Could not deserialize solve file '{path}'.");
+
+                LevelJson level = LoadLevel(solve.LevelId);
+                ActionOutcome outcome = ReplayOutcome(level, solve.Seed, solve.Actions);
+                bool passed = string.Equals(outcome.ToString(), solve.ExpectedOutcome, StringComparison.Ordinal);
+                Console.WriteLine($"{solve.LevelId}: seed {solve.Seed} expected {solve.ExpectedOutcome}, got {outcome} -> {(passed ? "PASS" : "FAIL")}");
+
+                if (!passed)
+                {
+                    failed = true;
+                }
+
+                if (solve.ExpectAlternateSeedDivergence)
+                {
+                    ImmutableArray<TileCoord> actions = solve.Actions.Select(static action => new TileCoord(action.Row, action.Col)).ToImmutableArray();
+                    ImmutableArray<string> defaultTrajectory = Replay(level, solve.Seed, actions);
+                    ImmutableArray<string> alternateTrajectory = Replay(level, solve.AlternateSeed, actions);
+                    bool diverged = !defaultTrajectory.SequenceEqual(alternateTrajectory, StringComparer.Ordinal);
+                    Console.WriteLine($"  alternate seed {solve.AlternateSeed} divergence expected True, got {diverged}");
+                    failed |= !diverged;
+                }
+            }
+
+            return failed ? 1 : 0;
+        }
+
+        private static ActionOutcome ReplayOutcome(LevelJson level, int seed, IReadOnlyList<SolveAction> actions)
+        {
+            GameState state = Loader.LoadLevel(level, seed);
+            ActionOutcome outcome = ActionOutcome.Ok;
+            for (int i = 0; i < actions.Count; i++)
+            {
+                SolveAction action = actions[i];
+                ActionResult result = Pipeline.RunAction(state, new ActionInput(new TileCoord(action.Row, action.Col)), new RunOptions(RecordSnapshot: false));
+                outcome = result.Outcome;
+                state = result.State;
+
+                if (outcome != ActionOutcome.Ok)
+                {
+                    return outcome;
+                }
+            }
+
+            return outcome;
         }
 
         private static int SearchScript(string[] args)

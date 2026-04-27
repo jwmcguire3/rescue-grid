@@ -165,6 +165,98 @@ namespace Rescue.Content.Tests
         }
 
         [Test]
+        public void Validate_DockJamOutsideTeachingLevels_Warns()
+        {
+            LevelJson level = TestLevels.MinimalLevel() with
+            {
+                Id = "L03",
+                Dock = TestLevels.MinimalLevel().Dock with
+                {
+                    JamEnabled = true,
+                },
+            };
+
+            ValidationResult result = Validator.Validate(TestLevels.Serialize(level));
+
+            Assert.That(result.HasWarnings, Is.True);
+            Assert.That(result.Errors.Any(error => error.Code == "phase1.dockJamLevel"), Is.True);
+        }
+
+        [Test]
+        public void Validate_WrongDebrisPoolSizeForLevelBand_Warns()
+        {
+            LevelJson level = TestLevels.MinimalLevel() with
+            {
+                Id = "L05",
+                DebrisTypePool = new[] { DebrisType.A, DebrisType.B, DebrisType.C, DebrisType.D },
+            };
+
+            ValidationResult result = Validator.Validate(TestLevels.Serialize(level));
+
+            Assert.That(result.HasWarnings, Is.True);
+            Assert.That(result.Errors.Any(error => error.Code == "phase1.debrisPoolSize"), Is.True);
+        }
+
+        [Test]
+        public void Validate_NonRuleTeachWaterIntervalBelowSix_Warns()
+        {
+            LevelJson level = TestLevels.MinimalLevel() with
+            {
+                Id = "L13",
+                Water = new WaterJson
+                {
+                    RiseInterval = 5,
+                },
+            };
+
+            ValidationResult result = Validator.Validate(TestLevels.Serialize(level));
+
+            Assert.That(result.HasWarnings, Is.True);
+            Assert.That(result.Errors.Any(error => error.Code == "phase1.waterIntervalBelow6"), Is.True);
+        }
+
+        [Test]
+        public void Validate_L07ActiveVineGrowth_Warns()
+        {
+            LevelJson level = TestLevels.MinimalLevel() with
+            {
+                Id = "L07",
+                Vine = new VineJson
+                {
+                    GrowthThreshold = 4,
+                    GrowthPriority = new[] { new TileCoordJson { Row = 0, Col = 0 } },
+                },
+            };
+
+            ValidationResult result = Validator.Validate(TestLevels.Serialize(level));
+
+            Assert.That(result.HasWarnings, Is.True);
+            Assert.That(result.Errors.Any(error => error.Code == "phase1.l07VineGrowth"), Is.True);
+        }
+
+        [Test]
+        public void Validate_ReinforcedCrate_Warns()
+        {
+            LevelJson level = TestLevels.MinimalLevel() with
+            {
+                Board = TestLevels.MinimalLevel().Board with
+                {
+                    Tiles = new[]
+                    {
+                        new[] { "CX", ".", "." },
+                        new[] { ".", ".", "." },
+                        new[] { ".", "T0", "." },
+                    },
+                },
+            };
+
+            ValidationResult result = Validator.Validate(TestLevels.Serialize(level));
+
+            Assert.That(result.HasWarnings, Is.True);
+            Assert.That(result.Errors.Any(error => error.Code == "phase1.reinforcedCrate"), Is.True);
+        }
+
+        [Test]
         public void Validate_AuthoredL00Level_Passes()
         {
             string json = File.ReadAllText(GetAuthoredL00Path());

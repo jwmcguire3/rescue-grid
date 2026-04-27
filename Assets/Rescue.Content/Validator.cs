@@ -361,6 +361,8 @@ namespace Rescue.Content
 
         private static void AddHeuristicWarnings(LevelJson level, AnalyzedLevel analysis, List<ValidationError> errors)
         {
+            AddPhase1PolicyWarnings(level, analysis, errors);
+
             if (CountConnectedPlayableComponents(analysis) > 1)
             {
                 errors.Add(new ValidationError(
@@ -410,6 +412,92 @@ namespace Rescue.Content
                         $"$.targets[{i}]"));
                 }
             }
+        }
+
+        private static void AddPhase1PolicyWarnings(LevelJson level, AnalyzedLevel analysis, List<ValidationError> errors)
+        {
+            if (TryGetLevelNumber(level.Id, out int levelNumber))
+            {
+                bool expectedDockJam = levelNumber is 1 or 2;
+                if (level.Dock.JamEnabled != expectedDockJam)
+                {
+                    errors.Add(new ValidationError(
+                        ValidationSeverity.Warning,
+                        "phase1.dockJamLevel",
+                        "Dock Jam should be enabled only on L01 and L02 for Phase 1.",
+                        "$.dock.jamEnabled"));
+                }
+
+                if (levelNumber >= 1)
+                {
+                    int expectedPoolSize = levelNumber <= 4 ? 4 : 5;
+                    if (level.DebrisTypePool.Length != expectedPoolSize)
+                    {
+                        errors.Add(new ValidationError(
+                            ValidationSeverity.Warning,
+                            "phase1.debrisPoolSize",
+                            $"L{levelNumber:00} should use a debrisTypePool size of {expectedPoolSize} for Phase 1.",
+                            "$.debrisTypePool"));
+                    }
+                }
+
+                if (levelNumber == 7
+                    && level.Vine.GrowthPriority.Length > 0
+                    && level.Vine.GrowthThreshold < 999)
+                {
+                    errors.Add(new ValidationError(
+                        ValidationSeverity.Warning,
+                        "phase1.l07VineGrowth",
+                        "L07 is the static vine introduction; vine growth should be disabled.",
+                        "$.vine"));
+                }
+            }
+
+            if (!level.Meta.IsRuleTeach && level.Water.RiseInterval > 0 && level.Water.RiseInterval < 6)
+            {
+                errors.Add(new ValidationError(
+                    ValidationSeverity.Warning,
+                    "phase1.waterIntervalBelow6",
+                    "Phase 1 water.riseInterval should not be below 6 outside the L00 rule-teach special case.",
+                    "$.water.riseInterval"));
+            }
+
+            if (ContainsReinforcedCrate(analysis))
+            {
+                errors.Add(new ValidationError(
+                    ValidationSeverity.Warning,
+                    "phase1.reinforcedCrate",
+                    "Reinforced crates are off by default in Phase 1 and should only appear after explicit late-packet tuning approval.",
+                    "$.board.tiles"));
+            }
+        }
+
+        private static bool TryGetLevelNumber(string id, out int levelNumber)
+        {
+            levelNumber = 0;
+            if (id.Length != 3 || id[0] != 'L')
+            {
+                return false;
+            }
+
+            return int.TryParse(id[1..], out levelNumber);
+        }
+
+        private static bool ContainsReinforcedCrate(AnalyzedLevel analysis)
+        {
+            for (int row = 0; row < analysis.Height; row++)
+            {
+                for (int col = 0; col < analysis.Width; col++)
+                {
+                    CellInfo cell = analysis.Cells[row, col];
+                    if (cell.Kind == CellKind.Crate && cell.Hp > 1)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         private static bool IsImpossibleAtStart(LevelJson level, TargetJson target)
