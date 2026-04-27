@@ -2,7 +2,7 @@
   "LevelId": "L14",
   "Seed": 1,
   "AlternateSeed": 1001,
-  "ExpectedOutcome": "LossDockOverflow",
+  "ExpectedOutcome": "LossWaterOnTarget",
   "ExpectAlternateSeedDivergence": true,
   "Actions": [
     {
@@ -12,6 +12,46 @@
     {
       "Row": 0,
       "Col": 0
+    },
+    {
+      "Row": 0,
+      "Col": 7
+    },
+    {
+      "Row": 2,
+      "Col": 1
+    },
+    {
+      "Row": 0,
+      "Col": 7
+    },
+    {
+      "Row": 0,
+      "Col": 0
+    },
+    {
+      "Row": 3,
+      "Col": 1
+    },
+    {
+      "Row": 2,
+      "Col": 0
+    },
+    {
+      "Row": 0,
+      "Col": 1
+    },
+    {
+      "Row": 1,
+      "Col": 6
+    },
+    {
+      "Row": 2,
+      "Col": 5
+    },
+    {
+      "Row": 5,
+      "Col": 6
     }
   ]
 }

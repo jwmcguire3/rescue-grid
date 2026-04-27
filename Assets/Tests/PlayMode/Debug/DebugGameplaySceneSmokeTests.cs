@@ -114,7 +114,7 @@ namespace Rescue.PlayMode.Tests.Debug
                     {
                         new[] { "A", "A", "." },
                         new[] { "B", "CR", "." },
-                        new[] { ".", "T0", "." },
+                        new[] { ".", "T0", "B" },
                     },
                 },
                 DebrisTypePool = new[] { DebrisType.A, DebrisType.B, DebrisType.C, DebrisType.D },

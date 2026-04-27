@@ -406,8 +406,10 @@ namespace Rescue.Unity.UI
     public sealed class DockViewPresenter : MonoBehaviour
     {
         private const int Phase1DockSize = 7;
+        private const int MaxTrackedDockSlots = 96;
         private const string DefaultPieceContainerName = "DockPieces";
         private const string SharedDockInstanceName = "SharedDockVisualInstance";
+        private const string OverflowAnchorPrefix = "OverflowSlot_";
 
         [Header("Shared Dock")]
         [SerializeField] private DockVisualConfig? dockVisualConfig;
@@ -426,8 +428,8 @@ namespace Rescue.Unity.UI
         [SerializeField] private GameObject? fallbackPiecePrefab;
         [SerializeField] private DockFeedbackPresenter? feedbackPresenter;
 
-        private readonly DebrisType?[] _trackedSlotTypes = new DebrisType?[Phase1DockSize];
-        private readonly GameObject?[] _trackedSlotObjects = new GameObject?[Phase1DockSize];
+        private readonly DebrisType?[] _trackedSlotTypes = new DebrisType?[MaxTrackedDockSlots];
+        private readonly GameObject?[] _trackedSlotObjects = new GameObject?[MaxTrackedDockSlots];
         private GameObject? _sharedDockInstance;
 
         public void Rebuild(GameState state)
@@ -595,7 +597,7 @@ namespace Rescue.Unity.UI
 
         public void ClearSlots()
         {
-            for (int slotIndex = 0; slotIndex < Phase1DockSize; slotIndex++)
+            for (int slotIndex = 0; slotIndex < _trackedSlotTypes.Length; slotIndex++)
             {
                 ClearTrackedSlot(slotIndex);
             }
@@ -603,7 +605,7 @@ namespace Rescue.Unity.UI
 
         public DebrisType? GetTrackedSlotType(int slotIndex)
         {
-            if (slotIndex < 0 || slotIndex >= Phase1DockSize)
+            if (slotIndex < 0 || slotIndex >= _trackedSlotTypes.Length)
             {
                 return null;
             }
@@ -613,7 +615,7 @@ namespace Rescue.Unity.UI
 
         public GameObject? GetTrackedSlotObject(int slotIndex)
         {
-            if (slotIndex < 0 || slotIndex >= Phase1DockSize)
+            if (slotIndex < 0 || slotIndex >= _trackedSlotObjects.Length)
             {
                 return null;
             }
@@ -903,7 +905,7 @@ namespace Rescue.Unity.UI
 
             int insertedCount = dockInserted.Pieces.Length;
             int firstInsertedSlot = Mathf.Max(0, dockInserted.OccupancyAfterInsert - insertedCount);
-            int maxSlotCount = Mathf.Min(Phase1DockSize, anchors.Length);
+            int maxSlotCount = Mathf.Min(_trackedSlotTypes.Length, anchors.Length);
 
             for (int pieceIndex = 0; pieceIndex < insertedCount; pieceIndex++)
             {
@@ -926,7 +928,7 @@ namespace Rescue.Unity.UI
             }
 
             int piecesToClear = Mathf.Max(0, dockCleared.SetsCleared * 3);
-            for (int slotIndex = 0; slotIndex < Phase1DockSize && piecesToClear > 0; slotIndex++)
+            for (int slotIndex = 0; slotIndex < _trackedSlotTypes.Length && piecesToClear > 0; slotIndex++)
             {
                 if (_trackedSlotTypes[slotIndex] != dockCleared.Type)
                 {
@@ -942,13 +944,11 @@ namespace Rescue.Unity.UI
 
         private void RepairTrackedSlots(Dock dock, Transform[] anchors)
         {
-            int maxSlotCount = Mathf.Min(Phase1DockSize, anchors.Length);
+            int maxSlotCount = Mathf.Min(_trackedSlotTypes.Length, dock.Slots.Length);
 
             for (int slotIndex = 0; slotIndex < maxSlotCount; slotIndex++)
             {
-                DebrisType? expectedType = slotIndex < dock.Slots.Length
-                    ? dock.Slots[slotIndex]
-                    : null;
+                DebrisType? expectedType = dock.Slots[slotIndex];
 
                 if (!expectedType.HasValue)
                 {
@@ -956,10 +956,10 @@ namespace Rescue.Unity.UI
                     continue;
                 }
 
-                AssignTrackedSlot(slotIndex, expectedType.Value, anchors[slotIndex]);
+                AssignTrackedSlot(slotIndex, expectedType.Value, ResolveAnchorForSlot(slotIndex, anchors));
             }
 
-            for (int slotIndex = maxSlotCount; slotIndex < Phase1DockSize; slotIndex++)
+            for (int slotIndex = maxSlotCount; slotIndex < _trackedSlotTypes.Length; slotIndex++)
             {
                 ClearTrackedSlot(slotIndex);
             }
@@ -967,7 +967,7 @@ namespace Rescue.Unity.UI
 
         private void CompactTrackedSlots(Transform[] anchors)
         {
-            int maxSlotCount = Mathf.Min(Phase1DockSize, anchors.Length);
+            int maxSlotCount = Mathf.Min(_trackedSlotTypes.Length, anchors.Length);
             int writeIndex = 0;
 
             for (int readIndex = 0; readIndex < maxSlotCount; readIndex++)
@@ -990,7 +990,7 @@ namespace Rescue.Unity.UI
                 writeIndex++;
             }
 
-            for (int slotIndex = writeIndex; slotIndex < Phase1DockSize; slotIndex++)
+            for (int slotIndex = writeIndex; slotIndex < _trackedSlotTypes.Length; slotIndex++)
             {
                 _trackedSlotTypes[slotIndex] = null;
                 if (slotIndex >= maxSlotCount)
@@ -1009,6 +1009,11 @@ namespace Rescue.Unity.UI
 
         private void AssignTrackedSlot(int slotIndex, DebrisType debrisType, Transform anchor)
         {
+            if (slotIndex < 0 || slotIndex >= _trackedSlotTypes.Length)
+            {
+                return;
+            }
+
             if (_trackedSlotTypes[slotIndex] == debrisType && _trackedSlotObjects[slotIndex] is not null)
             {
                 RenameTrackedSlotObject(slotIndex, debrisType);
@@ -1074,6 +1079,11 @@ namespace Rescue.Unity.UI
 
         private void ClearTrackedSlot(int slotIndex)
         {
+            if (slotIndex < 0 || slotIndex >= _trackedSlotTypes.Length)
+            {
+                return;
+            }
+
             _trackedSlotTypes[slotIndex] = null;
 
             if (_trackedSlotObjects[slotIndex] is null)
@@ -1100,6 +1110,36 @@ namespace Rescue.Unity.UI
             {
                 DestroyImmediate(trackedObject);
             }
+        }
+
+        private Transform ResolveAnchorForSlot(int slotIndex, Transform[] anchors)
+        {
+            if (slotIndex >= 0 && slotIndex < anchors.Length)
+            {
+                return anchors[slotIndex];
+            }
+
+            string anchorName = OverflowAnchorPrefix + slotIndex.ToString("00");
+            Transform? existingAnchor = transform.Find(anchorName);
+            if (existingAnchor is not null)
+            {
+                return existingAnchor;
+            }
+
+            GameObject anchorObject = new GameObject(anchorName);
+            Transform anchor = anchorObject.transform;
+            anchor.SetParent(transform, false);
+
+            if (anchors.Length > 0)
+            {
+                Transform lastAnchor = anchors[anchors.Length - 1];
+                anchor.position = lastAnchor.position + new Vector3(slotIndex - anchors.Length + 1, 0f, 0f);
+                anchor.rotation = lastAnchor.rotation;
+                return anchor;
+            }
+
+            anchor.localPosition = new Vector3(slotIndex, 0f, 0f);
+            return anchor;
         }
     }
 }

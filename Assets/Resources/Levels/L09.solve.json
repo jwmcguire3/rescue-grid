@@ -2,12 +2,20 @@
   "LevelId": "L09",
   "Seed": 1,
   "AlternateSeed": 1001,
-  "ExpectedOutcome": "LossDockOverflow",
+  "ExpectedOutcome": "Win",
   "ExpectAlternateSeedDivergence": true,
   "Actions": [
     {
+      "Row": 0,
+      "Col": 4
+    },
+    {
       "Row": 4,
       "Col": 0
+    },
+    {
+      "Row": 0,
+      "Col": 1
     },
     {
       "Row": 0,

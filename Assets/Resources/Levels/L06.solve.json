@@ -2,24 +2,40 @@
   "LevelId": "L06",
   "Seed": 1,
   "AlternateSeed": 1001,
-  "ExpectedOutcome": "LossDockOverflow",
+  "ExpectedOutcome": "Win",
   "ExpectAlternateSeedDivergence": true,
   "Actions": [
     {
-      "Row": 0,
-      "Col": 2
-    },
-    {
-      "Row": 4,
-      "Col": 0
-    },
-    {
-      "Row": 4,
+      "Row": 5,
       "Col": 6
     },
     {
       "Row": 6,
+      "Col": 6
+    },
+    {
+      "Row": 4,
       "Col": 0
+    },
+    {
+      "Row": 0,
+      "Col": 4
+    },
+    {
+      "Row": 1,
+      "Col": 3
+    },
+    {
+      "Row": 0,
+      "Col": 1
+    },
+    {
+      "Row": 0,
+      "Col": 1
+    },
+    {
+      "Row": 2,
+      "Col": 1
     }
   ]
 }
