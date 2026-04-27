@@ -58,7 +58,8 @@ namespace Rescue.Core.State
         string TargetId,
         TileCoord Coord,
         bool Extracted,
-        bool OneClearAway);
+        bool OneClearAway,
+        bool ExtractableLatched = false);
 
     public sealed record GameState(
         Board Board,

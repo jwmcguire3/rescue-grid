@@ -25,20 +25,6 @@ namespace Rescue.Core.Pipeline.Steps
                 };
             }
 
-            for (int i = 0; i < resolvedState.Targets.Length; i++)
-            {
-                TargetState target = resolvedState.Targets[i];
-                if (!target.Extracted && IsFloodedTarget(resolvedState.Board, resolvedState.Water, target.Coord))
-                {
-                    ImmutableArray<ActionEvent> waterLossEvents = ImmutableArray.Create<ActionEvent>(
-                        new Lost(ActionOutcome.LossWaterOnTarget));
-                    return new CheckLossResult(
-                        resolvedState with { Frozen = true },
-                        waterLossEvents,
-                        ActionOutcome.LossWaterOnTarget);
-                }
-            }
-
             if (dockJamRecoveryAction)
             {
                 if (clearedTripleThisAction)
@@ -77,6 +63,28 @@ namespace Rescue.Core.Pipeline.Steps
             }
 
             return new CheckLossResult(resolvedState, ImmutableArray<ActionEvent>.Empty, ActionOutcome.Ok);
+        }
+    }
+
+    internal static class WaterTargetConsequence
+    {
+        public static CheckLossResult Run(GameState state, StepContext context)
+        {
+            for (int i = 0; i < state.Targets.Length; i++)
+            {
+                TargetState target = state.Targets[i];
+                if (!target.Extracted && IsFloodedTarget(state.Board, state.Water, target.Coord))
+                {
+                    ImmutableArray<ActionEvent> waterLossEvents = ImmutableArray.Create<ActionEvent>(
+                        new Lost(ActionOutcome.LossWaterOnTarget));
+                    return new CheckLossResult(
+                        state with { Frozen = true },
+                        waterLossEvents,
+                        ActionOutcome.LossWaterOnTarget);
+                }
+            }
+
+            return new CheckLossResult(state, ImmutableArray<ActionEvent>.Empty, ActionOutcome.Ok);
         }
 
         private static bool IsFloodedTarget(Board board, WaterState water, TileCoord coord)

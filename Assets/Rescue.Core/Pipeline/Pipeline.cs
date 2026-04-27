@@ -14,15 +14,17 @@ namespace Rescue.Core.Pipeline
             "Step02_RemoveGroup",
             "Step03_DamageBlockers",
             "Step04_ResolveBreaks",
-            "Step05_InsertDock",
-            "Step06_ClearDock",
-            "Step07_Gravity",
-            "Step08_Spawn",
-            "Step09_Extract",
-            "Step10_CheckWin",
-            "Step11_TickHazards",
-            "Step12_ResolveHazards",
-            "CheckLoss");
+            "Step05_UpdateTargets",
+            "Step06_InsertDock",
+            "Step07_ClearDock",
+            "Step08_Extract",
+            "Step09_CheckWin",
+            "Step10_CheckLoss",
+            "Step11_Gravity",
+            "Step12_Spawn",
+            "Step13_TickHazards",
+            "Step14_ResolveHazards",
+            "Step15_CheckWaterConsequence");
 
         public static ActionResult RunAction(
             GameState state,
@@ -60,25 +62,35 @@ namespace Rescue.Core.Pipeline
             result = RunStep(StepOrder[1], Step02_RemoveGroup.Run, result, observer, events);
             result = RunStep(StepOrder[2], Step03_DamageBlockers.Run, result, observer, events);
             result = RunStep(StepOrder[3], Step04_ResolveBreaks.Run, result, observer, events);
-            result = RunStep(StepOrder[4], Step05_InsertDock.Run, result, observer, events);
-            result = RunStep(StepOrder[5], Step06_ClearDock.Run, result, observer, events);
-            result = RunStep(StepOrder[6], Step07_Gravity.Run, result, observer, events);
-            result = RunStep(StepOrder[7], Step08_Spawn.Run, result, observer, events);
-            result = RunStep(StepOrder[8], Step09_Extract.Run, result, observer, events);
-            result = RunStep(StepOrder[9], Step10_CheckWin.Run, result, observer, events);
+            result = RunStep(StepOrder[4], Step05_UpdateTargets.Run, result, observer, events);
+            result = RunStep(StepOrder[5], Step05_InsertDock.Run, result, observer, events);
+            result = RunStep(StepOrder[6], Step06_ClearDock.Run, result, observer, events);
+            result = RunStep(StepOrder[7], Step09_Extract.Run, result, observer, events);
+            result = RunStep(StepOrder[8], Step10_CheckWin.Run, result, observer, events);
 
             if (result.Context.IsWin)
             {
                 return new ActionResult(IncrementActionCount(result.State), events.ToImmutable(), ActionOutcome.Win, snapshot);
             }
 
-            result = RunStep(StepOrder[10], Step11_TickHazards.Run, result, observer, events);
-            result = RunStep(StepOrder[11], Step12_ResolveHazards.Run, result, observer, events);
-
             CheckLossResult lossResult = CheckLoss.Run(result.State, result.Context);
-            EmitTrace(observer, StepOrder[12], lossResult.State, result.Context, lossResult.Events);
+            EmitTrace(observer, StepOrder[9], lossResult.State, result.Context, lossResult.Events);
             Append(events, lossResult.Events);
-            return new ActionResult(IncrementActionCount(lossResult.State), events.ToImmutable(), lossResult.Outcome, snapshot);
+            if (lossResult.Outcome != ActionOutcome.Ok || lossResult.State.Frozen)
+            {
+                return new ActionResult(IncrementActionCount(lossResult.State), events.ToImmutable(), lossResult.Outcome, snapshot);
+            }
+
+            result = new StepResult(lossResult.State, result.Context, ImmutableArray<ActionEvent>.Empty);
+            result = RunStep(StepOrder[10], Step07_Gravity.Run, result, observer, events);
+            result = RunStep(StepOrder[11], Step08_Spawn.Run, result, observer, events);
+            result = RunStep(StepOrder[12], Step11_TickHazards.Run, result, observer, events);
+            result = RunStep(StepOrder[13], Step12_ResolveHazards.Run, result, observer, events);
+
+            CheckLossResult waterResult = WaterTargetConsequence.Run(result.State, result.Context);
+            EmitTrace(observer, StepOrder[14], waterResult.State, result.Context, waterResult.Events);
+            Append(events, waterResult.Events);
+            return new ActionResult(IncrementActionCount(waterResult.State), events.ToImmutable(), waterResult.Outcome, snapshot);
         }
 
         // Exposes the full nominal pipeline order for valid non-win actions.

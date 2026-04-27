@@ -18,8 +18,9 @@ namespace Rescue.Core.Tests.Integration
 
             Assert.That(firstAction.Outcome, Is.EqualTo(ActionOutcome.Ok));
             Assert.That(spawnIndex, Is.GreaterThanOrEqualTo(0));
-            Assert.That(oneClearAwayIndex, Is.GreaterThan(spawnIndex));
-            Assert.That(firstAction.Events[^1], Is.EqualTo(new TargetOneClearAway("pup", new TileCoord(3, 3))));
+            Assert.That(oneClearAwayIndex, Is.GreaterThanOrEqualTo(0));
+            Assert.That(oneClearAwayIndex, Is.LessThan(spawnIndex));
+            Assert.That(firstAction.Events[oneClearAwayIndex], Is.EqualTo(new TargetOneClearAway("pup", new TileCoord(3, 3))));
         }
 
         [Test]

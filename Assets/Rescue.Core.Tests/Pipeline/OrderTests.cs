@@ -197,17 +197,59 @@ namespace Rescue.Core.Tests.Pipeline
                 "Step02_RemoveGroup",
                 "Step03_DamageBlockers",
                 "Step04_ResolveBreaks",
-                "Step05_InsertDock",
-                "Step06_ClearDock",
-                "Step07_Gravity",
-                "Step08_Spawn",
-                "Step09_Extract",
-                "Step10_CheckWin",
+                "Step05_UpdateTargets",
+                "Step06_InsertDock",
+                "Step07_ClearDock",
+                "Step08_Extract",
+                "Step09_CheckWin",
             }));
             Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.Win));
             Assert.That(result.State.Frozen, Is.True);
             Assert.That(result.Events, Has.Some.TypeOf<Won>());
             Assert.That(result.Events, Has.None.TypeOf<Lost>());
+        }
+
+        [Test]
+        public void ClearingFinalNeighborLatchesExtractionBeforeDockInsertion()
+        {
+            GameState state = PipelineTestFixtures.CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    PipelineTestFixtures.Row(new EmptyTile(), new EmptyTile(), new DebrisTile(DebrisType.B), new DebrisTile(DebrisType.C)),
+                    PipelineTestFixtures.Row(new EmptyTile(), new EmptyTile(), new EmptyTile(), new DebrisTile(DebrisType.D)),
+                    PipelineTestFixtures.Row(new EmptyTile(), new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                    PipelineTestFixtures.Row(new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new TargetTile("pup", Extracted: false))),
+                targets: ImmutableArray.Create(new TargetState("pup", new TileCoord(3, 3), Extracted: false, OneClearAway: true)))
+                with
+                {
+                    LevelConfig = PipelineTestFixtures.CreateLevelConfig(0.0d, null, DebrisType.A),
+                };
+
+            StepTrace? updateTargets = null;
+            StepTrace? insertDock = null;
+
+            _ = Rescue.Core.Pipeline.Pipeline.RunAction(
+                state,
+                new ActionInput(new TileCoord(3, 0)),
+                options: null,
+                observer: step =>
+                {
+                    if (step.StepName == "Step05_UpdateTargets")
+                    {
+                        updateTargets = step;
+                    }
+                    else if (step.StepName == "Step06_InsertDock")
+                    {
+                        insertDock = step;
+                    }
+                });
+
+            Assert.That(updateTargets.HasValue, Is.True);
+            Assert.That(insertDock.HasValue, Is.True);
+            Assert.That(updateTargets!.Value.State.Targets[0].ExtractableLatched, Is.True);
+            Assert.That(updateTargets.Value.Context.LatchedTargetIdsThisAction, Is.EqualTo(new[] { "pup" }).AsCollection);
+            Assert.That(DockHelpers.Occupancy(updateTargets.Value.State.Dock), Is.EqualTo(0));
+            Assert.That(insertDock!.Value.State.Targets[0].ExtractableLatched, Is.True);
+            Assert.That(DockHelpers.Occupancy(insertDock.Value.State.Dock), Is.EqualTo(3));
         }
 
         private static void AssertInvalidInputEvent(

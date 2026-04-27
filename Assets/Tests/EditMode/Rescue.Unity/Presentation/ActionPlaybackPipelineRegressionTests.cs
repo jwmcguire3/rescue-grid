@@ -167,7 +167,6 @@ namespace Rescue.Unity.Presentation.Tests
                 nameof(DockInserted),
                 nameof(DockOverflowTriggered),
                 nameof(DockWarningChanged),
-                nameof(Spawned),
                 nameof(DockJamTriggered));
         }
 
@@ -221,7 +220,6 @@ namespace Rescue.Unity.Presentation.Tests
                 nameof(DockInserted),
                 nameof(DockOverflowTriggered),
                 nameof(DockWarningChanged),
-                nameof(Spawned),
                 nameof(Lost));
         }
 

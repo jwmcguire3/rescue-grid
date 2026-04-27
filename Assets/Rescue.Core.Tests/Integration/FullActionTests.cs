@@ -28,12 +28,11 @@ namespace Rescue.Core.Tests.Integration
                 "Step02_RemoveGroup",
                 "Step03_DamageBlockers",
                 "Step04_ResolveBreaks",
-                "Step05_InsertDock",
-                "Step06_ClearDock",
-                "Step07_Gravity",
-                "Step08_Spawn",
-                "Step09_Extract",
-                "Step10_CheckWin",
+                "Step05_UpdateTargets",
+                "Step06_InsertDock",
+                "Step07_ClearDock",
+                "Step08_Extract",
+                "Step09_CheckWin",
             }));
             IntegrationTestFixtures.AssertEventTypeOrder(result.Events,
                 nameof(GroupRemoved),
@@ -42,10 +41,6 @@ namespace Rescue.Core.Tests.Integration
                 nameof(DockInserted),
                 nameof(DockInserted),
                 nameof(DockCleared),
-                nameof(GravitySettled),
-                nameof(GravitySettled),
-                nameof(GravitySettled),
-                nameof(Spawned),
                 nameof(TargetExtracted),
                 nameof(Won));
         }
@@ -58,7 +53,7 @@ namespace Rescue.Core.Tests.Integration
                 Water = new WaterState(FloodedRows: 0, ActionsUntilRise: 1, RiseInterval: 3),
             };
 
-            ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(state, new ActionInput(new TileCoord(3, 0)));
+            ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(state, new ActionInput(new TileCoord(3, 1)));
 
             Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.Win));
             Assert.That(result.Events, Has.Some.TypeOf<Won>());
@@ -110,6 +105,87 @@ namespace Rescue.Core.Tests.Integration
             Assert.That(secondAction.Outcome, Is.EqualTo(ActionOutcome.Win));
             Assert.That(secondAction.Events, Has.Some.EqualTo(new TargetExtracted("pup", new TileCoord(3, 3))));
             Assert.That(secondAction.Events, Has.Some.TypeOf<Won>());
+        }
+
+        [Test]
+        public void RescueActionEmitsTargetExtractedBeforeGravityAndSpawn()
+        {
+            GameState state = IntegrationTestFixtures.CreateNonFinalExtractionState();
+
+            ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(state, new ActionInput(new TileCoord(3, 1)));
+
+            Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.Ok));
+            IntegrationTestFixtures.AssertEventAppearsBefore<TargetExtracted, GravitySettled>(result.Events);
+            IntegrationTestFixtures.AssertEventAppearsBefore<TargetExtracted, Spawned>(result.Events);
+        }
+
+        [Test]
+        public void GravityAndSpawnCannotPreventExtractionAfterLatch()
+        {
+            GameState state = IntegrationTestFixtures.CreateNonFinalExtractionState();
+
+            ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(state, new ActionInput(new TileCoord(3, 1)));
+
+            Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.Ok));
+            Assert.That(result.State.Targets[0].Extracted, Is.True);
+            Assert.That(result.Events, Has.Some.EqualTo(new TargetExtracted("pup", new TileCoord(3, 3))));
+            Assert.That(result.Events, Has.Some.TypeOf<GravitySettled>());
+            Assert.That(result.Events, Has.Some.TypeOf<Spawned>());
+        }
+
+        [Test]
+        public void FinalRescueWinsEvenIfSameActionWouldOverflowDock()
+        {
+            GameState state = IntegrationTestFixtures.CreateFinalRescueWithDockOverflowState();
+
+            ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(state, new ActionInput(new TileCoord(3, 1)));
+
+            Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.Win));
+            Assert.That(result.Events, Has.Some.TypeOf<DockOverflowTriggered>());
+            Assert.That(result.Events, Has.Some.TypeOf<TargetExtracted>());
+            Assert.That(result.Events, Has.Some.TypeOf<Won>());
+            Assert.That(result.Events, Has.None.TypeOf<Lost>());
+        }
+
+        [Test]
+        public void NonFinalRescuePlusDockOverflowFailsBeforeGravitySpawnAndHazards()
+        {
+            GameState state = IntegrationTestFixtures.CreateNonFinalRescueWithDockOverflowState();
+
+            ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(state, new ActionInput(new TileCoord(3, 1)));
+
+            Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.LossDockOverflow));
+            Assert.That(result.Events, Has.Some.TypeOf<TargetExtracted>());
+            Assert.That(result.Events, Has.Some.TypeOf<DockOverflowTriggered>());
+            Assert.That(result.Events, Has.Some.EqualTo(new Lost(ActionOutcome.LossDockOverflow)));
+            Assert.That(result.Events, Has.None.TypeOf<GravitySettled>());
+            Assert.That(result.Events, Has.None.TypeOf<Spawned>());
+            Assert.That(result.Events, Has.None.TypeOf<WaterRose>());
+            Assert.That(result.Events, Has.None.TypeOf<VineGrown>());
+        }
+
+        [Test]
+        public void FinalRescueSkipsHazardTickAndWaterRise()
+        {
+            GameState state = IntegrationTestFixtures.CreateFinalRescueWithDockOverflowState() with
+            {
+                Water = new WaterState(FloodedRows: 0, ActionsUntilRise: 1, RiseInterval: 3),
+                Vine = new VineState(
+                    ActionsSinceLastClear: 3,
+                    GrowthThreshold: 4,
+                    GrowthPriorityList: ImmutableArray.Create(new TileCoord(0, 0)),
+                    PriorityCursor: 0,
+                    PendingGrowthTile: new TileCoord(0, 0)),
+            };
+
+            ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(state, new ActionInput(new TileCoord(3, 1)));
+
+            Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.Win));
+            Assert.That(result.State.Water.ActionsUntilRise, Is.EqualTo(1));
+            Assert.That(result.State.Vine.ActionsSinceLastClear, Is.EqualTo(3));
+            Assert.That(result.Events, Has.None.TypeOf<WaterRose>());
+            Assert.That(result.Events, Has.None.TypeOf<VineGrown>());
+            Assert.That(result.Events, Has.None.TypeOf<Lost>());
         }
 
         [Test]
@@ -215,6 +291,62 @@ namespace Rescue.Core.Tests.Integration
                 };
         }
 
+        public static GameState CreateNonFinalExtractionState()
+        {
+            return PipelineTestFixtures.CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    PipelineTestFixtures.Row(new DebrisTile(DebrisType.B), new DebrisTile(DebrisType.C), new DebrisTile(DebrisType.D), new DebrisTile(DebrisType.E)),
+                    PipelineTestFixtures.Row(new EmptyTile(), new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                    PipelineTestFixtures.Row(new DebrisTile(DebrisType.C), new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                    PipelineTestFixtures.Row(new EmptyTile(), new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new TargetTile("pup", Extracted: false)),
+                    PipelineTestFixtures.Row(new TargetTile("hold", Extracted: false), new BlockerTile(BlockerType.Crate, 2, Hidden: null), new BlockerTile(BlockerType.Crate, 2, Hidden: null), new EmptyTile())),
+                targets: ImmutableArray.Create(
+                    new TargetState("pup", new TileCoord(3, 3), Extracted: false, OneClearAway: true),
+                    new TargetState("hold", new TileCoord(4, 0), Extracted: false, OneClearAway: false)))
+                with
+                {
+                    LevelConfig = PipelineTestFixtures.CreateLevelConfig(0.0d, null, DebrisType.A),
+                };
+        }
+
+        public static GameState CreateFinalRescueWithDockOverflowState()
+        {
+            return PipelineTestFixtures.CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    PipelineTestFixtures.Row(new DebrisTile(DebrisType.B), new DebrisTile(DebrisType.C), new DebrisTile(DebrisType.D), new DebrisTile(DebrisType.E)),
+                    PipelineTestFixtures.Row(new EmptyTile(), new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                    PipelineTestFixtures.Row(new DebrisTile(DebrisType.C), new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                    PipelineTestFixtures.Row(new EmptyTile(), new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new TargetTile("pup", Extracted: false))),
+                targets: ImmutableArray.Create(new TargetState("pup", new TileCoord(3, 3), Extracted: false, OneClearAway: true)))
+                with
+            {
+                Dock = OverflowDock(),
+                LevelConfig = PipelineTestFixtures.CreateLevelConfig(0.0d, null, DebrisType.A),
+            };
+        }
+
+        public static GameState CreateNonFinalRescueWithDockOverflowState()
+        {
+            return CreateNonFinalExtractionState() with
+            {
+                Dock = OverflowDock(),
+            };
+        }
+
+        private static Dock OverflowDock()
+        {
+            return new Dock(
+                ImmutableArray.Create<DebrisType?>(
+                    DebrisType.B,
+                    DebrisType.C,
+                    DebrisType.D,
+                    DebrisType.E,
+                    DebrisType.B,
+                    DebrisType.C,
+                    null),
+                Size: 7);
+        }
+
         public static T FindEvent<T>(ImmutableArray<ActionEvent> events)
             where T : ActionEvent
         {
@@ -237,6 +369,31 @@ namespace Rescue.Core.Tests.Integration
             {
                 Assert.That(events[i].GetType().Name, Is.EqualTo(expectedTypes[i]), $"Unexpected event type at index {i}.");
             }
+        }
+
+        public static void AssertEventAppearsBefore<TBefore, TAfter>(ImmutableArray<ActionEvent> events)
+            where TBefore : ActionEvent
+            where TAfter : ActionEvent
+        {
+            int beforeIndex = IndexOf<TBefore>(events);
+            int afterIndex = IndexOf<TAfter>(events);
+            Assert.That(beforeIndex, Is.GreaterThanOrEqualTo(0), $"Expected {typeof(TBefore).Name} event.");
+            Assert.That(afterIndex, Is.GreaterThanOrEqualTo(0), $"Expected {typeof(TAfter).Name} event.");
+            Assert.That(beforeIndex, Is.LessThan(afterIndex));
+        }
+
+        private static int IndexOf<T>(ImmutableArray<ActionEvent> events)
+            where T : ActionEvent
+        {
+            for (int i = 0; i < events.Length; i++)
+            {
+                if (events[i] is T)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
     }
 }

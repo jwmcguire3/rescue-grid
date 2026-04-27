@@ -407,14 +407,14 @@ namespace Rescue.Telemetry.Tests
                 SpawnRecoveryCounter: 0);
         }
 
-        // 3x3 board with target at (0,2) and group of A's at row 2.
+        // 3x3 board with target at (0,2), one blocked neighbor, and group of A's at row 2.
         // waterDistanceRows for target: targetRow(0) - (height(3) - floodedRows(0) - 1) = 0-2 = -2.
         private static GameState CreateStateWithUnextractedTarget()
         {
             ImmutableArray<Tile> row0 = ImmutableArray.Create<Tile>(
                 new EmptyTile(), new EmptyTile(), new TargetTile("t0", Extracted: false));
             ImmutableArray<Tile> row1 = ImmutableArray.Create<Tile>(
-                new EmptyTile(), new EmptyTile(), new EmptyTile());
+                new EmptyTile(), new EmptyTile(), new BlockerTile(BlockerType.Crate, 2, null));
             ImmutableArray<Tile> row2 = ImmutableArray.Create<Tile>(
                 new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new EmptyTile());
 

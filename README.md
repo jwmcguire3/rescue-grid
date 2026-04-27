@@ -73,17 +73,19 @@ The valid-action pipeline currently runs:
 2. `Step02_RemoveGroup`
 3. `Step03_DamageBlockers`
 4. `Step04_ResolveBreaks`
-5. `Step05_InsertDock`
-6. `Step06_ClearDock`
-7. `Step07_Gravity`
-8. `Step08_Spawn`
-9. `Step09_Extract`
-10. `Step10_CheckWin`
-11. `Step11_TickHazards`
-12. `Step12_ResolveHazards`
-13. `CheckLoss`
+5. `Step05_UpdateTargets`
+6. `Step06_InsertDock`
+7. `Step07_ClearDock`
+8. `Step08_Extract`
+9. `Step09_CheckWin`
+10. `Step10_CheckLoss`
+11. `Step11_Gravity`
+12. `Step12_Spawn`
+13. `Step13_TickHazards`
+14. `Step14_ResolveHazards`
+15. `Step15_CheckWaterConsequence`
 
-Wins short-circuit after `Step10_CheckWin`, so a completed rescue does not receive a post-win hazard step. Invalid input returns after `Step01_AcceptInput` and does not advance hazards.
+Wins short-circuit after `Step09_CheckWin`, so a final rescue does not receive gravity, spawn, hazard, water, or same-action dock overflow failure. Dock overflow losses short-circuit after `Step10_CheckLoss`, before gravity, spawn, and hazards. Invalid input returns after `Step01_AcceptInput` and does not advance hazards.
 
 Implemented gameplay behavior includes:
 
@@ -100,6 +102,7 @@ Implemented gameplay behavior includes:
 - Ice breaks from one adjacent clear and reveals hidden debris.
 - Vines break from one adjacent clear and grow from authored priority if ignored.
 - Targets extract automatically when all required orthogonal neighbors are open.
+- Target extractability latches immediately after blocker break resolution and cannot be undone by dock, gravity, spawn, water, or vine later in the action.
 - One-clear-away target transitions are represented as real state/events.
 - Undo restores the exact previous snapshot for one action.
 

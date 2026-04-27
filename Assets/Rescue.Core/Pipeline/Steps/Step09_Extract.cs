@@ -20,19 +20,12 @@ namespace Rescue.Core.Pipeline.Steps
 
                 if (!before.Extracted)
                 {
-                    int blockedRequiredNeighbors = CountBlockedRequiredNeighbors(board, before.Coord);
-                    bool nowExtracted = blockedRequiredNeighbors == 0;
-                    bool oneClearAway = blockedRequiredNeighbors == 1;
                     after = before with
                     {
-                        Extracted = nowExtracted,
-                        OneClearAway = oneClearAway,
+                        Extracted = before.ExtractableLatched,
+                        OneClearAway = before.ExtractableLatched ? false : before.OneClearAway,
+                        ExtractableLatched = false,
                     };
-
-                    if (!before.OneClearAway && after.OneClearAway)
-                    {
-                        events.Add(new TargetOneClearAway(after.TargetId, after.Coord));
-                    }
 
                     if (!before.Extracted && after.Extracted)
                     {
@@ -57,21 +50,6 @@ namespace Rescue.Core.Pipeline.Steps
                 ExtractedTargetIdsThisAction = extractedTargetIds.ToImmutable(),
             };
             return new StepResult(updatedState, updatedContext, events.ToImmutable());
-        }
-
-        private static int CountBlockedRequiredNeighbors(Board board, TileCoord targetCoord)
-        {
-            int blocked = 0;
-            ImmutableArray<TileCoord> neighbors = BoardHelpers.OrthogonalNeighbors(board, targetCoord);
-            for (int i = 0; i < neighbors.Length; i++)
-            {
-                if (BoardHelpers.GetTile(board, neighbors[i]) is not EmptyTile)
-                {
-                    blocked++;
-                }
-            }
-
-            return blocked;
         }
     }
 }

@@ -171,7 +171,7 @@ namespace Rescue.Core.Tests.Rules
 
             StepResult tick = Step11_TickHazards.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
             StepResult resolve = Step12_ResolveHazards.Run(tick.State, tick.Context);
-            CheckLossResult loss = CheckLoss.Run(resolve.State, resolve.Context);
+            CheckLossResult loss = WaterTargetConsequence.Run(resolve.State, resolve.Context);
 
             Assert.That(loss.Outcome, Is.EqualTo(ActionOutcome.LossWaterOnTarget));
             Assert.That(loss.Events, Is.EqualTo(new ActionEvent[]
