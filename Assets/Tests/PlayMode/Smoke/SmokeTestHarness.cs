@@ -143,7 +143,12 @@ namespace Rescue.PlayMode.Tests.Smoke
                     Tile tile = BoardHelpers.GetTile(state.Board, new TileCoord(row, col));
                     if (row >= floodStartRow)
                     {
-                        Assert.That(tile, Is.TypeOf<FloodedTile>(), $"{levelId} row {row} should be fully flooded.");
+                        bool isUnextractedTargetTile = tile is TargetTile targetTile
+                            && IsUnextractedTargetAt(state, targetTile.TargetId, row, col);
+                        Assert.That(
+                            tile is FloodedTile || isUnextractedTargetTile,
+                            Is.True,
+                            $"{levelId} row {row} should be semantically flooded; only unextracted target tiles may remain visible for water-contact resolution.");
                     }
                     else
                     {
@@ -167,7 +172,28 @@ namespace Rescue.PlayMode.Tests.Smoke
                 {
                     Assert.That(BoardHelpers.GetTile(state.Board, target.Coord), Is.TypeOf<TargetTile>(), $"{levelId} live target {target.TargetId} disappeared from the board.");
                 }
+                else
+                {
+                    Assert.That(BoardHelpers.GetTile(state.Board, target.Coord), Is.TypeOf<TargetTile>(), $"{levelId} flooded live target {target.TargetId} should remain visible for water-contact resolution.");
+                }
             }
+        }
+
+        private static bool IsUnextractedTargetAt(GameState state, string targetId, int row, int col)
+        {
+            for (int i = 0; i < state.Targets.Length; i++)
+            {
+                TargetState target = state.Targets[i];
+                if (target.TargetId == targetId
+                    && !target.Extracted
+                    && target.Coord.Row == row
+                    && target.Coord.Col == col)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public static TileCoord FindAlternativeValidAction(GameState state, TileCoord excluded)
