@@ -1,212 +1,289 @@
 # Rescue Grid
 
-Rescue Grid is a Phase 1 Unity prototype for a warm, tactical animal-rescue puzzle game.
+Rescue Grid is a Unity 6 Phase 1 prototype for a tactical animal-rescue puzzle game.
 
-The current build is focused on proving the core game seed:
+The prototype is scoped to prove the core seed:
 
-- acting advances danger; thinking is free
-- dock tension feels self-authored
-- rescue order is the central puzzle
-- extracting the puppy feels different from generic board completion
+- Acting advances danger; thinking is free.
+- Dock pressure feels self-authored.
+- Rescue order is the central puzzle.
+- Extracting a puppy feels different from generic board completion.
 
-This repository is not trying to implement the full commercial v3.2 game yet. It is a scoped Phase 1 prototype with water, dock pressure, puppy extraction, undo, crate / ice / vine blockers, level validation, replay tooling, telemetry hooks, and a first pass of Unity presentation.
+The authoritative design source is `docs/phase_1_spec.md`. Do not pull mechanics from broader or older design documents unless the Phase 1 spec is deliberately updated.
 
-## Current implementation state
+## Current State
 
-The project is currently close to Phase 1 mechanically. The strongest completed areas are the core rules pipeline, level content structure, deterministic replay/validation tooling, and the first presentation/playback layer.
+The repository is mechanically close to the Phase 1 prototype target. The strongest areas are:
 
-The main remaining Phase 1 work is not broad feature expansion. It is player-facing readability and emotional proof: making sure a cold player can tell why they won or lost, why water advanced, why the dock overflowed, why vine growth was fair, and why saving the puppy feels like a rescue rather than a generic clear.
+- Immutable `Rescue.Core` state and deterministic rules.
+- A fixed action pipeline with isolated steps and regression tests.
+- Authored L00-L15 level JSON content.
+- Level validation, replay, solve-authoring, telemetry-report, and capture tooling.
+- A functional Unity debug gameplay scene with board, dock, water, target, playback, debug, tuning, victory, and loss presentation.
+- A first pass of Phase 1 visual assets, prefabs, registries, and FX hooks.
 
-## Phase 1 scope
+The remaining work is mostly player-facing clarity and emotional proof, not broad feature expansion. The current game can simulate and present the Phase 1 loop, but the next risk is whether a cold player clearly understands water pressure, dock failures, vine pressure, rescue order, and the puppy extraction beat.
 
-### In scope
+Latest checked-in test result artifacts show:
 
-Phase 1 keeps only the systems needed to prove the seed:
+- EditMode: 424 passed, 0 failed (`editmode-results.xml`, run started 2026-04-27 01:44:39Z).
+- PlayMode: 27 passed, 0 failed (`playmode-results.xml`, run started 2026-04-27 01:00:18Z).
 
-- one hazard: water
-- three blockers: crate, ice, vine
-- one target archetype: puppy
-- 7-slot dock
-- one free undo per level
-- Dock Jam only as an early teaching variant
-- Level 0 rule-teach
-- 15 main packet levels plus L00
-- one-clear-away target state
-- persistent next-flood-row forecast target
-- one real extraction beat
-- minimal Mae / aftercare support
-- basic telemetry and replay support
+## Phase 1 Scope
 
-### Out of scope for Phase 1
+In scope:
 
-Do not treat these as missing work yet:
+- One hazard: water.
+- Three blockers: crate, ice, vine.
+- One target archetype: puppy.
+- Fixed 7-slot dock.
+- One free undo per level.
+- Dock Jam as an early teaching variant for L01-L02.
+- L00 rule-teach level.
+- L01-L15 main packet.
+- One-clear-away target state.
+- Persistent next-flood-row forecast support.
+- Authored vine growth priority and preview events.
+- Seeded deterministic RNG.
+- Basic spawn assistance and emergency spawn support.
+- First-pass extraction, win, loss, dock, water, blocker, vine, and invalid-tap FX hooks.
+- Minimal capture path for the L15 ad/capture moment.
 
-- fire
-- overgrowth
-- freeze fog
-- tools
-- keys
-- relics
-- tool-gated rescues
-- lucky drops
-- power-ups beyond free undo
-- distinct dock sizes
-- insertion preview
-- distressed-state soft recovery
-- continuation offers
-- shop, pass, cosmetics, economy, live ops
-- sanctuary meta loop
-- full v3.2 character / district / monetization systems
+Out of scope for Phase 1:
 
-Reinforced crate may exist as a data flag, but it should stay off by default unless late Phase 1 tuning proves the core blocker trio is insufficient.
+- Fire, freeze fog, overgrowth, tools, keys, relics, switches, or resource pieces.
+- Tool-gated rescues.
+- Lucky drops.
+- Power-ups beyond free undo.
+- Variable dock sizes in normal play.
+- Insertion preview.
+- Distressed-state soft recovery.
+- Continuation offers.
+- Shop, pass, cosmetics, economy, live ops, or sanctuary meta-loop.
 
-## Core rules pipeline
+Reinforced crate may exist as a data flag, but it should stay off by default unless Phase 1 tuning proves the core blocker trio is insufficient.
 
-The core action pipeline is intentionally rigid. If this order becomes fuzzy, fairness becomes fuzzy.
+## Core Rules
 
-Current valid-action order:
+`Assets/Rescue.Core/` has no Unity dependency. It owns immutable game state, rule helpers, seeded RNG, undo snapshots, and the action pipeline.
 
-1. accept input
-2. remove tapped group
-3. damage adjacent blockers
-4. resolve broken blockers / ice reveals
-5. insert removed group into dock
-6. clear dock triples
-7. apply gravity
-8. spawn new pieces
-9. extract targets
-10. check win
-11. tick hazards
-12. resolve hazards
-13. check loss
+The valid-action pipeline currently runs:
 
-Important fairness rule: target extraction happens before hazard advance. A target saved on the last move should be saved, and a win should not receive a post-win hazard step.
+1. `Step01_AcceptInput`
+2. `Step02_RemoveGroup`
+3. `Step03_DamageBlockers`
+4. `Step04_ResolveBreaks`
+5. `Step05_InsertDock`
+6. `Step06_ClearDock`
+7. `Step07_Gravity`
+8. `Step08_Spawn`
+9. `Step09_Extract`
+10. `Step10_CheckWin`
+11. `Step11_TickHazards`
+12. `Step12_ResolveHazards`
+13. `CheckLoss`
 
-## Implemented systems
+Wins short-circuit after `Step10_CheckWin`, so a completed rescue does not receive a post-win hazard step. Invalid input returns after `Step01_AcceptInput` and does not advance hazards.
 
-### Core gameplay
+Implemented gameplay behavior includes:
 
-- Orthogonal same-type debris groups are valid input.
-- Single tiles and invalid targets do not advance hazards.
-- Groups are removed immediately before dock insertion.
-- Dock accepts pieces left-to-right.
-- Dock clears triples after insertion.
-- Dock warning states exist for safe / caution / acute / overflow pressure.
-- Dock Jam exists as an early teaching affordance.
-- Gravity and spawn resolve after dock processing.
-- Undo restores the previous authoritative snapshot.
-- Win and loss outcomes are represented in the action result.
+- Orthogonal same-type debris groups of size 2 or more are valid input.
+- Singles, targets, blockers, ice, flooded tiles, frozen states, out-of-bounds taps, and empty tiles are rejected without hazard advancement.
+- Removed debris enters the dock in group order.
+- Dock triples clear after insertion, with compaction and warning state changes.
+- Dock overflow and Dock Jam are represented in core events/outcomes.
+- Gravity settles dry active pieces only.
+- Spawns occur into dry space only and use deterministic RNG.
+- Water rises by action threshold and floods whole rows from the bottom.
+- L00 can pause water until the first valid action.
+- Crates break from one adjacent clear.
+- Ice breaks from one adjacent clear and reveals hidden debris.
+- Vines break from one adjacent clear and grow from authored priority if ignored.
+- Targets extract automatically when all required orthogonal neighbors are open.
+- One-clear-away target transitions are represented as real state/events.
+- Undo restores the exact previous snapshot for one action.
 
-### Hazards
+## Content
 
-Water is the only Phase 1 hazard.
+Authored level content lives in `Assets/StreamingAssets/Levels/`.
 
-- Water advances by player action threshold, not by real time.
-- Idle thinking does not advance water.
-- Water rises by row.
-- Flooded rows become inactive.
-- If water reaches an unrescued target, the level is lost.
-- L00 can pause water until the first valid action for rule-teach purposes.
+Current packet:
 
-### Blockers
+- `L00.json`: rule-teach opener.
+- `L01.json` through `L15.json`: main Phase 1 packet.
 
-Current blocker set:
+Solve files live in `Assets/Resources/Levels/` as `L01.solve.json` through `L15.solve.json`. The L15 capture path is also represented in `capture/L15.capture.json` and documented in `docs/capture.md`.
 
-- crate: one adjacent clear breaks it
-- ice: one adjacent clear breaks it and reveals hidden debris
-- vine: one adjacent clear breaks it; if ignored, it advances on its own counter
+The level schema currently supports:
 
-Vine growth is authored through a priority list rather than random spread. The core emits preview/growth events, but those events still need stronger visual presentation.
+- Level id/name and design metadata.
+- Board width, height, and tile layout.
+- Debris type pool and optional base distribution.
+- Target coordinates.
+- Initial flooded rows.
+- Water rise interval.
+- Vine growth threshold and priority list.
+- Dock size and Dock Jam flag.
+- Assistance chance and consecutive emergency cap.
+- Rule-teach metadata.
 
-### Targets
+## Unity Implementation
 
-- Puppy targets occupy board tiles.
-- Targets are not movable and not tappable.
-- A target extracts automatically when all required orthogonal neighbors are open.
-- Edge and corner targets use only existing orthogonal neighbors.
-- One-clear-away target state exists in state/events.
-- Target extraction has a first-pass animation, but the rescue beat still needs more emotional weight.
+The current Unity-facing project is a prototype/debug gameplay app rather than a finished player build.
 
-### Content
+Current scene:
 
-The project includes a Phase 1 level packet:
+- `Assets/Scenes/DebugGameplay.unity`
 
-- `L00` rule-teach
-- `L01`–`L15` main packet levels
-- level JSON under `Assets/StreamingAssets/Levels/`
-- solve files under `Assets/Resources/Levels/`
-- capture support for the L15 ad/capture moment
+Notably, there is no committed `Game.unity` scene yet, even though the Phase 1 instructions name it as the eventual main play scene.
 
-The content schema supports:
+Unity implementation areas:
 
-- board size
-- tile layout
-- debris pool
-- target list
-- initial flooded rows
-- water rise interval
-- vine growth priority
-- dock size and Dock Jam flag
-- assistance chance
-- level intent / expected path / expected fail mode metadata
+- `Assets/Rescue.Unity/Board/`: board grid/content sync, water row display, water feedback, target feedback.
+- `Assets/Rescue.Unity/UI/`: dock presenter.
+- `Assets/Rescue.Unity/Input/`: board input presenter.
+- `Assets/Rescue.Unity/Presentation/`: game state presenter, action playback builder/controller, win/loss screens.
+- `Assets/Rescue.Unity/FX/`: core event to FX hook classification and sprite sequence playback.
+- `Assets/Rescue.Unity/Debug/`: runtime debug/tuning panel for editor/development builds.
+- `Assets/Rescue.Unity/Capture/`: L15 capture runner.
+- `Assets/Rescue.Unity/Art/`: Phase 1 prefabs, textures, materials, registries, and validation helpers.
+- `Assets/Rescue.Unity.EditorTools/`: editor-only diagnostics and prefab generation helpers.
 
-## Presentation state
+Playback currently maps the main visible action events:
 
-The Unity presentation layer is functional but still Phase 1 placeholder-quality.
+- group removal
+- blocker break / ice reveal
+- dock insert / clear / warning / jam / overflow feedback
+- gravity
+- spawn
+- target extraction
+- water rise
+- terminal win/loss
+- final authoritative sync
 
-Already present:
+Some events are classified for FX but are not yet first-class playback steps. These are part of the next presentation-readability pass.
 
-- board content sync
-- debris, blocker, hidden-debris, and target visual registries
-- action playback builder
-- action playback controller
-- final authoritative sync after playback
-- cancel/recover path that re-syncs to authoritative state
-- dock feedback hooks
-- water-rise animation hook
-- blocker damage/break animation hooks
-- ice reveal animation hook
-- gravity/spawn movement hooks
-- target extraction animation hook
+## Telemetry and Debugging
 
-Known presentation gaps:
+`Assets/Rescue.Telemetry/` defines telemetry event records and JSON conversion for:
 
-- `TargetOneClearAway` needs clearer visible/debug feedback.
-- `WaterWarning` needs player-facing treatment.
-- Persistent next-flood-row forecast needs visual confirmation or stronger implementation.
-- `VinePreviewChanged` and `VineGrown` need explicit animation/FX treatment.
-- `DockOverflowTriggered`, `Lost`, and `Won` need clearer player-facing causality.
-- `InvalidInput` should produce a small reject bump/audio without state change.
-- Target extraction needs to feel more like a rescue beat.
-- Mae / aftercare is still the largest affective gap.
+- level start, win, and loss
+- dock occupancy
+- water rise
+- vine growth
+- undo use
+- target extraction/loss
+- invalid taps
+- idle time and time to first action
+- hazard proximity
+- Dock Jam trigger/resolution
+- capture snapshots
+- tuning changes
+- action taken with RNG before/after state
 
-## Recommended next work
+`Assets/Rescue.Unity/Debug/` provides a development-only panel with:
 
-Do not start by adding v3.2 breadth. The next work should make the existing Phase 1 state readable.
+- level and seed selection
+- step, auto-play, speed, fast-forward, reset, and debug undo
+- hazard, dock, RNG, and spawn override readouts
+- hot tuning overrides and tuning presets
+- instant overflow test
+- event log
+- state JSON export
 
-Recommended order:
+## Tooling
 
-1. Map ignored but Phase-1-critical events into lightweight presentation:
-   - `TargetOneClearAway`
-   - `WaterWarning`
-   - persistent next-flood-row forecast
-   - `VinePreviewChanged`
-   - `VineGrown`
-   - `DockOverflowTriggered`
-   - `Lost`
-   - `Won`
-   - `InvalidInput`
-2. Strengthen target extraction so it reads as rescue, not generic disappearance.
-3. Add minimal Mae reaction and aftercare beat.
-4. Verify L00–L15 in play mode for player-facing causality.
-5. Run playtests around the Phase 1 hypotheses.
-6. Use telemetry and player language to tune water, dock, assistance, and level readability.
+Important scripts:
 
-## Playtest questions
+```bash
+scripts/test.sh
+scripts/validate-levels.sh
+scripts/watch-levels.sh
+scripts/replay.sh
+scripts/preview-level.sh
+scripts/telemetry-report.sh
+scripts/build-capture.sh
+scripts/record-l15.sh
+scripts/build-web.sh
+scripts/build-android.sh
+scripts/build-ios.sh
+```
 
-Phase 1 should be judged by player interpretation, not feature count.
+Windows test wrapper:
 
-Ask players:
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1 -Platforms EditMode
+powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1 -Platforms PlayMode
+```
+
+Tool projects:
+
+- `Tools/LevelValidator/`: validates authored level JSON.
+- `Tools/Replay/`: replays deterministic trajectories.
+- `Tools/SolveAuthoring/`: searches and replays authored solves.
+- `Tools/TelemetryReport/`: summarizes telemetry output.
+
+Capture verification:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\verify-capture.ps1
+```
+
+## Repository Map
+
+- `docs/phase_1_spec.md`: authoritative Phase 1 design and playtest contract.
+- `docs/tuning.md`: tuning notes.
+- `docs/distribution.md`: distribution notes.
+- `docs/capture.md`: L15 capture build and recording workflow.
+- `Assets/Rescue.Core/`: immutable state, rules, pipeline, RNG, undo.
+- `Assets/Rescue.Core.Tests/`: core EditMode tests.
+- `Assets/Rescue.Content/`: level schema, loader, validator, ASCII preview.
+- `Assets/Rescue.Content.Tests/`: content tests.
+- `Assets/StreamingAssets/Levels/`: authored L00-L15 level JSON.
+- `Assets/Resources/Levels/`: authored solve files.
+- `Assets/Rescue.Replay/`: replay runtime code.
+- `Assets/Rescue.Telemetry/`: telemetry schema and logger/hooks.
+- `Assets/Rescue.Unity/`: Unity presentation, debug UI, capture, art integration.
+- `Assets/Rescue.Unity.EditorTools/`: editor-only tools.
+- `Assets/Tests/EditMode/`: Unity-facing EditMode tests.
+- `Assets/Tests/PlayMode/`: PlayMode smoke/debug tests.
+- `Tools/`: .NET CLI support tools.
+- `scripts/`: local automation.
+
+## Known Gaps
+
+The next work should make existing Phase 1 behavior clearer, not add broader systems.
+
+Highest-value gaps:
+
+- Promote `TargetOneClearAway`, `WaterWarning`, `VinePreviewChanged`, and `VineGrown` into stronger player-facing presentation.
+- Make persistent next-flood-row forecast visually unmistakable.
+- Make dock overflow, Dock Jam, win, and loss causality clearer.
+- Make invalid taps produce a small reject bump/audio without state change.
+- Strengthen target extraction so it reads as a rescue beat.
+- Add minimal Mae reaction and aftercare support.
+- Add or promote the eventual main `Game.unity` scene when the debug gameplay scene graduates.
+- Verify L00-L15 as a player-facing progression, not just as deterministic content.
+
+## Playtest Lens
+
+Judge Phase 1 by player interpretation, not feature count.
+
+Good player language:
+
+- "I picked the wrong rescue first."
+- "I overfilled the dock."
+- "I had time to think."
+- "I needed to save the lower puppy first."
+
+Bad player language:
+
+- "The timer got me."
+- "I got unlucky."
+- "It is just a sorter with puppies."
+- "I knew the answer, but the game did not let me do it."
+
+Core questions:
 
 - Why did you lose that level?
 - Did the water feel fair or annoying?
@@ -215,41 +292,6 @@ Ask players:
 - Did saving the puppy feel different from just finishing a level?
 - What, if anything, felt random?
 - When vine grew, did it feel warned or arbitrary?
-- Would you describe this as a rescue game or a sorting game?
+- Would you describe this as a rescue game or as a sorting game?
 
-Good signs:
-
-- “I picked the wrong rescue first.”
-- “I overfilled the dock.”
-- “I had time to think.”
-- “I needed to save the lower puppy first.”
-
-Bad signs:
-
-- “The timer got me.”
-- “I got unlucky.”
-- “It’s just a sorter with puppies.”
-- “I knew the answer, but the game didn’t let me do it.”
-
-## Repository map
-
-Key areas:
-
-- `Assets/Rescue.Core/` — immutable game state, rules, pipeline, RNG, undo
-- `Assets/Rescue.Core/Pipeline/` — action result, events, and step order
-- `Assets/Rescue.Content/` — level JSON schema, loader, validator
-- `Assets/StreamingAssets/Levels/` — Phase 1 level definitions
-- `Assets/Resources/Levels/` — solve files / authored solve support
-- `Assets/Rescue.Unity/` — Unity presentation, board view, dock view, debug UI, capture hooks
-- `Assets/Rescue.Unity/Presentation/` — action playback builder/controller and state presenter
-- `Assets/Rescue.Unity/Board/` — board content and target feedback presenters
-- `Assets/Rescue.Telemetry/` — telemetry schema/hooks
-- `Assets/Rescue.Replay/` and `Tools/Replay/` — replay tooling
-- `Tools/LevelValidator/` — content validation tooling
-- `docs/phase_1_spec.md` — Phase 1 design and playtest contract
-
-## Development principle
-
-For the rest of Phase 1, prefer clarity over breadth.
-
-If the current scoped version does not read as Rescue Grid, adding more systems will only hide the answer. The correct next step is to make the existing seed legible, testable, and emotionally distinct.
+For the rest of Phase 1, prefer clarity over breadth. If this scoped version does not read as Rescue Grid, adding more systems will only hide the answer.
