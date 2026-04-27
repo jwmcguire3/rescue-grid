@@ -266,7 +266,7 @@ namespace Rescue.SolveAuthoringTool
                 return args;
             }
 
-            List<string> levelIds = new List<string>();
+            List<string> levelIds = new List<string> { "L00" };
             for (int index = 1; index <= 15; index++)
             {
                 levelIds.Add("L" + index.ToString("00"));

@@ -330,17 +330,21 @@ namespace Rescue.Unity.BoardPresentation
         }
 
 #if UNITY_EDITOR
+        private bool feedbackRootCreationQueued;
+
         private void Reset()
         {
-            EnsureFeedbackRoot();
+            AssignExistingFeedbackRoot();
+            QueueFeedbackRootCreation();
         }
 
         private void OnValidate()
         {
-            EnsureFeedbackRoot();
+            AssignExistingFeedbackRoot();
+            QueueFeedbackRootCreation();
         }
 
-        private void EnsureFeedbackRoot()
+        private void AssignExistingFeedbackRoot()
         {
             if (feedbackRoot != null)
             {
@@ -351,6 +355,32 @@ namespace Rescue.Unity.BoardPresentation
             if (existingRoot != null)
             {
                 feedbackRoot = existingRoot;
+                return;
+            }
+        }
+
+        private void QueueFeedbackRootCreation()
+        {
+            if (feedbackRoot != null || feedbackRootCreationQueued)
+            {
+                return;
+            }
+
+            feedbackRootCreationQueued = true;
+            UnityEditor.EditorApplication.delayCall += CreateFeedbackRootAfterValidation;
+        }
+
+        private void CreateFeedbackRootAfterValidation()
+        {
+            feedbackRootCreationQueued = false;
+            if (this == null || feedbackRoot != null)
+            {
+                return;
+            }
+
+            AssignExistingFeedbackRoot();
+            if (feedbackRoot != null)
+            {
                 return;
             }
 
