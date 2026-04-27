@@ -355,6 +355,7 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(plan.Select(step => step.StepType), Is.EqualTo(new[]
             {
                 ActionPlaybackStepType.RemoveGroup,
+                ActionPlaybackStepType.TerminalOutcome,
                 ActionPlaybackStepType.FinalSync,
             }));
         }
@@ -374,6 +375,7 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(plan.Take(plan.Count - 1).Select(step => (step.SourceEventName, step.StepType)), Is.EqualTo(new[]
             {
                 (nameof(TargetExtracted), ActionPlaybackStepType.TargetExtract),
+                (nameof(Won), ActionPlaybackStepType.TerminalOutcome),
             }));
             Assert.That(plan[^1].StepType, Is.EqualTo(ActionPlaybackStepType.FinalSync));
         }
@@ -394,6 +396,7 @@ namespace Rescue.Unity.Presentation.Tests
             {
                 (nameof(DockInserted), ActionPlaybackStepType.DockFeedback),
                 (nameof(DockJamTriggered), ActionPlaybackStepType.DockFeedback),
+                (nameof(Lost), ActionPlaybackStepType.TerminalOutcome),
             }));
             Assert.That(plan[^1].StepType, Is.EqualTo(ActionPlaybackStepType.FinalSync));
         }

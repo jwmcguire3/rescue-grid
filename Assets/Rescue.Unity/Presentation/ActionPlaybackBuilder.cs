@@ -28,6 +28,7 @@ namespace Rescue.Unity.Presentation
             {
                 if (actionEvent is Won or Lost)
                 {
+                    mappedSteps.Add(CreateStep(ActionPlaybackStepType.TerminalOutcome, actionEvent));
                     break;
                 }
 

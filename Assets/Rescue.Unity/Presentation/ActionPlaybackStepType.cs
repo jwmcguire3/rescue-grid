@@ -9,6 +9,7 @@ namespace Rescue.Unity.Presentation
         Spawn,
         TargetExtract,
         WaterRise,
+        TerminalOutcome,
         FinalSync,
     }
 }

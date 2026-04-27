@@ -314,6 +314,56 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
+        public void ActionPlaybackController_RoutesTerminalWinBeforeFinalSync()
+        {
+            ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
+            SpyFxEventRouter? fxRouter = harness.FxRouter as SpyFxEventRouter;
+            GameState previousState = CreateState();
+            harness.GridPresenter.RebuildGrid(previousState);
+
+            ActionResult result = CreateResult(
+                previousState with { Frozen = true },
+                actionCount: 5,
+                new TargetExtracted("pup-1", new TileCoord(1, 0)),
+                new Won("pup-1", TotalActions: 5, ExtractedTargetOrder: ImmutableArray.Create("pup-1")));
+
+            int finalSyncCalls = 0;
+            int winCountAtFinalSync = -1;
+
+            bool handled = harness.Controller.TryPlayAction(
+                previousState,
+                new ActionInput(new TileCoord(0, 0)),
+                result,
+                _ =>
+                {
+                    finalSyncCalls++;
+                    winCountAtFinalSync = fxRouter?.WinCount ?? -1;
+                });
+
+            Assert.That(handled, Is.True);
+            Assert.That(finalSyncCalls, Is.EqualTo(1));
+            Assert.That(fxRouter, Is.Not.Null);
+            if (fxRouter is null)
+            {
+                Assert.Fail("Expected a spy FX router.");
+                return;
+            }
+
+            Assert.That(fxRouter.WinCount, Is.EqualTo(1));
+            Assert.That(winCountAtFinalSync, Is.EqualTo(1));
+            Assert.That(new[]
+            {
+                harness.Controller.CurrentPlan[0].StepType,
+                harness.Controller.CurrentPlan[1].StepType,
+            }, Is.EqualTo(new[]
+            {
+                ActionPlaybackStepType.TargetExtract,
+                ActionPlaybackStepType.TerminalOutcome,
+            }));
+            Assert.That(harness.Controller.CurrentPlan[^1].StepType, Is.EqualTo(ActionPlaybackStepType.FinalSync));
+        }
+
+        [Test]
         public void ActionPlaybackController_FxFailureDoesNotPreventFinalSync()
         {
             ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false, fxRouterType: typeof(ThrowingFxEventRouter));
@@ -1321,12 +1371,19 @@ namespace Rescue.Unity.Presentation.Tests
         {
             public int GroupClearCount { get; private set; }
 
+            public int WinCount { get; private set; }
+
             public Vector3 LastGroupClearPosition { get; private set; }
 
             protected override void PlayGroupClear(Vector3 worldPosition)
             {
                 GroupClearCount++;
                 LastGroupClearPosition = worldPosition;
+            }
+
+            protected override void PlayWin()
+            {
+                WinCount++;
             }
         }
 

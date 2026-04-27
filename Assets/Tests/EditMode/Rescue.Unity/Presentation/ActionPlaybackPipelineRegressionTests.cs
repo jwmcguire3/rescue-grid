@@ -98,7 +98,8 @@ namespace Rescue.Unity.Presentation.Tests
                 nameof(BlockerDamaged),
                 nameof(DockInserted),
                 nameof(DockInserted),
-                nameof(TargetExtracted));
+                nameof(TargetExtracted),
+                nameof(Won));
         }
 
         [Test]
@@ -195,6 +196,7 @@ namespace Rescue.Unity.Presentation.Tests
                 nameof(DockInserted),
                 nameof(DockInserted),
                 nameof(TargetExtracted),
+                nameof(Won),
             }));
             Assert.That(plan[^1].StepType, Is.EqualTo(ActionPlaybackStepType.FinalSync));
         }
@@ -219,7 +221,8 @@ namespace Rescue.Unity.Presentation.Tests
                 nameof(DockCleared),
                 nameof(DockCleared),
                 nameof(DockWarningChanged),
-                nameof(Spawned));
+                nameof(Spawned),
+                nameof(Lost));
         }
 
         [Test]
@@ -241,7 +244,8 @@ namespace Rescue.Unity.Presentation.Tests
                 nameof(DockInserted),
                 nameof(DockInserted),
                 nameof(Spawned),
-                nameof(WaterRose));
+                nameof(WaterRose),
+                nameof(Lost));
         }
 
         [Test]
@@ -281,11 +285,6 @@ namespace Rescue.Unity.Presentation.Tests
         {
             foreach (ActionEvent actionEvent in events)
             {
-                if (actionEvent is Won or Lost)
-                {
-                    yield break;
-                }
-
                 ActionPlaybackStepType? stepType = actionEvent switch
                 {
                     GroupRemoved => ActionPlaybackStepType.RemoveGroup,
@@ -300,12 +299,19 @@ namespace Rescue.Unity.Presentation.Tests
                     Spawned => ActionPlaybackStepType.Spawn,
                     TargetExtracted => ActionPlaybackStepType.TargetExtract,
                     WaterRose => ActionPlaybackStepType.WaterRise,
+                    Won => ActionPlaybackStepType.TerminalOutcome,
+                    Lost => ActionPlaybackStepType.TerminalOutcome,
                     _ => null,
                 };
 
                 if (stepType.HasValue)
                 {
                     yield return stepType.Value;
+                }
+
+                if (actionEvent is Won or Lost)
+                {
+                    yield break;
                 }
             }
         }

@@ -75,6 +75,12 @@ namespace Rescue.PlayMode.Tests.Smoke
                 "ActionPlaybackController should route playback beats through the scene FxEventRouter.");
 
             Assert.That(fxEventRouter.FxRegistry, Is.Not.Null, "DebugGameplay should assign the Phase 1 FX registry asset.");
+            if (fxEventRouter.FxRegistry is null)
+            {
+                throw new AssertionException("DebugGameplay should assign the Phase 1 FX registry asset.");
+            }
+
+            Assert.That(fxEventRouter.FxRegistry.WinFx, Is.Not.Null, "DebugGameplay should have terminal win FX assigned.");
             Assert.That(
                 fxEventRouter.BoardGrid,
                 Is.SameAs(FindRequired<BoardGridViewPresenter>()),

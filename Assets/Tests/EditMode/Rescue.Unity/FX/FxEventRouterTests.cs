@@ -198,17 +198,17 @@ namespace Rescue.Unity.FX.Tests
                 state,
                 new ActionInput(new TileCoord(0, 0)),
                 state,
-                CreatePlaybackStep(ActionPlaybackStepType.FinalSync, new Won("pup-1", TotalActions: 4, ExtractedTargetOrder: ImmutableArray.Create("pup-1"))));
+                CreatePlaybackStep(ActionPlaybackStepType.TerminalOutcome, new Won("pup-1", TotalActions: 4, ExtractedTargetOrder: ImmutableArray.Create("pup-1"))));
             router.RoutePlaybackBeat(
                 state,
                 new ActionInput(new TileCoord(0, 0)),
                 state,
-                CreatePlaybackStep(ActionPlaybackStepType.FinalSync, new Lost(ActionOutcome.LossDockOverflow)));
+                CreatePlaybackStep(ActionPlaybackStepType.TerminalOutcome, new Lost(ActionOutcome.LossDockOverflow)));
             router.RoutePlaybackBeat(
                 state,
                 new ActionInput(new TileCoord(0, 0)),
                 state,
-                CreatePlaybackStep(ActionPlaybackStepType.FinalSync, new Lost(ActionOutcome.LossWaterOnTarget)));
+                CreatePlaybackStep(ActionPlaybackStepType.TerminalOutcome, new Lost(ActionOutcome.LossWaterOnTarget)));
 
             Assert.That(router.InvalidTapCount, Is.EqualTo(1));
             Assert.That(router.GroupClearCount, Is.EqualTo(1));
