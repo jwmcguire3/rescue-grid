@@ -12,8 +12,8 @@ namespace Rescue.Unity.Targets.Tests
         public void TargetFeedbackResolver_DetectsBecameOneClearAway()
         {
             TargetFeedbackResolution resolution = TargetFeedbackResolver.Resolve(
-                CreateState(new TargetState("pup-1", new TileCoord(2, 1), Extracted: false, OneClearAway: false)),
-                CreateState(new TargetState("pup-1", new TileCoord(2, 1), Extracted: false, OneClearAway: true)));
+                CreateState(new TargetState("pup-1", new TileCoord(2, 1), TargetReadiness.Progressing)),
+                CreateState(new TargetState("pup-1", new TileCoord(2, 1), TargetReadiness.OneClearAway)));
 
             Assert.That(resolution.Events, Is.EqualTo(new[]
             {
@@ -25,8 +25,8 @@ namespace Rescue.Unity.Targets.Tests
         public void TargetFeedbackResolver_DoesNotRepeatOneClearAwayIfAlreadyTrue()
         {
             TargetFeedbackResolution resolution = TargetFeedbackResolver.Resolve(
-                CreateState(new TargetState("pup-1", new TileCoord(2, 1), Extracted: false, OneClearAway: true)),
-                CreateState(new TargetState("pup-1", new TileCoord(2, 1), Extracted: false, OneClearAway: true)));
+                CreateState(new TargetState("pup-1", new TileCoord(2, 1), TargetReadiness.OneClearAway)),
+                CreateState(new TargetState("pup-1", new TileCoord(2, 1), TargetReadiness.OneClearAway)));
 
             Assert.That(resolution.Events, Is.Empty);
         }
@@ -35,8 +35,8 @@ namespace Rescue.Unity.Targets.Tests
         public void TargetFeedbackResolver_DetectsExtraction()
         {
             TargetFeedbackResolution resolution = TargetFeedbackResolver.Resolve(
-                CreateState(new TargetState("pup-1", new TileCoord(2, 1), Extracted: false, OneClearAway: true)),
-                CreateState(new TargetState("pup-1", new TileCoord(2, 1), Extracted: true, OneClearAway: true)));
+                CreateState(new TargetState("pup-1", new TileCoord(2, 1), TargetReadiness.ExtractableLatched)),
+                CreateState(new TargetState("pup-1", new TileCoord(2, 1), TargetReadiness.Extracted)));
 
             Assert.That(resolution.Events, Is.EqualTo(new[]
             {
@@ -48,10 +48,49 @@ namespace Rescue.Unity.Targets.Tests
         public void TargetFeedbackResolver_IgnoresAlreadyExtractedTarget()
         {
             TargetFeedbackResolution resolution = TargetFeedbackResolver.Resolve(
-                CreateState(new TargetState("pup-1", new TileCoord(2, 1), Extracted: true, OneClearAway: true)),
-                CreateState(new TargetState("pup-1", new TileCoord(2, 1), Extracted: true, OneClearAway: true)));
+                CreateState(new TargetState("pup-1", new TileCoord(2, 1), TargetReadiness.Extracted)),
+                CreateState(new TargetState("pup-1", new TileCoord(2, 1), TargetReadiness.Extracted)));
 
             Assert.That(resolution.Events, Is.Empty);
+        }
+
+        [Test]
+        public void TargetFeedbackResolver_DetectsProgressing()
+        {
+            TargetFeedbackResolution resolution = TargetFeedbackResolver.Resolve(
+                CreateState(new TargetState("pup-1", new TileCoord(2, 1), TargetReadiness.Trapped)),
+                CreateState(new TargetState("pup-1", new TileCoord(2, 1), TargetReadiness.Progressing)));
+
+            Assert.That(resolution.Events, Is.EqualTo(new[]
+            {
+                new TargetFeedbackEvent("pup-1", new TileCoord(2, 1), TargetFeedbackKind.Progress),
+            }));
+        }
+
+        [Test]
+        public void TargetFeedbackResolver_DetectsExtractionReadyLatch()
+        {
+            TargetFeedbackResolution resolution = TargetFeedbackResolver.Resolve(
+                CreateState(new TargetState("pup-1", new TileCoord(2, 1), TargetReadiness.OneClearAway)),
+                CreateState(new TargetState("pup-1", new TileCoord(2, 1), TargetReadiness.ExtractableLatched)));
+
+            Assert.That(resolution.Events, Is.EqualTo(new[]
+            {
+                new TargetFeedbackEvent("pup-1", new TileCoord(2, 1), TargetFeedbackKind.ExtractionReady),
+            }));
+        }
+
+        [Test]
+        public void TargetFeedbackResolver_DetectsDistressed()
+        {
+            TargetFeedbackResolution resolution = TargetFeedbackResolver.Resolve(
+                CreateState(new TargetState("pup-1", new TileCoord(2, 1), TargetReadiness.Trapped)),
+                CreateState(new TargetState("pup-1", new TileCoord(2, 1), TargetReadiness.Distressed)));
+
+            Assert.That(resolution.Events, Is.EqualTo(new[]
+            {
+                new TargetFeedbackEvent("pup-1", new TileCoord(2, 1), TargetFeedbackKind.Distressed),
+            }));
         }
 
         private static GameState CreateState(TargetState target)

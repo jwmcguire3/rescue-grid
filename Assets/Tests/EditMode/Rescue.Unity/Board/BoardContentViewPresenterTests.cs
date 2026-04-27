@@ -184,6 +184,56 @@ namespace Rescue.Unity.BoardPresentation.Tests
         }
 
         [Test]
+        public void BoardContentViewPresenter_AppliesTargetReadinessMarker()
+        {
+            PresenterHarness harness = CreateHarness();
+            TargetVisualRegistry targetRegistry = CreateRegistry<TargetVisualRegistry>();
+            targetRegistry.FallbackTargetPrefab = harness.FallbackPrefab;
+            SetPrivateField(harness.ContentPresenter, "targetRegistry", targetRegistry);
+
+            GameState state = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new TargetTile("puppy-1", Extracted: false))),
+                ImmutableArray.Create(new TargetState("puppy-1", new TileCoord(0, 0), TargetReadiness.OneClearAway)));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-1", out GameObject? targetObject), Is.True);
+            Assert.That(targetObject, Is.Not.Null);
+            Assert.That(targetObject!.transform.localScale.x, Is.GreaterThan(1f));
+            Assert.That(targetObject.transform.Find("TargetReadabilityMarker_OneClearAway"), Is.Not.Null);
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_RendersAndClearsVinePreview()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState previewState = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new EmptyTile())),
+                vine: new VineState(
+                    ActionsSinceLastClear: 3,
+                    GrowthThreshold: 4,
+                    GrowthPriorityList: ImmutableArray.Create(new TileCoord(0, 0)),
+                    PriorityCursor: 0,
+                    PendingGrowthTile: new TileCoord(0, 0)));
+            GameState resetState = previewState with
+            {
+                Vine = previewState.Vine with { ActionsSinceLastClear = 0, PendingGrowthTile = null },
+            };
+
+            harness.GridPresenter.RebuildGrid(previewState);
+            harness.ContentPresenter.SyncImmediate(previewState);
+
+            Assert.That(FindChildByName(harness.ContentRoot, "VineGrowthPreview"), Is.Not.Null);
+
+            harness.ContentPresenter.SyncImmediate(resetState);
+
+            Assert.That(FindChildByName(harness.ContentRoot, "VineGrowthPreview"), Is.Null);
+        }
+
+        [Test]
         public void BoardContentViewPresenter_ClearContentRemovesGeneratedObjects()
         {
             PresenterHarness harness = CreateHarness();
@@ -867,7 +917,10 @@ namespace Rescue.Unity.BoardPresentation.Tests
             return field?.GetValue(target);
         }
 
-        private static GameState CreateState(ImmutableArray<ImmutableArray<Tile>> rows)
+        private static GameState CreateState(
+            ImmutableArray<ImmutableArray<Tile>> rows,
+            ImmutableArray<TargetState>? targets = null,
+            VineState? vine = null)
         {
             int height = rows.Length;
             int width = height > 0 ? rows[0].Length : 0;
@@ -877,8 +930,8 @@ namespace Rescue.Unity.BoardPresentation.Tests
                 Board: board,
                 Dock: new CoreDock(ImmutableArray<DebrisType?>.Empty, Size: 7),
                 Water: new WaterState(FloodedRows: 0, ActionsUntilRise: 10, RiseInterval: 10),
-                Vine: new VineState(0, 4, ImmutableArray<TileCoord>.Empty, 0, null),
-                Targets: ImmutableArray<TargetState>.Empty,
+                Vine: vine ?? new VineState(0, 4, ImmutableArray<TileCoord>.Empty, 0, null),
+                Targets: targets ?? ImmutableArray<TargetState>.Empty,
                 LevelConfig: new LevelConfig(
                     ImmutableArray.Create(DebrisType.A, DebrisType.B, DebrisType.C),
                     null,

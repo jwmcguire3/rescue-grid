@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using Rescue.Core.Pipeline;
 using Rescue.Core.State;
@@ -17,7 +18,20 @@ namespace Rescue.Unity.BoardPresentation
         private const float DefaultBlockerDamagePulseScale = 1.06f;
         private const float DefaultBlockerDamageAlphaFloor = 0.70f;
         private const float MinimumTimelineDurationSeconds = 0.01f;
+        private const string VinePreviewLabel = "VineGrowthPreview";
+        private const string LastObstacleLabel = "TargetLastObstacle";
         private static readonly Vector3 HiddenDebrisScale = new Vector3(0.75f, 0.75f, 0.75f);
+        private static readonly Color TargetTrappedColor = new Color(0.62f, 0.72f, 0.92f, 0.82f);
+        private static readonly Color TargetProgressingColor = new Color(0.86f, 0.95f, 0.76f, 1f);
+        private static readonly Color TargetOneClearAwayColor = new Color(1f, 0.88f, 0.36f, 1f);
+        private static readonly Color TargetExtractableColor = new Color(1f, 0.64f, 0.24f, 1f);
+        private static readonly Color TargetDistressedColor = new Color(0.35f, 0.72f, 1f, 1f);
+        private static readonly Color VinePreviewColor = new Color(0.52f, 0.95f, 0.48f, 0.72f);
+        private static readonly Vector3 TargetTrappedScale = new Vector3(0.92f, 0.92f, 0.92f);
+        private static readonly Vector3 TargetProgressingScale = new Vector3(1f, 1f, 1f);
+        private static readonly Vector3 TargetOneClearAwayScale = new Vector3(1.08f, 1.08f, 1.08f);
+        private static readonly Vector3 TargetExtractableScale = new Vector3(1.16f, 1.16f, 1.16f);
+        private static readonly Vector3 TargetDistressedScale = new Vector3(1.08f, 1.08f, 1.08f);
 
         [SerializeField] private BoardGridViewPresenter? gridView;
         [SerializeField] private PieceVisualRegistry? pieceRegistry;
@@ -30,6 +44,9 @@ namespace Rescue.Unity.BoardPresentation
         private readonly List<GameObject> spawnedContent = new List<GameObject>();
         private readonly BoardContentVisualRegistry visualRegistry = new BoardContentVisualRegistry();
         private readonly Dictionary<string, TargetVisualView> spawnedTargetsById = new Dictionary<string, TargetVisualView>();
+        private readonly List<GameObject> targetObstacleMarkers = new List<GameObject>();
+        private GameObject? vinePreviewObject;
+        private TileCoord? vinePreviewCoord;
         private float gravityDurationSeconds = Presentation.ActionPlaybackSettings.DefaultGravityDurationSeconds;
         private float blockerDamageDurationSeconds = Presentation.ActionPlaybackSettings.DefaultBreakBlockerOrRevealDurationSeconds;
         private float blockerBreakDurationSeconds = Presentation.ActionPlaybackSettings.DefaultBreakBlockerOrRevealDurationSeconds;
@@ -73,6 +90,8 @@ namespace Rescue.Unity.BoardPresentation
             HashSet<TileCoord> expectedBlockers = new HashSet<TileCoord>();
             HashSet<TileCoord> expectedHiddenDebris = new HashSet<TileCoord>();
             HashSet<string> expectedTargets = new HashSet<string>();
+            Dictionary<string, TargetState> targetsById = CreateTargetsById(state);
+            ClearTargetObstacleMarkers();
 
             for (int row = 0; row < state.Board.Height; row++)
             {
@@ -95,10 +114,13 @@ namespace Rescue.Unity.BoardPresentation
                         expectedDebris,
                         expectedBlockers,
                         expectedHiddenDebris,
-                        expectedTargets);
+                        expectedTargets,
+                        targetsById);
                 }
             }
 
+            SyncVinePreview(state);
+            SyncLastObstacleMarkers(state);
             RemoveUnexpectedPieces(visualRegistry.Debris, expectedDebris);
             RemoveUnexpectedPieces(visualRegistry.Blockers, expectedBlockers);
             RemoveUnexpectedPieces(visualRegistry.HiddenDebris, expectedHiddenDebris);
@@ -134,6 +156,9 @@ namespace Rescue.Unity.BoardPresentation
 
             visualRegistry.Clear();
             spawnedTargetsById.Clear();
+            targetObstacleMarkers.Clear();
+            vinePreviewObject = null;
+            vinePreviewCoord = null;
         }
 
         public void RemoveDebrisGroup(GroupRemoved removal)
@@ -550,7 +575,8 @@ namespace Rescue.Unity.BoardPresentation
             HashSet<TileCoord> expectedDebris,
             HashSet<TileCoord> expectedBlockers,
             HashSet<TileCoord> expectedHiddenDebris,
-            HashSet<string> expectedTargets)
+            HashSet<string> expectedTargets,
+            IReadOnlyDictionary<string, TargetState> targetsById)
         {
             switch (tile)
             {
@@ -595,7 +621,10 @@ namespace Rescue.Unity.BoardPresentation
                     return;
                 case TargetTile targetTile when !targetTile.Extracted:
                     expectedTargets.Add(targetTile.TargetId);
-                    EnsureTargetVisual(coord, targetTile.TargetId, anchor);
+                    TargetState targetState = targetsById.TryGetValue(targetTile.TargetId, out TargetState resolvedTarget)
+                        ? resolvedTarget
+                        : new TargetState(targetTile.TargetId, coord, TargetReadiness.Trapped);
+                    EnsureTargetVisual(coord, targetState, anchor);
                     return;
                 default:
                     return;
@@ -636,8 +665,9 @@ namespace Rescue.Unity.BoardPresentation
             registry.Set(coord, new BoardPieceView(coord, contentLabel, spawnedObject));
         }
 
-        private void EnsureTargetVisual(TileCoord coord, string targetId, Transform anchor)
+        private void EnsureTargetVisual(TileCoord coord, TargetState targetState, Transform anchor)
         {
+            string targetId = targetState.TargetId;
             if (string.IsNullOrWhiteSpace(targetId))
             {
                 return;
@@ -650,7 +680,7 @@ namespace Rescue.Unity.BoardPresentation
                 if (!existingView.IsExtracting)
                 {
                     MoveContentObjectToAnchor(existingView.Object, anchor, coord, contentLabel, contentYOffset);
-                    SetTargetVisualAlpha(existingView.Object, 1f);
+                    ApplyTargetVisualState(existingView.Object, targetState.Readiness);
                     return;
                 }
 
@@ -668,6 +698,260 @@ namespace Rescue.Unity.BoardPresentation
             if (spawnedObject is not null)
             {
                 spawnedTargetsById[targetId] = new TargetVisualView(spawnedObject);
+                ApplyTargetVisualState(spawnedObject, targetState.Readiness);
+            }
+        }
+
+        private void SyncVinePreview(GameState state)
+        {
+            TileCoord? pendingTile = state.Vine.PendingGrowthTile;
+            if (pendingTile is null
+                || !BoardHelpers.InBounds(state.Board, pendingTile.Value)
+                || BoardHelpers.GetTile(state.Board, pendingTile.Value) is not EmptyTile
+                || !TryGetAnchor(pendingTile.Value, out Transform anchor))
+            {
+                ClearVinePreview();
+                return;
+            }
+
+            if (vinePreviewObject is null)
+            {
+                vinePreviewObject = SpawnAtAnchor(
+                    pendingTile.Value,
+                    VinePreviewLabel,
+                    ResolveFallbackPrefab("vine growth preview"),
+                    anchor,
+                    contentYOffset * 0.5f,
+                    new Vector3(0.64f, 0.08f, 0.64f));
+            }
+
+            if (vinePreviewObject is null)
+            {
+                return;
+            }
+
+            vinePreviewCoord = pendingTile.Value;
+            MoveContentObjectToAnchor(vinePreviewObject, anchor, pendingTile.Value, VinePreviewLabel, contentYOffset * 0.5f);
+            ApplyTint(vinePreviewObject, VinePreviewColor);
+        }
+
+        private void ClearVinePreview()
+        {
+            if (vinePreviewObject is null)
+            {
+                vinePreviewCoord = null;
+                return;
+            }
+
+            RemoveSpawnedContentReference(vinePreviewObject);
+            DestroyContentObject(vinePreviewObject);
+            vinePreviewObject = null;
+            vinePreviewCoord = null;
+        }
+
+        private void SyncLastObstacleMarkers(GameState state)
+        {
+            for (int i = 0; i < state.Targets.Length; i++)
+            {
+                TargetState target = state.Targets[i];
+                if (target.Readiness != TargetReadiness.OneClearAway)
+                {
+                    continue;
+                }
+
+                if (!TryFindBlockedRequiredNeighbor(state.Board, target.Coord, out TileCoord blockedCoord)
+                    || !TryGetObstacleObject(blockedCoord, out GameObject? obstacleObject)
+                    || obstacleObject is null)
+                {
+                    continue;
+                }
+
+                GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                marker.name = $"{LastObstacleLabel}_{SanitizeName(target.TargetId)}";
+                marker.transform.SetParent(obstacleObject.transform, false);
+                marker.transform.localPosition = new Vector3(0f, 0.08f, 0f);
+                marker.transform.localScale = new Vector3(1.16f, 0.08f, 1.16f);
+                Object.DestroyImmediate(marker.GetComponent<Collider>());
+                ApplyTint(marker, TargetOneClearAwayColor);
+                targetObstacleMarkers.Add(marker);
+            }
+        }
+
+        private bool TryGetObstacleObject(TileCoord coord, out GameObject? obstacleObject)
+        {
+            if (TryGetLivePieceView(visualRegistry.Debris, coord, out BoardPieceView? debrisView)
+                && debrisView is not null)
+            {
+                obstacleObject = debrisView.Object;
+                return true;
+            }
+
+            if (TryGetLivePieceView(visualRegistry.Blockers, coord, out BoardPieceView? blockerView)
+                && blockerView is not null)
+            {
+                obstacleObject = blockerView.Object;
+                return true;
+            }
+
+            if (TryGetLivePieceView(visualRegistry.HiddenDebris, coord, out BoardPieceView? hiddenView)
+                && hiddenView is not null)
+            {
+                obstacleObject = hiddenView.Object;
+                return true;
+            }
+
+            obstacleObject = null;
+            return false;
+        }
+
+        private void ClearTargetObstacleMarkers()
+        {
+            for (int i = targetObstacleMarkers.Count - 1; i >= 0; i--)
+            {
+                GameObject? marker = targetObstacleMarkers[i];
+                if (marker is null)
+                {
+                    targetObstacleMarkers.RemoveAt(i);
+                    continue;
+                }
+
+                DestroyContentObject(marker);
+                targetObstacleMarkers.RemoveAt(i);
+            }
+        }
+
+        private static bool TryFindBlockedRequiredNeighbor(Board board, TileCoord targetCoord, out TileCoord blockedCoord)
+        {
+            ImmutableArray<TileCoord> neighbors = BoardHelpers.OrthogonalNeighbors(board, targetCoord);
+            for (int i = 0; i < neighbors.Length; i++)
+            {
+                TileCoord coord = neighbors[i];
+                if (BoardHelpers.GetTile(board, coord) is EmptyTile)
+                {
+                    continue;
+                }
+
+                blockedCoord = coord;
+                return true;
+            }
+
+            blockedCoord = default;
+            return false;
+        }
+
+        private static Dictionary<string, TargetState> CreateTargetsById(GameState state)
+        {
+            Dictionary<string, TargetState> targetsById = new Dictionary<string, TargetState>(System.StringComparer.Ordinal);
+            for (int i = 0; i < state.Targets.Length; i++)
+            {
+                TargetState target = state.Targets[i];
+                targetsById[target.TargetId] = target;
+            }
+
+            return targetsById;
+        }
+
+        private static void ApplyTargetVisualState(GameObject targetObject, TargetReadiness readiness)
+        {
+            Color tint = readiness switch
+            {
+                TargetReadiness.Progressing => TargetProgressingColor,
+                TargetReadiness.OneClearAway => TargetOneClearAwayColor,
+                TargetReadiness.ExtractableLatched => TargetExtractableColor,
+                TargetReadiness.Distressed => TargetDistressedColor,
+                _ => TargetTrappedColor,
+            };
+            Vector3 scale = readiness switch
+            {
+                TargetReadiness.Progressing => TargetProgressingScale,
+                TargetReadiness.OneClearAway => TargetOneClearAwayScale,
+                TargetReadiness.ExtractableLatched => TargetExtractableScale,
+                TargetReadiness.Distressed => TargetDistressedScale,
+                _ => TargetTrappedScale,
+            };
+
+            targetObject.transform.localScale = scale;
+            ApplyTint(targetObject, tint);
+            SyncReadabilityMarker(targetObject, readiness, tint);
+        }
+
+        private static void SyncReadabilityMarker(GameObject targetObject, TargetReadiness readiness, Color tint)
+        {
+            const string markerName = "TargetReadabilityMarker";
+            Transform? marker = FindChildByNamePrefix(targetObject.transform, markerName);
+            bool needsMarker = readiness != TargetReadiness.Trapped;
+            if (!needsMarker)
+            {
+                if (marker is not null)
+                {
+                    DestroyMarker(marker.gameObject);
+                }
+
+                return;
+            }
+
+            if (marker is null)
+            {
+                GameObject markerObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                markerObject.name = markerName;
+                markerObject.transform.SetParent(targetObject.transform, false);
+                markerObject.transform.localPosition = new Vector3(0f, 0.04f, 0f);
+                markerObject.transform.localScale = new Vector3(1.18f, 0.04f, 1.18f);
+                Object.DestroyImmediate(markerObject.GetComponent<Collider>());
+                marker = markerObject.transform;
+            }
+
+            marker.gameObject.name = $"{markerName}_{readiness}";
+            ApplyTint(marker.gameObject, tint);
+        }
+
+        private static Transform? FindChildByNamePrefix(Transform parent, string namePrefix)
+        {
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                Transform child = parent.GetChild(i);
+                if (child.name.StartsWith(namePrefix, System.StringComparison.Ordinal))
+                {
+                    return child;
+                }
+            }
+
+            return null;
+        }
+
+        private static void DestroyMarker(GameObject markerObject)
+        {
+            if (Application.isPlaying)
+            {
+                Object.Destroy(markerObject);
+            }
+            else
+            {
+                Object.DestroyImmediate(markerObject);
+            }
+        }
+
+        private static void ApplyTint(GameObject contentObject, Color tint)
+        {
+            SpriteRenderer[] spriteRenderers = contentObject.GetComponentsInChildren<SpriteRenderer>(includeInactive: true);
+            for (int i = 0; i < spriteRenderers.Length; i++)
+            {
+                spriteRenderers[i].color = tint;
+            }
+
+            Graphic[] graphics = contentObject.GetComponentsInChildren<Graphic>(includeInactive: true);
+            for (int i = 0; i < graphics.Length; i++)
+            {
+                graphics[i].color = tint;
+            }
+
+            Renderer[] renderers = contentObject.GetComponentsInChildren<Renderer>(includeInactive: true);
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
+                renderers[i].GetPropertyBlock(propertyBlock);
+                propertyBlock.SetColor("_Color", tint);
+                renderers[i].SetPropertyBlock(propertyBlock);
             }
         }
 
@@ -799,6 +1083,19 @@ namespace Rescue.Unity.BoardPresentation
                 if (entry.Value.Object != null)
                 {
                     trackedObjects.Add(entry.Value.Object);
+                }
+            }
+
+            if (vinePreviewObject != null)
+            {
+                trackedObjects.Add(vinePreviewObject);
+            }
+
+            for (int i = 0; i < targetObstacleMarkers.Count; i++)
+            {
+                if (targetObstacleMarkers[i] != null)
+                {
+                    trackedObjects.Add(targetObstacleMarkers[i]);
                 }
             }
 

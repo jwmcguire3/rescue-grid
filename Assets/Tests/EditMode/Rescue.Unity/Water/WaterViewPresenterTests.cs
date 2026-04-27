@@ -97,7 +97,7 @@ namespace Rescue.Unity.Water.Tests
         }
 
         [Test]
-        public void WaterViewPresenter_RebuildWater_UpdatesTmpCounterLabelForCountdown()
+        public void WaterViewPresenter_RebuildWater_UpdatesTmpCounterLabelForForecast()
         {
             BoardGridViewPresenter gridPresenter = CreateGridPresenter(out _);
             GameState state = CreateState(width: 6, height: 7, floodedRows: 2);
@@ -109,7 +109,23 @@ namespace Rescue.Unity.Water.Tests
 
             presenter.RebuildWater(state);
 
-            Assert.That(label.text, Is.EqualTo("Water: 3/5 (40%)"));
+            Assert.That(label.text, Is.EqualTo("Water: next flood row forecast"));
+        }
+
+        [Test]
+        public void WaterViewPresenter_RebuildWater_UpdatesTmpCounterLabelForNextActionWarning()
+        {
+            BoardGridViewPresenter gridPresenter = CreateGridPresenter(out _);
+            GameState state = CreateState(width: 6, height: 7, floodedRows: 2, actionsUntilRise: 1);
+            gridPresenter.RebuildGrid(state);
+
+            WaterViewPresenter presenter = CreateWaterPresenter(gridPresenter, useFallbackOverlay: true);
+            TextMeshProUGUI label = CreateCounterLabel();
+            SetPrivateField(presenter, "counterLabel", label);
+
+            presenter.RebuildWater(state);
+
+            Assert.That(label.text, Is.EqualTo("Water: next row rises on next action"));
         }
 
         [Test]

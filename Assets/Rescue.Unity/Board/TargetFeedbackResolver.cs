@@ -7,8 +7,11 @@ namespace Rescue.Unity.BoardPresentation
 {
     public enum TargetFeedbackKind
     {
+        Progress,
         NearRescue,
+        ExtractionReady,
         Extraction,
+        Distressed,
     }
 
     public readonly record struct TargetFeedbackEvent(
@@ -58,12 +61,37 @@ namespace Rescue.Unity.BoardPresentation
                     continue;
                 }
 
-                if (!previousTarget.OneClearAway && currentTarget.OneClearAway && !currentTarget.Extracted)
+                if (previousTarget.Readiness == currentTarget.Readiness || currentTarget.Extracted)
                 {
-                    events.Add(new TargetFeedbackEvent(
-                        currentTarget.TargetId,
-                        currentTarget.Coord,
-                        TargetFeedbackKind.NearRescue));
+                    continue;
+                }
+
+                switch (currentTarget.Readiness)
+                {
+                    case TargetReadiness.Progressing:
+                        events.Add(new TargetFeedbackEvent(
+                            currentTarget.TargetId,
+                            currentTarget.Coord,
+                            TargetFeedbackKind.Progress));
+                        break;
+                    case TargetReadiness.OneClearAway:
+                        events.Add(new TargetFeedbackEvent(
+                            currentTarget.TargetId,
+                            currentTarget.Coord,
+                            TargetFeedbackKind.NearRescue));
+                        break;
+                    case TargetReadiness.ExtractableLatched:
+                        events.Add(new TargetFeedbackEvent(
+                            currentTarget.TargetId,
+                            currentTarget.Coord,
+                            TargetFeedbackKind.ExtractionReady));
+                        break;
+                    case TargetReadiness.Distressed:
+                        events.Add(new TargetFeedbackEvent(
+                            currentTarget.TargetId,
+                            currentTarget.Coord,
+                            TargetFeedbackKind.Distressed));
+                        break;
                 }
             }
 

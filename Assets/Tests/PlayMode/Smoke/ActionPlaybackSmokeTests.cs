@@ -94,6 +94,72 @@ namespace Rescue.PlayMode.Tests.Smoke
         }
 
         [UnityTest]
+        public System.Collections.IEnumerator TargetStateFeedbackSmokeShowsOneClearAwayMarker()
+        {
+            PlaybackHarness harness = CreateHarness();
+            GameState state = CreateTargetReadabilityState(TargetReadiness.OneClearAway);
+
+            harness.ViewPresenter.Rebuild(state);
+            yield return null;
+
+            Transform target = FindRequiredChildContaining(harness.ContentRoot, "Target_pup-read");
+            Assert.That(target.Find("TargetReadabilityMarker_OneClearAway"), Is.Not.Null);
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [UnityTest]
+        public System.Collections.IEnumerator DockWarningSmokeShowsCautionAndAcuteMaterials()
+        {
+            PlaybackHarness harness = CreateHarness();
+            GameState cautionState = CreateDockOccupancyState(5);
+            GameState acuteState = CreateDockOccupancyState(6);
+
+            harness.ViewPresenter.Rebuild(cautionState);
+            yield return null;
+
+            Assert.That(harness.DockRenderer.sharedMaterial, Is.SameAs(harness.CautionMaterial));
+
+            harness.ViewPresenter.ForceSyncToState(acuteState);
+            yield return null;
+
+            Assert.That(harness.DockRenderer.sharedMaterial, Is.SameAs(harness.AcuteMaterial));
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [UnityTest]
+        public System.Collections.IEnumerator WaterForecastSmokeShowsPersistentForecastRow()
+        {
+            PlaybackHarness harness = CreateHarness();
+            GameState state = CreateWaterForecastState(floodedRows: 1, actionsUntilRise: 1);
+
+            harness.ViewPresenter.Rebuild(state);
+            yield return null;
+
+            Assert.That(FindChildByName(harness.WaterRoot, "ForecastRow_00"), Is.Not.Null);
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [UnityTest]
+        public System.Collections.IEnumerator VinePreviewAndGrowthSmokeShowsAuthoredTileThenGrowth()
+        {
+            PlaybackHarness harness = CreateHarness();
+            GameState previewState = CreateVinePreviewState();
+            GameState grownState = CreateVineGrownState();
+
+            harness.ViewPresenter.Rebuild(previewState);
+            yield return null;
+
+            Assert.That(FindChildContaining(harness.ContentRoot, "VineGrowthPreview"), Is.Not.Null);
+
+            harness.ViewPresenter.ForceSyncToState(grownState);
+            yield return null;
+
+            Assert.That(FindChildContaining(harness.ContentRoot, "VineGrowthPreview"), Is.Null);
+            Assert.That(FindChildByName(harness.ContentRoot, "Content_00_00_Blocker_Vine"), Is.Not.Null);
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [UnityTest]
         public System.Collections.IEnumerator TerminalLossPlaybackShowsLossOverlayAfterFinalSync()
         {
             PlaybackHarness harness = CreateHarness();
@@ -245,7 +311,10 @@ namespace Rescue.PlayMode.Tests.Smoke
                 boardContentRoot,
                 waterOverlayRoot,
                 dockPieceContainer,
-                lossScreen);
+                lossScreen,
+                dockRenderer,
+                cautionMaterial,
+                acuteMaterial);
         }
 
         private GameObject CreateTrackedGameObject(string name)
@@ -335,6 +404,27 @@ namespace Rescue.PlayMode.Tests.Smoke
             }
 
             return null;
+        }
+
+        private static Transform? FindChildContaining(Transform parent, string partialName)
+        {
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                Transform child = parent.GetChild(i);
+                if (child.name.Contains(partialName))
+                {
+                    return child;
+                }
+            }
+
+            return null;
+        }
+
+        private static Transform FindRequiredChildContaining(Transform parent, string partialName)
+        {
+            Transform? child = FindChildContaining(parent, partialName);
+            Assert.That(child, Is.Not.Null, $"Expected child containing '{partialName}'.");
+            return child!;
         }
 
         private static void SetPrivateField(object target, string fieldName, object? value)
@@ -452,6 +542,127 @@ namespace Rescue.PlayMode.Tests.Smoke
                 SpawnRecoveryCounter: 0);
         }
 
+        private static GameState CreateTargetReadabilityState(TargetReadiness readiness)
+        {
+            ImmutableArray<ImmutableArray<Tile>> rows = ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new TargetTile("pup-read", Extracted: false)));
+
+            return CreateStateFromRows(
+                rows,
+                dockSlots: EmptyDockSlots(),
+                water: new WaterState(FloodedRows: 0, ActionsUntilRise: 3, RiseInterval: 3),
+                vine: new VineState(0, 4, ImmutableArray<TileCoord>.Empty, 0, null),
+                targets: ImmutableArray.Create(new TargetState("pup-read", new TileCoord(0, 0), readiness)));
+        }
+
+        private static GameState CreateDockOccupancyState(int occupancy)
+        {
+            ImmutableArray<DebrisType?>.Builder slots = ImmutableArray.CreateBuilder<DebrisType?>(7);
+            for (int i = 0; i < 7; i++)
+            {
+                slots.Add(i < occupancy ? DebrisType.A : null);
+            }
+
+            return CreateStateFromRows(
+                ImmutableArray.Create(ImmutableArray.Create<Tile>(new EmptyTile())),
+                dockSlots: slots.ToImmutable(),
+                water: new WaterState(FloodedRows: 0, ActionsUntilRise: 3, RiseInterval: 3),
+                vine: new VineState(0, 4, ImmutableArray<TileCoord>.Empty, 0, null),
+                targets: ImmutableArray<TargetState>.Empty);
+        }
+
+        private static GameState CreateWaterForecastState(int floodedRows, int actionsUntilRise)
+        {
+            ImmutableArray<ImmutableArray<Tile>> rows = ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new EmptyTile()),
+                ImmutableArray.Create<Tile>(new FloodedTile()));
+
+            return CreateStateFromRows(
+                rows,
+                dockSlots: EmptyDockSlots(),
+                water: new WaterState(floodedRows, actionsUntilRise, RiseInterval: 3),
+                vine: new VineState(0, 4, ImmutableArray<TileCoord>.Empty, 0, null),
+                targets: ImmutableArray<TargetState>.Empty);
+        }
+
+        private static GameState CreateVinePreviewState()
+        {
+            ImmutableArray<ImmutableArray<Tile>> rows = ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new EmptyTile()));
+
+            return CreateStateFromRows(
+                rows,
+                dockSlots: EmptyDockSlots(),
+                water: new WaterState(FloodedRows: 0, ActionsUntilRise: 3, RiseInterval: 3),
+                vine: new VineState(
+                    ActionsSinceLastClear: 3,
+                    GrowthThreshold: 4,
+                    GrowthPriorityList: ImmutableArray.Create(new TileCoord(0, 0)),
+                    PriorityCursor: 0,
+                    PendingGrowthTile: new TileCoord(0, 0)),
+                targets: ImmutableArray<TargetState>.Empty);
+        }
+
+        private static GameState CreateVineGrownState()
+        {
+            ImmutableArray<ImmutableArray<Tile>> rows = ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new BlockerTile(BlockerType.Vine, 1, Hidden: null)));
+
+            return CreateStateFromRows(
+                rows,
+                dockSlots: EmptyDockSlots(),
+                water: new WaterState(FloodedRows: 0, ActionsUntilRise: 3, RiseInterval: 3),
+                vine: new VineState(
+                    ActionsSinceLastClear: 0,
+                    GrowthThreshold: 4,
+                    GrowthPriorityList: ImmutableArray.Create(new TileCoord(0, 0)),
+                    PriorityCursor: 1,
+                    PendingGrowthTile: null),
+                targets: ImmutableArray<TargetState>.Empty);
+        }
+
+        private static ImmutableArray<DebrisType?> EmptyDockSlots()
+        {
+            return ImmutableArray.Create<DebrisType?>(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+        }
+
+        private static GameState CreateStateFromRows(
+            ImmutableArray<ImmutableArray<Tile>> rows,
+            ImmutableArray<DebrisType?> dockSlots,
+            WaterState water,
+            VineState vine,
+            ImmutableArray<TargetState> targets)
+        {
+            CoreBoard board = new CoreBoard(rows[0].Length, rows.Length, rows);
+
+            return new GameState(
+                Board: board,
+                Dock: new CoreDock(dockSlots, Size: 7),
+                Water: water,
+                Vine: vine,
+                Targets: targets,
+                LevelConfig: new LevelConfig(
+                    ImmutableArray.Create(DebrisType.A, DebrisType.B, DebrisType.C, DebrisType.D, DebrisType.E),
+                    null,
+                    0.0d,
+                    2),
+                RngState: new RngState(1u, 2u),
+                ActionCount: 0,
+                DockJamUsed: false,
+                UndoAvailable: true,
+                ExtractedTargetOrder: ImmutableArray<string>.Empty,
+                Frozen: false,
+                ConsecutiveEmergencySpawns: 0,
+                SpawnRecoveryCounter: 0);
+        }
+
         private readonly struct PlaybackHarness
         {
             public PlaybackHarness(
@@ -461,7 +672,10 @@ namespace Rescue.PlayMode.Tests.Smoke
                 Transform contentRoot,
                 Transform waterRoot,
                 Transform dockPieceContainer,
-                LossScreenPresenter lossScreen)
+                LossScreenPresenter lossScreen,
+                MeshRenderer dockRenderer,
+                Material cautionMaterial,
+                Material acuteMaterial)
             {
                 InputPresenter = inputPresenter;
                 ViewPresenter = viewPresenter;
@@ -470,6 +684,9 @@ namespace Rescue.PlayMode.Tests.Smoke
                 WaterRoot = waterRoot;
                 DockPieceContainer = dockPieceContainer;
                 LossScreen = lossScreen;
+                DockRenderer = dockRenderer;
+                CautionMaterial = cautionMaterial;
+                AcuteMaterial = acuteMaterial;
             }
 
             public BoardInputPresenter InputPresenter { get; }
@@ -485,6 +702,12 @@ namespace Rescue.PlayMode.Tests.Smoke
             public Transform DockPieceContainer { get; }
 
             public LossScreenPresenter LossScreen { get; }
+
+            public MeshRenderer DockRenderer { get; }
+
+            public Material CautionMaterial { get; }
+
+            public Material AcuteMaterial { get; }
         }
     }
 }

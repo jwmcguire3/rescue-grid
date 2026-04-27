@@ -276,7 +276,7 @@ namespace Rescue.Unity.Presentation
             if (IsLossOutcome(result.Outcome))
             {
                 ResolveVictoryScreen()?.Hide();
-                ResolveLossScreen()?.Show();
+                ResolveLossScreen()?.Show(result.Outcome);
                 dockFeedbackHandledByPlayback = false;
                 return;
             }

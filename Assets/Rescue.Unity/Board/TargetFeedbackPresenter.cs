@@ -46,6 +46,9 @@ namespace Rescue.Unity.BoardPresentation
                 TargetFeedbackEvent feedbackEvent = resolution.Events[i];
                 switch (feedbackEvent.Kind)
                 {
+                    case TargetFeedbackKind.Progress:
+                    case TargetFeedbackKind.ExtractionReady:
+                    case TargetFeedbackKind.Distressed:
                     case TargetFeedbackKind.NearRescue:
                         PlayNearRescue(feedbackEvent, previousState, currentState);
                         break;

@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using Rescue.Core.Pipeline;
 using UnityEngine;
 using UnityEngine.UIElements;
 #if UNITY_EDITOR
@@ -20,15 +21,19 @@ namespace Rescue.Unity.Presentation
 
         private UIDocument? document;
         private VisualElement? overlayRoot;
+        private Label? explanationLabel;
         private Button? replayButton;
         private Button? tryAgainButton;
         private bool isVisible;
+        private string explanationText = "Rescue stalled.";
 
         public event Action? ReplayRequested;
 
         public event Action? TryAgainRequested;
 
         public bool IsVisible => isVisible;
+
+        public string ExplanationText => explanationText;
 
         public static LossScreenPresenter EnsureInstance()
         {
@@ -70,6 +75,24 @@ namespace Rescue.Unity.Presentation
 
             overlayRoot.style.display = DisplayStyle.Flex;
             isVisible = true;
+        }
+
+        public void Show(ActionOutcome outcome)
+        {
+            explanationText = outcome switch
+            {
+                ActionOutcome.LossDockOverflow => "Dock overflow: too many pieces were left after clears.",
+                ActionOutcome.LossWaterOnTarget => "Water reached an unrescued puppy.",
+                ActionOutcome.LossDistressedExpired => "Distressed puppy was not rescued before the next water check.",
+                _ => "Rescue stalled.",
+            };
+
+            if (explanationLabel is not null)
+            {
+                explanationLabel.text = explanationText;
+            }
+
+            Show();
         }
 
         public void Hide()
@@ -217,7 +240,22 @@ namespace Rescue.Unity.Presentation
             tryAgainButton = CreateHitZoneButton("loss-try-again-button", 48.0f, 87.5f, 44.0f, 8.5f);
             tryAgainButton.clicked += RequestTryAgain;
 
+            explanationLabel = new Label(explanationText) { name = "loss-explanation-label" };
+            explanationLabel.style.position = Position.Absolute;
+            explanationLabel.style.left = Length.Percent(11.0f);
+            explanationLabel.style.right = Length.Percent(11.0f);
+            explanationLabel.style.top = Length.Percent(74.0f);
+            explanationLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
+            explanationLabel.style.whiteSpace = WhiteSpace.Normal;
+            explanationLabel.style.color = Color.white;
+            explanationLabel.style.backgroundColor = new Color(0f, 0f, 0f, 0.55f);
+            explanationLabel.style.paddingTop = 8f;
+            explanationLabel.style.paddingRight = 10f;
+            explanationLabel.style.paddingBottom = 8f;
+            explanationLabel.style.paddingLeft = 10f;
+
             overlayRoot.Add(image);
+            overlayRoot.Add(explanationLabel);
             overlayRoot.Add(replayButton);
             overlayRoot.Add(tryAgainButton);
             root.Add(overlayRoot);

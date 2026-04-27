@@ -582,7 +582,9 @@ namespace Rescue.Unity.BoardPresentation
                 ? string.Empty
                 : water.PauseUntilFirstAction
                     ? "Water: paused until first action"
-                    : $"Water: {water.ActionsUntilRise}/{water.RiseInterval} ({Mathf.RoundToInt(normalizedProgress * 100f)}%)";
+                    : water.ActionsUntilRise <= 1
+                        ? "Water: next row rises on next action"
+                        : "Water: next flood row forecast";
 
             counterLabel.text = labelText;
         }
