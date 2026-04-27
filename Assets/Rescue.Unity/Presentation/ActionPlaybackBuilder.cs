@@ -55,6 +55,9 @@ namespace Rescue.Unity.Presentation
 
                 case TargetProgressed:
                 case TargetOneClearAway:
+                case TargetDistressedEntered:
+                case TargetDistressedRecovered:
+                case TargetDistressedExpired:
                     mappedSteps.Add(CreateStep(ActionPlaybackStepType.TargetReaction, actionEvent));
                     return;
 

@@ -119,6 +119,7 @@ namespace Rescue.Unity.Presentation.Tests
 
         [TestCase(ActionOutcome.LossDockOverflow)]
         [TestCase(ActionOutcome.LossWaterOnTarget)]
+        [TestCase(ActionOutcome.LossDistressedExpired)]
         public void GameStateViewPresenter_LossFinalSyncLeavesFailedStateVisibleAndShowsLossScreen(ActionOutcome outcome)
         {
             PresenterHarness harness = CreateHarness();

@@ -61,6 +61,18 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(nextCount, Is.EqualTo(0));
         }
 
+        [Test]
+        public void VictoryScreenPresenter_ProvidesRescueFramingAndAftercareCopy()
+        {
+            VictoryScreenPresenter presenter = CreatePresenter();
+
+            presenter.Show();
+
+            Assert.That(presenter.HeadlineText, Is.EqualTo("Rescue complete"));
+            Assert.That(presenter.AftercareText, Does.Contain("Aftercare"));
+            Assert.That(presenter.AftercareText, Does.Contain("kennel"));
+        }
+
         private VictoryScreenPresenter CreatePresenter()
         {
             root = new GameObject("VictoryScreenTest");

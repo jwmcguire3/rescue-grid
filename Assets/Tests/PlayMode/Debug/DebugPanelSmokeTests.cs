@@ -3,6 +3,7 @@ using System;
 using System.Reflection;
 using NUnit.Framework;
 using Rescue.Content;
+using Rescue.Core.Pipeline;
 using Rescue.Unity.Debugging;
 using Rescue.Unity.Presentation;
 using UnityEngine;
@@ -190,6 +191,88 @@ namespace Rescue.PlayMode.Tests.Debug
 
             Assert.That(lossScreen.IsVisible, Is.False);
             Assert.That(panel.ExportFullGameStateJson(), Is.EqualTo(initialJson));
+        }
+
+        [UnityTest]
+        public System.Collections.IEnumerator VictoryScreenButtonsReplayAndAdvanceLevel()
+        {
+            DebugPanel panel = DebugPanel.EnsureInstance();
+            panel.LoadLevel(Loader.LoadLevelDefinition("L01"), seed: 7);
+            VictoryScreenPresenter victoryScreen = VictoryScreenPresenter.EnsureInstance();
+
+            yield return null;
+
+            string initialJson = panel.ExportFullGameStateJson();
+            Assert.That(panel.StepOneAction(), Is.True);
+            victoryScreen.Show();
+
+            victoryScreen.RequestReplay();
+
+            yield return null;
+
+            Assert.That(victoryScreen.IsVisible, Is.False);
+            Assert.That(panel.ExportFullGameStateJson(), Is.EqualTo(initialJson));
+
+            victoryScreen.Show();
+            victoryScreen.RequestNextLevel();
+
+            yield return null;
+
+            Assert.That(panel.CurrentLevelId, Is.EqualTo("L02"));
+        }
+
+        [UnityTest]
+        public System.Collections.IEnumerator LossScreenButtonsAndReasonsAreUsable()
+        {
+            DebugPanel panel = DebugPanel.EnsureInstance();
+            panel.ConfigureForTest(CreateTestLevel(), seed: 31);
+            LossScreenPresenter lossScreen = LossScreenPresenter.EnsureInstance();
+
+            yield return null;
+
+            string initialJson = panel.ExportFullGameStateJson();
+            Assert.That(panel.StepOneAction(), Is.True);
+            lossScreen.Show(ActionOutcome.LossDockOverflow);
+            Assert.That(lossScreen.ExplanationText, Is.EqualTo("Dock overflow."));
+
+            lossScreen.RequestReplay();
+
+            yield return null;
+
+            Assert.That(lossScreen.IsVisible, Is.False);
+            Assert.That(panel.ExportFullGameStateJson(), Is.EqualTo(initialJson));
+
+            lossScreen.Show(ActionOutcome.LossWaterOnTarget);
+            Assert.That(lossScreen.ExplanationText, Is.EqualTo("Water reached a puppy."));
+            lossScreen.RequestTryAgain();
+
+            yield return null;
+
+            Assert.That(lossScreen.IsVisible, Is.False);
+            Assert.That(panel.ExportFullGameStateJson(), Is.EqualTo(initialJson));
+
+            lossScreen.Show(ActionOutcome.LossDistressedExpired);
+            Assert.That(lossScreen.ExplanationText, Is.EqualTo("Distressed puppy was not rescued in time."));
+        }
+
+        [UnityTest]
+        public System.Collections.IEnumerator VictoryNextLevelDisabledOnL15()
+        {
+            DebugPanel panel = DebugPanel.EnsureInstance();
+            panel.LoadLevel(Loader.LoadLevelDefinition("L15"), seed: 7);
+            VictoryScreenPresenter victoryScreen = VictoryScreenPresenter.EnsureInstance();
+
+            yield return null;
+
+            Assert.That(panel.HasNextLevel(), Is.False);
+            Assert.That(victoryScreen.IsNextLevelAvailable, Is.False);
+
+            victoryScreen.Show();
+            victoryScreen.RequestNextLevel();
+
+            yield return null;
+
+            Assert.That(panel.CurrentLevelId, Is.EqualTo("L15"));
         }
 
         [UnityTest]

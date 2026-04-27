@@ -18,9 +18,11 @@ namespace Rescue.Unity.Presentation
         private const int PanelSortingOrder = 1095;
 
         [SerializeField] private Texture2D? lossImage;
+        [SerializeField] private MonoBehaviour? maeReactionHook;
 
         private UIDocument? document;
         private VisualElement? overlayRoot;
+        private Label? headlineLabel;
         private Label? explanationLabel;
         private Button? replayButton;
         private Button? tryAgainButton;
@@ -81,9 +83,9 @@ namespace Rescue.Unity.Presentation
         {
             explanationText = outcome switch
             {
-                ActionOutcome.LossDockOverflow => "Dock overflow: too many pieces were left after clears.",
-                ActionOutcome.LossWaterOnTarget => "Water reached an unrescued puppy.",
-                ActionOutcome.LossDistressedExpired => "Distressed puppy was not rescued before the next water check.",
+                ActionOutcome.LossDockOverflow => "Dock overflow.",
+                ActionOutcome.LossWaterOnTarget => "Water reached a puppy.",
+                ActionOutcome.LossDistressedExpired => "Distressed puppy was not rescued in time.",
                 _ => "Rescue stalled.",
             };
 
@@ -92,6 +94,7 @@ namespace Rescue.Unity.Presentation
                 explanationLabel.text = explanationText;
             }
 
+            NotifyTerminalHook(outcome);
             Show();
         }
 
@@ -234,10 +237,20 @@ namespace Rescue.Unity.Presentation
             image.style.right = 0f;
             image.style.bottom = 0f;
 
-            replayButton = CreateHitZoneButton("loss-replay-button", 7.5f, 87.5f, 35.0f, 8.5f);
+            headlineLabel = new Label("Rescue stalled") { name = "loss-headline-label" };
+            headlineLabel.style.position = Position.Absolute;
+            headlineLabel.style.left = Length.Percent(8.0f);
+            headlineLabel.style.right = Length.Percent(8.0f);
+            headlineLabel.style.top = Length.Percent(8.0f);
+            headlineLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
+            headlineLabel.style.whiteSpace = WhiteSpace.Normal;
+            headlineLabel.style.color = Color.white;
+            headlineLabel.style.fontSize = 34;
+
+            replayButton = CreateHitZoneButton("loss-replay-button", "Replay", 7.5f, 87.5f, 35.0f, 8.5f);
             replayButton.clicked += RequestReplay;
 
-            tryAgainButton = CreateHitZoneButton("loss-try-again-button", 48.0f, 87.5f, 44.0f, 8.5f);
+            tryAgainButton = CreateHitZoneButton("loss-try-again-button", "Retry", 48.0f, 87.5f, 44.0f, 8.5f);
             tryAgainButton.clicked += RequestTryAgain;
 
             explanationLabel = new Label(explanationText) { name = "loss-explanation-label" };
@@ -255,6 +268,7 @@ namespace Rescue.Unity.Presentation
             explanationLabel.style.paddingLeft = 10f;
 
             overlayRoot.Add(image);
+            overlayRoot.Add(headlineLabel);
             overlayRoot.Add(explanationLabel);
             overlayRoot.Add(replayButton);
             overlayRoot.Add(tryAgainButton);
@@ -274,19 +288,43 @@ namespace Rescue.Unity.Presentation
             return lossImage;
         }
 
-        private static Button CreateHitZoneButton(string name, float leftPercent, float topPercent, float widthPercent, float heightPercent)
+        private void NotifyTerminalHook(ActionOutcome outcome)
         {
-            Button button = new Button { name = name, text = string.Empty };
+            if (ResolveMaeReactionHook() is IMaeTerminalReactionHook terminalReactionHook)
+            {
+                terminalReactionHook.HandleTerminalOutcome(outcome);
+            }
+        }
+
+        private MonoBehaviour? ResolveMaeReactionHook()
+        {
+            if (maeReactionHook is not null)
+            {
+                return maeReactionHook;
+            }
+
+            if (TryGetComponent(out MaeReactionPresenter existingPresenter))
+            {
+                maeReactionHook = existingPresenter;
+                return maeReactionHook;
+            }
+
+            maeReactionHook = gameObject.AddComponent<MaeReactionPresenter>();
+            return maeReactionHook;
+        }
+
+        private static Button CreateHitZoneButton(string name, string text, float leftPercent, float topPercent, float widthPercent, float heightPercent)
+        {
+            Button button = new Button { name = name, text = text };
             button.style.position = Position.Absolute;
             button.style.left = Length.Percent(leftPercent);
             button.style.top = Length.Percent(topPercent);
             button.style.width = Length.Percent(widthPercent);
             button.style.height = Length.Percent(heightPercent);
-            button.style.backgroundColor = Color.clear;
-            button.style.borderTopWidth = 0f;
-            button.style.borderRightWidth = 0f;
-            button.style.borderBottomWidth = 0f;
-            button.style.borderLeftWidth = 0f;
+            button.style.backgroundColor = new Color(0.08f, 0.10f, 0.13f, 0.88f);
+            button.style.color = Color.white;
+            button.style.unityFontStyleAndWeight = FontStyle.Bold;
+            button.style.fontSize = 18;
             return button;
         }
     }

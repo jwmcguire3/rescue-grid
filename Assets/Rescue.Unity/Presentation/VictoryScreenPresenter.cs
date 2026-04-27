@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using Rescue.Core.Pipeline;
 using UnityEngine;
 using UnityEngine.UIElements;
 #if UNITY_EDITOR
@@ -17,9 +18,12 @@ namespace Rescue.Unity.Presentation
         private const int PanelSortingOrder = 1100;
 
         [SerializeField] private Texture2D? victoryImage;
+        [SerializeField] private MonoBehaviour? maeReactionHook;
 
         private UIDocument? document;
         private VisualElement? overlayRoot;
+        private Label? headlineLabel;
+        private Label? aftercareLabel;
         private Button? replayButton;
         private Button? nextLevelButton;
         private bool nextLevelAvailable = true;
@@ -32,6 +36,10 @@ namespace Rescue.Unity.Presentation
         public bool IsVisible => isVisible;
 
         public bool IsNextLevelAvailable => nextLevelAvailable;
+
+        public string HeadlineText => headlineLabel?.text ?? "Rescue complete";
+
+        public string AftercareText => aftercareLabel?.text ?? "Warm kennel check complete.";
 
         public static VictoryScreenPresenter EnsureInstance()
         {
@@ -74,6 +82,7 @@ namespace Rescue.Unity.Presentation
             overlayRoot.style.display = DisplayStyle.Flex;
             isVisible = true;
             SetNextLevelAvailable(nextLevelAvailable);
+            NotifyTerminalHook(ActionOutcome.Win);
         }
 
         public void Hide()
@@ -233,13 +242,40 @@ namespace Rescue.Unity.Presentation
             image.style.right = 0f;
             image.style.bottom = 0f;
 
-            replayButton = CreateHitZoneButton("victory-replay-button", 7.5f, 87.5f, 35.0f, 8.5f);
+            headlineLabel = CreateOverlayLabel("victory-headline-label", "Rescue complete", 8.0f, 8.0f, 84.0f, 7.0f, 36);
+            Label framingLabel = CreateOverlayLabel(
+                "victory-framing-label",
+                "Every puppy is out of danger.",
+                10.0f,
+                15.0f,
+                80.0f,
+                5.0f,
+                20);
+
+            aftercareLabel = CreateOverlayLabel(
+                "victory-aftercare-card",
+                "Aftercare: dry towel, warm kennel, Mae watching close.",
+                12.0f,
+                68.0f,
+                76.0f,
+                7.5f,
+                18);
+            aftercareLabel.style.backgroundColor = new Color(0.04f, 0.10f, 0.12f, 0.72f);
+            aftercareLabel.style.paddingTop = 8f;
+            aftercareLabel.style.paddingRight = 10f;
+            aftercareLabel.style.paddingBottom = 8f;
+            aftercareLabel.style.paddingLeft = 10f;
+
+            replayButton = CreateHitZoneButton("victory-replay-button", "Replay", 7.5f, 87.5f, 35.0f, 8.5f);
             replayButton.clicked += RequestReplay;
 
-            nextLevelButton = CreateHitZoneButton("victory-next-level-button", 48.0f, 87.5f, 44.0f, 8.5f);
+            nextLevelButton = CreateHitZoneButton("victory-next-level-button", "Next Level", 48.0f, 87.5f, 44.0f, 8.5f);
             nextLevelButton.clicked += RequestNextLevel;
 
             overlayRoot.Add(image);
+            overlayRoot.Add(headlineLabel);
+            overlayRoot.Add(framingLabel);
+            overlayRoot.Add(aftercareLabel);
             overlayRoot.Add(replayButton);
             overlayRoot.Add(nextLevelButton);
             root.Add(overlayRoot);
@@ -259,19 +295,65 @@ namespace Rescue.Unity.Presentation
             return victoryImage;
         }
 
-        private static Button CreateHitZoneButton(string name, float leftPercent, float topPercent, float widthPercent, float heightPercent)
+        private void NotifyTerminalHook(ActionOutcome outcome)
         {
-            Button button = new Button { name = name, text = string.Empty };
+            if (ResolveMaeReactionHook() is IMaeTerminalReactionHook terminalReactionHook)
+            {
+                terminalReactionHook.HandleTerminalOutcome(outcome);
+            }
+        }
+
+        private MonoBehaviour? ResolveMaeReactionHook()
+        {
+            if (maeReactionHook is not null)
+            {
+                return maeReactionHook;
+            }
+
+            if (TryGetComponent(out MaeReactionPresenter existingPresenter))
+            {
+                maeReactionHook = existingPresenter;
+                return maeReactionHook;
+            }
+
+            maeReactionHook = gameObject.AddComponent<MaeReactionPresenter>();
+            return maeReactionHook;
+        }
+
+        private static Label CreateOverlayLabel(
+            string name,
+            string text,
+            float leftPercent,
+            float topPercent,
+            float widthPercent,
+            float heightPercent,
+            int fontSize)
+        {
+            Label label = new Label(text) { name = name };
+            label.style.position = Position.Absolute;
+            label.style.left = Length.Percent(leftPercent);
+            label.style.top = Length.Percent(topPercent);
+            label.style.width = Length.Percent(widthPercent);
+            label.style.height = Length.Percent(heightPercent);
+            label.style.unityTextAlign = TextAnchor.MiddleCenter;
+            label.style.whiteSpace = WhiteSpace.Normal;
+            label.style.color = Color.white;
+            label.style.fontSize = fontSize;
+            return label;
+        }
+
+        private static Button CreateHitZoneButton(string name, string text, float leftPercent, float topPercent, float widthPercent, float heightPercent)
+        {
+            Button button = new Button { name = name, text = text };
             button.style.position = Position.Absolute;
             button.style.left = Length.Percent(leftPercent);
             button.style.top = Length.Percent(topPercent);
             button.style.width = Length.Percent(widthPercent);
             button.style.height = Length.Percent(heightPercent);
-            button.style.backgroundColor = Color.clear;
-            button.style.borderTopWidth = 0f;
-            button.style.borderRightWidth = 0f;
-            button.style.borderBottomWidth = 0f;
-            button.style.borderLeftWidth = 0f;
+            button.style.backgroundColor = new Color(0.06f, 0.13f, 0.16f, 0.88f);
+            button.style.color = Color.white;
+            button.style.unityFontStyleAndWeight = FontStyle.Bold;
+            button.style.fontSize = 18;
             return button;
         }
     }

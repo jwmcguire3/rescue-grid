@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Rescue.Core.State;
+using Rescue.Unity.Presentation;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -94,14 +95,31 @@ namespace Rescue.Unity.BoardPresentation
             }
 
             SpawnFeedbackPrefab(nearRescueFxPrefab, feedbackEvent, autoDestroyDelay: nearRescuePulseDuration * 1.5f);
-            NotifyHook(maeReactionHook, feedbackEvent, previousState, currentState);
+            NotifyHook(ResolveMaeReactionHook(), feedbackEvent, previousState, currentState);
         }
 
         private void PlayExtraction(TargetFeedbackEvent feedbackEvent, GameState? previousState, GameState currentState)
         {
             SpawnFeedbackPrefab(extractionFxPrefab, feedbackEvent, autoDestroyDelay: extractionHoldDuration);
-            NotifyHook(maeReactionHook, feedbackEvent, previousState, currentState);
+            NotifyHook(ResolveMaeReactionHook(), feedbackEvent, previousState, currentState);
             NotifyHook(aftercareCardHook, feedbackEvent, previousState, currentState);
+        }
+
+        private MonoBehaviour? ResolveMaeReactionHook()
+        {
+            if (maeReactionHook is not null)
+            {
+                return maeReactionHook;
+            }
+
+            if (TryGetComponent(out MaeReactionPresenter existingPresenter))
+            {
+                maeReactionHook = existingPresenter;
+                return maeReactionHook;
+            }
+
+            maeReactionHook = gameObject.AddComponent<MaeReactionPresenter>();
+            return maeReactionHook;
         }
 
         private GameObject? ResolveTargetObject(TargetFeedbackEvent feedbackEvent)
