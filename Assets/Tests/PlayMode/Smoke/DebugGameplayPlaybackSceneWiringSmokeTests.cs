@@ -30,6 +30,12 @@ namespace Rescue.PlayMode.Tests.Smoke
                 UnityObject.DestroyImmediate(victoryScreen.gameObject);
             }
 
+            LossScreenPresenter? lossScreen = UnityObject.FindFirstObjectByType<LossScreenPresenter>();
+            if (lossScreen is not null)
+            {
+                UnityObject.DestroyImmediate(lossScreen.gameObject);
+            }
+
             yield return SceneManager.LoadSceneAsync("DebugGameplay", LoadSceneMode.Single);
             yield return null;
         }
@@ -48,6 +54,12 @@ namespace Rescue.PlayMode.Tests.Smoke
                 UnityObject.DestroyImmediate(victoryScreen.gameObject);
             }
 
+            LossScreenPresenter? lossScreen = UnityObject.FindFirstObjectByType<LossScreenPresenter>();
+            if (lossScreen is not null)
+            {
+                UnityObject.DestroyImmediate(lossScreen.gameObject);
+            }
+
             yield return null;
         }
 
@@ -59,6 +71,7 @@ namespace Rescue.PlayMode.Tests.Smoke
             ActionPlaybackController playbackController = FindRequired<ActionPlaybackController>();
             FxEventRouter fxEventRouter = FindRequired<FxEventRouter>();
             VictoryScreenPresenter victoryScreen = VictoryScreenPresenter.EnsureInstance();
+            LossScreenPresenter lossScreen = LossScreenPresenter.EnsureInstance();
 
             Assert.That(
                 GetSerializedReference<GameStateViewPresenter, ActionPlaybackController>(gameStateView, "playbackController")
@@ -94,6 +107,7 @@ namespace Rescue.PlayMode.Tests.Smoke
             }
 
             Assert.That(fxEventRouter.FxRegistry.WinFx, Is.Not.Null, "DebugGameplay should have terminal win FX assigned.");
+            Assert.That(fxEventRouter.FxRegistry.LossFx, Is.Not.Null, "DebugGameplay should have terminal loss FX assigned.");
             Assert.That(
                 fxEventRouter.BoardGrid,
                 Is.SameAs(FindRequired<BoardGridViewPresenter>()),
@@ -108,6 +122,7 @@ namespace Rescue.PlayMode.Tests.Smoke
                 Is.SameAs(gameStateView),
                 "BoardInputPresenter should route actions through GameStateViewPresenter so playback can lock input and apply Plan 1/2 beats.");
             Assert.That(victoryScreen.IsVisible, Is.False, "Victory screen should be present for terminal wins but hidden before a win.");
+            Assert.That(lossScreen.IsVisible, Is.False, "Loss screen should be present for terminal losses but hidden before a loss.");
 
             LogAssert.NoUnexpectedReceived();
             yield return null;

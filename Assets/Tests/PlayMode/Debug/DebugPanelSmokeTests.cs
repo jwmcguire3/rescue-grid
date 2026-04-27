@@ -20,7 +20,7 @@ namespace Rescue.PlayMode.Tests.Debug
                 UnityEngine.Object.DestroyImmediate(DebugPanel.Instance.gameObject);
             }
 
-            DestroyVictoryScreenIfPresent();
+            DestroyTerminalScreensIfPresent();
             yield return null;
         }
 
@@ -32,7 +32,7 @@ namespace Rescue.PlayMode.Tests.Debug
                 UnityEngine.Object.DestroyImmediate(DebugPanel.Instance.gameObject);
             }
 
-            DestroyVictoryScreenIfPresent();
+            DestroyTerminalScreensIfPresent();
             yield return null;
         }
 
@@ -162,6 +162,37 @@ namespace Rescue.PlayMode.Tests.Debug
         }
 
         [UnityTest]
+        public System.Collections.IEnumerator LossReplayAndTryAgainHideOverlayAndResetCurrentLevel()
+        {
+            DebugPanel panel = DebugPanel.EnsureInstance();
+            panel.ConfigureForTest(CreateTestLevel(), seed: 31);
+            LossScreenPresenter lossScreen = LossScreenPresenter.EnsureInstance();
+
+            yield return null;
+
+            string initialJson = panel.ExportFullGameStateJson();
+            Assert.That(panel.StepOneAction(), Is.True);
+            lossScreen.Show();
+
+            lossScreen.RequestReplay();
+
+            yield return null;
+
+            Assert.That(lossScreen.IsVisible, Is.False);
+            Assert.That(panel.ExportFullGameStateJson(), Is.EqualTo(initialJson));
+
+            Assert.That(panel.StepOneAction(), Is.True);
+            lossScreen.Show();
+
+            lossScreen.RequestTryAgain();
+
+            yield return null;
+
+            Assert.That(lossScreen.IsVisible, Is.False);
+            Assert.That(panel.ExportFullGameStateJson(), Is.EqualTo(initialJson));
+        }
+
+        [UnityTest]
         public System.Collections.IEnumerator NextLevelLoadsFollowingStreamingAssetLevel()
         {
             DebugPanel panel = DebugPanel.EnsureInstance();
@@ -238,12 +269,18 @@ namespace Rescue.PlayMode.Tests.Debug
             return value is not null;
         }
 
-        private static void DestroyVictoryScreenIfPresent()
+        private static void DestroyTerminalScreensIfPresent()
         {
             VictoryScreenPresenter? victoryScreen = UnityEngine.Object.FindFirstObjectByType<VictoryScreenPresenter>();
             if (victoryScreen is not null)
             {
                 UnityEngine.Object.DestroyImmediate(victoryScreen.gameObject);
+            }
+
+            LossScreenPresenter? lossScreen = UnityEngine.Object.FindFirstObjectByType<LossScreenPresenter>();
+            if (lossScreen is not null)
+            {
+                UnityEngine.Object.DestroyImmediate(lossScreen.gameObject);
             }
         }
 

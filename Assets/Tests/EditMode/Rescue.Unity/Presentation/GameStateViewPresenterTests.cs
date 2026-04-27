@@ -114,6 +114,32 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(0));
             Assert.That(harness.DockPieceContainer.childCount, Is.EqualTo(0));
             Assert.That(harness.VictoryScreen.IsVisible, Is.True);
+            Assert.That(harness.LossScreen.IsVisible, Is.False);
+        }
+
+        [TestCase(ActionOutcome.LossDockOverflow)]
+        [TestCase(ActionOutcome.LossWaterOnTarget)]
+        public void GameStateViewPresenter_LossFinalSyncLeavesFailedStateVisibleAndShowsLossScreen(ActionOutcome outcome)
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState previousState = CreateState();
+            GameState resultState = CreateLossState(previousState);
+            ActionResult result = new ActionResult(
+                resultState,
+                ImmutableArray.Create<ActionEvent>(new Lost(outcome)),
+                outcome,
+                Snapshot: null);
+
+            harness.Presenter.Rebuild(previousState);
+            harness.VictoryScreen.Show();
+
+            harness.Presenter.ApplyActionResult(previousState, new ActionInput(new TileCoord(0, 0)), result);
+
+            Assert.That(harness.Presenter.CurrentState, Is.EqualTo(resultState));
+            Assert.That(harness.ContentRoot.childCount, Is.GreaterThan(0));
+            Assert.That(harness.DockPieceContainer.childCount, Is.EqualTo(7));
+            Assert.That(harness.VictoryScreen.IsVisible, Is.False);
+            Assert.That(harness.LossScreen.IsVisible, Is.True);
         }
 
         [Test]
@@ -121,10 +147,12 @@ namespace Rescue.Unity.Presentation.Tests
         {
             PresenterHarness harness = CreateHarness();
             harness.VictoryScreen.Show();
+            harness.LossScreen.Show();
 
             harness.Presenter.Rebuild(CreateState());
 
             Assert.That(harness.VictoryScreen.IsVisible, Is.False);
+            Assert.That(harness.LossScreen.IsVisible, Is.False);
         }
 
         [Test]
@@ -469,6 +497,11 @@ namespace Rescue.Unity.Presentation.Tests
             VictoryScreenPresenter victoryScreen = victoryObject.AddComponent<VictoryScreenPresenter>();
             SetPrivateField(presenter, "victoryScreen", victoryScreen);
 
+            GameObject lossObject = CreateTrackedGameObject("LossScreen");
+            lossObject.AddComponent<UIDocument>();
+            LossScreenPresenter lossScreen = lossObject.AddComponent<LossScreenPresenter>();
+            SetPrivateField(presenter, "lossScreen", lossScreen);
+
             SetPrivateField(presenter, "boardGrid", boardGrid);
             SetPrivateField(presenter, "boardContent", boardContent);
             SetPrivateField(presenter, "waterView", waterView);
@@ -485,7 +518,7 @@ namespace Rescue.Unity.Presentation.Tests
                 SetPrivateField(presenter, "playbackController", playbackController);
             }
 
-            return new PresenterHarness(presenter, boardRoot, contentRoot, waterRoot, dockPieceContainer, victoryScreen);
+            return new PresenterHarness(presenter, boardRoot, contentRoot, waterRoot, dockPieceContainer, victoryScreen, lossScreen);
         }
 
         private GameObject CreateTrackedGameObject(string name)
@@ -594,6 +627,24 @@ namespace Rescue.Unity.Presentation.Tests
             };
         }
 
+        private static GameState CreateLossState(GameState previousState)
+        {
+            return previousState with
+            {
+                Dock = new CoreDock(
+                    ImmutableArray.Create<DebrisType?>(
+                        DebrisType.A,
+                        DebrisType.B,
+                        DebrisType.C,
+                        DebrisType.A,
+                        DebrisType.B,
+                        DebrisType.C,
+                        DebrisType.D),
+                    Size: 7),
+                Frozen = true,
+            };
+        }
+
         private readonly struct PresenterHarness
         {
             public PresenterHarness(
@@ -602,7 +653,8 @@ namespace Rescue.Unity.Presentation.Tests
                 Transform contentRoot,
                 Transform waterRoot,
                 Transform dockPieceContainer,
-                VictoryScreenPresenter victoryScreen)
+                VictoryScreenPresenter victoryScreen,
+                LossScreenPresenter lossScreen)
             {
                 Presenter = presenter;
                 BoardRoot = boardRoot;
@@ -610,6 +662,7 @@ namespace Rescue.Unity.Presentation.Tests
                 WaterRoot = waterRoot;
                 DockPieceContainer = dockPieceContainer;
                 VictoryScreen = victoryScreen;
+                LossScreen = lossScreen;
             }
 
             public GameStateViewPresenter Presenter { get; }
@@ -623,6 +676,8 @@ namespace Rescue.Unity.Presentation.Tests
             public Transform DockPieceContainer { get; }
 
             public VictoryScreenPresenter VictoryScreen { get; }
+
+            public LossScreenPresenter LossScreen { get; }
         }
     }
 }

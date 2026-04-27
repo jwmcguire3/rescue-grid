@@ -239,6 +239,8 @@ namespace Rescue.Unity.Presentation
                 {
                     case Won:
                         return settings.WinFxDurationSeconds;
+                    case Lost:
+                        return settings.LossFxDurationSeconds;
                     case DockInserted:
                         return settings.DockInsertFeedbackDurationSeconds;
                     case DockCleared:

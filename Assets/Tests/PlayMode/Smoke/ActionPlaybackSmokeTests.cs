@@ -10,6 +10,7 @@ using Rescue.Unity.Presentation;
 using Rescue.Unity.UI;
 using UnityEngine;
 using UnityEngine.TestTools;
+using UnityEngine.UIElements;
 using CoreBoard = Rescue.Core.State.Board;
 using CoreDock = Rescue.Core.State.Dock;
 
@@ -92,6 +93,52 @@ namespace Rescue.PlayMode.Tests.Smoke
             LogAssert.NoUnexpectedReceived();
         }
 
+        [UnityTest]
+        public System.Collections.IEnumerator TerminalLossPlaybackShowsLossOverlayAfterFinalSync()
+        {
+            PlaybackHarness harness = CreateHarness();
+            GameState initialState = CreateOverflowLossState();
+            TileCoord tappedCoord = new TileCoord(0, 0);
+            ActionInput input = new ActionInput(tappedCoord);
+            ActionResult expectedResult = Pipeline.RunAction(initialState, input);
+
+            Assert.That(expectedResult.Outcome, Is.EqualTo(ActionOutcome.LossDockOverflow));
+            Assert.That(expectedResult.Events, Has.Some.TypeOf<Lost>());
+
+            harness.ViewPresenter.Rebuild(initialState);
+            harness.InputPresenter.SetCurrentState(initialState);
+
+            bool firstTapHandled = harness.InputPresenter.TryRunActionAt(tappedCoord);
+
+            Assert.That(firstTapHandled, Is.True);
+            Assert.That(harness.ViewPresenter.IsPlaybackActive, Is.True);
+            Assert.That(harness.LossScreen.IsVisible, Is.False);
+
+            bool secondTapHandled = harness.InputPresenter.TryRunActionAt(tappedCoord);
+
+            Assert.That(secondTapHandled, Is.False, "Input should be locked while terminal loss playback is active.");
+
+            yield return null;
+
+            while (harness.ViewPresenter.IsPlaybackActive)
+            {
+                yield return null;
+            }
+
+            yield return null;
+
+            Assert.That(harness.LossScreen.IsVisible, Is.True);
+            Assert.That(
+                SmokeTestHarness.Fingerprint(harness.ViewPresenter.CurrentState!),
+                Is.EqualTo(SmokeTestHarness.Fingerprint(expectedResult.State)));
+            Assert.That(
+                SmokeTestHarness.Fingerprint(harness.InputPresenter.CurrentState!),
+                Is.EqualTo(SmokeTestHarness.Fingerprint(expectedResult.State)));
+            AssertBoardContentMatchesState(harness.ContentRoot, expectedResult.State);
+            Assert.That(harness.DockPieceContainer.childCount, Is.EqualTo(CountDockPieces(expectedResult.State.Dock)));
+            LogAssert.NoUnexpectedReceived();
+        }
+
         private PlaybackHarness CreateHarness()
         {
             GameObject root = CreateTrackedGameObject("ActionPlaybackSmokeHarness");
@@ -137,9 +184,18 @@ namespace Rescue.PlayMode.Tests.Smoke
             dockVisual.transform.SetParent(root.transform, false);
             MeshRenderer dockRenderer = dockVisual.GetComponent<MeshRenderer>();
             Material safeMaterial = new Material(Shader.Find("Standard"));
+            Material cautionMaterial = new Material(Shader.Find("Standard"));
+            Material acuteMaterial = new Material(Shader.Find("Standard"));
+            Material failedMaterial = new Material(Shader.Find("Standard"));
             createdObjects.Add(safeMaterial);
+            createdObjects.Add(cautionMaterial);
+            createdObjects.Add(acuteMaterial);
+            createdObjects.Add(failedMaterial);
             SetPrivateField(dockView, "sharedDockRenderer", dockRenderer);
             SetPrivateField(dockView, "safeMaterial", safeMaterial);
+            SetPrivateField(dockView, "cautionMaterial", cautionMaterial);
+            SetPrivateField(dockView, "acuteMaterial", acuteMaterial);
+            SetPrivateField(dockView, "failedMaterial", failedMaterial);
             SetPrivateField(dockView, "pieceContainer", dockPieceContainer);
             SetPrivateField(dockView, "fallbackPiecePrefab", fallbackPiecePrefab);
 
@@ -171,6 +227,11 @@ namespace Rescue.PlayMode.Tests.Smoke
             SetPrivateField(viewPresenter, "targetFeedback", targetFeedback);
             SetPrivateField(viewPresenter, "playbackController", playbackController);
 
+            GameObject lossScreenObject = CreateTrackedGameObject("LossScreen");
+            lossScreenObject.AddComponent<UIDocument>();
+            LossScreenPresenter lossScreen = lossScreenObject.AddComponent<LossScreenPresenter>();
+            SetPrivateField(viewPresenter, "lossScreen", lossScreen);
+
             BoardInputPresenter inputPresenter = root.AddComponent<BoardInputPresenter>();
             SetPrivateField(inputPresenter, "gridView", boardGrid);
             SetPrivateField(inputPresenter, "gameStateView", viewPresenter);
@@ -183,7 +244,8 @@ namespace Rescue.PlayMode.Tests.Smoke
                 playbackController,
                 boardContentRoot,
                 waterOverlayRoot,
-                dockPieceContainer);
+                dockPieceContainer,
+                lossScreen);
         }
 
         private GameObject CreateTrackedGameObject(string name)
@@ -302,6 +364,7 @@ namespace Rescue.PlayMode.Tests.Smoke
             SetPrivateField(settings, "spawnDurationSeconds", 0f);
             SetPrivateField(settings, "targetExtractDurationSeconds", 0f);
             SetPrivateField(settings, "waterRiseDurationSeconds", 0f);
+            SetPrivateField(settings, "lossFxDurationSeconds", 0f);
             return settings;
         }
 
@@ -347,6 +410,48 @@ namespace Rescue.PlayMode.Tests.Smoke
                 SpawnRecoveryCounter: 0);
         }
 
+        private static GameState CreateOverflowLossState()
+        {
+            ImmutableArray<ImmutableArray<Tile>> rows = ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new DebrisTile(DebrisType.A),
+                    new DebrisTile(DebrisType.A)),
+                ImmutableArray.Create<Tile>(
+                    new DebrisTile(DebrisType.B),
+                    new TargetTile("pup-loss", Extracted: false)));
+
+            CoreBoard board = new CoreBoard(2, 2, rows);
+
+            return new GameState(
+                Board: board,
+                Dock: new CoreDock(
+                    ImmutableArray.Create<DebrisType?>(
+                        DebrisType.B,
+                        DebrisType.C,
+                        DebrisType.D,
+                        DebrisType.E,
+                        DebrisType.B,
+                        DebrisType.C,
+                        null),
+                    Size: 7),
+                Water: new WaterState(FloodedRows: 0, ActionsUntilRise: 3, RiseInterval: 3),
+                Vine: new VineState(0, 4, ImmutableArray<TileCoord>.Empty, 0, null),
+                Targets: ImmutableArray.Create(new TargetState("pup-loss", new TileCoord(1, 1), Extracted: false, OneClearAway: false)),
+                LevelConfig: new LevelConfig(
+                    ImmutableArray.Create(DebrisType.A, DebrisType.B, DebrisType.C, DebrisType.D, DebrisType.E),
+                    null,
+                    0.0d,
+                    2),
+                RngState: new RngState(1u, 2u),
+                ActionCount: 0,
+                DockJamUsed: true,
+                UndoAvailable: true,
+                ExtractedTargetOrder: ImmutableArray<string>.Empty,
+                Frozen: false,
+                ConsecutiveEmergencySpawns: 0,
+                SpawnRecoveryCounter: 0);
+        }
+
         private readonly struct PlaybackHarness
         {
             public PlaybackHarness(
@@ -355,7 +460,8 @@ namespace Rescue.PlayMode.Tests.Smoke
                 ActionPlaybackController playbackController,
                 Transform contentRoot,
                 Transform waterRoot,
-                Transform dockPieceContainer)
+                Transform dockPieceContainer,
+                LossScreenPresenter lossScreen)
             {
                 InputPresenter = inputPresenter;
                 ViewPresenter = viewPresenter;
@@ -363,6 +469,7 @@ namespace Rescue.PlayMode.Tests.Smoke
                 ContentRoot = contentRoot;
                 WaterRoot = waterRoot;
                 DockPieceContainer = dockPieceContainer;
+                LossScreen = lossScreen;
             }
 
             public BoardInputPresenter InputPresenter { get; }
@@ -376,6 +483,8 @@ namespace Rescue.PlayMode.Tests.Smoke
             public Transform WaterRoot { get; }
 
             public Transform DockPieceContainer { get; }
+
+            public LossScreenPresenter LossScreen { get; }
         }
     }
 }

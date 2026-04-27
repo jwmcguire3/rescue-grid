@@ -20,6 +20,8 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(settings.GravityDurationSeconds, Is.GreaterThan(0f));
             Assert.That(settings.SpawnDurationSeconds, Is.GreaterThan(0f));
             Assert.That(settings.TargetExtractDurationSeconds, Is.GreaterThan(0f));
+            Assert.That(settings.WinFxDurationSeconds, Is.GreaterThan(0f));
+            Assert.That(settings.LossFxDurationSeconds, Is.GreaterThan(0f));
             Assert.That(settings.WaterRiseDurationSeconds, Is.GreaterThan(0f));
             Assert.That(settings.WaterForecastTransitionDurationSeconds, Is.GreaterThan(0f));
             Assert.That(settings.WaterForecastPulseDurationSeconds, Is.GreaterThan(0f));
@@ -42,6 +44,8 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(settings.GravityDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultGravityDurationSeconds));
             Assert.That(settings.SpawnDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultSpawnDurationSeconds));
             Assert.That(settings.TargetExtractDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultTargetExtractDurationSeconds));
+            Assert.That(settings.WinFxDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultWinFxDurationSeconds));
+            Assert.That(settings.LossFxDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultLossFxDurationSeconds));
             Assert.That(settings.WaterRiseDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultWaterRiseDurationSeconds));
             Assert.That(settings.WaterForecastTransitionDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultWaterForecastTransitionDurationSeconds));
             Assert.That(settings.WaterForecastPulseDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultWaterForecastPulseDurationSeconds));
@@ -54,6 +58,8 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(settings.GravityDurationSeconds, Is.InRange(0.12f, 0.20f));
             Assert.That(settings.SpawnDurationSeconds, Is.InRange(0.10f, 0.16f));
             Assert.That(settings.TargetExtractDurationSeconds, Is.InRange(0.12f, 0.20f));
+            Assert.That(settings.WinFxDurationSeconds, Is.InRange(0.55f, 0.65f));
+            Assert.That(settings.LossFxDurationSeconds, Is.InRange(0.55f, 0.65f));
             Assert.That(settings.WaterRiseDurationSeconds, Is.InRange(0.12f, 0.20f));
         }
 
@@ -67,6 +73,7 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(settings.PlaybackSpeedMultiplier, Is.EqualTo(2.0f));
             Assert.That(settings.RemoveDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultRemoveDurationSeconds / 2.0f));
             Assert.That(settings.GravityDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultGravityDurationSeconds / 2.0f));
+            Assert.That(settings.LossFxDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultLossFxDurationSeconds / 2.0f));
             Assert.That(settings.WaterForecastPulseDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultWaterForecastPulseDurationSeconds / 2.0f));
         }
 

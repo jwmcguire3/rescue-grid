@@ -15,6 +15,7 @@ namespace Rescue.Unity.Presentation
         [SerializeField] private TargetFeedbackPresenter? targetFeedback;
         [SerializeField] private ActionPlaybackController? playbackController;
         [SerializeField] private VictoryScreenPresenter? victoryScreen;
+        [SerializeField] private LossScreenPresenter? lossScreen;
 
         private bool dockFeedbackHandledByPlayback;
 
@@ -33,6 +34,7 @@ namespace Rescue.Unity.Presentation
             }
 
             victoryScreen?.Hide();
+            lossScreen?.Hide();
             ForceSyncToState(state, "rebuild", cancelActivePlayback: true, clearPlaybackPlan: true);
         }
 
@@ -70,6 +72,7 @@ namespace Rescue.Unity.Presentation
             CurrentState = null;
             CurrentPlaybackPlan = ActionPlaybackPlan.Empty;
             victoryScreen?.Hide();
+            lossScreen?.Hide();
 
             if (boardGrid is null)
             {
@@ -146,6 +149,8 @@ namespace Rescue.Unity.Presentation
             {
                 victoryScreen?.Hide();
             }
+
+            lossScreen?.Hide();
 
             if (boardGrid is null)
             {
@@ -234,6 +239,23 @@ namespace Rescue.Unity.Presentation
             return victoryScreen;
         }
 
+        private LossScreenPresenter? ResolveLossScreen()
+        {
+            if (lossScreen is not null)
+            {
+                return lossScreen;
+            }
+
+            lossScreen = GetComponent<LossScreenPresenter>();
+            if (lossScreen is not null)
+            {
+                return lossScreen;
+            }
+
+            lossScreen = LossScreenPresenter.EnsureInstance();
+            return lossScreen;
+        }
+
         private void FinalSyncActionResult(ActionResult result)
         {
             ForceSyncToState(
@@ -247,6 +269,14 @@ namespace Rescue.Unity.Presentation
                 boardContent?.ClearContent();
                 dockView?.ClearSlots();
                 ResolveVictoryScreen()?.Show();
+                dockFeedbackHandledByPlayback = false;
+                return;
+            }
+
+            if (IsLossOutcome(result.Outcome))
+            {
+                ResolveVictoryScreen()?.Hide();
+                ResolveLossScreen()?.Show();
                 dockFeedbackHandledByPlayback = false;
                 return;
             }
@@ -275,6 +305,11 @@ namespace Rescue.Unity.Presentation
             }
 
             return true;
+        }
+
+        private static bool IsLossOutcome(ActionOutcome outcome)
+        {
+            return outcome == ActionOutcome.LossDockOverflow || outcome == ActionOutcome.LossWaterOnTarget;
         }
     }
 }

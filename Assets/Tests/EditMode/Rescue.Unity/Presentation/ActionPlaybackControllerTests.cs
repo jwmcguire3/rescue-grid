@@ -124,6 +124,7 @@ namespace Rescue.Unity.Presentation.Tests
             SetPrivateField(settings, "spawnDurationSeconds", 0.13f);
             SetPrivateField(settings, "targetExtractDurationSeconds", 0.16f);
             SetPrivateField(settings, "winFxDurationSeconds", 0.73f);
+            SetPrivateField(settings, "lossFxDurationSeconds", 0.81f);
             SetPrivateField(settings, "waterRiseDurationSeconds", 0.15f);
             SetPrivateField(settings, "waterForecastTransitionDurationSeconds", 0.19f);
 
@@ -141,6 +142,8 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.Spawn), Is.EqualTo(0.13f));
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.TargetExtract), Is.EqualTo(0.16f));
             Assert.That(GetStepDuration(controller, new Won("pup-1", TotalActions: 3, ExtractedTargetOrder: ImmutableArray.Create("pup-1"))), Is.EqualTo(0.73f));
+            Assert.That(GetStepDuration(controller, new Lost(ActionOutcome.LossDockOverflow)), Is.EqualTo(0.81f));
+            Assert.That(GetStepDuration(controller, new Lost(ActionOutcome.LossWaterOnTarget)), Is.EqualTo(0.81f));
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.WaterRise), Is.EqualTo(0.19f));
         }
 
@@ -360,6 +363,58 @@ namespace Rescue.Unity.Presentation.Tests
             }, Is.EqualTo(new[]
             {
                 ActionPlaybackStepType.TargetExtract,
+                ActionPlaybackStepType.TerminalOutcome,
+            }));
+            Assert.That(harness.Controller.CurrentPlan[^1].StepType, Is.EqualTo(ActionPlaybackStepType.FinalSync));
+        }
+
+        [Test]
+        public void ActionPlaybackController_RoutesTerminalLossBeforeFinalSync()
+        {
+            ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
+            SpyFxEventRouter? fxRouter = harness.FxRouter as SpyFxEventRouter;
+            GameState previousState = CreateState();
+            harness.GridPresenter.RebuildGrid(previousState);
+
+            ActionResult result = new ActionResult(
+                previousState with { Frozen = true },
+                ImmutableArray.Create<ActionEvent>(
+                    new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 8, OverflowCount: 1),
+                    new Lost(ActionOutcome.LossDockOverflow)),
+                ActionOutcome.LossDockOverflow,
+                Snapshot: null);
+
+            int finalSyncCalls = 0;
+            int lossCountAtFinalSync = -1;
+
+            bool handled = harness.Controller.TryPlayAction(
+                previousState,
+                new ActionInput(new TileCoord(0, 0)),
+                result,
+                _ =>
+                {
+                    finalSyncCalls++;
+                    lossCountAtFinalSync = fxRouter?.LossDockOverflowCount ?? -1;
+                });
+
+            Assert.That(handled, Is.True);
+            Assert.That(finalSyncCalls, Is.EqualTo(1));
+            Assert.That(fxRouter, Is.Not.Null);
+            if (fxRouter is null)
+            {
+                Assert.Fail("Expected a spy FX router.");
+                return;
+            }
+
+            Assert.That(fxRouter.LossDockOverflowCount, Is.EqualTo(1));
+            Assert.That(lossCountAtFinalSync, Is.EqualTo(1));
+            Assert.That(new[]
+            {
+                harness.Controller.CurrentPlan[0].StepType,
+                harness.Controller.CurrentPlan[1].StepType,
+            }, Is.EqualTo(new[]
+            {
+                ActionPlaybackStepType.DockFeedback,
                 ActionPlaybackStepType.TerminalOutcome,
             }));
             Assert.That(harness.Controller.CurrentPlan[^1].StepType, Is.EqualTo(ActionPlaybackStepType.FinalSync));
@@ -1375,6 +1430,8 @@ namespace Rescue.Unity.Presentation.Tests
 
             public int WinCount { get; private set; }
 
+            public int LossDockOverflowCount { get; private set; }
+
             public Vector3 LastGroupClearPosition { get; private set; }
 
             protected override void PlayGroupClear(Vector3 worldPosition)
@@ -1386,6 +1443,11 @@ namespace Rescue.Unity.Presentation.Tests
             protected override void PlayWin()
             {
                 WinCount++;
+            }
+
+            protected override void PlayLossDockOverflow()
+            {
+                LossDockOverflowCount++;
             }
         }
 

@@ -100,6 +100,7 @@ namespace Rescue.Unity.Debugging
         private Button? _copyFullStateButton;
         private VisualElement? _eventLogList;
         private VictoryScreenPresenter? _victoryScreenPresenter;
+        private LossScreenPresenter? _lossScreenPresenter;
         [SerializeField] private GameStateViewPresenter? _gameStateViewPresenter;
 
         private bool _initialized;
@@ -171,6 +172,7 @@ namespace Rescue.Unity.Debugging
             _panelSettings = _document.panelSettings;
             BuildPanelTree();
             BindVictoryScreen();
+            BindLossScreen();
             ConfigureInputs();
             InitializeDefaultStateIfNeeded();
             RefreshUi();
@@ -192,6 +194,12 @@ namespace Rescue.Unity.Debugging
             {
                 _victoryScreenPresenter.ReplayRequested -= ReplayCurrentLevel;
                 _victoryScreenPresenter.NextLevelRequested -= HandleVictoryNextLevelRequested;
+            }
+
+            if (_lossScreenPresenter is not null)
+            {
+                _lossScreenPresenter.ReplayRequested -= ReplayCurrentLevel;
+                _lossScreenPresenter.TryAgainRequested -= ReplayCurrentLevel;
             }
 
             if (_instance == this)
@@ -271,7 +279,7 @@ namespace Rescue.Unity.Debugging
 
         public void ResetLevel()
         {
-            ResolveVictoryScreenPresenter()?.Hide();
+            HideTerminalScreens();
 
             if (_loadedReplay is not null)
             {
@@ -325,7 +333,7 @@ namespace Rescue.Unity.Debugging
                 return false;
             }
 
-            ResolveVictoryScreenPresenter()?.Hide();
+            HideTerminalScreens();
             ClearReplayState();
             _testLevel = null;
             _currentLevelId = nextLevelId;
@@ -400,6 +408,7 @@ namespace Rescue.Unity.Debugging
             _loadedReplay = replay;
             _replayFrameIndex = 0;
             _replaySessionPath = sessionJsonlPath;
+            HideTerminalScreens();
             _currentLevelId = replay.LevelId;
             _currentSeed = replay.Seed;
             _testLevel = null;
@@ -437,6 +446,10 @@ namespace Rescue.Unity.Debugging
             AppendActionLog($"Replay {_replayFrameIndex}", frame.Events, frame.Outcome ?? ActionOutcome.Ok);
             SetStatus($"Replay stepped to frame {_replayFrameIndex}/{_loadedReplay.Frames.Length - 1}.");
             RefreshVisualPresenter();
+            if (IsLossOutcome(frame.Outcome ?? ActionOutcome.Ok))
+            {
+                ResolveLossScreenPresenter()?.Show();
+            }
             RefreshUi();
             return true;
         }
@@ -452,6 +465,7 @@ namespace Rescue.Unity.Debugging
 
             DebugUndoEntry entry = _debugUndo.Pop();
             _currentState = entry.State;
+            HideTerminalScreens();
             SetStatus($"Debug undo restored: {entry.Reason}.");
             RefreshVisualPresenter();
             RefreshUi();
@@ -517,7 +531,7 @@ namespace Rescue.Unity.Debugging
 
         private void SetLoadedState(GameState state, string levelId, int seed, string status)
         {
-            ResolveVictoryScreenPresenter()?.Hide();
+            HideTerminalScreens();
             ClearReplayState();
             _currentState = state;
             _initialState = state;
@@ -598,6 +612,17 @@ namespace Rescue.Unity.Debugging
             return _victoryScreenPresenter;
         }
 
+        private LossScreenPresenter? ResolveLossScreenPresenter()
+        {
+            if (_lossScreenPresenter is not null)
+            {
+                return _lossScreenPresenter;
+            }
+
+            _lossScreenPresenter = LossScreenPresenter.EnsureInstance();
+            return _lossScreenPresenter;
+        }
+
         private void BindVictoryScreen()
         {
             VictoryScreenPresenter? presenter = ResolveVictoryScreenPresenter();
@@ -613,9 +638,34 @@ namespace Rescue.Unity.Debugging
             SyncVictoryScreenNextAvailability();
         }
 
+        private void BindLossScreen()
+        {
+            LossScreenPresenter? presenter = ResolveLossScreenPresenter();
+            if (presenter is null)
+            {
+                return;
+            }
+
+            presenter.ReplayRequested -= ReplayCurrentLevel;
+            presenter.ReplayRequested += ReplayCurrentLevel;
+            presenter.TryAgainRequested -= ReplayCurrentLevel;
+            presenter.TryAgainRequested += ReplayCurrentLevel;
+        }
+
         private void HandleVictoryNextLevelRequested()
         {
             LoadNextLevel();
+        }
+
+        private void HideTerminalScreens()
+        {
+            ResolveVictoryScreenPresenter()?.Hide();
+            ResolveLossScreenPresenter()?.Hide();
+        }
+
+        private static bool IsLossOutcome(ActionOutcome outcome)
+        {
+            return outcome == ActionOutcome.LossDockOverflow || outcome == ActionOutcome.LossWaterOnTarget;
         }
 
         private void SyncVictoryScreenNextAvailability()
