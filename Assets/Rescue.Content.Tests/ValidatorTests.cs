@@ -3,6 +3,8 @@ using System.Reflection;
 using System.IO;
 using NUnit.Framework;
 using Rescue.Content;
+using Rescue.Core.Pipeline;
+using Rescue.Core.State;
 
 namespace Rescue.Content.Tests
 {
@@ -165,15 +167,36 @@ namespace Rescue.Content.Tests
         [Test]
         public void Validate_AuthoredL00Level_Passes()
         {
-            string root = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-                ?? throw new IOException("Could not resolve test assembly directory.");
-            string projectRoot = Path.GetFullPath(Path.Combine(root, "..", ".."));
-            string l00Path = Path.Combine(projectRoot, "Assets", "StreamingAssets", "Levels", "L00.json");
-
-            string json = File.ReadAllText(l00Path);
+            string json = File.ReadAllText(GetAuthoredL00Path());
             ValidationResult result = Validator.Validate(json);
 
             Assert.That(result.HasErrors, Is.False, string.Join(", ", result.Errors.Select(error => error.Code)));
+        }
+
+        [Test]
+        public void AuthoredL00Level_ExpectedPath_WinsAfterFirstWaterRise()
+        {
+            LevelJson level = ContentJson.DeserializeLevel(File.ReadAllText(GetAuthoredL00Path()));
+            GameState state = Loader.LoadLevel(level, seed: 0);
+
+            ActionResult first = Pipeline.RunAction(state, new ActionInput(new TileCoord(4, 0)), new RunOptions(RecordSnapshot: false));
+
+            Assert.That(first.Outcome, Is.EqualTo(ActionOutcome.Ok));
+            Assert.That(first.Events, Has.Some.EqualTo(new WaterRose(6)));
+
+            ActionResult second = Pipeline.RunAction(first.State, new ActionInput(new TileCoord(1, 2)), new RunOptions(RecordSnapshot: false));
+
+            Assert.That(second.Outcome, Is.EqualTo(ActionOutcome.Win));
+            Assert.That(second.Events, Has.Some.EqualTo(new TargetExtracted("0", new TileCoord(2, 0))));
+            Assert.That(second.Events, Has.Some.TypeOf<Won>());
+        }
+
+        private static string GetAuthoredL00Path()
+        {
+            string root = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+                ?? throw new IOException("Could not resolve test assembly directory.");
+            string projectRoot = Path.GetFullPath(Path.Combine(root, "..", ".."));
+            return Path.Combine(projectRoot, "Assets", "StreamingAssets", "Levels", "L00.json");
         }
     }
 }

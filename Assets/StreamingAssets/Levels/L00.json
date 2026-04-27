@@ -5,13 +5,13 @@
     "width": 6,
     "height": 7,
     "tiles": [
-      [".", ".", ".", ".", ".", "."],
-      [".", ".", "C", ".", "D", "."],
-      ["T0", "CR", ".", ".", ".", "."],
-      ["CR", "B", ".", ".", ".", "."],
-      [".", "B", ".", ".", ".", "."],
+      ["CR", "CR", "CR", ".", ".", "."],
+      [".", ".", "B", ".", ".", "."],
+      ["T0", "CR", "B", ".", ".", "."],
+      ["CR", ".", "CR", ".", ".", "."],
       ["A", "A", ".", ".", ".", "."],
-      [".", "A", ".", ".", ".", "."]
+      [".", ".", ".", ".", ".", "."],
+      [".", ".", ".", ".", ".", "."]
     ]
   },
   "debrisTypePool": ["A", "B", "C", "D"],
@@ -37,7 +37,7 @@
   },
   "meta": {
     "intent": "Teach the core rule through contrast: thinking is free, but the first valid action releases the held water and makes danger advance.",
-    "expectedPath": "Tap the visible bottom-left A group, watch the first flood row appear, then clear the B pair to pop both remaining blockers and free the puppy.",
+    "expectedPath": "Tap the visible lower-left A pair at row 4, col 0, watch the first flood row appear, then tap the B pair at row 1, col 2 to pop the side blocker and free the puppy.",
     "expectedFailMode": "The player treats the board like static cleanup and misses the authored contrast between planning time and action time.",
     "whatItProves": "The player can learn the prototype's defining timing rule through interaction instead of explanation.",
     "notes": "The opening A group is intentionally parked beside the future flood edge so the first water rise reads immediately.",
