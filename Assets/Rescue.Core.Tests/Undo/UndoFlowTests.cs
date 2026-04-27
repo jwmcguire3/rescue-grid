@@ -89,6 +89,45 @@ namespace Rescue.Core.Tests.Undo
         }
 
         [Test]
+        public void UndoRestoresPreActionTargetReadinessState()
+        {
+            GameState original = PipelineTestFixtures.CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    PipelineTestFixtures.DebrisRow(DebrisType.A, DebrisType.A, DebrisType.C),
+                    PipelineTestFixtures.Row(new DebrisTile(DebrisType.B), new TargetTile("target", Extracted: false), new EmptyTile()),
+                    PipelineTestFixtures.Row(new DebrisTile(DebrisType.B), new EmptyTile(), new EmptyTile())),
+                targets: ImmutableArray.Create(
+                    new TargetState("target", new TileCoord(1, 1), TargetReadiness.Progressing)));
+
+            ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(original, new ActionInput(new TileCoord(0, 0)));
+            GameState restored = UndoGuard.PerformUndo(result.State, result.Snapshot!);
+
+            Assert.That(result.State.Targets[0].Readiness, Is.EqualTo(TargetReadiness.OneClearAway));
+            Assert.That(restored.Targets[0].Readiness, Is.EqualTo(TargetReadiness.Progressing));
+            Assert.That(restored, Is.EqualTo(original with { UndoAvailable = false }));
+        }
+
+        [Test]
+        public void UndoRestoresPreActionExtractionLatchState()
+        {
+            GameState original = PipelineTestFixtures.CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    PipelineTestFixtures.DebrisRow(DebrisType.A, DebrisType.A, DebrisType.C),
+                    PipelineTestFixtures.Row(new EmptyTile(), new TargetTile("target", Extracted: false), new EmptyTile()),
+                    PipelineTestFixtures.EmptyRow(3)),
+                targets: ImmutableArray.Create(
+                    new TargetState("target", new TileCoord(1, 1), TargetReadiness.ExtractableLatched)));
+
+            ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(original, new ActionInput(new TileCoord(0, 0)));
+            GameState restored = UndoGuard.PerformUndo(result.State, result.Snapshot!);
+
+            Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.Win));
+            Assert.That(result.State.Targets[0].Readiness, Is.EqualTo(TargetReadiness.Extracted));
+            Assert.That(restored.Targets[0].Readiness, Is.EqualTo(TargetReadiness.ExtractableLatched));
+            Assert.That(restored, Is.EqualTo(original with { UndoAvailable = false }));
+        }
+
+        [Test]
         public void UndoRestoresWaterStateExactly()
         {
             GameState original = PipelineTestFixtures.CreateState(
@@ -141,6 +180,68 @@ namespace Rescue.Core.Tests.Undo
 
             Assert.That(restored.Targets, Is.EqualTo(original.Targets));
             Assert.That(restored.LevelConfig.WaterContactMode, Is.EqualTo(WaterContactMode.OneTickGrace));
+            Assert.That(restored, Is.EqualTo(original with { UndoAvailable = false }));
+        }
+
+        [Test]
+        public void UndoAfterDistressedExpiredLossRestoresPreActionDistressedState()
+        {
+            GameState original = PipelineTestFixtures.CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    PipelineTestFixtures.DebrisRow(DebrisType.A, DebrisType.A, DebrisType.B),
+                    PipelineTestFixtures.DebrisRow(DebrisType.C, DebrisType.C, DebrisType.B),
+                    PipelineTestFixtures.Row(new EmptyTile(), new EmptyTile(), new TargetTile("target", Extracted: false))),
+                targets: ImmutableArray.Create(
+                    new TargetState("target", new TileCoord(2, 2), TargetReadiness.Distressed)))
+                with
+                {
+                    Water = new WaterState(FloodedRows: 1, ActionsUntilRise: 3, RiseInterval: 3),
+                    LevelConfig = PipelineTestFixtures.CreateLevelConfig() with
+                    {
+                        WaterContactMode = WaterContactMode.OneTickGrace,
+                    },
+                };
+
+            ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(original, new ActionInput(new TileCoord(0, 0)));
+
+            Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.LossDistressedExpired));
+            Assert.That(result.State.Frozen, Is.True);
+            Assert.That(UndoGuard.CanUndo(result.State, result.Snapshot), Is.True);
+
+            GameState restored = UndoGuard.PerformUndo(result.State, result.Snapshot!);
+
+            Assert.That(restored.Targets[0].Readiness, Is.EqualTo(TargetReadiness.Distressed));
+            Assert.That(restored.Frozen, Is.False);
+            Assert.That(restored, Is.EqualTo(original with { UndoAvailable = false }));
+        }
+
+        [Test]
+        public void UndoRestoresAssistedSpawnDeterminismStateExactly()
+        {
+            GameState original = PipelineTestFixtures.CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    PipelineTestFixtures.DebrisRow(DebrisType.A, DebrisType.A, DebrisType.B),
+                    PipelineTestFixtures.Row(new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                    PipelineTestFixtures.DebrisRow(DebrisType.C, DebrisType.D, DebrisType.E)))
+                with
+                {
+                    ConsecutiveEmergencySpawns = 1,
+                    SpawnRecoveryCounter = 2,
+                    DebugSpawnOverride = new SpawnOverride(ForceEmergency: true, OverrideAssistanceChance: 1.0d),
+                    LevelConfig = PipelineTestFixtures.CreateLevelConfig(assistanceChance: 1.0d) with
+                    {
+                        ConsecutiveEmergencyCap = 10,
+                    },
+                };
+
+            ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(original, new ActionInput(new TileCoord(0, 0)));
+            GameState restored = UndoGuard.PerformUndo(result.State, result.Snapshot!);
+
+            Assert.That(result.State.ConsecutiveEmergencySpawns, Is.Not.EqualTo(original.ConsecutiveEmergencySpawns));
+            Assert.That(restored.ConsecutiveEmergencySpawns, Is.EqualTo(original.ConsecutiveEmergencySpawns));
+            Assert.That(restored.SpawnRecoveryCounter, Is.EqualTo(original.SpawnRecoveryCounter));
+            Assert.That(restored.DebugSpawnOverride, Is.EqualTo(original.DebugSpawnOverride));
+            Assert.That(restored.RngState, Is.EqualTo(original.RngState));
             Assert.That(restored, Is.EqualTo(original with { UndoAvailable = false }));
         }
 

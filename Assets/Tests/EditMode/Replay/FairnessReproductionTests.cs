@@ -84,6 +84,31 @@ namespace Rescue.Replay.Tests
         }
 
         [Test]
+        public void GraceModeReplay_ReproducesDistressedExpiredAction()
+        {
+            LevelJson level = CreateWaterModeReplayLevel(WaterContactMode.OneTickGrace);
+            int seed = 779;
+            ActionInput[] script =
+            {
+                new ActionInput(new TileCoord(0, 0)),
+                new ActionInput(new TileCoord(1, 0)),
+            };
+
+            string sessionPath = Path.Combine(_testDir, "grace-distressed-expired.jsonl");
+            WriteSession(level, seed, script, sessionPath);
+
+            ReplayResult replay = ReplayRunner.ReplaySession(
+                sessionPath,
+                (_, replaySeed) => Loader.LoadLevel(level, replaySeed));
+
+            Assert.That(replay.Verified, Is.True);
+            Assert.That(replay.Frames[1].State.Targets[0].Readiness, Is.EqualTo(TargetReadiness.Distressed));
+            Assert.That(replay.FinalFrame.Outcome, Is.EqualTo(ActionOutcome.LossDistressedExpired));
+            Assert.That(replay.FinalFrame.Events, Has.Some.EqualTo(new TargetDistressedExpired("0", new TileCoord(2, 2))));
+            Assert.That(replay.FinalFrame.Events, Has.Some.EqualTo(new Lost(ActionOutcome.LossDistressedExpired)));
+        }
+
+        [Test]
         public void CaptureOnLossDump_PreservesEnoughDataToReplayIdenticalFailure()
         {
             LevelJson level = CreateWaterLossLevel();
