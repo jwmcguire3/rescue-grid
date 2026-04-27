@@ -10,16 +10,19 @@
         "projectUniqueName": "C:\\Users\\jwmcg\\OneDrive\\Documents\\AI Projects\\Live Envirnments\\rescue-grid\\Tools\\LevelValidator\\LevelValidator.csproj",
         "projectName": "LevelValidator",
         "projectPath": "C:\\Users\\jwmcg\\OneDrive\\Documents\\AI Projects\\Live Envirnments\\rescue-grid\\Tools\\LevelValidator\\LevelValidator.csproj",
-        "packagesPath": "C:\\Users\\jwmcg\\OneDrive\\Documents\\AI Projects\\Live Envirnments\\rescue-grid\\.nuget\\packages",
+        "packagesPath": "C:\\Users\\jwmcg\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\jwmcg\\OneDrive\\Documents\\AI Projects\\Live Envirnments\\rescue-grid\\Tools\\LevelValidator\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\jwmcg\\OneDrive\\Documents\\AI Projects\\Live Envirnments\\rescue-grid\\Tools\\LevelValidator\\NuGet.Config",
-          "C:\\Users\\jwmcg\\OneDrive\\Documents\\AI Projects\\Live Envirnments\\rescue-grid\\.codex-home\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\jwmcg\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
         ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
         "frameworks": {
           "net10.0": {
             "targetAlias": "net10.0",
