@@ -16,14 +16,15 @@ namespace Rescue.Unity.Presentation
         private const string DefaultImageAssetPath = "Assets/Rescue.Unity/Art/Win/RescueRowRestoredVictory.png";
         private const string RuntimeThemeResourcePath = "Rescue.Unity/Debug/UnityDefaultRuntimeTheme";
         private const int PanelSortingOrder = 1100;
+        private const float VictoryImageWidth = 941.0f;
+        private const float VictoryImageHeight = 1672.0f;
 
         [SerializeField] private Texture2D? victoryImage;
         [SerializeField] private MonoBehaviour? maeReactionHook;
 
         private UIDocument? document;
         private VisualElement? overlayRoot;
-        private Label? headlineLabel;
-        private Label? aftercareLabel;
+        private VisualElement? victoryFrame;
         private Button? replayButton;
         private Button? nextLevelButton;
         private bool nextLevelAvailable = true;
@@ -36,10 +37,6 @@ namespace Rescue.Unity.Presentation
         public bool IsVisible => isVisible;
 
         public bool IsNextLevelAvailable => nextLevelAvailable;
-
-        public string HeadlineText => headlineLabel?.text ?? "Rescue complete";
-
-        public string AftercareText => aftercareLabel?.text ?? "Warm kennel check complete.";
 
         public static VictoryScreenPresenter EnsureInstance()
         {
@@ -230,11 +227,17 @@ namespace Rescue.Unity.Presentation
             overlayRoot.style.justifyContent = Justify.Center;
             overlayRoot.style.backgroundColor = new Color(0f, 0f, 0f, 0.72f);
 
+            victoryFrame = new VisualElement { name = "victory-frame" };
+            victoryFrame.style.position = Position.Relative;
+            victoryFrame.style.width = Length.Percent(100.0f);
+            victoryFrame.style.height = Length.Percent(100.0f);
+            victoryFrame.RegisterCallback<GeometryChangedEvent>(HandleVictoryFrameGeometryChanged);
+
             Image image = new Image
             {
                 name = "victory-screen-image",
                 image = ResolveVictoryImage(),
-                scaleMode = ScaleMode.ScaleToFit,
+                scaleMode = ScaleMode.StretchToFill,
             };
             image.style.position = Position.Absolute;
             image.style.left = 0f;
@@ -242,44 +245,49 @@ namespace Rescue.Unity.Presentation
             image.style.right = 0f;
             image.style.bottom = 0f;
 
-            headlineLabel = CreateOverlayLabel("victory-headline-label", "Rescue complete", 8.0f, 8.0f, 84.0f, 7.0f, 36);
-            Label framingLabel = CreateOverlayLabel(
-                "victory-framing-label",
-                "Every puppy is out of danger.",
-                10.0f,
-                15.0f,
-                80.0f,
-                5.0f,
-                20);
-
-            aftercareLabel = CreateOverlayLabel(
-                "victory-aftercare-card",
-                "Aftercare: dry towel, warm kennel, Mae watching close.",
-                12.0f,
-                68.0f,
-                76.0f,
-                7.5f,
-                18);
-            aftercareLabel.style.backgroundColor = new Color(0.04f, 0.10f, 0.12f, 0.72f);
-            aftercareLabel.style.paddingTop = 8f;
-            aftercareLabel.style.paddingRight = 10f;
-            aftercareLabel.style.paddingBottom = 8f;
-            aftercareLabel.style.paddingLeft = 10f;
-
             replayButton = CreateHitZoneButton("victory-replay-button", "Replay", 7.5f, 87.5f, 35.0f, 8.5f);
             replayButton.clicked += RequestReplay;
 
             nextLevelButton = CreateHitZoneButton("victory-next-level-button", "Next Level", 48.0f, 87.5f, 44.0f, 8.5f);
             nextLevelButton.clicked += RequestNextLevel;
 
-            overlayRoot.Add(image);
-            overlayRoot.Add(headlineLabel);
-            overlayRoot.Add(framingLabel);
-            overlayRoot.Add(aftercareLabel);
-            overlayRoot.Add(replayButton);
-            overlayRoot.Add(nextLevelButton);
+            victoryFrame.Add(image);
+            victoryFrame.Add(replayButton);
+            victoryFrame.Add(nextLevelButton);
+            overlayRoot.Add(victoryFrame);
             root.Add(overlayRoot);
             SetNextLevelAvailable(nextLevelAvailable);
+        }
+
+        private void HandleVictoryFrameGeometryChanged(GeometryChangedEvent evt)
+        {
+            if (victoryFrame is null || overlayRoot is null)
+            {
+                return;
+            }
+
+            float availableWidth = overlayRoot.resolvedStyle.width;
+            float availableHeight = overlayRoot.resolvedStyle.height;
+            if (availableWidth <= 0f || availableHeight <= 0f)
+            {
+                return;
+            }
+
+            float imageAspect = VictoryImageWidth / VictoryImageHeight;
+            float availableAspect = availableWidth / availableHeight;
+            float frameWidth = availableWidth;
+            float frameHeight = availableHeight;
+            if (availableAspect > imageAspect)
+            {
+                frameWidth = availableHeight * imageAspect;
+            }
+            else
+            {
+                frameHeight = availableWidth / imageAspect;
+            }
+
+            victoryFrame.style.width = frameWidth;
+            victoryFrame.style.height = frameHeight;
         }
 
         private Texture2D? ResolveVictoryImage()
@@ -320,28 +328,6 @@ namespace Rescue.Unity.Presentation
             return maeReactionHook;
         }
 
-        private static Label CreateOverlayLabel(
-            string name,
-            string text,
-            float leftPercent,
-            float topPercent,
-            float widthPercent,
-            float heightPercent,
-            int fontSize)
-        {
-            Label label = new Label(text) { name = name };
-            label.style.position = Position.Absolute;
-            label.style.left = Length.Percent(leftPercent);
-            label.style.top = Length.Percent(topPercent);
-            label.style.width = Length.Percent(widthPercent);
-            label.style.height = Length.Percent(heightPercent);
-            label.style.unityTextAlign = TextAnchor.MiddleCenter;
-            label.style.whiteSpace = WhiteSpace.Normal;
-            label.style.color = Color.white;
-            label.style.fontSize = fontSize;
-            return label;
-        }
-
         private static Button CreateHitZoneButton(string name, string text, float leftPercent, float topPercent, float widthPercent, float heightPercent)
         {
             Button button = new Button { name = name, text = text };
@@ -350,8 +336,12 @@ namespace Rescue.Unity.Presentation
             button.style.top = Length.Percent(topPercent);
             button.style.width = Length.Percent(widthPercent);
             button.style.height = Length.Percent(heightPercent);
-            button.style.backgroundColor = new Color(0.06f, 0.13f, 0.16f, 0.88f);
-            button.style.color = Color.white;
+            button.style.backgroundColor = Color.clear;
+            button.style.borderTopWidth = 0f;
+            button.style.borderRightWidth = 0f;
+            button.style.borderBottomWidth = 0f;
+            button.style.borderLeftWidth = 0f;
+            button.style.color = Color.clear;
             button.style.unityFontStyleAndWeight = FontStyle.Bold;
             button.style.fontSize = 18;
             return button;

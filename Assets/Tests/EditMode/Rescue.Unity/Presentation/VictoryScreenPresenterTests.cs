@@ -62,15 +62,35 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
-        public void VictoryScreenPresenter_ProvidesRescueFramingAndAftercareCopy()
+        public void VictoryScreenPresenter_UsesPngOnlyWithoutGeneratedCopyLayers()
         {
             VictoryScreenPresenter presenter = CreatePresenter();
 
             presenter.Show();
 
-            Assert.That(presenter.HeadlineText, Is.EqualTo("Rescue complete"));
-            Assert.That(presenter.AftercareText, Does.Contain("Aftercare"));
-            Assert.That(presenter.AftercareText, Does.Contain("kennel"));
+            VisualElement rootElement = root!.GetComponent<UIDocument>().rootVisualElement;
+            Assert.That(rootElement.Q<VisualElement>("victory-frame"), Is.Not.Null);
+            Assert.That(rootElement.Q<Label>("victory-headline-label"), Is.Null);
+            Assert.That(rootElement.Q<Label>("victory-framing-label"), Is.Null);
+            Assert.That(rootElement.Q<Label>("victory-aftercare-card"), Is.Null);
+        }
+
+        [Test]
+        public void VictoryScreenPresenter_KeepsReplayAndNextLevelHitZones()
+        {
+            VictoryScreenPresenter presenter = CreatePresenter();
+
+            presenter.Show();
+
+            VisualElement rootElement = root!.GetComponent<UIDocument>().rootVisualElement;
+            VisualElement? frame = rootElement.Q<VisualElement>("victory-frame");
+            Button? replayButton = frame?.Q<Button>("victory-replay-button");
+            Button? nextLevelButton = frame?.Q<Button>("victory-next-level-button");
+
+            Assert.That(frame, Is.Not.Null);
+            Assert.That(rootElement.Q<Image>("victory-screen-image"), Is.Not.Null);
+            Assert.That(replayButton, Is.Not.Null);
+            Assert.That(nextLevelButton, Is.Not.Null);
         }
 
         private VictoryScreenPresenter CreatePresenter()
