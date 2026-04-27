@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Rescue.Content;
 using Rescue.Core.Pipeline;
+using Rescue.Core.Rules;
 using Rescue.Core.State;
 
 namespace Rescue.Telemetry
@@ -13,6 +15,19 @@ namespace Rescue.Telemetry
         public bool FirstActionFired { get; set; }
         public long? PreviousActionEndMs { get; set; }
         public long LevelStartMs { get; set; }
+        public List<PendingAssistedSpawn> PendingAssistedSpawns { get; } = new List<PendingAssistedSpawn>();
+    }
+
+    public sealed class PendingAssistedSpawn
+    {
+        public PendingAssistedSpawn(int actionIndex, ImmutableArray<DebrisType> spawnedTypes)
+        {
+            ActionIndex = actionIndex;
+            SpawnedTypes = spawnedTypes;
+        }
+
+        public int ActionIndex { get; }
+        public ImmutableArray<DebrisType> SpawnedTypes { get; }
     }
 
     public static class TelemetryHooks
@@ -109,6 +124,8 @@ namespace Rescue.Telemetry
                 UndoAvailable: stateBefore.UndoAvailable,
                 DebugSpawnOverride: stateBefore.DebugSpawnOverride));
 
+            EmitAssistedSpawnFollowUps(levelId, timestampMs, actionIndex, result.Events, session, logger);
+
             // dock_occupancy
             int occupancy = CountOccupancy(result.State.Dock);
             logger.Append(new DockOccupancyEvent(
@@ -116,21 +133,59 @@ namespace Rescue.Telemetry
                 TimestampMs: timestampMs,
                 ActionIndex: actionIndex,
                 Occupancy: occupancy,
-                WarningLevel: DockHelpers.GetWarningLevel(result.State.Dock)));
+                WarningLevel: DockHelpers.GetWarningLevel(result.State.Dock),
+                DockSize: result.State.Dock.Size));
+
+            int? nextFloodRow = WaterHelpers.GetNextFloodRow(result.State.Board, result.State.Water);
+            logger.Append(new WaterForecastEvent(
+                LevelId: levelId,
+                TimestampMs: timestampMs,
+                ActionIndex: actionIndex,
+                WaterMode: result.State.LevelConfig.WaterContactMode.ToString(),
+                NextFloodRow: nextFloodRow,
+                ForecastAvailable: nextFloodRow.HasValue,
+                ActionsUntilRise: result.State.Water.ActionsUntilRise));
 
             // Pipeline event scan
             bool dockJamWasActive = stateBefore.DockJamActive;
+            int finalRescueOverflowCount = 0;
+            DebugSpawnOverrideApplied? spawnOverrideApplied = null;
+            Spawned? spawned = null;
 
             foreach (ActionEvent ev in result.Events)
             {
                 switch (ev)
                 {
+                    case DockOverflowTriggered overflow:
+                        finalRescueOverflowCount = overflow.OverflowCount;
+                        break;
+
+                    case TargetProgressed progressed:
+                        AppendTargetTransition(levelId, timestampMs, actionIndex, progressed.TargetId, progressed.Coord, TargetReadiness.Progressing, stateBefore, logger);
+                        break;
+
+                    case TargetOneClearAway oneClearAway:
+                        AppendTargetTransition(levelId, timestampMs, actionIndex, oneClearAway.TargetId, oneClearAway.Coord, TargetReadiness.OneClearAway, stateBefore, logger);
+                        break;
+
+                    case TargetExtractionLatched latched:
+                        AppendTargetTransition(levelId, timestampMs, actionIndex, latched.TargetId, latched.Coord, TargetReadiness.ExtractableLatched, stateBefore, logger);
+                        break;
+
                     case WaterRose:
                         logger.Append(new WaterRiseEvent(
                             LevelId: levelId,
                             TimestampMs: timestampMs,
                             ActionIndex: actionIndex,
                             NewFloodedRows: result.State.Water.FloodedRows));
+                        break;
+
+                    case VinePreviewChanged preview:
+                        logger.Append(new VinePreviewEvent(
+                            LevelId: levelId,
+                            TimestampMs: timestampMs,
+                            ActionIndex: actionIndex,
+                            PendingTile: preview.PendingTile));
                         break;
 
                     case VineGrown vg:
@@ -142,6 +197,14 @@ namespace Rescue.Telemetry
                         break;
 
                     case TargetExtracted te:
+                        logger.Append(new TargetStateTransitionEvent(
+                            LevelId: levelId,
+                            TimestampMs: timestampMs,
+                            ActionIndex: actionIndex,
+                            TargetId: te.TargetId,
+                            Coord: te.Coord,
+                            FromState: TargetReadiness.ExtractableLatched,
+                            ToState: TargetReadiness.Extracted));
                         logger.Append(new TargetExtractedEvent(
                             LevelId: levelId,
                             TimestampMs: timestampMs,
@@ -156,6 +219,20 @@ namespace Rescue.Telemetry
                             ActionIndex: actionIndex,
                             TargetId: entered.TargetId,
                             Transition: "entered"));
+                        logger.Append(new TargetStateTransitionEvent(
+                            LevelId: levelId,
+                            TimestampMs: timestampMs,
+                            ActionIndex: actionIndex,
+                            TargetId: entered.TargetId,
+                            Coord: entered.Coord,
+                            FromState: FindTargetReadiness(stateBefore, entered.TargetId),
+                            ToState: TargetReadiness.Distressed));
+                        logger.Append(new GraceEvent(
+                            LevelId: levelId,
+                            TimestampMs: timestampMs,
+                            ActionIndex: actionIndex,
+                            TargetId: entered.TargetId,
+                            Outcome: "entered"));
                         break;
 
                     case TargetDistressedRecovered recovered:
@@ -165,6 +242,20 @@ namespace Rescue.Telemetry
                             ActionIndex: actionIndex,
                             TargetId: recovered.TargetId,
                             Transition: "recovered"));
+                        logger.Append(new TargetStateTransitionEvent(
+                            LevelId: levelId,
+                            TimestampMs: timestampMs,
+                            ActionIndex: actionIndex,
+                            TargetId: recovered.TargetId,
+                            Coord: recovered.Coord,
+                            FromState: TargetReadiness.Distressed,
+                            ToState: TargetReadiness.ExtractableLatched));
+                        logger.Append(new GraceEvent(
+                            LevelId: levelId,
+                            TimestampMs: timestampMs,
+                            ActionIndex: actionIndex,
+                            TargetId: recovered.TargetId,
+                            Outcome: "recovered"));
                         break;
 
                     case TargetDistressedExpired expired:
@@ -174,6 +265,12 @@ namespace Rescue.Telemetry
                             ActionIndex: actionIndex,
                             TargetId: expired.TargetId,
                             Transition: "expired"));
+                        logger.Append(new GraceEvent(
+                            LevelId: levelId,
+                            TimestampMs: timestampMs,
+                            ActionIndex: actionIndex,
+                            TargetId: expired.TargetId,
+                            Outcome: "failed"));
                         break;
 
                     case DockJamTriggered _:
@@ -182,6 +279,54 @@ namespace Rescue.Telemetry
                             TimestampMs: timestampMs,
                             ActionIndex: actionIndex));
                         break;
+
+                    case DebugSpawnOverrideApplied applied:
+                        spawnOverrideApplied = applied;
+                        break;
+
+                    case Spawned spawnedEvent:
+                        spawned = spawnedEvent;
+                        break;
+                }
+            }
+
+            EmitAssistedSpawn(levelId, timestampMs, actionIndex, stateBefore, spawnOverrideApplied, spawned, session, logger);
+
+            if (IsDeadboardLike(result.State) && result.Outcome == ActionOutcome.Ok)
+            {
+                logger.Append(new DeadboardLikeStateEvent(
+                    LevelId: levelId,
+                    TimestampMs: timestampMs,
+                    ActionIndex: actionIndex,
+                    Reason: "no_valid_groups"));
+            }
+
+            if (result.Outcome == ActionOutcome.Win)
+            {
+                string? finalTargetId = GetFinalExtractedTargetId(result.Events);
+                bool overflowWouldHaveFailed = finalRescueOverflowCount > 0;
+                logger.Append(new FinalRescueEvent(
+                    LevelId: levelId,
+                    TimestampMs: timestampMs,
+                    ActionIndex: actionIndex,
+                    TargetId: finalTargetId,
+                    DockOverflowWouldHaveFailed: overflowWouldHaveFailed,
+                    HazardAdvanceSkipped: true));
+                logger.Append(new HazardAdvanceSkippedEvent(
+                    LevelId: levelId,
+                    TimestampMs: timestampMs,
+                    ActionIndex: actionIndex,
+                    Reason: "final_rescue",
+                    WaterSkipped: true,
+                    VineSkipped: true));
+
+                if (overflowWouldHaveFailed)
+                {
+                    logger.Append(new FinalRescueDockOverflowOverrideEvent(
+                        LevelId: levelId,
+                        TimestampMs: timestampMs,
+                        ActionIndex: actionIndex,
+                        OverflowCount: finalRescueOverflowCount));
                 }
             }
 
@@ -343,6 +488,274 @@ namespace Rescue.Telemetry
                 DefaultCrateHp: overrides.DefaultCrateHp,
                 VineGrowthThreshold: overrides.VineGrowthThreshold,
                 WaterContactMode: overrides.WaterContactMode?.ToString()));
+        }
+
+        private static void AppendTargetTransition(
+            string levelId,
+            long timestampMs,
+            int actionIndex,
+            string targetId,
+            TileCoord coord,
+            TargetReadiness toState,
+            GameState stateBefore,
+            TelemetryLogger logger)
+        {
+            logger.Append(new TargetStateTransitionEvent(
+                LevelId: levelId,
+                TimestampMs: timestampMs,
+                ActionIndex: actionIndex,
+                TargetId: targetId,
+                Coord: coord,
+                FromState: FindTargetReadiness(stateBefore, targetId),
+                ToState: toState));
+        }
+
+        private static TargetReadiness FindTargetReadiness(GameState state, string targetId)
+        {
+            for (int i = 0; i < state.Targets.Length; i++)
+            {
+                if (state.Targets[i].TargetId == targetId)
+                {
+                    return state.Targets[i].Readiness;
+                }
+            }
+
+            return TargetReadiness.Trapped;
+        }
+
+        private static string? GetFinalExtractedTargetId(ImmutableArray<ActionEvent> events)
+        {
+            for (int i = 0; i < events.Length; i++)
+            {
+                if (events[i] is Won won)
+                {
+                    return won.FinalExtractedTargetId;
+                }
+            }
+
+            for (int i = events.Length - 1; i >= 0; i--)
+            {
+                if (events[i] is TargetExtracted extracted)
+                {
+                    return extracted.TargetId;
+                }
+            }
+
+            return null;
+        }
+
+        private static void EmitAssistedSpawnFollowUps(
+            string levelId,
+            long timestampMs,
+            int actionIndex,
+            ImmutableArray<ActionEvent> events,
+            TelemetrySessionState session,
+            TelemetryLogger logger)
+        {
+            DebrisType? removedType = null;
+            for (int i = 0; i < events.Length; i++)
+            {
+                if (events[i] is GroupRemoved removed)
+                {
+                    removedType = removed.Type;
+                    break;
+                }
+            }
+
+            for (int i = session.PendingAssistedSpawns.Count - 1; i >= 0; i--)
+            {
+                PendingAssistedSpawn pending = session.PendingAssistedSpawns[i];
+                int actionsElapsed = actionIndex - pending.ActionIndex;
+                if (actionsElapsed > 2)
+                {
+                    session.PendingAssistedSpawns.RemoveAt(i);
+                    continue;
+                }
+
+                if (actionsElapsed <= 0 || !removedType.HasValue || !ContainsDebrisType(pending.SpawnedTypes, removedType.Value))
+                {
+                    continue;
+                }
+
+                logger.Append(new AssistedSpawnFollowUpEvent(
+                    LevelId: levelId,
+                    TimestampMs: timestampMs,
+                    OriginalActionIndex: pending.ActionIndex,
+                    FollowUpActionIndex: actionIndex,
+                    UsedType: removedType.Value));
+                session.PendingAssistedSpawns.RemoveAt(i);
+            }
+        }
+
+        private static void EmitAssistedSpawn(
+            string levelId,
+            long timestampMs,
+            int actionIndex,
+            GameState stateBefore,
+            DebugSpawnOverrideApplied? overrideApplied,
+            Spawned? spawned,
+            TelemetrySessionState session,
+            TelemetryLogger logger)
+        {
+            if (spawned is null || spawned.Pieces.IsDefaultOrEmpty)
+            {
+                return;
+            }
+
+            bool emergencyRequested = IsEmergencyRequested(stateBefore);
+            bool emergencyApplied = IsEmergencyApplied(stateBefore, emergencyRequested);
+            double effectiveAssistanceChance = EffectiveAssistanceChance(stateBefore, emergencyApplied);
+            if (overrideApplied is not null)
+            {
+                emergencyRequested = overrideApplied.EmergencyRequested;
+                emergencyApplied = overrideApplied.EmergencyApplied;
+                effectiveAssistanceChance = overrideApplied.EffectiveAssistanceChance;
+            }
+
+            if (effectiveAssistanceChance <= 0.0d && overrideApplied is null)
+            {
+                return;
+            }
+
+            ImmutableArray<DebrisType>.Builder spawnedTypes = ImmutableArray.CreateBuilder<DebrisType>(spawned.Pieces.Length);
+            for (int i = 0; i < spawned.Pieces.Length; i++)
+            {
+                spawnedTypes.Add(spawned.Pieces[i].Type);
+            }
+
+            logger.Append(new AssistedSpawnEvent(
+                LevelId: levelId,
+                TimestampMs: timestampMs,
+                ActionIndex: actionIndex,
+                Reason: BuildAssistedSpawnReason(stateBefore, overrideApplied),
+                Context: BuildAssistedSpawnContext(stateBefore),
+                SpawnCount: spawned.Pieces.Length,
+                EmergencyRequested: emergencyRequested,
+                EmergencyApplied: emergencyApplied,
+                EffectiveAssistanceChance: effectiveAssistanceChance));
+
+            session.PendingAssistedSpawns.Add(new PendingAssistedSpawn(actionIndex, spawnedTypes.ToImmutable()));
+        }
+
+        private static bool IsEmergencyRequested(GameState state)
+        {
+            if (state.DebugSpawnOverride?.ForceEmergency == true)
+            {
+                return true;
+            }
+
+            if (state.DebugSpawnOverride?.ForceEmergency == false)
+            {
+                return false;
+            }
+
+            return CountOccupancy(state.Dock) >= 5 || HasTargetOnNextFloodRow(state);
+        }
+
+        private static bool IsEmergencyApplied(GameState state, bool emergencyRequested)
+        {
+            return emergencyRequested && state.ConsecutiveEmergencySpawns < state.LevelConfig.ConsecutiveEmergencyCap;
+        }
+
+        private static double EffectiveAssistanceChance(GameState state, bool emergencyApplied)
+        {
+            double chance = state.DebugSpawnOverride?.OverrideAssistanceChance ?? state.LevelConfig.AssistanceChance;
+            if (emergencyApplied)
+            {
+                chance += 0.2d;
+            }
+
+            if (chance < 0.0d) return 0.0d;
+            if (chance > 1.0d) return 1.0d;
+            return chance;
+        }
+
+        private static string BuildAssistedSpawnReason(GameState state, DebugSpawnOverrideApplied? overrideApplied)
+        {
+            if (overrideApplied is not null)
+            {
+                return "debug_override";
+            }
+
+            List<string> reasons = new List<string>();
+            if (CountOccupancy(state.Dock) >= 5) reasons.Add("dock_pressure");
+            if (HasTargetOnNextFloodRow(state)) reasons.Add("water_pressure");
+            if (state.SpawnRecoveryCounter > 0) reasons.Add("singleton_recovery");
+            if (HasUnextractedTarget(state)) reasons.Add("route_bias");
+            return reasons.Count == 0 ? "baseline_assistance" : string.Join("+", reasons);
+        }
+
+        private static string BuildAssistedSpawnContext(GameState state)
+        {
+            int? nextFloodRow = WaterHelpers.GetNextFloodRow(state.Board, state.Water);
+            return $"dock={CountOccupancy(state.Dock)}/{state.Dock.Size};nextFloodRow={FormatNullableInt(nextFloodRow)};waterMode={state.LevelConfig.WaterContactMode};recovery={state.SpawnRecoveryCounter}";
+        }
+
+        private static string FormatNullableInt(int? value)
+        {
+            return value.HasValue ? value.Value.ToString() : "none";
+        }
+
+        private static bool HasTargetOnNextFloodRow(GameState state)
+        {
+            int? nextFloodRow = WaterHelpers.GetNextFloodRow(state.Board, state.Water);
+            if (!nextFloodRow.HasValue)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < state.Targets.Length; i++)
+            {
+                TargetState target = state.Targets[i];
+                if (!target.Extracted && target.Coord.Row == nextFloodRow.Value)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool HasUnextractedTarget(GameState state)
+        {
+            for (int i = 0; i < state.Targets.Length; i++)
+            {
+                if (!state.Targets[i].Extracted)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool ContainsDebrisType(ImmutableArray<DebrisType> types, DebrisType value)
+        {
+            for (int i = 0; i < types.Length; i++)
+            {
+                if (types[i] == value)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool IsDeadboardLike(GameState state)
+        {
+            for (int row = 0; row < state.Board.Height; row++)
+            {
+                for (int col = 0; col < state.Board.Width; col++)
+                {
+                    if (GroupOps.FindGroup(state.Board, new TileCoord(row, col)).HasValue)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
 
         private static string MapInvalidReason(InvalidInputReason reason)

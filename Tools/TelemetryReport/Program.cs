@@ -142,7 +142,23 @@ namespace TelemetryReport
                 sb.AppendLine($"| Invalid taps | {lvl.InvalidTapCount} |");
                 sb.AppendLine($"| Invalid tap rate | {RatePer(lvl.InvalidTapCount, lvl.TotalActions)} /action |");
                 sb.AppendLine($"| Water rises | {lvl.WaterRiseCount} |");
+                sb.AppendLine($"| Water modes | {FormatReasons(lvl.WaterModes)} |");
+                sb.AppendLine($"| Last next flood row | {FormatNullableInt(lvl.LastNextFloodRow)} |");
                 sb.AppendLine($"| Vine growth events | {lvl.VineGrowthCount} |");
+                sb.AppendLine($"| Vine preview events | {lvl.VinePreviewCount} |");
+                sb.AppendLine($"| Target transitions | {FormatReasons(lvl.TargetTransitions)} |");
+                sb.AppendLine($"| One-clear-away first action | {FormatTargetActions(lvl.OneClearAwayActionByTarget)} |");
+                sb.AppendLine($"| Extraction latch first action | {FormatTargetActions(lvl.ExtractionLatchActionByTarget)} |");
+                sb.AppendLine($"| Final rescue actions | {FormatIntList(lvl.FinalRescueActions)} |");
+                sb.AppendLine($"| Final rescue dock overrides | {lvl.FinalRescueDockOverrideCount} |");
+                sb.AppendLine($"| Hazard skips after final rescue | {lvl.HazardAdvanceSkippedCount} |");
+                sb.AppendLine($"| Assisted spawns | {lvl.AssistedSpawnCount} ({lvl.AssistedSpawnPieces} pieces) |");
+                sb.AppendLine($"| Assisted spawn reasons | {FormatReasons(lvl.AssistedSpawnReasons)} |");
+                sb.AppendLine($"| Assisted follow-up uses <=2 actions | {lvl.AssistedSpawnFollowUpCount} |");
+                sb.AppendLine($"| Grace outcomes | {FormatReasons(lvl.GraceOutcomes)} |");
+                sb.AppendLine($"| Dock warning states | {FormatReasons(lvl.DockWarningStates)} |");
+                sb.AppendLine($"| Peak dock occupancy | {FormatNullableInt(lvl.PeakDockOccupancy)} |");
+                sb.AppendLine($"| Deadboard-like states | {lvl.DeadboardLikeCount} |");
 
                 if (lvl.IdleTimes.Count > 0)
                 {
@@ -182,6 +198,11 @@ namespace TelemetryReport
                     case LevelStartEvent:
                         lvl.Attempts++;
                         session.TotalAttempts++;
+                        LevelStartEvent start = (LevelStartEvent)ev;
+                        if (!string.IsNullOrEmpty(start.WaterMode))
+                        {
+                            Increment(lvl.WaterModes, start.WaterMode);
+                        }
                         break;
 
                     case LevelWinEvent win:
@@ -212,12 +233,78 @@ namespace TelemetryReport
                         lvl.InvalidTapCount++;
                         break;
 
+                    case DockOccupancyEvent dock:
+                        Increment(lvl.DockWarningStates, dock.WarningLevel);
+                        lvl.PeakDockOccupancy = !lvl.PeakDockOccupancy.HasValue
+                            ? dock.Occupancy
+                            : Math.Max(lvl.PeakDockOccupancy.Value, dock.Occupancy);
+                        break;
+
+                    case WaterForecastEvent forecast:
+                        if (!string.IsNullOrEmpty(forecast.WaterMode))
+                        {
+                            Increment(lvl.WaterModes, forecast.WaterMode);
+                        }
+
+                        lvl.LastNextFloodRow = forecast.NextFloodRow;
+                        break;
+
                     case WaterRiseEvent:
                         lvl.WaterRiseCount++;
                         break;
 
                     case VineGrowthEvent:
                         lvl.VineGrowthCount++;
+                        break;
+
+                    case VinePreviewEvent:
+                        lvl.VinePreviewCount++;
+                        break;
+
+                    case TargetStateTransitionEvent transition:
+                        string transitionKey = $"{transition.FromState}->{transition.ToState}";
+                        Increment(lvl.TargetTransitions, transitionKey);
+                        if (transition.ToState == "OneClearAway"
+                            && !lvl.OneClearAwayActionByTarget.ContainsKey(transition.TargetId))
+                        {
+                            lvl.OneClearAwayActionByTarget[transition.TargetId] = transition.ActionIndex;
+                        }
+
+                        if (transition.ToState == "ExtractableLatched"
+                            && !lvl.ExtractionLatchActionByTarget.ContainsKey(transition.TargetId))
+                        {
+                            lvl.ExtractionLatchActionByTarget[transition.TargetId] = transition.ActionIndex;
+                        }
+                        break;
+
+                    case FinalRescueEvent final:
+                        lvl.FinalRescueActions.Add(final.ActionIndex);
+                        break;
+
+                    case FinalRescueDockOverflowOverrideEvent:
+                        lvl.FinalRescueDockOverrideCount++;
+                        break;
+
+                    case HazardAdvanceSkippedEvent skipped when skipped.Reason == "final_rescue":
+                        lvl.HazardAdvanceSkippedCount++;
+                        break;
+
+                    case GraceEvent grace:
+                        Increment(lvl.GraceOutcomes, grace.Outcome);
+                        break;
+
+                    case AssistedSpawnEvent assisted:
+                        lvl.AssistedSpawnCount++;
+                        lvl.AssistedSpawnPieces += assisted.SpawnCount;
+                        Increment(lvl.AssistedSpawnReasons, assisted.Reason);
+                        break;
+
+                    case AssistedSpawnFollowUpEvent:
+                        lvl.AssistedSpawnFollowUpCount++;
+                        break;
+
+                    case DeadboardLikeStateEvent:
+                        lvl.DeadboardLikeCount++;
                         break;
                 }
             }
@@ -243,10 +330,41 @@ namespace TelemetryReport
 
         private static string FormatReasons(Dictionary<string, int> reasons)
         {
+            if (reasons.Count == 0)
+            {
+                return "N/A";
+            }
+
             IEnumerable<string> parts = reasons
                 .OrderByDescending(kv => kv.Value)
                 .Select(kv => $"{kv.Key}: {kv.Value}");
             return string.Join(", ", parts);
+        }
+
+        private static void Increment(Dictionary<string, int> counts, string key)
+        {
+            if (!counts.TryGetValue(key, out _))
+            {
+                counts[key] = 0;
+            }
+
+            counts[key]++;
+        }
+
+        private static string FormatNullableInt(int? value) =>
+            value.HasValue ? value.Value.ToString() : "N/A";
+
+        private static string FormatIntList(List<int> values) =>
+            values.Count == 0 ? "N/A" : string.Join(", ", values);
+
+        private static string FormatTargetActions(Dictionary<string, int> actions)
+        {
+            if (actions.Count == 0)
+            {
+                return "N/A";
+            }
+
+            return string.Join(", ", actions.OrderBy(kv => kv.Key).Select(kv => $"{kv.Key}: {kv.Value}"));
         }
     }
 
@@ -278,10 +396,27 @@ namespace TelemetryReport
         public int InvalidTapCount;
         public int WaterRiseCount;
         public int VineGrowthCount;
+        public int VinePreviewCount;
+        public int FinalRescueDockOverrideCount;
+        public int HazardAdvanceSkippedCount;
+        public int AssistedSpawnCount;
+        public int AssistedSpawnPieces;
+        public int AssistedSpawnFollowUpCount;
+        public int DeadboardLikeCount;
+        public int? LastNextFloodRow;
+        public int? PeakDockOccupancy;
         public List<int> WinActionCounts { get; } = new List<int>();
         public List<int> LossActionCounts { get; } = new List<int>();
+        public List<int> FinalRescueActions { get; } = new List<int>();
         public List<long> IdleTimes { get; } = new List<long>();
         public List<long> FirstActionTimes { get; } = new List<long>();
         public Dictionary<string, int> LossReasons { get; } = new Dictionary<string, int>();
+        public Dictionary<string, int> WaterModes { get; } = new Dictionary<string, int>();
+        public Dictionary<string, int> TargetTransitions { get; } = new Dictionary<string, int>();
+        public Dictionary<string, int> GraceOutcomes { get; } = new Dictionary<string, int>();
+        public Dictionary<string, int> AssistedSpawnReasons { get; } = new Dictionary<string, int>();
+        public Dictionary<string, int> DockWarningStates { get; } = new Dictionary<string, int>();
+        public Dictionary<string, int> OneClearAwayActionByTarget { get; } = new Dictionary<string, int>();
+        public Dictionary<string, int> ExtractionLatchActionByTarget { get; } = new Dictionary<string, int>();
     }
 }

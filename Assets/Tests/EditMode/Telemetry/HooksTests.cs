@@ -99,7 +99,124 @@ namespace Rescue.Telemetry.Tests
             Assert.That(events, Has.Some.TypeOf<ActionTakenEvent>(), "Must emit action_taken.");
             Assert.That(events, Has.Some.TypeOf<DockOccupancyEvent>(), "Must emit dock_occupancy.");
             Assert.That(events, Has.Some.TypeOf<TargetExtractedEvent>(), "Must emit target_extracted.");
+            Assert.That(events, Has.Some.TypeOf<TargetStateTransitionEvent>(), "Must emit target transitions.");
+            Assert.That(events, Has.Some.TypeOf<FinalRescueEvent>(), "Must emit final rescue action.");
+            Assert.That(events, Has.Some.TypeOf<HazardAdvanceSkippedEvent>(), "Must log final-rescue hazard skip.");
             Assert.That(events, Has.Some.TypeOf<LevelWinEvent>(), "Must emit level_win.");
+        }
+
+        [Test]
+        public void OnAction_TargetProgressAndLatch_EmitTransitionTelemetry()
+        {
+            GameState state = CreateStateWithUnextractedTarget();
+            string path = TempPath();
+
+            ActionInput input = new ActionInput(new TileCoord(2, 0));
+            ActionResult result = Pipeline.RunAction(state, input);
+
+            using (TelemetryLogger logger = new TelemetryLogger(path, TelemetryConfig.DevDefaults))
+            {
+                TelemetrySessionState session = new TelemetrySessionState { LevelStartMs = 0 };
+                TelemetryHooks.OnAction("L1", state, input, result, 1UL, 0, 100, session, logger);
+            }
+
+            List<ITelemetryEvent> events = ReadEvents(path);
+            TargetStateTransitionEvent? transition = FindEvent<TargetStateTransitionEvent>(events);
+
+            Assert.That(transition, Is.Not.Null);
+            Assert.That(transition!.TargetId, Is.EqualTo("t0"));
+            Assert.That(transition.ToState, Is.EqualTo(TargetReadiness.OneClearAway));
+            Assert.That(transition.ActionIndex, Is.EqualTo(result.State.ActionCount));
+        }
+
+        [Test]
+        public void OnAction_FinalRescueOverflowOverride_EmitsTelemetry()
+        {
+            GameState state = CreateFinalRescueOverflowState();
+            string path = TempPath();
+
+            ActionInput input = new ActionInput(new TileCoord(0, 0));
+            ActionResult result = Pipeline.RunAction(state, input);
+
+            using (TelemetryLogger logger = new TelemetryLogger(path, TelemetryConfig.DevDefaults))
+            {
+                TelemetrySessionState session = new TelemetrySessionState { LevelStartMs = 0 };
+                TelemetryHooks.OnAction("L1", state, input, result, 1UL, 0, 100, session, logger);
+            }
+
+            List<ITelemetryEvent> events = ReadEvents(path);
+
+            Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.Win));
+            Assert.That(events, Has.Some.TypeOf<FinalRescueDockOverflowOverrideEvent>());
+            FinalRescueEvent? finalRescue = FindEvent<FinalRescueEvent>(events);
+            Assert.That(finalRescue, Is.Not.Null);
+            Assert.That(finalRescue!.DockOverflowWouldHaveFailed, Is.True);
+            Assert.That(finalRescue.HazardAdvanceSkipped, Is.True);
+        }
+
+        [Test]
+        public void OnAction_WaterModeGraceAndForecast_EmitTelemetry()
+        {
+            GameState state = CreateGraceEnteredState();
+            string path = TempPath();
+
+            ActionInput input = new ActionInput(new TileCoord(0, 0));
+            ActionResult result = Pipeline.RunAction(state, input);
+
+            using (TelemetryLogger logger = new TelemetryLogger(path, TelemetryConfig.DevDefaults))
+            {
+                TelemetrySessionState session = new TelemetrySessionState { LevelStartMs = 0 };
+                TelemetryHooks.OnAction("L1", state, input, result, 1UL, 0, 100, session, logger);
+            }
+
+            List<ITelemetryEvent> events = ReadEvents(path);
+            WaterForecastEvent? forecast = FindEvent<WaterForecastEvent>(events);
+            GraceEvent? grace = FindEvent<GraceEvent>(events);
+
+            Assert.That(forecast, Is.Not.Null);
+            Assert.That(forecast!.WaterMode, Is.EqualTo(WaterContactMode.OneTickGrace.ToString()));
+            Assert.That(forecast.NextFloodRow, Is.EqualTo(0));
+            Assert.That(grace, Is.Not.Null);
+            Assert.That(grace!.Outcome, Is.EqualTo("entered"));
+        }
+
+        [Test]
+        public void OnAction_AssistedSpawnAndFollowUp_EmitTelemetryWhenAvailable()
+        {
+            GameState state = CreateManualAssistedSpawnState();
+            string path = TempPath();
+            TelemetrySessionState session = new TelemetrySessionState { LevelStartMs = 0 };
+
+            ActionResult spawnResult = new ActionResult(
+                state with { ActionCount = 1 },
+                ImmutableArray.Create<ActionEvent>(
+                    new DebugSpawnOverrideApplied(new SpawnOverride(true, 1.0d), true, true, 1.0d),
+                    new Spawned(ImmutableArray.Create((new TileCoord(0, 0), DebrisType.A)))),
+                ActionOutcome.Ok,
+                Snapshot: null);
+            ActionResult followUpResult = new ActionResult(
+                spawnResult.State with { ActionCount = 2 },
+                ImmutableArray.Create<ActionEvent>(
+                    new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1)))),
+                ActionOutcome.Ok,
+                Snapshot: null);
+
+            using (TelemetryLogger logger = new TelemetryLogger(path, TelemetryConfig.DevDefaults))
+            {
+                TelemetryHooks.OnAction("L1", state, new ActionInput(new TileCoord(0, 0)), spawnResult, 1UL, 0, 100, session, logger);
+                TelemetryHooks.OnAction("L1", spawnResult.State, new ActionInput(new TileCoord(0, 0)), followUpResult, 1UL, 200, 300, session, logger);
+            }
+
+            List<ITelemetryEvent> events = ReadEvents(path);
+            AssistedSpawnEvent? assisted = FindEvent<AssistedSpawnEvent>(events);
+            AssistedSpawnFollowUpEvent? followUp = FindEvent<AssistedSpawnFollowUpEvent>(events);
+
+            Assert.That(assisted, Is.Not.Null);
+            Assert.That(assisted!.Reason, Is.EqualTo("debug_override"));
+            Assert.That(assisted.SpawnCount, Is.EqualTo(1));
+            Assert.That(followUp, Is.Not.Null);
+            Assert.That(followUp!.OriginalActionIndex, Is.EqualTo(1));
+            Assert.That(followUp.FollowUpActionIndex, Is.EqualTo(2));
         }
 
         [Test]
@@ -523,6 +640,89 @@ namespace Rescue.Telemetry.Tests
                 Frozen: false,
                 ConsecutiveEmergencySpawns: 0,
                 SpawnRecoveryCounter: 0);
+        }
+
+        private static GameState CreateFinalRescueOverflowState()
+        {
+            ImmutableArray<Tile> row0 = ImmutableArray.Create<Tile>(
+                new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A));
+            ImmutableArray<Tile> row1 = ImmutableArray.Create<Tile>(
+                new EmptyTile(), new TargetTile("pup", Extracted: false));
+
+            Board board = new Board(2, 2, ImmutableArray.Create(row0, row1));
+
+            return new GameState(
+                Board: board,
+                Dock: new Dock(
+                    ImmutableArray.Create<DebrisType?>(
+                        DebrisType.B, DebrisType.C, DebrisType.D, DebrisType.E,
+                        DebrisType.B, DebrisType.C, null),
+                    Size: 7),
+                Water: new WaterState(FloodedRows: 0, ActionsUntilRise: 1, RiseInterval: 1),
+                Vine: NoVine(),
+                Targets: ImmutableArray.Create(new TargetState("pup", new TileCoord(1, 1), false, false)),
+                LevelConfig: SimpleConfig(),
+                RngState: new RngState(1u, 2u),
+                ActionCount: 0,
+                DockJamUsed: false,
+                UndoAvailable: true,
+                ExtractedTargetOrder: ImmutableArray<string>.Empty,
+                Frozen: false,
+                ConsecutiveEmergencySpawns: 0,
+                SpawnRecoveryCounter: 0);
+        }
+
+        private static GameState CreateGraceEnteredState()
+        {
+            ImmutableArray<Tile> row0 = ImmutableArray.Create<Tile>(
+                new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A));
+            ImmutableArray<Tile> row1 = ImmutableArray.Create<Tile>(
+                new TargetTile("pup", Extracted: false), new BlockerTile(BlockerType.Crate, 2, Hidden: null));
+
+            Board board = new Board(2, 2, ImmutableArray.Create(row0, row1));
+
+            return new GameState(
+                Board: board,
+                Dock: EmptyDock(),
+                Water: new WaterState(FloodedRows: 1, ActionsUntilRise: 10, RiseInterval: 10),
+                Vine: NoVine(),
+                Targets: ImmutableArray.Create(new TargetState("pup", new TileCoord(1, 0), TargetReadiness.Trapped)),
+                LevelConfig: SimpleConfig() with { WaterContactMode = WaterContactMode.OneTickGrace },
+                RngState: new RngState(1u, 2u),
+                ActionCount: 0,
+                DockJamUsed: false,
+                UndoAvailable: true,
+                ExtractedTargetOrder: ImmutableArray<string>.Empty,
+                Frozen: false,
+                ConsecutiveEmergencySpawns: 0,
+                SpawnRecoveryCounter: 0);
+        }
+
+        private static GameState CreateManualAssistedSpawnState()
+        {
+            ImmutableArray<Tile> row0 = ImmutableArray.Create<Tile>(
+                new EmptyTile(), new EmptyTile());
+            ImmutableArray<Tile> row1 = ImmutableArray.Create<Tile>(
+                new TargetTile("pup", Extracted: false), new BlockerTile(BlockerType.Crate, 2, Hidden: null));
+
+            Board board = new Board(2, 2, ImmutableArray.Create(row0, row1));
+
+            return new GameState(
+                Board: board,
+                Dock: EmptyDock(),
+                Water: new WaterState(FloodedRows: 0, ActionsUntilRise: 10, RiseInterval: 10),
+                Vine: NoVine(),
+                Targets: ImmutableArray.Create(new TargetState("pup", new TileCoord(1, 0), TargetReadiness.Trapped)),
+                LevelConfig: SimpleConfig() with { AssistanceChance = 1.0d },
+                RngState: new RngState(1u, 2u),
+                ActionCount: 0,
+                DockJamUsed: false,
+                UndoAvailable: true,
+                ExtractedTargetOrder: ImmutableArray<string>.Empty,
+                Frozen: false,
+                ConsecutiveEmergencySpawns: 0,
+                SpawnRecoveryCounter: 0,
+                DebugSpawnOverride: new SpawnOverride(true, 1.0d));
         }
     }
 }

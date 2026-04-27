@@ -32,6 +32,7 @@ namespace TelemetryReport
         public int InitialFloodedRows { get; set; }
         public int VineGrowthThreshold { get; set; }
         public int TargetCount { get; set; }
+        public string WaterMode { get; set; } = string.Empty;
     }
 
     internal sealed class LevelWinEvent : ITelemetryEvent
@@ -95,6 +96,31 @@ namespace TelemetryReport
         public int NewFloodedRows { get; set; }
     }
 
+    internal sealed class WaterForecastEvent : ITelemetryEvent
+    {
+        public string EventType { get; set; } = "water_forecast";
+        public int SchemaVersion { get; set; }
+        public string LevelId { get; set; } = string.Empty;
+        public long TimestampMs { get; set; }
+        public int ActionIndex { get; set; }
+        public string WaterMode { get; set; } = string.Empty;
+        public int? NextFloodRow { get; set; }
+        public bool ForecastAvailable { get; set; }
+        public int ActionsUntilRise { get; set; }
+    }
+
+    internal sealed class DockOccupancyEvent : ITelemetryEvent
+    {
+        public string EventType { get; set; } = "dock_occupancy";
+        public int SchemaVersion { get; set; }
+        public string LevelId { get; set; } = string.Empty;
+        public long TimestampMs { get; set; }
+        public int ActionIndex { get; set; }
+        public int Occupancy { get; set; }
+        public string WarningLevel { get; set; } = string.Empty;
+        public int DockSize { get; set; }
+    }
+
     internal sealed class VineGrowthEvent : ITelemetryEvent
     {
         public string EventType { get; set; } = "vine_growth";
@@ -102,6 +128,106 @@ namespace TelemetryReport
         public string LevelId { get; set; } = string.Empty;
         public long TimestampMs { get; set; }
         public int ActionIndex { get; set; }
+    }
+
+    internal sealed class VinePreviewEvent : ITelemetryEvent
+    {
+        public string EventType { get; set; } = "vine_preview";
+        public int SchemaVersion { get; set; }
+        public string LevelId { get; set; } = string.Empty;
+        public long TimestampMs { get; set; }
+        public int ActionIndex { get; set; }
+    }
+
+    internal sealed class TargetStateTransitionEvent : ITelemetryEvent
+    {
+        public string EventType { get; set; } = "target_state_transition";
+        public int SchemaVersion { get; set; }
+        public string LevelId { get; set; } = string.Empty;
+        public long TimestampMs { get; set; }
+        public int ActionIndex { get; set; }
+        public string TargetId { get; set; } = string.Empty;
+        public string FromState { get; set; } = string.Empty;
+        public string ToState { get; set; } = string.Empty;
+    }
+
+    internal sealed class FinalRescueEvent : ITelemetryEvent
+    {
+        public string EventType { get; set; } = "final_rescue";
+        public int SchemaVersion { get; set; }
+        public string LevelId { get; set; } = string.Empty;
+        public long TimestampMs { get; set; }
+        public int ActionIndex { get; set; }
+        public string? TargetId { get; set; }
+        public bool DockOverflowWouldHaveFailed { get; set; }
+        public bool HazardAdvanceSkipped { get; set; }
+    }
+
+    internal sealed class FinalRescueDockOverflowOverrideEvent : ITelemetryEvent
+    {
+        public string EventType { get; set; } = "final_rescue_dock_overflow_override";
+        public int SchemaVersion { get; set; }
+        public string LevelId { get; set; } = string.Empty;
+        public long TimestampMs { get; set; }
+        public int ActionIndex { get; set; }
+        public int OverflowCount { get; set; }
+    }
+
+    internal sealed class HazardAdvanceSkippedEvent : ITelemetryEvent
+    {
+        public string EventType { get; set; } = "hazard_advance_skipped";
+        public int SchemaVersion { get; set; }
+        public string LevelId { get; set; } = string.Empty;
+        public long TimestampMs { get; set; }
+        public int ActionIndex { get; set; }
+        public string Reason { get; set; } = string.Empty;
+    }
+
+    internal sealed class GraceEvent : ITelemetryEvent
+    {
+        public string EventType { get; set; } = "grace";
+        public int SchemaVersion { get; set; }
+        public string LevelId { get; set; } = string.Empty;
+        public long TimestampMs { get; set; }
+        public int ActionIndex { get; set; }
+        public string TargetId { get; set; } = string.Empty;
+        public string Outcome { get; set; } = string.Empty;
+    }
+
+    internal sealed class AssistedSpawnEvent : ITelemetryEvent
+    {
+        public string EventType { get; set; } = "assisted_spawn";
+        public int SchemaVersion { get; set; }
+        public string LevelId { get; set; } = string.Empty;
+        public long TimestampMs { get; set; }
+        public int ActionIndex { get; set; }
+        public string Reason { get; set; } = string.Empty;
+        public string Context { get; set; } = string.Empty;
+        public int SpawnCount { get; set; }
+        public bool EmergencyRequested { get; set; }
+        public bool EmergencyApplied { get; set; }
+        public double EffectiveAssistanceChance { get; set; }
+    }
+
+    internal sealed class AssistedSpawnFollowUpEvent : ITelemetryEvent
+    {
+        public string EventType { get; set; } = "assisted_spawn_follow_up";
+        public int SchemaVersion { get; set; }
+        public string LevelId { get; set; } = string.Empty;
+        public long TimestampMs { get; set; }
+        public int OriginalActionIndex { get; set; }
+        public int FollowUpActionIndex { get; set; }
+        public string UsedType { get; set; } = string.Empty;
+    }
+
+    internal sealed class DeadboardLikeStateEvent : ITelemetryEvent
+    {
+        public string EventType { get; set; } = "deadboard_like_state";
+        public int SchemaVersion { get; set; }
+        public string LevelId { get; set; } = string.Empty;
+        public long TimestampMs { get; set; }
+        public int ActionIndex { get; set; }
+        public string Reason { get; set; } = string.Empty;
     }
 
     internal sealed class UndoUsedEvent : ITelemetryEvent
@@ -160,8 +286,19 @@ namespace TelemetryReport
                 "idle_time" => JsonSerializer.Deserialize<IdleTimeEvent>(rawJson, InnerOptions),
                 "time_to_first_action" => JsonSerializer.Deserialize<TimeToFirstActionEvent>(rawJson, InnerOptions),
                 "invalid_tap" => JsonSerializer.Deserialize<InvalidTapEvent>(rawJson, InnerOptions),
+                "dock_occupancy" => JsonSerializer.Deserialize<DockOccupancyEvent>(rawJson, InnerOptions),
+                "water_forecast" => JsonSerializer.Deserialize<WaterForecastEvent>(rawJson, InnerOptions),
                 "water_rise" => JsonSerializer.Deserialize<WaterRiseEvent>(rawJson, InnerOptions),
                 "vine_growth" => JsonSerializer.Deserialize<VineGrowthEvent>(rawJson, InnerOptions),
+                "vine_preview" => JsonSerializer.Deserialize<VinePreviewEvent>(rawJson, InnerOptions),
+                "target_state_transition" => JsonSerializer.Deserialize<TargetStateTransitionEvent>(rawJson, InnerOptions),
+                "final_rescue" => JsonSerializer.Deserialize<FinalRescueEvent>(rawJson, InnerOptions),
+                "final_rescue_dock_overflow_override" => JsonSerializer.Deserialize<FinalRescueDockOverflowOverrideEvent>(rawJson, InnerOptions),
+                "hazard_advance_skipped" => JsonSerializer.Deserialize<HazardAdvanceSkippedEvent>(rawJson, InnerOptions),
+                "grace" => JsonSerializer.Deserialize<GraceEvent>(rawJson, InnerOptions),
+                "assisted_spawn" => JsonSerializer.Deserialize<AssistedSpawnEvent>(rawJson, InnerOptions),
+                "assisted_spawn_follow_up" => JsonSerializer.Deserialize<AssistedSpawnFollowUpEvent>(rawJson, InnerOptions),
+                "deadboard_like_state" => JsonSerializer.Deserialize<DeadboardLikeStateEvent>(rawJson, InnerOptions),
                 "undo_used" => JsonSerializer.Deserialize<UndoUsedEvent>(rawJson, InnerOptions),
                 _ => JsonSerializer.Deserialize<RawEvent>(rawJson, InnerOptions),
             };

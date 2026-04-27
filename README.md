@@ -9,25 +9,25 @@ The prototype is scoped to prove the core seed:
 - Rescue order is the central puzzle.
 - Extracting a puppy feels different from generic board completion.
 
-The authoritative design source is `docs/phase_1_spec.md`. Do not pull mechanics from broader or older design documents unless the Phase 1 spec is deliberately updated.
+The authoritative design source is `docs/phase_1_spec.md`. Do not pull mechanics from any other design documents unless the Phase 1 spec is deliberately updated.
 
 ## Current State
 
-The repository is mechanically close to the Phase 1 prototype target. The strongest areas are:
+The repository is a playable Phase 1 prototype with a deterministic core, authored packet, debug scene, tooling, and first-pass presentation. The strongest areas are:
 
 - Immutable `Rescue.Core` state and deterministic rules.
 - A fixed action pipeline with isolated steps and regression tests.
 - Authored L00-L15 level JSON content.
 - Level validation, replay, solve-authoring, telemetry-report, and capture tooling.
 - A functional Unity debug gameplay scene with board, dock, water, target, playback, debug, tuning, victory, and loss presentation.
-- A first pass of Phase 1 visual assets, prefabs, registries, and FX hooks.
+- Phase 1 visual assets, prefabs, registries, and FX hooks for the debug presentation path.
 
-The remaining work is mostly player-facing clarity and emotional proof, not broad feature expansion. The current game can simulate and present the Phase 1 loop, but the next risk is whether a cold player clearly understands water pressure, dock failures, vine pressure, rescue order, and the puppy extraction beat.
+The main product risk is player-facing clarity and emotional proof. A cold player should be able to read water pressure, dock failures, vine pressure, rescue order, and the puppy extraction beat without relying on debug context.
 
 Latest checked-in test result artifacts show:
 
-- EditMode: 424 passed, 0 failed (`editmode-results.xml`, run started 2026-04-27 01:44:39Z).
-- PlayMode: 27 passed, 0 failed (`playmode-results.xml`, run started 2026-04-27 01:00:18Z).
+- EditMode: 463 passed, 0 failed (`editmode-results.xml`, run started 2026-04-27 07:00:00Z).
+- PlayMode: 27 passed, 0 failed (`playmode-results.xml`, run started 2026-04-27 06:11:43Z).
 
 ## Phase 1 Scope
 
@@ -46,7 +46,7 @@ In scope:
 - Authored vine growth priority and preview events.
 - Seeded deterministic RNG.
 - Basic spawn assistance and emergency spawn support.
-- First-pass extraction, win, loss, dock, water, blocker, vine, and invalid-tap FX hooks.
+- Extraction, win, loss, dock, water, blocker, vine, near-rescue, invalid-tap, and water-contact mode hooks/tests.
 - Minimal capture path for the L15 ad/capture moment.
 
 Out of scope for Phase 1:
@@ -57,7 +57,7 @@ Out of scope for Phase 1:
 - Power-ups beyond free undo.
 - Variable dock sizes in normal play.
 - Insertion preview.
-- Distressed-state soft recovery.
+- Full production treatment of the optional Distressed presentation state.
 - Continuation offers.
 - Shop, pass, cosmetics, economy, live ops, or sanctuary meta-loop.
 
@@ -103,7 +103,7 @@ Implemented gameplay behavior includes:
 - Vines break from one adjacent clear and grow from authored priority if ignored.
 - Targets extract automatically when all required orthogonal neighbors are open.
 - Target extractability latches immediately after blocker break resolution and cannot be undone by dock, gravity, spawn, water, or vine later in the action.
-- One-clear-away target transitions are represented as real state/events.
+- One-clear-away, progressing, extractable, extracted, and optional Distressed target transitions are represented as real state/events in the shared immediate-loss / one-tick grace pipeline.
 - Undo restores the exact previous snapshot for one action.
 
 ## Content
@@ -124,7 +124,7 @@ The level schema currently supports:
 - Debris type pool and optional base distribution.
 - Target coordinates.
 - Initial flooded rows.
-- Water rise interval.
+- Water rise interval and water-contact mode.
 - Vine growth threshold and priority list.
 - Dock size and Dock Jam flag.
 - Assistance chance and consecutive emergency cap.
@@ -132,13 +132,13 @@ The level schema currently supports:
 
 ## Unity Implementation
 
-The current Unity-facing project is a prototype/debug gameplay app rather than a finished player build.
+The current Unity-facing project is a prototype/debug gameplay app for player-facing proof work.
 
 Current scene:
 
 - `Assets/Scenes/DebugGameplay.unity`
 
-Notably, there is no committed `Game.unity` scene yet, even though the Phase 1 instructions name it as the eventual main play scene.
+The committed play scene is `DebugGameplay.unity`; `Game.unity` is still the named main-play scene target in the Phase 1 instructions.
 
 Unity implementation areas:
 
@@ -159,12 +159,12 @@ Playback currently maps the main visible action events:
 - dock insert / clear / warning / jam / overflow feedback
 - gravity
 - spawn
-- target extraction
-- water rise
+- target extraction and near-rescue target feedback
+- water rise and vine preview / growth feedback
 - terminal win/loss
 - final authoritative sync
 
-Some events are classified for FX but are not yet first-class playback steps. These are part of the next presentation-readability pass.
+Water forecast, Dock Jam, invalid-tap, vine, and target-readiness feedback have hooks; their final readability depends on presentation tuning.
 
 ## Telemetry and Debugging
 
@@ -172,7 +172,7 @@ Some events are classified for FX but are not yet first-class playback steps. Th
 
 - level start, win, and loss
 - dock occupancy
-- water rise
+- water rise, water-contact mode, and distressed target outcomes
 - vine growth
 - undo use
 - target extraction/loss
@@ -255,14 +255,14 @@ powershell -ExecutionPolicy Bypass -File .\scripts\verify-capture.ps1
 
 ## Known Gaps
 
-The next work should make existing Phase 1 behavior clearer, not add broader systems.
+The next work should make existing Phase 1 behavior clearer within the locked scope.
 
 Highest-value gaps:
 
-- Promote `TargetOneClearAway`, `WaterWarning`, `VinePreviewChanged`, and `VineGrown` into stronger player-facing presentation.
+- Strengthen `TargetOneClearAway`, `WaterWarning`, `VinePreviewChanged`, and `VineGrown` as player-facing presentation.
 - Make persistent next-flood-row forecast visually unmistakable.
 - Make dock overflow, Dock Jam, win, and loss causality clearer.
-- Make invalid taps produce a small reject bump/audio without state change.
+- Tune invalid-tap reject bump/audio while preserving zero state change.
 - Strengthen target extraction so it reads as a rescue beat.
 - Add minimal Mae reaction and aftercare support.
 - Add or promote the eventual main `Game.unity` scene when the debug gameplay scene graduates.

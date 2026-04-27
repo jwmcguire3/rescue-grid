@@ -99,6 +99,38 @@ namespace TelemetryReport.Tests
             Assert.That(output, Does.Contain("L1"), "Aggregated report must include L1.");
         }
 
+        [Test]
+        public void Report_IncludesPhase1CoverageFields()
+        {
+            string path = Path.Combine(_testDir, "coverage.jsonl");
+            StringBuilder sb = new StringBuilder();
+            WriteLine(sb, new LevelStartEvent { LevelId = "L9", TimestampMs = 0, Seed = 1, AssistanceChance = 1.0, RiseInterval = 8, InitialFloodedRows = 0, VineGrowthThreshold = 4, TargetCount = 1, WaterMode = "OneTickGrace", SchemaVersion = 1 });
+            WriteLine(sb, new WaterForecastEvent { LevelId = "L9", TimestampMs = 10, ActionIndex = 1, WaterMode = "OneTickGrace", NextFloodRow = 4, ForecastAvailable = true, ActionsUntilRise = 1, SchemaVersion = 1 });
+            WriteLine(sb, new DockOccupancyEvent { LevelId = "L9", TimestampMs = 11, ActionIndex = 1, Occupancy = 6, WarningLevel = "Acute", DockSize = 7, SchemaVersion = 1 });
+            WriteLine(sb, new TargetStateTransitionEvent { LevelId = "L9", TimestampMs = 12, ActionIndex = 1, TargetId = "pup", FromState = "Progressing", ToState = "OneClearAway", SchemaVersion = 1 });
+            WriteLine(sb, new TargetStateTransitionEvent { LevelId = "L9", TimestampMs = 13, ActionIndex = 2, TargetId = "pup", FromState = "OneClearAway", ToState = "ExtractableLatched", SchemaVersion = 1 });
+            WriteLine(sb, new FinalRescueEvent { LevelId = "L9", TimestampMs = 14, ActionIndex = 2, TargetId = "pup", DockOverflowWouldHaveFailed = true, HazardAdvanceSkipped = true, SchemaVersion = 1 });
+            WriteLine(sb, new FinalRescueDockOverflowOverrideEvent { LevelId = "L9", TimestampMs = 15, ActionIndex = 2, OverflowCount = 1, SchemaVersion = 1 });
+            WriteLine(sb, new HazardAdvanceSkippedEvent { LevelId = "L9", TimestampMs = 16, ActionIndex = 2, Reason = "final_rescue", SchemaVersion = 1 });
+            WriteLine(sb, new GraceEvent { LevelId = "L9", TimestampMs = 17, ActionIndex = 1, TargetId = "pup", Outcome = "entered", SchemaVersion = 1 });
+            WriteLine(sb, new AssistedSpawnEvent { LevelId = "L9", TimestampMs = 18, ActionIndex = 1, Reason = "dock_pressure", Context = "dock=6/7", SpawnCount = 2, EmergencyRequested = true, EmergencyApplied = true, EffectiveAssistanceChance = 1.0, SchemaVersion = 1 });
+            WriteLine(sb, new AssistedSpawnFollowUpEvent { LevelId = "L9", TimestampMs = 19, OriginalActionIndex = 1, FollowUpActionIndex = 2, UsedType = "A", SchemaVersion = 1 });
+            WriteLine(sb, new VinePreviewEvent { LevelId = "L9", TimestampMs = 20, ActionIndex = 1, SchemaVersion = 1 });
+            WriteLine(sb, new DeadboardLikeStateEvent { LevelId = "L9", TimestampMs = 21, ActionIndex = 3, Reason = "no_valid_groups", SchemaVersion = 1 });
+            File.WriteAllText(path, sb.ToString());
+
+            int exitCode = RunReport("report", path, out string output);
+
+            Assert.That(exitCode, Is.EqualTo(0), output);
+            Assert.That(output, Does.Contain("Water modes"));
+            Assert.That(output, Does.Contain("One-clear-away first action"));
+            Assert.That(output, Does.Contain("Extraction latch first action"));
+            Assert.That(output, Does.Contain("Final rescue dock overrides"));
+            Assert.That(output, Does.Contain("Assisted spawn reasons"));
+            Assert.That(output, Does.Contain("Grace outcomes"));
+            Assert.That(output, Does.Contain("Deadboard-like states"));
+        }
+
         // ── fixture helpers ───────────────────────────────────────────────────
 
         private string WriteFixtureSession()
@@ -259,14 +291,14 @@ namespace TelemetryReport.Tests
         {
             // Delegate to Program's internal Aggregate + BuildReport.
             // Since those are private, we replicate a minimal version here.
-            System.Collections.Generic.Dictionary<string, (int attempts, int wins, int losses, System.Collections.Generic.List<string> lossReasons, System.Collections.Generic.List<int> winActions, System.Collections.Generic.List<int> lossActions)> byLevel
-                = new System.Collections.Generic.Dictionary<string, (int, int, int, System.Collections.Generic.List<string>, System.Collections.Generic.List<int>, System.Collections.Generic.List<int>)>();
+            System.Collections.Generic.Dictionary<string, TestStats> byLevel
+                = new System.Collections.Generic.Dictionary<string, TestStats>();
 
-            (int, int, int, System.Collections.Generic.List<string>, System.Collections.Generic.List<int>, System.Collections.Generic.List<int>) GetOrCreate(string id)
+            TestStats GetOrCreate(string id)
             {
                 if (!byLevel.TryGetValue(id, out var s))
                 {
-                    s = (0, 0, 0, new System.Collections.Generic.List<string>(), new System.Collections.Generic.List<int>(), new System.Collections.Generic.List<int>());
+                    s = new TestStats();
                     byLevel[id] = s;
                 }
                 return s;
@@ -275,20 +307,71 @@ namespace TelemetryReport.Tests
             foreach (ITelemetryEvent ev in events)
             {
                 var s = GetOrCreate(ev.LevelId);
-                if (ev is LevelStartEvent)
+                if (ev is LevelStartEvent start)
                 {
-                    byLevel[ev.LevelId] = (s.Item1 + 1, s.Item2, s.Item3, s.Item4, s.Item5, s.Item6);
+                    s.Attempts++;
+                    if (!string.IsNullOrEmpty(start.WaterMode)) Increment(s.WaterModes, start.WaterMode);
                 }
                 else if (ev is LevelWinEvent win)
                 {
-                    s.Item5.Add(win.ActionCount);
-                    byLevel[ev.LevelId] = (s.Item1, s.Item2 + 1, s.Item3, s.Item4, s.Item5, s.Item6);
+                    s.WinActions.Add(win.ActionCount);
+                    s.Wins++;
                 }
                 else if (ev is LevelLossEvent loss)
                 {
-                    s.Item4.Add(loss.Reason);
-                    s.Item6.Add(loss.ActionCount);
-                    byLevel[ev.LevelId] = (s.Item1, s.Item2, s.Item3 + 1, s.Item4, s.Item5, s.Item6);
+                    s.LossReasons.Add(loss.Reason);
+                    s.LossActions.Add(loss.ActionCount);
+                    s.Losses++;
+                }
+                else if (ev is WaterForecastEvent forecast)
+                {
+                    if (!string.IsNullOrEmpty(forecast.WaterMode)) Increment(s.WaterModes, forecast.WaterMode);
+                    s.LastNextFloodRow = forecast.NextFloodRow;
+                }
+                else if (ev is DockOccupancyEvent dock)
+                {
+                    Increment(s.DockWarningStates, dock.WarningLevel);
+                    s.PeakDockOccupancy = !s.PeakDockOccupancy.HasValue ? dock.Occupancy : Math.Max(s.PeakDockOccupancy.Value, dock.Occupancy);
+                }
+                else if (ev is TargetStateTransitionEvent transition)
+                {
+                    Increment(s.TargetTransitions, $"{transition.FromState}->{transition.ToState}");
+                    if (transition.ToState == "OneClearAway" && !s.OneClearAway.ContainsKey(transition.TargetId)) s.OneClearAway[transition.TargetId] = transition.ActionIndex;
+                    if (transition.ToState == "ExtractableLatched" && !s.Latches.ContainsKey(transition.TargetId)) s.Latches[transition.TargetId] = transition.ActionIndex;
+                }
+                else if (ev is FinalRescueEvent final)
+                {
+                    s.FinalRescues.Add(final.ActionIndex);
+                }
+                else if (ev is FinalRescueDockOverflowOverrideEvent)
+                {
+                    s.FinalOverrides++;
+                }
+                else if (ev is HazardAdvanceSkippedEvent)
+                {
+                    s.HazardSkips++;
+                }
+                else if (ev is GraceEvent grace)
+                {
+                    Increment(s.GraceOutcomes, grace.Outcome);
+                }
+                else if (ev is AssistedSpawnEvent assisted)
+                {
+                    s.AssistedSpawns++;
+                    s.AssistedPieces += assisted.SpawnCount;
+                    Increment(s.AssistedReasons, assisted.Reason);
+                }
+                else if (ev is AssistedSpawnFollowUpEvent)
+                {
+                    s.AssistedFollowUps++;
+                }
+                else if (ev is VinePreviewEvent)
+                {
+                    s.VinePreviews++;
+                }
+                else if (ev is DeadboardLikeStateEvent)
+                {
+                    s.Deadboards++;
                 }
             }
 
@@ -299,8 +382,8 @@ namespace TelemetryReport.Tests
             int totalAttempts = 0, totalWins = 0;
             foreach (var kv in byLevel)
             {
-                totalAttempts += kv.Value.Item1;
-                totalWins += kv.Value.Item2;
+                totalAttempts += kv.Value.Attempts;
+                totalWins += kv.Value.Wins;
             }
 
             sb.AppendLine($"Session totals: {totalAttempts} attempts, {totalWins} wins");
@@ -308,7 +391,12 @@ namespace TelemetryReport.Tests
 
             foreach (var kv in byLevel)
             {
-                var (attempts, wins, losses, lossReasons, winActions, lossActions) = kv.Value;
+                TestStats s = kv.Value;
+                int attempts = s.Attempts;
+                int wins = s.Wins;
+                System.Collections.Generic.List<string> lossReasons = s.LossReasons;
+                System.Collections.Generic.List<int> winActions = s.WinActions;
+                System.Collections.Generic.List<int> lossActions = s.LossActions;
                 double winRate = attempts == 0 ? 0 : (double)wins / attempts * 100;
                 double avgWinActions = winActions.Count == 0 ? 0 : winActions.Average();
                 double avgLossActions = lossActions.Count == 0 ? 0 : lossActions.Average();
@@ -320,6 +408,22 @@ namespace TelemetryReport.Tests
                 sb.AppendLine($"- Win rate: {winRate:F1}%");
                 sb.AppendLine($"- Avg actions (wins): {avgWinActions:F1}");
                 sb.AppendLine($"- Avg actions (losses): {avgLossActions:F1}");
+                sb.AppendLine($"- Water modes: {FormatCounts(s.WaterModes)}");
+                sb.AppendLine($"- Last next flood row: {(s.LastNextFloodRow.HasValue ? s.LastNextFloodRow.Value.ToString() : "N/A")}");
+                sb.AppendLine($"- Dock warning states: {FormatCounts(s.DockWarningStates)}");
+                sb.AppendLine($"- Peak dock occupancy: {(s.PeakDockOccupancy.HasValue ? s.PeakDockOccupancy.Value.ToString() : "N/A")}");
+                sb.AppendLine($"- Target transitions: {FormatCounts(s.TargetTransitions)}");
+                sb.AppendLine($"- One-clear-away first action: {FormatActions(s.OneClearAway)}");
+                sb.AppendLine($"- Extraction latch first action: {FormatActions(s.Latches)}");
+                sb.AppendLine($"- Final rescue actions: {(s.FinalRescues.Count == 0 ? "N/A" : string.Join(", ", s.FinalRescues))}");
+                sb.AppendLine($"- Final rescue dock overrides: {s.FinalOverrides}");
+                sb.AppendLine($"- Hazard skips after final rescue: {s.HazardSkips}");
+                sb.AppendLine($"- Assisted spawns: {s.AssistedSpawns} ({s.AssistedPieces} pieces)");
+                sb.AppendLine($"- Assisted spawn reasons: {FormatCounts(s.AssistedReasons)}");
+                sb.AppendLine($"- Assisted follow-up uses <=2 actions: {s.AssistedFollowUps}");
+                sb.AppendLine($"- Grace outcomes: {FormatCounts(s.GraceOutcomes)}");
+                sb.AppendLine($"- Vine preview events: {s.VinePreviews}");
+                sb.AppendLine($"- Deadboard-like states: {s.Deadboards}");
 
                 if (lossReasons.Count > 0)
                 {
@@ -337,6 +441,53 @@ namespace TelemetryReport.Tests
             }
 
             return sb.ToString();
+        }
+
+        private sealed class TestStats
+        {
+            public int Attempts;
+            public int Wins;
+            public int Losses;
+            public int FinalOverrides;
+            public int HazardSkips;
+            public int AssistedSpawns;
+            public int AssistedPieces;
+            public int AssistedFollowUps;
+            public int VinePreviews;
+            public int Deadboards;
+            public int? LastNextFloodRow;
+            public int? PeakDockOccupancy;
+            public System.Collections.Generic.List<string> LossReasons { get; } = new System.Collections.Generic.List<string>();
+            public System.Collections.Generic.List<int> WinActions { get; } = new System.Collections.Generic.List<int>();
+            public System.Collections.Generic.List<int> LossActions { get; } = new System.Collections.Generic.List<int>();
+            public System.Collections.Generic.List<int> FinalRescues { get; } = new System.Collections.Generic.List<int>();
+            public System.Collections.Generic.Dictionary<string, int> WaterModes { get; } = new System.Collections.Generic.Dictionary<string, int>();
+            public System.Collections.Generic.Dictionary<string, int> DockWarningStates { get; } = new System.Collections.Generic.Dictionary<string, int>();
+            public System.Collections.Generic.Dictionary<string, int> TargetTransitions { get; } = new System.Collections.Generic.Dictionary<string, int>();
+            public System.Collections.Generic.Dictionary<string, int> AssistedReasons { get; } = new System.Collections.Generic.Dictionary<string, int>();
+            public System.Collections.Generic.Dictionary<string, int> GraceOutcomes { get; } = new System.Collections.Generic.Dictionary<string, int>();
+            public System.Collections.Generic.Dictionary<string, int> OneClearAway { get; } = new System.Collections.Generic.Dictionary<string, int>();
+            public System.Collections.Generic.Dictionary<string, int> Latches { get; } = new System.Collections.Generic.Dictionary<string, int>();
+        }
+
+        private static void Increment(System.Collections.Generic.Dictionary<string, int> counts, string key)
+        {
+            if (!counts.ContainsKey(key)) counts[key] = 0;
+            counts[key]++;
+        }
+
+        private static string FormatCounts(System.Collections.Generic.Dictionary<string, int> counts)
+        {
+            return counts.Count == 0
+                ? "N/A"
+                : string.Join(", ", counts.Select(kv => $"{kv.Key}: {kv.Value}"));
+        }
+
+        private static string FormatActions(System.Collections.Generic.Dictionary<string, int> actions)
+        {
+            return actions.Count == 0
+                ? "N/A"
+                : string.Join(", ", actions.Select(kv => $"{kv.Key}: {kv.Value}"));
         }
     }
 }

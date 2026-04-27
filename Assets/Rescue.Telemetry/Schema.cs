@@ -82,9 +82,23 @@ namespace Rescue.Telemetry
         long TimestampMs,
         int ActionIndex,
         int Occupancy,
-        DockWarningLevel WarningLevel) : ITelemetryEvent
+        DockWarningLevel WarningLevel,
+        int DockSize = 7) : ITelemetryEvent
     {
         public string EventType => "dock_occupancy";
+        public int SchemaVersion => 1;
+    }
+
+    public sealed record WaterForecastEvent(
+        string LevelId,
+        long TimestampMs,
+        int ActionIndex,
+        string WaterMode,
+        int? NextFloodRow,
+        bool ForecastAvailable,
+        int ActionsUntilRise) : ITelemetryEvent
+    {
+        public string EventType => "water_forecast";
         public int SchemaVersion => 1;
     }
 
@@ -108,6 +122,16 @@ namespace Rescue.Telemetry
         public int SchemaVersion => 1;
     }
 
+    public sealed record VinePreviewEvent(
+        string LevelId,
+        long TimestampMs,
+        int ActionIndex,
+        TileCoord? PendingTile) : ITelemetryEvent
+    {
+        public string EventType => "vine_preview";
+        public int SchemaVersion => 1;
+    }
+
     public sealed record UndoUsedEvent(
         string LevelId,
         long TimestampMs,
@@ -124,6 +148,53 @@ namespace Rescue.Telemetry
         string TargetId) : ITelemetryEvent
     {
         public string EventType => "target_extracted";
+        public int SchemaVersion => 1;
+    }
+
+    public sealed record TargetStateTransitionEvent(
+        string LevelId,
+        long TimestampMs,
+        int ActionIndex,
+        string TargetId,
+        TileCoord Coord,
+        TargetReadiness FromState,
+        TargetReadiness ToState) : ITelemetryEvent
+    {
+        public string EventType => "target_state_transition";
+        public int SchemaVersion => 1;
+    }
+
+    public sealed record FinalRescueEvent(
+        string LevelId,
+        long TimestampMs,
+        int ActionIndex,
+        string? TargetId,
+        bool DockOverflowWouldHaveFailed,
+        bool HazardAdvanceSkipped) : ITelemetryEvent
+    {
+        public string EventType => "final_rescue";
+        public int SchemaVersion => 1;
+    }
+
+    public sealed record FinalRescueDockOverflowOverrideEvent(
+        string LevelId,
+        long TimestampMs,
+        int ActionIndex,
+        int OverflowCount) : ITelemetryEvent
+    {
+        public string EventType => "final_rescue_dock_overflow_override";
+        public int SchemaVersion => 1;
+    }
+
+    public sealed record HazardAdvanceSkippedEvent(
+        string LevelId,
+        long TimestampMs,
+        int ActionIndex,
+        string Reason,
+        bool WaterSkipped,
+        bool VineSkipped) : ITelemetryEvent
+    {
+        public string EventType => "hazard_advance_skipped";
         public int SchemaVersion => 1;
     }
 
@@ -218,6 +289,54 @@ namespace Rescue.Telemetry
         public int SchemaVersion => 1;
     }
 
+    public sealed record GraceEvent(
+        string LevelId,
+        long TimestampMs,
+        int ActionIndex,
+        string TargetId,
+        string Outcome) : ITelemetryEvent
+    {
+        public string EventType => "grace";
+        public int SchemaVersion => 1;
+    }
+
+    public sealed record AssistedSpawnEvent(
+        string LevelId,
+        long TimestampMs,
+        int ActionIndex,
+        string Reason,
+        string Context,
+        int SpawnCount,
+        bool EmergencyRequested,
+        bool EmergencyApplied,
+        double EffectiveAssistanceChance,
+        int FollowUpWindowActions = 2) : ITelemetryEvent
+    {
+        public string EventType => "assisted_spawn";
+        public int SchemaVersion => 1;
+    }
+
+    public sealed record AssistedSpawnFollowUpEvent(
+        string LevelId,
+        long TimestampMs,
+        int OriginalActionIndex,
+        int FollowUpActionIndex,
+        DebrisType UsedType) : ITelemetryEvent
+    {
+        public string EventType => "assisted_spawn_follow_up";
+        public int SchemaVersion => 1;
+    }
+
+    public sealed record DeadboardLikeStateEvent(
+        string LevelId,
+        long TimestampMs,
+        int ActionIndex,
+        string Reason) : ITelemetryEvent
+    {
+        public string EventType => "deadboard_like_state";
+        public int SchemaVersion => 1;
+    }
+
     public sealed record TuningChangedEvent(
         string LevelId,
         long TimestampMs,
@@ -284,12 +403,22 @@ namespace Rescue.Telemetry
                 "level_win" => JsonSerializer.Deserialize<LevelWinEvent>(rawJson, InnerOptions),
                 "level_loss" => JsonSerializer.Deserialize<LevelLossEvent>(rawJson, InnerOptions),
                 "dock_occupancy" => JsonSerializer.Deserialize<DockOccupancyEvent>(rawJson, InnerOptions),
+                "water_forecast" => JsonSerializer.Deserialize<WaterForecastEvent>(rawJson, InnerOptions),
                 "water_rise" => JsonSerializer.Deserialize<WaterRiseEvent>(rawJson, InnerOptions),
                 "vine_growth" => JsonSerializer.Deserialize<VineGrowthEvent>(rawJson, InnerOptions),
+                "vine_preview" => JsonSerializer.Deserialize<VinePreviewEvent>(rawJson, InnerOptions),
                 "undo_used" => JsonSerializer.Deserialize<UndoUsedEvent>(rawJson, InnerOptions),
                 "target_extracted" => JsonSerializer.Deserialize<TargetExtractedEvent>(rawJson, InnerOptions),
+                "target_state_transition" => JsonSerializer.Deserialize<TargetStateTransitionEvent>(rawJson, InnerOptions),
+                "final_rescue" => JsonSerializer.Deserialize<FinalRescueEvent>(rawJson, InnerOptions),
+                "final_rescue_dock_overflow_override" => JsonSerializer.Deserialize<FinalRescueDockOverflowOverrideEvent>(rawJson, InnerOptions),
+                "hazard_advance_skipped" => JsonSerializer.Deserialize<HazardAdvanceSkippedEvent>(rawJson, InnerOptions),
                 "target_lost" => JsonSerializer.Deserialize<TargetLostEvent>(rawJson, InnerOptions),
                 "target_distressed" => JsonSerializer.Deserialize<TargetDistressedEvent>(rawJson, InnerOptions),
+                "grace" => JsonSerializer.Deserialize<GraceEvent>(rawJson, InnerOptions),
+                "assisted_spawn" => JsonSerializer.Deserialize<AssistedSpawnEvent>(rawJson, InnerOptions),
+                "assisted_spawn_follow_up" => JsonSerializer.Deserialize<AssistedSpawnFollowUpEvent>(rawJson, InnerOptions),
+                "deadboard_like_state" => JsonSerializer.Deserialize<DeadboardLikeStateEvent>(rawJson, InnerOptions),
                 "invalid_tap" => JsonSerializer.Deserialize<InvalidTapEvent>(rawJson, InnerOptions),
                 "idle_time" => JsonSerializer.Deserialize<IdleTimeEvent>(rawJson, InnerOptions),
                 "time_to_first_action" => JsonSerializer.Deserialize<TimeToFirstActionEvent>(rawJson, InnerOptions),
