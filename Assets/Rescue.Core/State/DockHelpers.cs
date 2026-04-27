@@ -33,12 +33,17 @@ namespace Rescue.Core.State
 
         public static DockWarningLevel GetWarningLevel(Dock dock)
         {
-            return Occupancy(dock) switch
+            int occupancy = Occupancy(dock);
+            if (occupancy >= dock.Size)
+            {
+                return DockWarningLevel.Fail;
+            }
+
+            return occupancy switch
             {
                 <= 4 => DockWarningLevel.Safe,
                 5 => DockWarningLevel.Caution,
                 6 => DockWarningLevel.Acute,
-                7 => DockWarningLevel.Fail,
                 _ => throw new InvalidOperationException("Dock occupancy cannot exceed the fixed dock size."),
             };
         }

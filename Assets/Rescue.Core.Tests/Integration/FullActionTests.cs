@@ -80,6 +80,21 @@ namespace Rescue.Core.Tests.Integration
         }
 
         [Test]
+        public void TemporaryDockOverflowThatClearsTripleDoesNotLose()
+        {
+            GameState state = IntegrationTestFixtures.CreateTemporaryDockOverflowClearState();
+
+            ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(state, new ActionInput(new TileCoord(0, 0)));
+
+            Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.Ok));
+            Assert.That(result.State.Frozen, Is.False);
+            Assert.That(DockHelpers.Occupancy(result.State.Dock), Is.EqualTo(5));
+            Assert.That(result.Events, Has.Some.TypeOf<DockCleared>());
+            Assert.That(result.Events, Has.None.TypeOf<DockOverflowTriggered>());
+            Assert.That(result.Events, Has.None.TypeOf<Lost>());
+        }
+
+        [Test]
         public void TargetOneClearAwayFiresOnActionBeforeExtraction()
         {
             GameState state = IntegrationTestFixtures.CreateTwoBeatRescueState();
@@ -154,6 +169,31 @@ namespace Rescue.Core.Tests.Integration
                             DebrisType.E,
                             DebrisType.B,
                             DebrisType.C,
+                            null),
+                        Size: 7),
+                    LevelConfig = PipelineTestFixtures.CreateLevelConfig(0.0d, null, DebrisType.A),
+                };
+        }
+
+        public static GameState CreateTemporaryDockOverflowClearState()
+        {
+            return PipelineTestFixtures.CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    PipelineTestFixtures.Row(new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new EmptyTile(), new EmptyTile()),
+                    PipelineTestFixtures.Row(new DebrisTile(DebrisType.B), new DebrisTile(DebrisType.C), new BlockerTile(BlockerType.Crate, 2, Hidden: null), new EmptyTile()),
+                    PipelineTestFixtures.Row(new EmptyTile(), new BlockerTile(BlockerType.Crate, 2, Hidden: null), new TargetTile("pup", Extracted: false), new EmptyTile()),
+                    PipelineTestFixtures.Row(new EmptyTile(), new EmptyTile(), new EmptyTile(), new EmptyTile())),
+                targets: ImmutableArray.Create(new TargetState("pup", new TileCoord(2, 2), Extracted: false, OneClearAway: false)))
+                with
+                {
+                    Dock = new Dock(
+                        ImmutableArray.Create<DebrisType?>(
+                            DebrisType.A,
+                            DebrisType.A,
+                            DebrisType.B,
+                            DebrisType.C,
+                            DebrisType.D,
+                            DebrisType.E,
                             null),
                         Size: 7),
                     LevelConfig = PipelineTestFixtures.CreateLevelConfig(0.0d, null, DebrisType.A),

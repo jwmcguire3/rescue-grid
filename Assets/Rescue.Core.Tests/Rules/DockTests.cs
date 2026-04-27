@@ -56,7 +56,7 @@ namespace Rescue.Core.Tests.Rules
         }
 
         [Test]
-        public void InsertThatWouldExceedCapacitySetsOverflowFlag()
+        public void InsertThatTemporarilyExceedsCapacityKeepsOverflowPiecesForClearStep()
         {
             GameState state = CreateStateWithDock(DebrisType.A, DebrisType.B, DebrisType.C, DebrisType.D, DebrisType.E);
             StepResult inserted = Step05_InsertDock.Run(
@@ -70,9 +70,64 @@ namespace Rescue.Core.Tests.Rules
                 DebrisType.D,
                 DebrisType.E,
                 DebrisType.A,
+                DebrisType.A,
                 DebrisType.A), inserted.State.Dock.Slots);
-            Assert.That(inserted.Context.PendingDockOverflowCount, Is.EqualTo(1));
-            Assert.That(inserted.Events, Does.Contain(new DockOverflowTriggered(1)));
+            Assert.That(inserted.Context.PendingDockOverflowCount, Is.EqualTo(0));
+            Assert.That(inserted.Events, Has.None.TypeOf<DockOverflowTriggered>());
+        }
+
+        [Test]
+        public void TemporaryOverflowThatClearsTripleDoesNotRemainOverflowAfterCompaction()
+        {
+            GameState state = CreateStateWithDock(
+                DebrisType.A,
+                DebrisType.A,
+                DebrisType.B,
+                DebrisType.C,
+                DebrisType.D,
+                DebrisType.E);
+            StepResult inserted = Step05_InsertDock.Run(
+                state,
+                CreateDockContext(state, ImmutableArray.Create(DebrisType.A, DebrisType.A)));
+            StepResult cleared = Step06_ClearDock.Run(inserted.State, inserted.Context);
+
+            AssertSlotsEqual(CreateSlots(
+                DebrisType.B,
+                DebrisType.C,
+                DebrisType.D,
+                DebrisType.E,
+                DebrisType.A), cleared.State.Dock.Slots);
+            Assert.That(cleared.Context.ClearedDockTriplesThisAction, Is.EqualTo(1));
+            Assert.That(cleared.Context.PendingDockOverflowCount, Is.EqualTo(0));
+            Assert.That(cleared.Events, Has.None.TypeOf<DockOverflowTriggered>());
+        }
+
+        [Test]
+        public void PostClearOverflowSetsOverflowFlag()
+        {
+            GameState state = CreateStateWithDock(
+                DebrisType.B,
+                DebrisType.C,
+                DebrisType.D,
+                DebrisType.E,
+                DebrisType.B,
+                DebrisType.C);
+            StepResult inserted = Step05_InsertDock.Run(
+                state,
+                CreateDockContext(state, ImmutableArray.Create(DebrisType.A, DebrisType.A)));
+            StepResult cleared = Step06_ClearDock.Run(inserted.State, inserted.Context);
+
+            AssertSlotsEqual(CreateSlots(
+                DebrisType.B,
+                DebrisType.C,
+                DebrisType.D,
+                DebrisType.E,
+                DebrisType.B,
+                DebrisType.C,
+                DebrisType.A,
+                DebrisType.A), cleared.State.Dock.Slots);
+            Assert.That(cleared.Context.PendingDockOverflowCount, Is.EqualTo(1));
+            Assert.That(cleared.Events, Does.Contain(new DockOverflowTriggered(1)));
         }
 
         [Test]
@@ -144,16 +199,20 @@ namespace Rescue.Core.Tests.Rules
             };
         }
 
-        private static ImmutableArray<DebrisType?> CreateSlots(
-            DebrisType? slot0 = null,
-            DebrisType? slot1 = null,
-            DebrisType? slot2 = null,
-            DebrisType? slot3 = null,
-            DebrisType? slot4 = null,
-            DebrisType? slot5 = null,
-            DebrisType? slot6 = null)
+        private static ImmutableArray<DebrisType?> CreateSlots(params DebrisType?[] slots)
         {
-            return ImmutableArray.Create(slot0, slot1, slot2, slot3, slot4, slot5, slot6);
+            ImmutableArray<DebrisType?>.Builder builder = ImmutableArray.CreateBuilder<DebrisType?>();
+            for (int i = 0; i < slots.Length; i++)
+            {
+                builder.Add(slots[i]);
+            }
+
+            while (builder.Count < 7)
+            {
+                builder.Add(null);
+            }
+
+            return builder.ToImmutable();
         }
 
         private static void AssertSlotsEqual(

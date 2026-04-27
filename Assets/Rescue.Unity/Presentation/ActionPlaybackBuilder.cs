@@ -55,6 +55,7 @@ namespace Rescue.Unity.Presentation
 
                 case DockInserted:
                 case DockCleared:
+                case DockOverflowTriggered:
                 case DockWarningChanged:
                 case DockJamTriggered:
                     mappedSteps.Add(CreateStep(ActionPlaybackStepType.DockFeedback, actionEvent));

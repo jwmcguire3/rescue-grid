@@ -154,7 +154,7 @@ namespace Rescue.Unity.Presentation.Tests
                     Row(new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new EmptyTile()),
                     Row(new EmptyTile(), new EmptyTile(), new BlockerTile(BlockerType.Crate, 2, null)),
                     Row(new EmptyTile(), new BlockerTile(BlockerType.Crate, 2, null), new TargetTile("hold", Extracted: false))),
-                dockSlots: DockSlots(DebrisType.B, DebrisType.C, DebrisType.B, DebrisType.C, DebrisType.B, DebrisType.C, null),
+                dockSlots: DockSlots(DebrisType.B, DebrisType.C, DebrisType.D, DebrisType.E, DebrisType.B, DebrisType.C, null),
                 targets: HeldTarget(),
                 dockJamEnabled: true);
 
@@ -164,8 +164,8 @@ namespace Rescue.Unity.Presentation.Tests
                 ActionOutcome.Ok,
                 nameof(GroupRemoved),
                 nameof(DockInserted),
-                nameof(DockCleared),
-                nameof(DockCleared),
+                nameof(DockInserted),
+                nameof(DockOverflowTriggered),
                 nameof(DockWarningChanged),
                 nameof(Spawned),
                 nameof(DockJamTriggered));
@@ -209,7 +209,7 @@ namespace Rescue.Unity.Presentation.Tests
                     Row(new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new EmptyTile()),
                     Row(new EmptyTile(), new EmptyTile(), new BlockerTile(BlockerType.Crate, 2, null)),
                     Row(new EmptyTile(), new BlockerTile(BlockerType.Crate, 2, null), new TargetTile("hold", Extracted: false))),
-                dockSlots: DockSlots(DebrisType.B, DebrisType.C, DebrisType.B, DebrisType.C, DebrisType.B, DebrisType.C, null),
+                dockSlots: DockSlots(DebrisType.B, DebrisType.C, DebrisType.D, DebrisType.E, DebrisType.B, DebrisType.C, null),
                 targets: HeldTarget());
 
             AssertPipelinePlan(
@@ -218,8 +218,8 @@ namespace Rescue.Unity.Presentation.Tests
                 ActionOutcome.LossDockOverflow,
                 nameof(GroupRemoved),
                 nameof(DockInserted),
-                nameof(DockCleared),
-                nameof(DockCleared),
+                nameof(DockInserted),
+                nameof(DockOverflowTriggered),
                 nameof(DockWarningChanged),
                 nameof(Spawned),
                 nameof(Lost));
@@ -293,6 +293,7 @@ namespace Rescue.Unity.Presentation.Tests
                     IceRevealed => ActionPlaybackStepType.BreakBlockerOrReveal,
                     DockInserted => ActionPlaybackStepType.DockFeedback,
                     DockCleared => ActionPlaybackStepType.DockFeedback,
+                    DockOverflowTriggered => ActionPlaybackStepType.DockFeedback,
                     DockWarningChanged => ActionPlaybackStepType.DockFeedback,
                     DockJamTriggered => ActionPlaybackStepType.DockFeedback,
                     GravitySettled => ActionPlaybackStepType.Gravity,
@@ -434,7 +435,7 @@ namespace Rescue.Unity.Presentation.Tests
                         Row(new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new EmptyTile()),
                         Row(new EmptyTile(), new EmptyTile(), new BlockerTile(BlockerType.Crate, 2, null)),
                         Row(new EmptyTile(), new BlockerTile(BlockerType.Crate, 2, null), new TargetTile("hold", Extracted: false))),
-                    dockSlots: DockSlots(DebrisType.B, DebrisType.C, DebrisType.B, DebrisType.C, DebrisType.B, DebrisType.C, null),
+                    dockSlots: DockSlots(DebrisType.B, DebrisType.C, DebrisType.D, DebrisType.E, DebrisType.B, DebrisType.C, null),
                     targets: HeldTarget(),
                     dockJamEnabled: true),
                 new TileCoord(0, 0),

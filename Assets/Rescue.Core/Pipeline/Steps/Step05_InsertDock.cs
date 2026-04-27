@@ -15,10 +15,7 @@ namespace Rescue.Core.Pipeline.Steps
 
             DockInsertResult insert = DockInsertOps.Insert(state.Dock, context.RemovedDebris);
             GameState updatedState = state with { Dock = insert.Dock };
-            StepContext updatedContext = context with
-            {
-                PendingDockOverflowCount = insert.OverflowCount,
-            };
+            StepContext updatedContext = context;
 
             ImmutableArray<ActionEvent>.Builder events = ImmutableArray.CreateBuilder<ActionEvent>();
             int occupancy = DockHelpers.Occupancy(state.Dock);
@@ -29,11 +26,6 @@ namespace Rescue.Core.Pipeline.Steps
                     ImmutableArray.Create(insert.InsertedPieces[i]),
                     OccupancyAfterInsert: occupancy,
                     OverflowCount: insert.OverflowCount));
-            }
-
-            if (insert.OverflowCount > 0)
-            {
-                events.Add(new DockOverflowTriggered(insert.OverflowCount));
             }
 
             return new StepResult(updatedState, updatedContext, events.ToImmutable());

@@ -51,6 +51,7 @@ namespace Rescue.Core.Tests.State
         [TestCase(5, DockWarningLevel.Caution)]
         [TestCase(6, DockWarningLevel.Acute)]
         [TestCase(7, DockWarningLevel.Fail)]
+        [TestCase(8, DockWarningLevel.Fail)]
         public void GetWarningLevelMatchesSpecThresholds(int occupancy, DockWarningLevel expected)
         {
             Dock dock = CreateDock(occupancy);
@@ -62,8 +63,9 @@ namespace Rescue.Core.Tests.State
 
         private static Dock CreateDock(int occupancy)
         {
-            ImmutableArray<DebrisType?>.Builder slots = ImmutableArray.CreateBuilder<DebrisType?>(7);
-            for (int i = 0; i < 7; i++)
+            int slotCount = System.Math.Max(occupancy, 7);
+            ImmutableArray<DebrisType?>.Builder slots = ImmutableArray.CreateBuilder<DebrisType?>(slotCount);
+            for (int i = 0; i < slotCount; i++)
             {
                 slots.Add(i < occupancy ? DebrisType.A : null);
             }
