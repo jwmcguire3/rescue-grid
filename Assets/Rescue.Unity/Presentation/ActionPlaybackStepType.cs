@@ -4,11 +4,17 @@ namespace Rescue.Unity.Presentation
     {
         RemoveGroup,
         BreakBlockerOrReveal,
+        TargetReaction,
         DockFeedback,
+        DockOverflow,
+        TargetLatch,
         Gravity,
         Spawn,
         TargetExtract,
+        WaterWarning,
         WaterRise,
+        VinePreview,
+        VineGrowth,
         TerminalOutcome,
         FinalSync,
     }

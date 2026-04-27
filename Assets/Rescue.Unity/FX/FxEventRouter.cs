@@ -131,15 +131,27 @@ namespace Rescue.Unity.FX
                 case DockWarningChanged warningChanged when warningChanged.After != DockWarningLevel.Safe:
                     PlayDockWarning();
                     break;
+                case DockOverflowTriggered:
+                    PlayLossDockOverflow();
+                    break;
                 case DockJamTriggered:
                     // No dock-jam-specific FX prefab exists yet; reuse the optional dock warning fallback.
                     PlayDockWarning();
                     break;
+                case TargetProgressed progressed:
+                    PlayNearRescueRelief(ResolveCellWorldPosition(progressed.Coord));
+                    break;
                 case TargetOneClearAway oneClearAway:
                     PlayNearRescueRelief(ResolveCellWorldPosition(oneClearAway.Coord));
                     break;
+                case TargetExtractionLatched latched:
+                    PlayNearRescueRelief(ResolveCellWorldPosition(latched.Coord));
+                    break;
                 case TargetExtracted extracted:
                     PlayTargetExtraction(ResolveCellWorldPosition(extracted.Coord));
+                    break;
+                case WaterWarning warning:
+                    PlayWaterRise(ResolveRowWorldPosition(warning.NextFloodRow));
                     break;
                 case WaterRose rose:
                     PlayWaterRise(ResolveRowWorldPosition(rose.FloodedRow));
@@ -147,8 +159,9 @@ namespace Rescue.Unity.FX
                 case VinePreviewChanged previewChanged when previewChanged.PendingTile.HasValue:
                     PlayVineGrowthPreview(ResolveCellWorldPosition(previewChanged.PendingTile.Value));
                     break;
-                case VineGrown:
-                    // Intentionally deferred: the registry has preview/clear FX, but no grown-vine FX prefab.
+                case VineGrown grown:
+                    // Placeholder until final art exists: reuse the authored pressure preview hook at the grown tile.
+                    PlayVineGrowthPreview(ResolveCellWorldPosition(grown.Coord));
                     break;
                 case Won:
                     PlayWin();

@@ -16,6 +16,7 @@ namespace Rescue.Unity.Presentation
         public const float DefaultDockJamFeedbackDurationSeconds = 0.70f;
         public const float DefaultGravityDurationSeconds = 0.15f;
         public const float DefaultSpawnDurationSeconds = 0.12f;
+        public const float DefaultTargetReactionDurationSeconds = 0.12f;
         public const float DefaultTargetExtractDurationSeconds = 0.12f;
         public const float DefaultWinFxDurationSeconds = 0.60f;
         public const float DefaultLossFxDurationSeconds = 0.60f;
@@ -23,6 +24,8 @@ namespace Rescue.Unity.Presentation
         public const float DefaultWaterForecastTransitionDurationSeconds = 0.10f;
         public const float DefaultWaterForecastPulseDurationSeconds = 0.25f;
         public const float DefaultWaterlinePulseDurationSeconds = 0.20f;
+        public const float DefaultVinePreviewDurationSeconds = 0.18f;
+        public const float DefaultVineGrowthDurationSeconds = 0.18f;
         public const float DefaultPlaybackSpeedMultiplier = 1.0f;
         public const float MinPlaybackSpeedMultiplier = 0.10f;
         public const float MaxPlaybackSpeedMultiplier = 8.0f;
@@ -40,6 +43,7 @@ namespace Rescue.Unity.Presentation
         [SerializeField] private float dockJamFeedbackDurationSeconds = DefaultDockJamFeedbackDurationSeconds;
         [SerializeField] private float gravityDurationSeconds = DefaultGravityDurationSeconds;
         [SerializeField] private float spawnDurationSeconds = DefaultSpawnDurationSeconds;
+        [SerializeField] private float targetReactionDurationSeconds = DefaultTargetReactionDurationSeconds;
         [SerializeField] private float targetExtractDurationSeconds = DefaultTargetExtractDurationSeconds;
         [SerializeField] private float winFxDurationSeconds = DefaultWinFxDurationSeconds;
         [SerializeField] private float lossFxDurationSeconds = DefaultLossFxDurationSeconds;
@@ -47,6 +51,8 @@ namespace Rescue.Unity.Presentation
         [SerializeField] private float waterForecastTransitionDurationSeconds = DefaultWaterForecastTransitionDurationSeconds;
         [SerializeField] private float waterForecastPulseDurationSeconds = DefaultWaterForecastPulseDurationSeconds;
         [SerializeField] private float waterlinePulseDurationSeconds = DefaultWaterlinePulseDurationSeconds;
+        [SerializeField] private float vinePreviewDurationSeconds = DefaultVinePreviewDurationSeconds;
+        [SerializeField] private float vineGrowthDurationSeconds = DefaultVineGrowthDurationSeconds;
 
         public bool PlaybackEnabled => playbackEnabled;
 
@@ -77,6 +83,8 @@ namespace Rescue.Unity.Presentation
 
         public float SpawnDurationSeconds => ScaleDuration(spawnDurationSeconds);
 
+        public float TargetReactionDurationSeconds => ScaleDuration(targetReactionDurationSeconds);
+
         public float TargetExtractDurationSeconds => ScaleDuration(targetExtractDurationSeconds);
 
         public float WinFxDurationSeconds => ScaleDuration(winFxDurationSeconds);
@@ -90,6 +98,10 @@ namespace Rescue.Unity.Presentation
         public float WaterForecastPulseDurationSeconds => ScaleDuration(waterForecastPulseDurationSeconds);
 
         public float WaterlinePulseDurationSeconds => ScaleDuration(waterlinePulseDurationSeconds);
+
+        public float VinePreviewDurationSeconds => ScaleDuration(vinePreviewDurationSeconds);
+
+        public float VineGrowthDurationSeconds => ScaleDuration(vineGrowthDurationSeconds);
 
         public void SetPlaybackEnabled(bool enabled)
         {

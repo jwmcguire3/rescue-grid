@@ -354,6 +354,7 @@ namespace Rescue.Unity.Presentation.Tests
 
             Assert.That(plan.Select(step => step.StepType), Is.EqualTo(new[]
             {
+                ActionPlaybackStepType.WaterWarning,
                 ActionPlaybackStepType.RemoveGroup,
                 ActionPlaybackStepType.TerminalOutcome,
                 ActionPlaybackStepType.FinalSync,
@@ -430,12 +431,19 @@ namespace Rescue.Unity.Presentation.Tests
                     new BlockerDamaged(new TileCoord(0, 2), BlockerType.Crate, RemainingHp: 0),
                     new BlockerBroken(new TileCoord(0, 2), BlockerType.Crate),
                     new IceRevealed(new TileCoord(1, 0), DebrisType.B),
+                    new TargetProgressed("pup-1", new TileCoord(2, 1)),
+                    new TargetOneClearAway("pup-1", new TileCoord(2, 1)),
+                    new TargetExtractionLatched("pup-1", new TileCoord(2, 1)),
                     new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 1, OverflowCount: 0),
                     new DockCleared(DebrisType.A, SetsCleared: 1, OccupancyAfterClear: 0),
+                    new DockOverflowTriggered(OverflowCount: 1),
                     new DockWarningChanged(DockWarningLevel.Safe, DockWarningLevel.Caution),
                     new DockJamTriggered(OverflowCount: 1),
                     new GravitySettled(ImmutableArray.Create((new TileCoord(0, 0), new TileCoord(1, 0)))),
                     new Spawned(ImmutableArray.Create((new TileCoord(0, 0), DebrisType.C))),
+                    new WaterWarning(ActionsUntilRise: 1, NextFloodRow: 2),
+                    new VinePreviewChanged(new TileCoord(1, 1)),
+                    new VineGrown(new TileCoord(1, 1)),
                     new TargetExtracted("pup-1", new TileCoord(2, 1)),
                     new WaterRose(FloodedRow: 4)));
 
@@ -445,14 +453,135 @@ namespace Rescue.Unity.Presentation.Tests
                 ("BlockerDamaged", ActionPlaybackStepType.BreakBlockerOrReveal),
                 ("BlockerBroken", ActionPlaybackStepType.BreakBlockerOrReveal),
                 ("IceRevealed", ActionPlaybackStepType.BreakBlockerOrReveal),
+                ("TargetProgressed", ActionPlaybackStepType.TargetReaction),
+                ("TargetOneClearAway", ActionPlaybackStepType.TargetReaction),
+                ("TargetExtractionLatched", ActionPlaybackStepType.TargetLatch),
                 ("DockInserted", ActionPlaybackStepType.DockFeedback),
                 ("DockCleared", ActionPlaybackStepType.DockFeedback),
+                ("DockOverflowTriggered", ActionPlaybackStepType.DockOverflow),
                 ("DockWarningChanged", ActionPlaybackStepType.DockFeedback),
                 ("DockJamTriggered", ActionPlaybackStepType.DockFeedback),
                 ("GravitySettled", ActionPlaybackStepType.Gravity),
                 ("Spawned", ActionPlaybackStepType.Spawn),
+                ("WaterWarning", ActionPlaybackStepType.WaterWarning),
+                ("VinePreviewChanged", ActionPlaybackStepType.VinePreview),
+                ("VineGrown", ActionPlaybackStepType.VineGrowth),
                 ("TargetExtracted", ActionPlaybackStepType.TargetExtract),
                 ("WaterRose", ActionPlaybackStepType.WaterRise),
+            }));
+        }
+
+        [Test]
+        public void Build_RescueActionPlacesTargetReactionBeforeDockAndExtraction()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(
+                    new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1))),
+                    new TargetProgressed("pup-1", new TileCoord(2, 1)),
+                    new TargetOneClearAway("pup-1", new TileCoord(2, 1)),
+                    new TargetExtractionLatched("pup-1", new TileCoord(2, 1)),
+                    new DockInserted(ImmutableArray.Create(DebrisType.A, DebrisType.A), OccupancyAfterInsert: 2, OverflowCount: 0),
+                    new TargetExtracted("pup-1", new TileCoord(2, 1))));
+
+            Assert.That(plan.Take(plan.Count - 1).Select(step => (step.SourceEventName, step.StepType)), Is.EqualTo(new[]
+            {
+                (nameof(GroupRemoved), ActionPlaybackStepType.RemoveGroup),
+                (nameof(TargetProgressed), ActionPlaybackStepType.TargetReaction),
+                (nameof(TargetOneClearAway), ActionPlaybackStepType.TargetReaction),
+                (nameof(TargetExtractionLatched), ActionPlaybackStepType.TargetLatch),
+                (nameof(DockInserted), ActionPlaybackStepType.DockFeedback),
+                (nameof(TargetExtracted), ActionPlaybackStepType.TargetExtract),
+            }));
+        }
+
+        [Test]
+        public void Build_TargetExtractionBeforeGravityAndSpawn()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(
+                    new TargetExtracted("pup-1", new TileCoord(2, 1)),
+                    new GravitySettled(ImmutableArray.Create((new TileCoord(0, 1), new TileCoord(1, 1)))),
+                    new Spawned(ImmutableArray.Create((new TileCoord(0, 0), DebrisType.C)))));
+
+            Assert.That(plan.Select(step => step.StepType), Is.EqualTo(new[]
+            {
+                ActionPlaybackStepType.TargetExtract,
+                ActionPlaybackStepType.Gravity,
+                ActionPlaybackStepType.Spawn,
+                ActionPlaybackStepType.FinalSync,
+            }));
+        }
+
+        [Test]
+        public void Build_FinalRescueDoesNotIncludeLaterHazardBeats()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(
+                    new TargetExtracted("pup-1", new TileCoord(2, 1)),
+                    new Won("pup-1", TotalActions: 3, ExtractedTargetOrder: ImmutableArray.Create("pup-1")),
+                    new GravitySettled(ImmutableArray.Create((new TileCoord(0, 1), new TileCoord(1, 1)))),
+                    new Spawned(ImmutableArray.Create((new TileCoord(0, 0), DebrisType.C))),
+                    new WaterWarning(ActionsUntilRise: 1, NextFloodRow: 2),
+                    new VinePreviewChanged(new TileCoord(1, 1)),
+                    new VineGrown(new TileCoord(1, 1)),
+                    new WaterRose(FloodedRow: 2)));
+
+            Assert.That(plan.Take(plan.Count - 1).Select(step => step.SourceEventName), Is.EqualTo(new[]
+            {
+                nameof(TargetExtracted),
+                nameof(Won),
+            }));
+        }
+
+        [Test]
+        public void Build_WaterWarningProducesPlaybackStep()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(new WaterWarning(ActionsUntilRise: 1, NextFloodRow: 2)));
+
+            Assert.That(plan[0].SourceEventName, Is.EqualTo(nameof(WaterWarning)));
+            Assert.That(plan[0].StepType, Is.EqualTo(ActionPlaybackStepType.WaterWarning));
+        }
+
+        [Test]
+        public void Build_VinePreviewAndGrowthProducePlaybackSteps()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(
+                    new VinePreviewChanged(new TileCoord(1, 1)),
+                    new VineGrown(new TileCoord(1, 1))));
+
+            Assert.That(plan.Take(plan.Count - 1).Select(step => (step.SourceEventName, step.StepType)), Is.EqualTo(new[]
+            {
+                (nameof(VinePreviewChanged), ActionPlaybackStepType.VinePreview),
+                (nameof(VineGrown), ActionPlaybackStepType.VineGrowth),
+            }));
+        }
+
+        [Test]
+        public void Build_DockOverflowPlaybackShowsSpecificFailCause()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(
+                    new DockOverflowTriggered(OverflowCount: 2),
+                    new Lost(ActionOutcome.LossDockOverflow)));
+
+            Assert.That(plan.Take(plan.Count - 1).Select(step => (step.SourceEventName, step.StepType)), Is.EqualTo(new[]
+            {
+                (nameof(DockOverflowTriggered), ActionPlaybackStepType.DockOverflow),
+                (nameof(Lost), ActionPlaybackStepType.TerminalOutcome),
             }));
         }
 

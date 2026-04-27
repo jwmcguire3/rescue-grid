@@ -53,12 +53,24 @@ namespace Rescue.Unity.Presentation
                     mappedSteps.Add(CreateStep(ActionPlaybackStepType.BreakBlockerOrReveal, actionEvent));
                     return;
 
+                case TargetProgressed:
+                case TargetOneClearAway:
+                    mappedSteps.Add(CreateStep(ActionPlaybackStepType.TargetReaction, actionEvent));
+                    return;
+
+                case TargetExtractionLatched:
+                    mappedSteps.Add(CreateStep(ActionPlaybackStepType.TargetLatch, actionEvent));
+                    return;
+
                 case DockInserted:
                 case DockCleared:
-                case DockOverflowTriggered:
                 case DockWarningChanged:
                 case DockJamTriggered:
                     mappedSteps.Add(CreateStep(ActionPlaybackStepType.DockFeedback, actionEvent));
+                    return;
+
+                case DockOverflowTriggered:
+                    mappedSteps.Add(CreateStep(ActionPlaybackStepType.DockOverflow, actionEvent));
                     return;
 
                 case GravitySettled:
@@ -73,8 +85,20 @@ namespace Rescue.Unity.Presentation
                     mappedSteps.Add(CreateStep(ActionPlaybackStepType.TargetExtract, actionEvent));
                     return;
 
+                case WaterWarning:
+                    mappedSteps.Add(CreateStep(ActionPlaybackStepType.WaterWarning, actionEvent));
+                    return;
+
                 case WaterRose:
                     mappedSteps.Add(CreateStep(ActionPlaybackStepType.WaterRise, actionEvent));
+                    return;
+
+                case VinePreviewChanged:
+                    mappedSteps.Add(CreateStep(ActionPlaybackStepType.VinePreview, actionEvent));
+                    return;
+
+                case VineGrown:
+                    mappedSteps.Add(CreateStep(ActionPlaybackStepType.VineGrowth, actionEvent));
                     return;
 
                 default:

@@ -249,7 +249,7 @@ namespace Rescue.Unity.FX.Tests
                 state,
                 CreatePlaybackStep(ActionPlaybackStepType.DockFeedback, new DockWarningChanged(DockWarningLevel.Caution, DockWarningLevel.Safe))));
 
-            Assert.That(router.VineGrowthPreviewCount, Is.EqualTo(0));
+            Assert.That(router.VineGrowthPreviewCount, Is.EqualTo(1));
             Assert.That(router.DockWarningCount, Is.EqualTo(0));
         }
 

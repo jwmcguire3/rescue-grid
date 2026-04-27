@@ -192,6 +192,9 @@ namespace Rescue.Unity.Presentation
                 case DockWarningChanged warningChanged:
                     ResolveDockView()?.PlayWarningFeedback(warningChanged);
                     break;
+                case DockOverflowTriggered overflowTriggered:
+                    ResolveDockView()?.PlayOverflowFeedback(overflowTriggered);
+                    break;
                 case DockJamTriggered jamTriggered:
                     ResolveDockView()?.PlayJamFeedback(jamTriggered);
                     break;
@@ -203,6 +206,11 @@ namespace Rescue.Unity.Presentation
                     break;
                 case TargetExtracted extracted:
                     boardContent?.AnimateTargetExtract(extracted);
+                    break;
+                case WaterWarning:
+                    ResolveWaterView()?.AnimateForecastTransition(
+                        previousState,
+                        resultState);
                     break;
                 case WaterRose rose:
                     ResolveWaterView()?.AnimateWaterRise(
@@ -264,16 +272,27 @@ namespace Rescue.Unity.Presentation
                     return settings.RemoveDurationSeconds;
                 case ActionPlaybackStepType.BreakBlockerOrReveal:
                     return settings.BreakBlockerOrRevealDurationSeconds;
+                case ActionPlaybackStepType.TargetReaction:
+                case ActionPlaybackStepType.TargetLatch:
+                    return settings.TargetReactionDurationSeconds;
                 case ActionPlaybackStepType.DockFeedback:
                     return settings.DockFeedbackDurationSeconds;
+                case ActionPlaybackStepType.DockOverflow:
+                    return settings.DockJamFeedbackDurationSeconds;
                 case ActionPlaybackStepType.Gravity:
                     return settings.GravityDurationSeconds;
                 case ActionPlaybackStepType.Spawn:
                     return settings.SpawnDurationSeconds;
                 case ActionPlaybackStepType.TargetExtract:
                     return settings.TargetExtractDurationSeconds;
+                case ActionPlaybackStepType.WaterWarning:
+                    return settings.WaterForecastPulseDurationSeconds;
                 case ActionPlaybackStepType.WaterRise:
                     return Mathf.Max(settings.WaterRiseDurationSeconds, settings.WaterForecastTransitionDurationSeconds);
+                case ActionPlaybackStepType.VinePreview:
+                    return settings.VinePreviewDurationSeconds;
+                case ActionPlaybackStepType.VineGrowth:
+                    return settings.VineGrowthDurationSeconds;
                 default:
                     return 0f;
             }

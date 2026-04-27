@@ -540,6 +540,18 @@ namespace Rescue.Unity.UI
             feedback.PlayFailedFeedback();
         }
 
+        public void PlayOverflowFeedback(DockOverflowTriggered dockOverflowTriggered)
+        {
+            if (dockOverflowTriggered is null)
+            {
+                return;
+            }
+
+            DockFeedbackPresenter feedback = PrepareFeedbackPresenter();
+            SetDockVisualState(DockVisualState.Failed);
+            feedback.PlayFailedFeedback();
+        }
+
         public void ApplyActionResult(ActionResult result)
         {
             if (result is null)
@@ -565,6 +577,9 @@ namespace Rescue.Unity.UI
                         break;
                     case DockJamTriggered dockJamTriggered:
                         PlayJamFeedback(dockJamTriggered);
+                        break;
+                    case DockOverflowTriggered dockOverflowTriggered:
+                        PlayOverflowFeedback(dockOverflowTriggered);
                         break;
                     case Lost lost when lost.Outcome == ActionOutcome.LossDockOverflow:
                         feedback.PlayFailedFeedback();
