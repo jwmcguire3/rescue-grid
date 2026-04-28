@@ -16,6 +16,7 @@ namespace Rescue.Core.Pipeline.Steps
             }
 
             SeededRng rng = SeededRng.FromState(state.RngState);
+            Board preSpawnBoard = state.Board;
             GameState updatedState = state;
             ImmutableArray<ActionEvent>.Builder events = ImmutableArray.CreateBuilder<ActionEvent>();
             ImmutableArray<SpawnedPiece>.Builder spawnedPieces = ImmutableArray.CreateBuilder<SpawnedPiece>(spawnCoords.Length);
@@ -36,7 +37,7 @@ namespace Rescue.Core.Pipeline.Steps
                 bool wasSingletonOnly = SpawnOps.BoardIsSingletonOnly(updatedState.Board);
                 bool usedRecoveryBias = updatedState.SpawnRecoveryCounter > 0;
                 bool emergencyActive = SpawnOps.IsEmergencyActive(updatedState, updatedState.LevelConfig, updatedState.DebugSpawnOverride);
-                DebrisType debrisType = SpawnOps.ChooseNextSpawn(updatedState, coord, rng);
+                DebrisType debrisType = SpawnOps.ChooseNextSpawn(updatedState, preSpawnBoard, coord, rng);
                 int lineageId = updatedState.NextSpawnLineageId;
                 SpawnedPiece spawnedPiece = SpawnOps.DescribeSpawnedPiece(updatedState, coord, debrisType, lineageId);
 

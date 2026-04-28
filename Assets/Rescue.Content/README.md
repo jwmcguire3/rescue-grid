@@ -40,7 +40,11 @@
   },
   "assistance": {
     "chance": 0.7,
-    "consecutiveEmergencyCap": 2
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
   },
   "meta": {
     "intent": "Teach rescue order pressure.",
@@ -87,3 +91,4 @@ The validator is pure .NET and operates on raw JSON strings. It checks:
 - `meta.isRuleTeach = true` keeps the waterline in its teach state until the first valid action, then normal ticking resumes
 - `riseInterval = 0` means water is disabled for the level
 - `water.contactMode` is optional and defaults to `ImmediateLoss`; set it to `OneTickGrace` to make first contact mark a target distressed before unresolved contact expires.
+- `assistance.spawnIntegrity` is optional and defaults to strict normal spawning: no immediate spawned exact triples and no fresh spawned groups larger than 5. Set `allowExactTripleSpawns` or `allowOversizedSpawnGroups` only for explicit teaching, coaching, dead-board relief, or scripted relief, and document the reason in `meta.notes`.

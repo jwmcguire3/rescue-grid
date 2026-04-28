@@ -726,6 +726,16 @@ Then:
 
 If the board risks becoming singletons-only, the generator must surface a legal pair within the next 2 spawns.
 
+### Spawn group integrity
+
+Normal spawning should not create immediate tappable groups of exactly 3. Exact triples are reserved for authored teaching, early-game coaching, dead-board prevention, or explicit level-scripted relief.
+
+Normal spawning should not create fresh groups larger than 5. Groups of 4 and 5 are allowed because they create dock-risk decisions rather than free clears.
+
+Gravity-created groups caused by the player's prior action are allowed, including groups of 3+, because those feel earned and preserve agency.
+
+Mixed spawned/existing groups may exceed the normal cap only when the majority of the group existed before the spawn or when the level explicitly allows it.
+
 ### Telemetry requirement
 
 Every assisted spawn must be tagged with:

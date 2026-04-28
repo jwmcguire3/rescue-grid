@@ -163,11 +163,204 @@ namespace Rescue.Core.Tests.Rules
             TileCoord spawnCoord = new TileCoord(0, 0);
             for (int i = 0; i < 20000; i++)
             {
-                counts[SpawnOps.ChooseNextSpawn(state, spawnCoord, rng)]++;
+                counts[SpawnOps.ChooseNextSpawn(state, state.Board, spawnCoord, rng)]++;
             }
 
             Assert.That(counts[DebrisType.B], Is.GreaterThan(counts[DebrisType.A]));
             Assert.That(counts[DebrisType.B], Is.GreaterThan(counts[DebrisType.C]));
+        }
+
+        [Test]
+        public void SpawnIntegrity_RejectsNormalExactTriple()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                Row(new EmptyTile()),
+                Row(new DebrisTile(DebrisType.A)),
+                Row(new DebrisTile(DebrisType.A)));
+            GameState state = CreateSpawnState(board, assistanceChance: 0.0d);
+
+            SpawnCandidate candidate = SpawnOps.EvaluateSpawnCandidate(
+                state,
+                board,
+                new TileCoord(0, 0),
+                DebrisType.A,
+                weight: 1.0d);
+            DebrisType chosen = SpawnOps.ChooseNextSpawn(state, board, new TileCoord(0, 0), new SeededRng(12u));
+
+            Assert.That(candidate.GroupSize, Is.EqualTo(3));
+            Assert.That(candidate.IsAllowed, Is.False);
+            Assert.That(chosen, Is.Not.EqualTo(DebrisType.A));
+        }
+
+        [Test]
+        public void SpawnIntegrity_AllowsGroupsOfFourAndFive()
+        {
+            Board fourBoard = PipelineTestFixtures.CreateBoard(
+                Row(new EmptyTile()),
+                Row(new DebrisTile(DebrisType.A)),
+                Row(new DebrisTile(DebrisType.A)),
+                Row(new DebrisTile(DebrisType.A)));
+            Board fiveBoard = PipelineTestFixtures.CreateBoard(
+                Row(new EmptyTile()),
+                Row(new DebrisTile(DebrisType.A)),
+                Row(new DebrisTile(DebrisType.A)),
+                Row(new DebrisTile(DebrisType.A)),
+                Row(new DebrisTile(DebrisType.A)));
+
+            SpawnCandidate four = SpawnOps.EvaluateSpawnCandidate(
+                CreateSpawnState(fourBoard, assistanceChance: 0.0d),
+                fourBoard,
+                new TileCoord(0, 0),
+                DebrisType.A,
+                weight: 1.0d);
+            SpawnCandidate five = SpawnOps.EvaluateSpawnCandidate(
+                CreateSpawnState(fiveBoard, assistanceChance: 0.0d),
+                fiveBoard,
+                new TileCoord(0, 0),
+                DebrisType.A,
+                weight: 1.0d);
+
+            Assert.That(four.GroupSize, Is.EqualTo(4));
+            Assert.That(four.IsAllowed, Is.True);
+            Assert.That(five.GroupSize, Is.EqualTo(5));
+            Assert.That(five.IsAllowed, Is.True);
+        }
+
+        [Test]
+        public void SpawnIntegrity_RejectsFreshOversizedGroup()
+        {
+            Board currentBoard = PipelineTestFixtures.CreateBoard(
+                Row(new EmptyTile()),
+                Row(new DebrisTile(DebrisType.A)),
+                Row(new DebrisTile(DebrisType.A)),
+                Row(new DebrisTile(DebrisType.A)),
+                Row(new DebrisTile(DebrisType.A)),
+                Row(new DebrisTile(DebrisType.A)));
+            Board preSpawnBoard = PipelineTestFixtures.CreateBoard(
+                Row(new EmptyTile()),
+                Row(new EmptyTile()),
+                Row(new EmptyTile()),
+                Row(new EmptyTile()),
+                Row(new DebrisTile(DebrisType.A)),
+                Row(new DebrisTile(DebrisType.A)));
+            GameState state = CreateSpawnState(currentBoard, assistanceChance: 0.0d);
+
+            SpawnCandidate candidate = SpawnOps.EvaluateSpawnCandidate(
+                state,
+                preSpawnBoard,
+                new TileCoord(0, 0),
+                DebrisType.A,
+                weight: 1.0d);
+
+            Assert.That(candidate.GroupSize, Is.EqualTo(6));
+            Assert.That(candidate.ExistingGroupPieces, Is.EqualTo(2));
+            Assert.That(candidate.IsAllowed, Is.False);
+        }
+
+        [Test]
+        public void SpawnIntegrity_AllowsOversizedGroupWhenMajorityExistedBeforeSpawn()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                Row(new EmptyTile()),
+                Row(new DebrisTile(DebrisType.A)),
+                Row(new DebrisTile(DebrisType.A)),
+                Row(new DebrisTile(DebrisType.A)),
+                Row(new DebrisTile(DebrisType.A)),
+                Row(new DebrisTile(DebrisType.A)));
+            GameState state = CreateSpawnState(board, assistanceChance: 0.0d);
+
+            SpawnCandidate candidate = SpawnOps.EvaluateSpawnCandidate(
+                state,
+                board,
+                new TileCoord(0, 0),
+                DebrisType.A,
+                weight: 1.0d);
+
+            Assert.That(candidate.GroupSize, Is.EqualTo(6));
+            Assert.That(candidate.ExistingGroupPieces, Is.EqualTo(5));
+            Assert.That(candidate.IsAllowed, Is.True);
+        }
+
+        [Test]
+        public void SpawnIntegrity_AllowsExactTripleForRuleTeachRecoveryAndExplicitPolicy()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                Row(new EmptyTile()),
+                Row(new DebrisTile(DebrisType.A)),
+                Row(new DebrisTile(DebrisType.A)));
+            TileCoord spawnCoord = new TileCoord(0, 0);
+            GameState ruleTeach = CreateSpawnState(board, assistanceChance: 0.0d) with
+            {
+                LevelConfig = PipelineTestFixtures.CreateLevelConfig() with { IsRuleTeach = true },
+            };
+            GameState recovery = CreateSpawnState(board, assistanceChance: 0.0d) with
+            {
+                SpawnRecoveryCounter = 2,
+            };
+            GameState explicitPolicy = CreateSpawnState(board, assistanceChance: 0.0d) with
+            {
+                LevelConfig = PipelineTestFixtures.CreateLevelConfig() with
+                {
+                    SpawnIntegrity = new SpawnIntegrityPolicy(AllowExactTripleSpawns: true),
+                },
+            };
+
+            Assert.That(SpawnOps.EvaluateSpawnCandidate(ruleTeach, board, spawnCoord, DebrisType.A, 1.0d).IsAllowed, Is.True);
+            Assert.That(SpawnOps.EvaluateSpawnCandidate(recovery, board, spawnCoord, DebrisType.A, 1.0d).IsAllowed, Is.True);
+            Assert.That(SpawnOps.EvaluateSpawnCandidate(explicitPolicy, board, spawnCoord, DebrisType.A, 1.0d).IsAllowed, Is.True);
+        }
+
+        [Test]
+        public void SpawnIntegrity_DoesNotSuppressGravityCreatedExactTriple()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                Row(new DebrisTile(DebrisType.A), new EmptyTile()),
+                Row(new DebrisTile(DebrisType.A), new BlockerTile(BlockerType.Crate, 1, Hidden: null)),
+                Row(new DebrisTile(DebrisType.A), new BlockerTile(BlockerType.Crate, 1, Hidden: null)));
+            GameState state = CreateSpawnState(board, assistanceChance: 0.0d) with
+            {
+                LevelConfig = PipelineTestFixtures.CreateLevelConfig(
+                    0.0d,
+                    ImmutableDictionary<DebrisType, double>.Empty.Add(DebrisType.B, 1.0d),
+                    DebrisType.A,
+                    DebrisType.B),
+            };
+
+            StepResult result = Step08_Spawn.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
+
+            ImmutableArray<TileCoord>? existingGroup = GroupOps.FindGroup(result.State.Board, new TileCoord(0, 0));
+            Spawned spawned = (Spawned)result.Events[0];
+            Assert.That(existingGroup.HasValue, Is.True);
+            Assert.That(existingGroup.GetValueOrDefault().Length, Is.EqualTo(3));
+            Assert.That(spawned.Pieces[0].Type, Is.EqualTo(DebrisType.B));
+        }
+
+        [Test]
+        public void SpawnIntegrity_SequentialSpawnsUseIncrementalBoard()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                Row(new EmptyTile(), new EmptyTile()),
+                Row(new BlockerTile(BlockerType.Crate, 1, Hidden: null), new DebrisTile(DebrisType.A)));
+            GameState state = CreateSpawnState(board, assistanceChance: 0.0d) with
+            {
+                LevelConfig = PipelineTestFixtures.CreateLevelConfig(
+                    0.0d,
+                    ImmutableDictionary<DebrisType, double>.Empty.Add(DebrisType.A, 1.0d),
+                    DebrisType.A,
+                    DebrisType.B),
+            };
+
+            StepResult result = Step08_Spawn.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
+            Spawned spawned = (Spawned)result.Events[0];
+
+            Assert.That(spawned.Pieces.Length, Is.EqualTo(2));
+            Assert.That(spawned.Pieces[0].Type, Is.EqualTo(DebrisType.A));
+            Assert.That(spawned.Pieces[1].Type, Is.EqualTo(DebrisType.B));
+            ImmutableArray<TileCoord>? avoidedTriple = GroupOps.FindGroup(
+                BoardHelpers.SetTile(result.State.Board, new TileCoord(0, 1), new DebrisTile(DebrisType.A)),
+                new TileCoord(0, 1));
+            Assert.That(avoidedTriple.HasValue, Is.True);
+            Assert.That(avoidedTriple.GetValueOrDefault().Length, Is.EqualTo(3));
         }
 
         [Test]

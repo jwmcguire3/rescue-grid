@@ -74,6 +74,15 @@ namespace Rescue.Content
         public double Chance { get; init; }
 
         public int ConsecutiveEmergencyCap { get; init; }
+
+        public SpawnIntegrityJson SpawnIntegrity { get; init; } = new SpawnIntegrityJson();
+    }
+
+    public sealed record SpawnIntegrityJson
+    {
+        public bool AllowExactTripleSpawns { get; init; }
+
+        public bool AllowOversizedSpawnGroups { get; init; }
     }
 
     public sealed record MetaJson

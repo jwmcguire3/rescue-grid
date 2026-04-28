@@ -252,6 +252,15 @@ namespace Rescue.Content
                     "assistance.chance must be between 0 and 1 inclusive.",
                     "$.assistance.chance"));
             }
+
+            if (level.Assistance.SpawnIntegrity is null)
+            {
+                errors.Add(new ValidationError(
+                    ValidationSeverity.Error,
+                    "assistance.spawnIntegrity",
+                    "assistance.spawnIntegrity must be an object when provided.",
+                    "$.assistance.spawnIntegrity"));
+            }
         }
 
         private static void ValidateBoardCodes(LevelJson level, AnalyzedLevel analysis, List<ValidationError> errors)
@@ -469,6 +478,26 @@ namespace Rescue.Content
                     "phase1.reinforcedCrate",
                     "Reinforced crates are off by default in Phase 1 and should only appear after explicit late-packet tuning approval.",
                     "$.board.tiles"));
+            }
+
+            if (level.Assistance.SpawnIntegrity.AllowExactTripleSpawns
+                && string.IsNullOrWhiteSpace(level.Meta.Notes))
+            {
+                errors.Add(new ValidationError(
+                    ValidationSeverity.Warning,
+                    "phase1.spawnIntegrity.exactTripleException",
+                    "Exact triple spawn exceptions require meta.notes explaining the teaching, coaching, or relief reason.",
+                    "$.assistance.spawnIntegrity.allowExactTripleSpawns"));
+            }
+
+            if (level.Assistance.SpawnIntegrity.AllowOversizedSpawnGroups
+                && string.IsNullOrWhiteSpace(level.Meta.Notes))
+            {
+                errors.Add(new ValidationError(
+                    ValidationSeverity.Warning,
+                    "phase1.spawnIntegrity.oversizedException",
+                    "Oversized spawn group exceptions require meta.notes explaining the teaching, coaching, or relief reason.",
+                    "$.assistance.spawnIntegrity.allowOversizedSpawnGroups"));
             }
         }
 

@@ -90,7 +90,10 @@ namespace Rescue.Content
                     AssistanceChance: tuning.AssistanceChance,
                     ConsecutiveEmergencyCap: json.Assistance.ConsecutiveEmergencyCap,
                     IsRuleTeach: json.Meta.IsRuleTeach,
-                    WaterContactMode: tuning.WaterContactMode),
+                    WaterContactMode: tuning.WaterContactMode,
+                    SpawnIntegrityPolicy: new SpawnIntegrityPolicy(
+                        json.Assistance.SpawnIntegrity.AllowExactTripleSpawns,
+                        json.Assistance.SpawnIntegrity.AllowOversizedSpawnGroups)),
                 RngState: rng.GetState(),
                 ActionCount: 0,
                 DockJamUsed: false,

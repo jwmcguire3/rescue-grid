@@ -22,6 +22,15 @@ namespace Rescue.Core.Rules
         RoutePairQuality PairQuality,
         bool HasAdjacency);
 
+    internal readonly record struct SpawnCandidate(
+        DebrisType Type,
+        double Weight,
+        int GroupSize,
+        int ExistingGroupPieces,
+        bool IsExactTriple,
+        bool IsOversized,
+        bool IsAllowed);
+
     internal readonly record struct UrgentRoute(
         string TargetId,
         TileCoord TargetCoord,
@@ -87,7 +96,7 @@ namespace Rescue.Core.Rules
             return new SpawnBias(weights, effectiveAssistanceChance, isEmergency);
         }
 
-        internal static DebrisType ChooseNextSpawn(GameState state, TileCoord spawnCoord, SeededRng rng)
+        internal static DebrisType ChooseNextSpawn(GameState state, Board preSpawnBoard, TileCoord spawnCoord, SeededRng rng)
         {
             if (rng is null)
             {
@@ -96,12 +105,29 @@ namespace Rescue.Core.Rules
 
             SpawnBias bias = ComputeSpawnBias(state, state.LevelConfig, state.DebugSpawnOverride, spawnCoord);
             List<(DebrisType item, double weight)> weightedItems = new List<(DebrisType item, double weight)>(bias.Weights.Length);
+            List<SpawnCandidate> allowedCandidates = new List<SpawnCandidate>(bias.Weights.Length);
             for (int i = 0; i < bias.Weights.Length; i++)
             {
-                weightedItems.Add((bias.Weights[i].Type, bias.Weights[i].Weight));
+                (DebrisType type, double weight) = bias.Weights[i];
+                SpawnCandidate candidate = EvaluateSpawnCandidate(state, preSpawnBoard, spawnCoord, type, weight);
+                if (candidate.IsAllowed)
+                {
+                    allowedCandidates.Add(candidate);
+                    weightedItems.Add((type, weight));
+                }
             }
 
-            return rng.WeightedPick(weightedItems);
+            if (HasPositiveWeight(weightedItems))
+            {
+                return rng.WeightedPick(weightedItems);
+            }
+
+            if (allowedCandidates.Count > 0)
+            {
+                return ChooseBestFallback(allowedCandidates);
+            }
+
+            return ChooseFallbackSpawn(state, preSpawnBoard, spawnCoord, bias.Weights);
         }
 
         internal static SpawnedPiece DescribeSpawnedPiece(
@@ -145,6 +171,151 @@ namespace Rescue.Core.Rules
             }
 
             return state.ConsecutiveEmergencySpawns < config.ConsecutiveEmergencyCap;
+        }
+
+        internal static SpawnCandidate EvaluateSpawnCandidate(
+            GameState state,
+            Board preSpawnBoard,
+            TileCoord spawnCoord,
+            DebrisType debrisType,
+            double weight)
+        {
+            Board simulatedBoard = BoardHelpers.SetTile(state.Board, spawnCoord, new DebrisTile(debrisType));
+            ImmutableArray<TileCoord>? group = GroupOps.FindGroup(simulatedBoard, spawnCoord);
+            int groupSize = group?.Length ?? 1;
+            int existingPieces = group.HasValue
+                ? CountExistingGroupPieces(preSpawnBoard, group.Value, debrisType)
+                : 0;
+            bool isExactTriple = groupSize == 3;
+            bool isOversized = groupSize > 5;
+            bool exactTripleAllowed = state.LevelConfig.SpawnIntegrity.AllowExactTripleSpawns
+                || state.LevelConfig.IsRuleTeach
+                || state.SpawnRecoveryCounter > 0;
+            bool oversizedAllowed = state.LevelConfig.SpawnIntegrity.AllowOversizedSpawnGroups
+                || (isOversized && existingPieces > groupSize / 2);
+            bool allowed = (!isExactTriple || exactTripleAllowed)
+                && (!isOversized || oversizedAllowed);
+
+            return new SpawnCandidate(
+                debrisType,
+                weight,
+                groupSize,
+                existingPieces,
+                isExactTriple,
+                isOversized,
+                allowed);
+        }
+
+        private static DebrisType ChooseFallbackSpawn(
+            GameState state,
+            Board preSpawnBoard,
+            TileCoord spawnCoord,
+            ImmutableArray<(DebrisType Type, double Weight)> weights)
+        {
+            SpawnCandidate? best = null;
+            for (int i = 0; i < weights.Length; i++)
+            {
+                (DebrisType type, double weight) = weights[i];
+                SpawnCandidate candidate = EvaluateSpawnCandidate(state, preSpawnBoard, spawnCoord, type, weight);
+                if (state.SpawnRecoveryCounter > 0 && candidate.IsExactTriple)
+                {
+                    if (!best.HasValue || CompareFallback(candidate, best.Value) < 0)
+                    {
+                        best = candidate;
+                    }
+
+                    continue;
+                }
+
+                if (state.SpawnRecoveryCounter > 0)
+                {
+                    continue;
+                }
+
+                if (!best.HasValue || CompareFallback(candidate, best.Value) < 0)
+                {
+                    best = candidate;
+                }
+            }
+
+            if (best.HasValue)
+            {
+                return best.Value.Type;
+            }
+
+            for (int i = 0; i < weights.Length; i++)
+            {
+                (DebrisType type, double weight) = weights[i];
+                SpawnCandidate candidate = EvaluateSpawnCandidate(state, preSpawnBoard, spawnCoord, type, weight);
+                if (!best.HasValue || CompareFallback(candidate, best.Value) < 0)
+                {
+                    best = candidate;
+                }
+            }
+
+            return best?.Type ?? weights[0].Type;
+        }
+
+        private static bool HasPositiveWeight(IReadOnlyList<(DebrisType item, double weight)> weightedItems)
+        {
+            for (int i = 0; i < weightedItems.Count; i++)
+            {
+                if (weightedItems[i].weight > 0.0d)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static DebrisType ChooseBestFallback(IReadOnlyList<SpawnCandidate> candidates)
+        {
+            SpawnCandidate best = candidates[0];
+            for (int i = 1; i < candidates.Count; i++)
+            {
+                if (CompareFallback(candidates[i], best) < 0)
+                {
+                    best = candidates[i];
+                }
+            }
+
+            return best.Type;
+        }
+
+        private static int CompareFallback(SpawnCandidate left, SpawnCandidate right)
+        {
+            int sizeComparison = left.GroupSize.CompareTo(right.GroupSize);
+            if (sizeComparison != 0)
+            {
+                return sizeComparison;
+            }
+
+            int weightComparison = right.Weight.CompareTo(left.Weight);
+            if (weightComparison != 0)
+            {
+                return weightComparison;
+            }
+
+            return left.Type.CompareTo(right.Type);
+        }
+
+        private static int CountExistingGroupPieces(
+            Board preSpawnBoard,
+            ImmutableArray<TileCoord> group,
+            DebrisType debrisType)
+        {
+            int count = 0;
+            for (int i = 0; i < group.Length; i++)
+            {
+                if (BoardHelpers.GetTile(preSpawnBoard, group[i]) is DebrisTile existing
+                    && existing.Type == debrisType)
+                {
+                    count++;
+                }
+            }
+
+            return count;
         }
 
         internal static bool BoardIsSingletonOnly(Board board)
