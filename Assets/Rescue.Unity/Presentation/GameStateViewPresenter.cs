@@ -1,6 +1,7 @@
 using Rescue.Core.Pipeline;
 using Rescue.Core.State;
 using Rescue.Unity.BoardPresentation;
+using Rescue.Unity.Feedback;
 using Rescue.Unity.UI;
 using UnityEngine;
 
@@ -14,6 +15,7 @@ namespace Rescue.Unity.Presentation
         [SerializeField] private DockViewPresenter? dockView;
         [SerializeField] private TargetFeedbackPresenter? targetFeedback;
         [SerializeField] private ActionPlaybackController? playbackController;
+        [SerializeField] private AudioEventRouter? audioEventRouter;
         [SerializeField] private VictoryScreenPresenter? victoryScreen;
         [SerializeField] private LossScreenPresenter? lossScreen;
 
@@ -53,6 +55,8 @@ namespace Rescue.Unity.Presentation
             }
 
             ActionPlaybackController? resolvedPlaybackController = ResolvePlaybackController();
+            TryRouteResultAudio(previousState, input, result);
+
             if (resolvedPlaybackController is not null &&
                 resolvedPlaybackController.TryPlayAction(previousState, input, result, FinalSyncActionResult))
             {
@@ -220,6 +224,39 @@ namespace Rescue.Unity.Presentation
 
             playbackController = GetComponent<ActionPlaybackController>();
             return playbackController;
+        }
+
+        private AudioEventRouter? ResolveAudioEventRouter()
+        {
+            if (audioEventRouter is not null)
+            {
+                return audioEventRouter;
+            }
+
+            audioEventRouter = GetComponent<AudioEventRouter>();
+            return audioEventRouter;
+        }
+
+        private void TryRouteResultAudio(GameState previousState, ActionInput input, ActionResult result)
+        {
+            AudioEventRouter? router = ResolveAudioEventRouter();
+            if (router is null)
+            {
+                return;
+            }
+
+            router.BoardGrid ??= boardGrid;
+
+            try
+            {
+                router.RouteResultSignals(previousState, input, result);
+            }
+            catch (System.Exception exception)
+            {
+                Debug.LogWarning(
+                    $"{nameof(GameStateViewPresenter)} skipped result audio after an exception: {exception.Message}",
+                    this);
+            }
         }
 
         private VictoryScreenPresenter? ResolveVictoryScreen()

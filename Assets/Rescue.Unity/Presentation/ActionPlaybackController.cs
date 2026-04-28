@@ -3,6 +3,7 @@ using System.Collections;
 using Rescue.Core.Pipeline;
 using Rescue.Core.State;
 using Rescue.Unity.BoardPresentation;
+using Rescue.Unity.Feedback;
 using Rescue.Unity.FX;
 using Rescue.Unity.UI;
 using UnityEngine;
@@ -17,6 +18,7 @@ namespace Rescue.Unity.Presentation
         [SerializeField] private WaterViewPresenter? waterView;
         [SerializeField] private DockViewPresenter? dockView;
         [SerializeField] private FxEventRouter? fxEventRouter;
+        [SerializeField] private AudioEventRouter? audioEventRouter;
 
         private Coroutine? activePlayback;
         private PlaybackContext? activeContext;
@@ -221,6 +223,7 @@ namespace Rescue.Unity.Presentation
             }
 
             TryRoutePlaybackFx(step, previousState, input, resultState);
+            TryRoutePlaybackAudio(step, previousState, input, resultState);
         }
 
         private object? CreateStepYield(ActionPlaybackStep step)
@@ -373,6 +376,17 @@ namespace Rescue.Unity.Presentation
             return fxEventRouter;
         }
 
+        private AudioEventRouter? ResolveAudioEventRouter()
+        {
+            if (audioEventRouter is not null)
+            {
+                return audioEventRouter;
+            }
+
+            audioEventRouter = GetComponent<AudioEventRouter>();
+            return audioEventRouter;
+        }
+
         private void TryRoutePlaybackFx(ActionPlaybackStep step, GameState previousState, ActionInput input, GameState resultState)
         {
             FxEventRouter? router = ResolveFxEventRouter();
@@ -391,6 +405,28 @@ namespace Rescue.Unity.Presentation
             {
                 Debug.LogWarning(
                     $"{nameof(ActionPlaybackController)} skipped FX for playback step '{step.SourceEventName ?? step.StepType.ToString()}' after an exception: {exception.Message}",
+                    this);
+            }
+        }
+
+        private void TryRoutePlaybackAudio(ActionPlaybackStep step, GameState previousState, ActionInput input, GameState resultState)
+        {
+            AudioEventRouter? router = ResolveAudioEventRouter();
+            if (router is null)
+            {
+                return;
+            }
+
+            router.BoardGrid ??= ResolveBoardGrid();
+
+            try
+            {
+                router.RoutePlaybackBeat(previousState, input, resultState, step);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning(
+                    $"{nameof(ActionPlaybackController)} skipped audio for playback step '{step.SourceEventName ?? step.StepType.ToString()}' after an exception: {exception.Message}",
                     this);
             }
         }
