@@ -257,6 +257,83 @@ namespace Rescue.Content.Tests
         }
 
         [Test]
+        public void Validate_TargetAdjacentCrateWithoutStableDamageAccess_Fails()
+        {
+            LevelJson level = TestLevels.MinimalLevel() with
+            {
+                Board = new BoardJson
+                {
+                    Width = 4,
+                    Height = 4,
+                    Tiles = new[]
+                    {
+                        new[] { ".", ".", "CR", "." },
+                        new[] { ".", "T0", "CR", "CR" },
+                        new[] { ".", ".", "CR", "." },
+                        new[] { "A", "A", ".", "." },
+                    },
+                },
+                Targets = new[] { new TargetJson { Id = "0", Row = 1, Col = 1 } },
+            };
+
+            ValidationResult result = Validator.Validate(TestLevels.Serialize(level));
+
+            Assert.That(result.HasErrors, Is.True);
+            Assert.That(result.Errors.Any(error => error.Code == "heuristic.rescuePathBlockedBlocker"), Is.True);
+        }
+
+        [Test]
+        public void Validate_TargetAdjacentCrateWithExternalDamageAccess_PassesRescuePathBlockedRule()
+        {
+            LevelJson level = TestLevels.MinimalLevel() with
+            {
+                Board = new BoardJson
+                {
+                    Width = 4,
+                    Height = 4,
+                    Tiles = new[]
+                    {
+                        new[] { ".", ".", "A", "." },
+                        new[] { ".", "T0", "CR", "CR" },
+                        new[] { ".", ".", "CR", "." },
+                        new[] { "B", "B", ".", "." },
+                    },
+                },
+                Targets = new[] { new TargetJson { Id = "0", Row = 1, Col = 1 } },
+            };
+
+            ValidationResult result = Validator.Validate(TestLevels.Serialize(level));
+
+            Assert.That(result.Errors.Any(error => error.Code == "heuristic.rescuePathBlockedBlocker"), Is.False);
+        }
+
+        [Test]
+        public void Validate_TargetAdjacentVineWithoutStableDamageAccess_Fails()
+        {
+            LevelJson level = TestLevels.MinimalLevel() with
+            {
+                Board = new BoardJson
+                {
+                    Width = 4,
+                    Height = 4,
+                    Tiles = new[]
+                    {
+                        new[] { ".", ".", "CR", "." },
+                        new[] { ".", "T0", "V", "CR" },
+                        new[] { ".", ".", "CR", "." },
+                        new[] { "A", "A", ".", "." },
+                    },
+                },
+                Targets = new[] { new TargetJson { Id = "0", Row = 1, Col = 1 } },
+            };
+
+            ValidationResult result = Validator.Validate(TestLevels.Serialize(level));
+
+            Assert.That(result.HasErrors, Is.True);
+            Assert.That(result.Errors.Any(error => error.Code == "heuristic.rescuePathBlockedBlocker"), Is.True);
+        }
+
+        [Test]
         public void Validate_AuthoredL00Level_Passes()
         {
             string json = File.ReadAllText(GetAuthoredL00Path());

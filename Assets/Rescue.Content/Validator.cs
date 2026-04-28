@@ -403,6 +403,8 @@ namespace Rescue.Content
                     continue;
                 }
 
+                AddRescuePathBlockedBlockerErrors(analysis, target, $"$.targets[{i}]", errors);
+
                 if (!HasDryRouteToTop(analysis, target))
                 {
                     errors.Add(new ValidationError(
@@ -579,6 +581,64 @@ namespace Rescue.Content
             }
 
             return false;
+        }
+
+        private static void AddRescuePathBlockedBlockerErrors(
+            AnalyzedLevel analysis,
+            TargetJson target,
+            string targetPath,
+            List<ValidationError> errors)
+        {
+            CellCoord targetCoord = new CellCoord(target.Row, target.Col);
+            ImmutableArray<CellCoord> requiredNeighbors = GetRequiredNeighbors(analysis.Height, analysis.Width, targetCoord);
+
+            for (int i = 0; i < requiredNeighbors.Length; i++)
+            {
+                CellCoord blockerCoord = requiredNeighbors[i];
+                CellInfo blocker = analysis.Cells[blockerCoord.Row, blockerCoord.Col];
+                if (!IsBlocker(blocker) || HasStableBlockerDamageAccess(analysis, targetCoord, requiredNeighbors, blockerCoord))
+                {
+                    continue;
+                }
+
+                errors.Add(new ValidationError(
+                    ValidationSeverity.Error,
+                    "heuristic.rescuePathBlockedBlocker",
+                    $"Target '{target.Id}' has a required blocker at ({blockerCoord.Row}, {blockerCoord.Col}) whose only damage access can be consumed by rescue-path locking.",
+                    targetPath));
+            }
+        }
+
+        private static bool HasStableBlockerDamageAccess(
+            AnalyzedLevel analysis,
+            CellCoord targetCoord,
+            ImmutableArray<CellCoord> requiredNeighbors,
+            CellCoord blockerCoord)
+        {
+            ImmutableArray<CellCoord> damageAccessTiles = GetRequiredNeighbors(analysis.Height, analysis.Width, blockerCoord);
+            for (int i = 0; i < damageAccessTiles.Length; i++)
+            {
+                CellCoord accessCoord = damageAccessTiles[i];
+                if (accessCoord == targetCoord
+                    || Contains(requiredNeighbors, accessCoord)
+                    || analysis.IsFlooded(accessCoord))
+                {
+                    continue;
+                }
+
+                CellInfo accessCell = analysis.Cells[accessCoord.Row, accessCoord.Col];
+                if (accessCell.Kind is CellKind.Empty or CellKind.Debris)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool IsBlocker(CellInfo cell)
+        {
+            return cell.Kind is CellKind.Crate or CellKind.Ice or CellKind.Vine;
         }
 
         private static int CountConnectedPlayableComponents(AnalyzedLevel analysis)

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LevelValidator")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2076c76a730744415c99602bad57b6e07a17a1b0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+147f44881d8d6270e59bb4f478b83d5ce2e332c0")]
 [assembly: System.Reflection.AssemblyProductAttribute("LevelValidator")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LevelValidator")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
