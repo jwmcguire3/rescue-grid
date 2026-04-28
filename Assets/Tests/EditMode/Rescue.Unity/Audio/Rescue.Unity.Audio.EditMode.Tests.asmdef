@@ -1,0 +1,21 @@
+{
+  "name": "Rescue.Unity.Audio.EditMode.Tests",
+  "rootNamespace": "Rescue.Unity.Audio.Tests",
+  "references": [
+    "Rescue.Unity"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false,
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}
