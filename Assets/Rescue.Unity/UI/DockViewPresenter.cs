@@ -696,6 +696,42 @@ namespace Rescue.Unity.UI
             return _trackedSlotObjects[slotIndex];
         }
 
+        public string DescribeTrackedSlots()
+        {
+            System.Text.StringBuilder builder = new System.Text.StringBuilder();
+            builder.Append('[');
+            bool appendedAny = false;
+            for (int slotIndex = 0; slotIndex < _trackedSlotTypes.Length; slotIndex++)
+            {
+                DebrisType? slotType = _trackedSlotTypes[slotIndex];
+                GameObject? slotObject = _trackedSlotObjects[slotIndex];
+                if (!slotType.HasValue && slotObject is null)
+                {
+                    continue;
+                }
+
+                if (appendedAny)
+                {
+                    builder.Append("; ");
+                }
+
+                appendedAny = true;
+                builder.Append(slotIndex).Append(':')
+                    .Append(slotType?.ToString() ?? "-")
+                    .Append(" object='").Append(slotObject != null ? slotObject.name : "<null>")
+                    .Append("' child='").Append(slotObject != null ? DescribeFirstVisualChild(slotObject) : "<null>")
+                    .Append('\'');
+            }
+
+            if (!appendedAny)
+            {
+                builder.Append("empty");
+            }
+
+            builder.Append(']');
+            return builder.ToString();
+        }
+
         private static int CountOccupiedSlots(Dock dock)
         {
             int occupiedSlots = 0;
@@ -934,12 +970,12 @@ namespace Rescue.Unity.UI
         private GameObject? ResolvePiecePrefab(DebrisType debrisType)
         {
             GameObject? registryPrefab = pieceRegistry?.GetPrefab(debrisType);
-            if (registryPrefab is not null)
+            if (registryPrefab != null)
             {
                 return registryPrefab;
             }
 
-            if (fallbackPiecePrefab is not null)
+            if (fallbackPiecePrefab != null)
             {
                 return fallbackPiecePrefab;
             }
@@ -1113,7 +1149,7 @@ namespace Rescue.Unity.UI
         private GameObject? CreateTrackedSlotObject(int slotIndex, DebrisType debrisType)
         {
             GameObject? piecePrefab = ResolvePiecePrefab(debrisType);
-            if (piecePrefab is null)
+            if (piecePrefab == null)
             {
                 Debug.LogWarning(
                     $"{nameof(DockViewPresenter)} could not resolve a prefab for dock slot {slotIndex} ({debrisType}).",
@@ -1124,6 +1160,37 @@ namespace Rescue.Unity.UI
             GameObject pieceObject = Instantiate(piecePrefab, ResolvePieceContainer());
             pieceObject.transform.localScale = piecePrefab.transform.localScale;
             return pieceObject;
+        }
+
+        private static string DescribeFirstVisualChild(GameObject root)
+        {
+            Renderer? renderer = root.GetComponentInChildren<Renderer>(includeInactive: true);
+            if (renderer is not null)
+            {
+                Vector3 boundsCenterLocal = root.transform.InverseTransformPoint(renderer.bounds.center);
+                return GetPathRelativeTo(root.transform, renderer.transform)
+                    + $" boundsCenterLocal=({boundsCenterLocal.x:0.00},{boundsCenterLocal.y:0.00},{boundsCenterLocal.z:0.00})";
+            }
+
+            if (root.transform.childCount > 0)
+            {
+                return root.transform.GetChild(0).name;
+            }
+
+            return "<none>";
+        }
+
+        private static string GetPathRelativeTo(Transform root, Transform child)
+        {
+            System.Collections.Generic.Stack<string> segments = new System.Collections.Generic.Stack<string>();
+            Transform? current = child;
+            while (current is not null && current != root)
+            {
+                segments.Push(current.name);
+                current = current.parent;
+            }
+
+            return segments.Count == 0 ? root.name : string.Join("/", segments);
         }
 
         private void UpdateTrackedSlotTransform(int slotIndex, Transform anchor)

@@ -27,6 +27,20 @@ namespace Rescue.Unity.Presentation
 
         public bool IsPlaybackActive => ResolvePlaybackController()?.IsPlaying ?? false;
 
+        public string DescribeBoardVisual(TileCoord coord)
+        {
+            return boardContent is not null
+                ? boardContent.DescribeVisualAt(coord)
+                : "board visual: <missing BoardContentViewPresenter>";
+        }
+
+        public string DescribeDockVisuals()
+        {
+            return dockView is not null
+                ? dockView.DescribeTrackedSlots()
+                : "dock visuals: <missing DockViewPresenter>";
+        }
+
         public void Rebuild(GameState state)
         {
             if (state is null)
@@ -172,6 +186,11 @@ namespace Rescue.Unity.Presentation
             else
             {
                 boardContent.ForceSyncToState(state);
+                string mismatches = boardContent.DescribeStateMismatches(state);
+                if (!string.Equals(mismatches, "none", System.StringComparison.Ordinal))
+                {
+                    Debug.LogWarning($"[StateViewTrace] board sync mismatches after {context}: {mismatches}", this);
+                }
             }
 
             if (waterView is null)

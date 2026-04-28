@@ -665,6 +665,20 @@ namespace Rescue.Unity.BoardPresentation.Tests
         }
 
         [Test]
+        public void BoardContentViewPresenter_SyncImmediateUsesPrimitiveRescuePathMarkerWhenFallbackPrefabIsUnassigned()
+        {
+            PresenterHarness harness = CreateHarness();
+            SetPrivateField(harness.ContentPresenter, "fallbackContentPrefab", null);
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new RescuePathTile(ImmutableArray.Create("pup")))));
+
+            harness.GridPresenter.RebuildGrid(state);
+
+            Assert.DoesNotThrow(() => harness.ContentPresenter.SyncImmediate(state));
+            Assert.That(GetRegisteredPieceObject(harness.ContentPresenter, "RescuePath", new TileCoord(0, 0)), Is.Not.Null);
+        }
+
+        [Test]
         public void BoardContentViewPresenter_AnimateTargetExtractSafelyRemovesTrackedTargetVisual()
         {
             PresenterHarness harness = CreateHarness();

@@ -148,6 +148,79 @@ namespace Rescue.Unity.BoardPresentation
             SyncImmediate(state);
         }
 
+        public string DescribeVisualAt(TileCoord coord)
+        {
+            System.Text.StringBuilder builder = new System.Text.StringBuilder();
+            builder.Append("coord=(").Append(coord.Row).Append(',').Append(coord.Col).Append(')');
+            AppendPieceDescription(builder, "debris", visualRegistry.Debris, coord);
+            AppendPieceDescription(builder, "blocker", visualRegistry.Blockers, coord);
+            AppendPieceDescription(builder, "hiddenDebris", visualRegistry.HiddenDebris, coord);
+            AppendPieceDescription(builder, "rescuePath", visualRegistry.RescuePath, coord);
+
+            foreach (KeyValuePair<string, TargetVisualView> entry in spawnedTargetsById)
+            {
+                TargetVisualView targetView = entry.Value;
+                if (targetView.Object == null)
+                {
+                    continue;
+                }
+
+                string prefix = $"Content_{coord.Row:00}_{coord.Col:00}_Target_";
+                if (!targetView.Object.name.StartsWith(prefix, System.StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                builder.Append(" target{id=").Append(entry.Key)
+                    .Append(", object='").Append(targetView.Object.name)
+                    .Append("', child='").Append(DescribeFirstVisualChild(targetView.Object))
+                    .Append("'}");
+            }
+
+            return builder.ToString();
+        }
+
+        public string DescribeStateMismatches(GameState state)
+        {
+            if (state is null)
+            {
+                return "state=<null>";
+            }
+
+            System.Text.StringBuilder builder = new System.Text.StringBuilder();
+            int mismatchCount = 0;
+            for (int row = 0; row < state.Board.Height; row++)
+            {
+                for (int col = 0; col < state.Board.Width; col++)
+                {
+                    TileCoord coord = new TileCoord(row, col);
+                    Tile tile = state.Board.Tiles[row][col];
+                    string expectedDebrisLabel = tile is DebrisTile debris ? $"Debris_{debris.Type}" : string.Empty;
+                    string expectedBlockerLabel = tile is BlockerTile blocker ? $"Blocker_{blocker.Type}" : string.Empty;
+                    string actualDebrisLabel = TryGetPieceLabel(visualRegistry.Debris, coord);
+                    string actualBlockerLabel = TryGetPieceLabel(visualRegistry.Blockers, coord);
+
+                    if (expectedDebrisLabel == actualDebrisLabel && expectedBlockerLabel == actualBlockerLabel)
+                    {
+                        continue;
+                    }
+
+                    if (mismatchCount > 0)
+                    {
+                        builder.Append("; ");
+                    }
+
+                    builder.Append('(').Append(row).Append(',').Append(col).Append(") core=")
+                        .Append(DescribeTileKind(tile))
+                        .Append(" visualDebris=").Append(string.IsNullOrEmpty(actualDebrisLabel) ? "-" : actualDebrisLabel)
+                        .Append(" visualBlocker=").Append(string.IsNullOrEmpty(actualBlockerLabel) ? "-" : actualBlockerLabel);
+                    mismatchCount++;
+                }
+            }
+
+            return mismatchCount == 0 ? "none" : builder.ToString();
+        }
+
         public void RebuildContent(GameState state)
         {
             SyncImmediate(state);
@@ -727,7 +800,7 @@ namespace Rescue.Unity.BoardPresentation
                 }
             }
 
-            GameObject? spawnedObject = prefab is not null
+            GameObject? spawnedObject = prefab != null
                 ? SpawnAtAnchor(coord, contentLabel, prefab, anchor, yOffset, scaleMultiplier)
                 : SpawnPrimitiveMarkerAtAnchor(coord, contentLabel, anchor, yOffset, scaleMultiplier);
             if (spawnedObject is null)
@@ -1135,6 +1208,91 @@ namespace Rescue.Unity.BoardPresentation
             return false;
         }
 
+        private static void AppendPieceDescription(
+            System.Text.StringBuilder builder,
+            string label,
+            BoardPieceRegistry registry,
+            TileCoord coord)
+        {
+            if (!registry.TryGet(coord, out BoardPieceView? view) || view is null)
+            {
+                return;
+            }
+
+            if (view.Object == null)
+            {
+                builder.Append(' ').Append(label).Append("{registeredMissingObject label=")
+                    .Append(view.ContentLabel).Append('}');
+                return;
+            }
+
+            builder.Append(' ').Append(label)
+                .Append("{label=").Append(view.ContentLabel)
+                .Append(", object='").Append(view.Object.name)
+                .Append("', child='").Append(DescribeFirstVisualChild(view.Object))
+                .Append("'}");
+        }
+
+        private static string DescribeFirstVisualChild(GameObject root)
+        {
+            if (root is null)
+            {
+                return "<null>";
+            }
+
+            Renderer? renderer = root.GetComponentInChildren<Renderer>(includeInactive: true);
+            if (renderer is not null)
+            {
+                Vector3 boundsCenterLocal = root.transform.InverseTransformPoint(renderer.bounds.center);
+                return GetPathRelativeTo(root.transform, renderer.transform)
+                    + $" boundsCenterLocal=({boundsCenterLocal.x:0.00},{boundsCenterLocal.y:0.00},{boundsCenterLocal.z:0.00})";
+            }
+
+            if (root.transform.childCount > 0)
+            {
+                return root.transform.GetChild(0).name;
+            }
+
+            return "<none>";
+        }
+
+        private static string GetPathRelativeTo(Transform root, Transform child)
+        {
+            System.Collections.Generic.Stack<string> segments = new System.Collections.Generic.Stack<string>();
+            Transform? current = child;
+            while (current is not null && current != root)
+            {
+                segments.Push(current.name);
+                current = current.parent;
+            }
+
+            return segments.Count == 0 ? root.name : string.Join("/", segments);
+        }
+
+        private static string TryGetPieceLabel(BoardPieceRegistry registry, TileCoord coord)
+        {
+            if (!registry.TryGet(coord, out BoardPieceView? view) || view is null || view.Object == null)
+            {
+                return string.Empty;
+            }
+
+            return view.ContentLabel;
+        }
+
+        private static string DescribeTileKind(Tile tile)
+        {
+            return tile switch
+            {
+                EmptyTile => "Empty",
+                FloodedTile => "Flooded",
+                RescuePathTile => "RescuePath",
+                DebrisTile debris => $"Debris_{debris.Type}",
+                BlockerTile blocker => $"Blocker_{blocker.Type}",
+                TargetTile target => $"Target_{target.TargetId}",
+                _ => tile.GetType().Name,
+            };
+        }
+
         private void CleanupDestroyedVisualReferences()
         {
             CleanupDestroyedPieceReferences(visualRegistry.Debris);
@@ -1360,7 +1518,7 @@ namespace Rescue.Unity.BoardPresentation
             float yOffset,
             Vector3 scaleMultiplier)
         {
-            if (prefab is null)
+            if (prefab == null)
             {
                 return null;
             }
@@ -1574,7 +1732,7 @@ namespace Rescue.Unity.BoardPresentation
         private GameObject? ResolveDebrisPrefab(DebrisType debrisType)
         {
             GameObject? registryPrefab = pieceRegistry?.GetPrefab(debrisType);
-            if (registryPrefab is not null)
+            if (registryPrefab != null)
             {
                 return registryPrefab;
             }
@@ -1585,7 +1743,7 @@ namespace Rescue.Unity.BoardPresentation
         private GameObject? ResolveBlockerPrefab(BlockerType blockerType)
         {
             GameObject? registryPrefab = blockerRegistry?.GetPrefab(blockerType);
-            if (registryPrefab is not null)
+            if (registryPrefab != null)
             {
                 return registryPrefab;
             }
@@ -1596,7 +1754,7 @@ namespace Rescue.Unity.BoardPresentation
         private GameObject? ResolveTargetPrefab(string targetId)
         {
             GameObject? registryPrefab = targetRegistry?.GetTargetPrefab(targetId);
-            if (registryPrefab is not null)
+            if (registryPrefab != null)
             {
                 return registryPrefab;
             }
@@ -1606,7 +1764,7 @@ namespace Rescue.Unity.BoardPresentation
 
         private GameObject? ResolveFallbackPrefab(string contentDescription)
         {
-            if (fallbackContentPrefab is not null)
+            if (fallbackContentPrefab != null)
             {
                 return fallbackContentPrefab;
             }
