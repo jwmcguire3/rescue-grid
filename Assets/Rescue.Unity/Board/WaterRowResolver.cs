@@ -8,7 +8,8 @@ namespace Rescue.Unity.BoardPresentation
         ImmutableArray<int> FloodedRowIndices,
         int ForecastRowIndex,
         bool HasForecastRow,
-        float NormalizedCounterProgress);
+        float NormalizedCounterProgress,
+        float ForecastFillFraction);
 
     public static class WaterRowResolver
     {
@@ -38,7 +39,8 @@ namespace Rescue.Unity.BoardPresentation
                 floodedRows.ToImmutable(),
                 hasForecastRow ? forecastRowIndex : -1,
                 hasForecastRow,
-                ResolveNormalizedCounterProgress(water));
+                ResolveNormalizedCounterProgress(water),
+                ResolveForecastFillFraction(water, hasForecastRow));
         }
 
         private static float ResolveNormalizedCounterProgress(WaterState water)
@@ -51,6 +53,18 @@ namespace Rescue.Unity.BoardPresentation
             int elapsedActions = water.RiseInterval - water.ActionsUntilRise;
             float normalized = elapsedActions / (float)water.RiseInterval;
             return Math.Clamp(normalized, 0f, 1f);
+        }
+
+        private static float ResolveForecastFillFraction(WaterState water, bool hasForecastRow)
+        {
+            if (!hasForecastRow || water.PauseUntilFirstAction || water.RiseInterval <= 0)
+            {
+                return 0f;
+            }
+
+            int filledActions = water.RiseInterval - water.ActionsUntilRise + 1;
+            float fillFraction = filledActions / (float)water.RiseInterval;
+            return Math.Clamp(fillFraction, 0f, 1f);
         }
     }
 }

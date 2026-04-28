@@ -355,13 +355,15 @@ namespace Rescue.Unity.BoardPresentation
                     resolution.ForecastRowIndex,
                     prefab,
                     $"{ForecastRowNamePrefix}{resolution.ForecastRowIndex:00}",
-                    state.Board.Width);
+                    state.Board.Width,
+                    resolution.ForecastFillFraction);
                 forecastOverlayRowIndex = forecastOverlayInstance is null ? null : resolution.ForecastRowIndex;
                 return;
             }
 
             if (forecastOverlayRowIndex == resolution.ForecastRowIndex
-                && baselineResolution.ForecastRowIndex == resolution.ForecastRowIndex)
+                && baselineResolution.ForecastRowIndex == resolution.ForecastRowIndex
+                && Mathf.Approximately(baselineResolution.ForecastFillFraction, resolution.ForecastFillFraction))
             {
                 return;
             }
@@ -375,7 +377,8 @@ namespace Rescue.Unity.BoardPresentation
                 forecastOverlayInstance,
                 prefab.transform.localScale,
                 rowBounds,
-                $"{ForecastRowNamePrefix}{resolution.ForecastRowIndex:00}");
+                $"{ForecastRowNamePrefix}{resolution.ForecastRowIndex:00}",
+                resolution.ForecastFillFraction);
             forecastOverlayRowIndex = resolution.ForecastRowIndex;
         }
 
@@ -425,7 +428,12 @@ namespace Rescue.Unity.BoardPresentation
             waterlineRowIndex = topFloodedRow;
         }
 
-        private GameObject? SpawnRowOverlay(int rowIndex, GameObject? prefab, string objectName, int width)
+        private GameObject? SpawnRowOverlay(
+            int rowIndex,
+            GameObject? prefab,
+            string objectName,
+            int width,
+            float forecastFillFraction = 1f)
         {
             if (prefab is null || width <= 0)
             {
@@ -443,7 +451,7 @@ namespace Rescue.Unity.BoardPresentation
             GameObject overlay = Instantiate(prefab, ResolveWaterRoot());
             if (objectName.StartsWith(ForecastRowNamePrefix, System.StringComparison.Ordinal))
             {
-                ConfigureForecastRowOverlay(overlay, prefab.transform.localScale, rowBounds, objectName);
+                ConfigureForecastRowOverlay(overlay, prefab.transform.localScale, rowBounds, objectName, forecastFillFraction);
             }
             else
             {
@@ -542,24 +550,32 @@ namespace Rescue.Unity.BoardPresentation
             GameObject overlay,
             Vector3 baseScale,
             BoardGridViewPresenter.RowWorldBounds rowBounds,
-            string objectName)
+            string objectName,
+            float fillFraction)
         {
             overlay.name = objectName;
             Transform overlayTransform = overlay.transform;
+            float clampedFillFraction = Mathf.Clamp01(fillFraction);
+            float fillCenterOffset = -rowBounds.Depth * (1f - clampedFillFraction) * 0.5f;
             overlayTransform.SetPositionAndRotation(
-                rowBounds.Center + new Vector3(0f, ForecastRowOverlayYOffset, 0f),
+                rowBounds.Center + new Vector3(0f, ForecastRowOverlayYOffset, fillCenterOffset),
                 rowBounds.Rotation * RowOverlayRotationOffset);
-            overlayTransform.localScale = ResolveRowOverlayScale(overlayTransform, baseScale, rowBounds);
+            overlayTransform.localScale = ResolveRowOverlayScale(
+                overlayTransform,
+                baseScale,
+                rowBounds,
+                clampedFillFraction);
         }
 
         private static Vector3 ResolveRowOverlayScale(
             Transform overlayTransform,
             Vector3 baseScale,
-            BoardGridViewPresenter.RowWorldBounds rowBounds)
+            BoardGridViewPresenter.RowWorldBounds rowBounds,
+            float depthMultiplier = 1f)
         {
             return new Vector3(
                 baseScale.x * ResolveLocalLengthForWorldAxis(overlayTransform, Vector3.right, rowBounds.Width),
-                baseScale.y * ResolveLocalLengthForWorldAxis(overlayTransform, Vector3.up, rowBounds.Depth),
+                baseScale.y * ResolveLocalLengthForWorldAxis(overlayTransform, Vector3.up, rowBounds.Depth) * Mathf.Clamp01(depthMultiplier),
                 baseScale.z * RowOverlayThickness);
         }
 

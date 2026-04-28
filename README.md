@@ -1,6 +1,6 @@
 # Rescue Grid
 
-Rescue Grid is a Unity 6 Phase 1 prototype for a tactical animal-rescue puzzle game.
+Rescue Grid is a Unity 6.4 Phase 1 prototype for a tactical animal-rescue puzzle game.
 
 The prototype is scoped to prove the core seed:
 
@@ -13,21 +13,21 @@ The authoritative design source is `docs/phase_1_spec.md`. Do not pull mechanics
 
 ## Current State
 
-The repository is a playable Phase 1 prototype with a deterministic core, authored packet, debug scene, tooling, and first-pass presentation. The strongest areas are:
+The repository is a playable Phase 1 prototype with a deterministic core, authored packet, player scene, debug scene, tooling, and first-pass presentation. The strongest areas are:
 
 - Immutable `Rescue.Core` state and deterministic rules.
 - A fixed action pipeline with isolated steps and regression tests.
-- Authored L00-L15 level JSON content.
+- Authored L00-L15 level JSON content and solve scripts.
 - Level validation, replay, solve-authoring, telemetry-report, and capture tooling.
-- A functional Unity debug gameplay scene with board, dock, water, target, playback, debug, tuning, victory, and loss presentation.
-- Phase 1 visual assets, prefabs, registries, and FX hooks for the debug presentation path.
+- A functional Unity player flow in `Game.unity` and a tuning/debug flow in `DebugGameplay.unity`, with board, dock, water forecast, target, playback, Mae reaction, victory, and loss presentation.
+- Phase 1 visual assets, audio feedback, prefabs, registries, and FX hooks for the presentation path.
 
 The main product risk is player-facing clarity and emotional proof. A cold player should be able to read water pressure, dock failures, vine pressure, rescue order, and the puppy extraction beat without relying on debug context.
 
-Latest checked-in test result artifacts show:
+Latest checked-in result artifacts show:
 
-- EditMode: 463 passed, 0 failed (`editmode-results.xml`, run started 2026-04-27 07:00:00Z).
-- PlayMode: 27 passed, 0 failed (`playmode-results.xml`, run started 2026-04-27 06:11:43Z).
+- Targeted EditMode runs passed for board content, board input, FX routing, playback, and prefabization; targeted PlayMode `Game.unity` smoke passed 4/4 on 2026-04-28.
+- Full PlayMode artifact `playmode-results.xml`: 17/39 passed and 22 failed on 2026-04-28.
 
 ## Phase 1 Scope
 
@@ -42,11 +42,11 @@ In scope:
 - L00 rule-teach level.
 - L01-L15 main packet.
 - One-clear-away target state.
-- Persistent next-flood-row forecast support.
+- Persistent next-flood-row forecast support with row overlay and countdown fill.
 - Authored vine growth priority and preview events.
 - Seeded deterministic RNG.
 - Basic spawn assistance and emergency spawn support.
-- Extraction, win, loss, dock, water, blocker, vine, near-rescue, invalid-tap, and water-contact mode hooks/tests.
+- Extraction, win, loss, dock, water, blocker, vine, near-rescue, Mae reaction, invalid-tap, and water-contact mode hooks/tests.
 - Minimal capture path for the L15 ad/capture moment.
 
 Out of scope for Phase 1:
@@ -67,7 +67,7 @@ Reinforced crate may exist as a data flag, but it should stay off by default unl
 
 `Assets/Rescue.Core/` has no Unity dependency. It owns immutable game state, rule helpers, seeded RNG, undo snapshots, and the action pipeline.
 
-The valid-action pipeline currently runs:
+The valid-action pipeline uses the locked Phase 1 ordering and is implemented as these named core steps:
 
 1. `Step01_AcceptInput`
 2. `Step02_RemoveGroup`
@@ -95,7 +95,7 @@ Implemented gameplay behavior includes:
 - Dock triples clear after insertion, with compaction and warning state changes.
 - Dock overflow and Dock Jam are represented in core events/outcomes.
 - Gravity settles dry active pieces only.
-- Spawns occur into dry space only and use deterministic RNG.
+- Spawns occur into dry space only, use deterministic RNG, and emit assisted/emergency spawn telemetry.
 - Water rises by action threshold and floods whole rows from the bottom.
 - L00 can pause water until the first valid action.
 - Crates break from one adjacent clear.
@@ -115,7 +115,7 @@ Current packet:
 - `L00.json`: rule-teach opener.
 - `L01.json` through `L15.json`: main Phase 1 packet.
 
-Solve files live in `Assets/Resources/Levels/` as `L01.solve.json` through `L15.solve.json`. The L15 capture path is also represented in `capture/L15.capture.json` and documented in `docs/capture.md`.
+Solve files live in `Assets/Resources/Levels/` as `L00.solve.json` through `L15.solve.json`. The L15 capture path is also represented in `capture/L15.capture.json` and documented in `docs/capture.md`.
 
 The level schema currently supports:
 
@@ -132,7 +132,7 @@ The level schema currently supports:
 
 ## Unity Implementation
 
-The current Unity-facing project is a prototype/debug gameplay app for player-facing proof work.
+The current Unity-facing project is a prototype gameplay app for player-facing proof work, capture, and debug tuning.
 
 Current scenes:
 
@@ -143,11 +143,11 @@ Current scenes:
 
 Unity implementation areas:
 
-- `Assets/Rescue.Unity/Board/`: board grid/content sync, water row display, water feedback, target feedback.
+- `Assets/Rescue.Unity/Board/`: board grid/content sync, water row display, water forecast overlay, water feedback, target feedback.
 - `Assets/Rescue.Unity/UI/`: dock presenter.
 - `Assets/Rescue.Unity/Input/`: board input presenter.
-- `Assets/Rescue.Unity/Presentation/`: game state presenter, action playback builder/controller, win/loss screens.
-- `Assets/Rescue.Unity/FX/`: core event to FX hook classification and sprite sequence playback.
+- `Assets/Rescue.Unity/Presentation/`: game state presenter, action playback builder/controller, Mae reaction presenter, win/loss screens, player session flow.
+- `Assets/Rescue.Unity/FX/`, `Assets/Rescue.Unity/Feedback/`, and `Assets/Rescue.Unity/Audio/`: FX/audio feedback classification, routing, sprite sequence playback, and Phase 1 feedback assets.
 - `Assets/Rescue.Unity/Debug/`: runtime debug/tuning panel for editor/development builds.
 - `Assets/Rescue.Unity/Capture/`: L15 capture runner.
 - `Assets/Rescue.Unity/Art/`: Phase 1 prefabs, textures, materials, registries, and validation helpers.
@@ -165,7 +165,7 @@ Playback currently maps the main visible action events:
 - terminal win/loss
 - final authoritative sync
 
-Water forecast, Dock Jam, invalid-tap, vine, and target-readiness feedback have hooks; their final readability depends on presentation tuning.
+Water forecast, Dock Jam, invalid-tap, vine, target-readiness, Mae reaction, and terminal outcome feedback have hooks; their final readability depends on presentation tuning.
 
 ## Telemetry and Debugging
 
@@ -173,8 +173,8 @@ Water forecast, Dock Jam, invalid-tap, vine, and target-readiness feedback have 
 
 - level start, win, and loss
 - dock occupancy
-- water rise, water-contact mode, and distressed target outcomes
-- vine growth
+- water rise, water forecast, water-contact mode, and distressed target outcomes
+- vine growth and vine preview
 - undo use
 - target extraction/loss
 - invalid taps
@@ -183,7 +183,7 @@ Water forecast, Dock Jam, invalid-tap, vine, and target-readiness feedback have 
 - Dock Jam trigger/resolution
 - capture snapshots
 - tuning changes
-- action taken with RNG before/after state
+- action taken with RNG before/after state, assisted spawn follow-up, final rescue overrides, skipped hazard advance, and deadboard-like diagnostics
 
 `Assets/Rescue.Unity/Debug/` provides a development-only panel with:
 
@@ -260,13 +260,13 @@ The next work should make existing Phase 1 behavior clearer within the locked sc
 
 Highest-value gaps:
 
+- Resolve the failing full PlayMode smoke artifact and keep targeted scene smoke coverage green.
 - Strengthen `TargetOneClearAway`, `WaterWarning`, `VinePreviewChanged`, and `VineGrown` as player-facing presentation.
-- Make persistent next-flood-row forecast visually unmistakable.
-- Make dock overflow, Dock Jam, win, and loss causality clearer.
+- Tune persistent next-flood-row forecast readability across L00-L15.
+- Make dock overflow, Dock Jam, win, and loss causality unmistakable.
 - Tune invalid-tap reject bump/audio while preserving zero state change.
 - Strengthen target extraction so it reads as a rescue beat.
-- Add minimal Mae reaction and aftercare support.
-- Add or promote the eventual main `Game.unity` scene when the debug gameplay scene graduates.
+- Extend Mae reaction and aftercare support beyond the current presenter hook.
 - Verify L00-L15 as a player-facing progression, not just as deterministic content.
 
 ## Playtest Lens

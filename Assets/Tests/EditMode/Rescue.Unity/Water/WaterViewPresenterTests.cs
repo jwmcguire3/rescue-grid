@@ -339,6 +339,90 @@ namespace Rescue.Unity.Water.Tests
         }
 
         [Test]
+        public void WaterViewPresenter_RebuildWater_ScalesForecastOverlayToCountdownFraction()
+        {
+            BoardGridViewPresenter gridPresenter = CreateGridPresenter(out _);
+            GameState state = CreateState(width: 6, height: 7, floodedRows: 2, actionsUntilRise: 12, riseInterval: 12);
+            gridPresenter.RebuildGrid(state);
+
+            WaterViewPresenter presenter = CreateWaterPresenter(gridPresenter, useFallbackOverlay: true);
+
+            presenter.RebuildWater(state);
+
+            Assert.That(gridPresenter.TryGetRowWorldBounds(4, out BoardGridViewPresenter.RowWorldBounds rowBounds), Is.True);
+            Transform forecast = GetNamedChild(GetWaterRoot(presenter), "ForecastRow_04");
+            Vector3 expectedPosition = rowBounds.Center + new Vector3(0f, 0.23f, -rowBounds.Depth * (11f / 12f) * 0.5f);
+
+            Assert.That(forecast.localScale.x, Is.EqualTo(rowBounds.Width).Within(0.001f));
+            Assert.That(forecast.localScale.y, Is.EqualTo(rowBounds.Depth / 12f).Within(0.001f));
+            Assert.That(forecast.localScale.z, Is.EqualTo(0.04f).Within(0.001f));
+            Assert.That(forecast.position, Is.EqualTo(expectedPosition));
+        }
+
+        [Test]
+        public void WaterViewPresenter_RebuildWater_KeepsFloodedOverlayAtFullRowDepth()
+        {
+            BoardGridViewPresenter gridPresenter = CreateGridPresenter(out _);
+            GameState state = CreateState(width: 6, height: 7, floodedRows: 2, actionsUntilRise: 12, riseInterval: 12);
+            gridPresenter.RebuildGrid(state);
+
+            WaterViewPresenter presenter = CreateWaterPresenter(gridPresenter, useFallbackOverlay: true);
+
+            presenter.RebuildWater(state);
+
+            Assert.That(gridPresenter.TryGetRowWorldBounds(5, out BoardGridViewPresenter.RowWorldBounds rowBounds), Is.True);
+            Transform flooded = GetNamedChild(GetWaterRoot(presenter), "FloodedRow_05");
+
+            Assert.That(flooded.localScale.y, Is.EqualTo(rowBounds.Depth).Within(0.001f));
+        }
+
+        [Test]
+        public void WaterViewPresenter_AnimateForecastTransition_ReconfiguresSameRowFill()
+        {
+            BoardGridViewPresenter gridPresenter = CreateGridPresenter(out _);
+            GameState previousState = CreateState(width: 6, height: 7, floodedRows: 2, actionsUntilRise: 12, riseInterval: 12);
+            GameState currentState = CreateState(width: 6, height: 7, floodedRows: 2, actionsUntilRise: 7, riseInterval: 12);
+            gridPresenter.RebuildGrid(currentState);
+
+            WaterViewPresenter presenter = CreateWaterPresenter(gridPresenter, useFallbackOverlay: true);
+            presenter.SyncImmediate(previousState);
+
+            Transform waterRoot = GetWaterRoot(presenter);
+            Transform forecastBeforeTransition = GetNamedChild(waterRoot, "ForecastRow_04");
+
+            presenter.AnimateForecastTransition(previousState, currentState, durationSeconds: 0.05f);
+
+            Assert.That(gridPresenter.TryGetRowWorldBounds(4, out BoardGridViewPresenter.RowWorldBounds rowBounds), Is.True);
+            Transform forecastAfterTransition = GetNamedChild(waterRoot, "ForecastRow_04");
+            Assert.That(forecastAfterTransition, Is.SameAs(forecastBeforeTransition));
+            Assert.That(forecastAfterTransition.localScale.y, Is.EqualTo(rowBounds.Depth * 0.5f).Within(0.001f));
+        }
+
+        [Test]
+        public void WaterViewPresenter_ForceSyncToStateRepairsForecastOverlayToCountdownFraction()
+        {
+            BoardGridViewPresenter gridPresenter = CreateGridPresenter(out _);
+            GameState state = CreateState(width: 6, height: 7, floodedRows: 2, actionsUntilRise: 7, riseInterval: 12);
+            gridPresenter.RebuildGrid(state);
+
+            WaterViewPresenter presenter = CreateWaterPresenter(gridPresenter, useFallbackOverlay: true);
+            presenter.SyncImmediate(state);
+
+            Transform forecast = GetNamedChild(GetWaterRoot(presenter), "ForecastRow_04");
+            forecast.localScale = new Vector3(99f, 99f, 99f);
+            forecast.localPosition = new Vector3(99f, 99f, 99f);
+
+            presenter.ForceSyncToState(state);
+
+            Assert.That(gridPresenter.TryGetRowWorldBounds(4, out BoardGridViewPresenter.RowWorldBounds rowBounds), Is.True);
+            Transform repairedForecast = GetNamedChild(GetWaterRoot(presenter), "ForecastRow_04");
+            Vector3 expectedPosition = rowBounds.Center + new Vector3(0f, 0.23f, -rowBounds.Depth * 0.25f);
+
+            Assert.That(repairedForecast.position, Is.EqualTo(expectedPosition));
+            Assert.That(repairedForecast.localScale.y, Is.EqualTo(rowBounds.Depth * 0.5f).Within(0.001f));
+        }
+
+        [Test]
         public void WaterViewPresenter_RebuildWater_PositionsWaterlineFromSharedRowGeometry()
         {
             BoardGridViewPresenter gridPresenter = CreateGridPresenter(out _);
@@ -462,7 +546,13 @@ namespace Rescue.Unity.Water.Tests
             field.SetValue(target, value);
         }
 
-        private static GameState CreateState(int width, int height, int floodedRows, int actionsUntilRise = 3, bool pauseUntilFirstAction = false)
+        private static GameState CreateState(
+            int width,
+            int height,
+            int floodedRows,
+            int actionsUntilRise = 3,
+            bool pauseUntilFirstAction = false,
+            int riseInterval = 5)
         {
             ImmutableArray<ImmutableArray<Tile>>.Builder rows = ImmutableArray.CreateBuilder<ImmutableArray<Tile>>(height);
             for (int row = 0; row < height; row++)
@@ -481,7 +571,7 @@ namespace Rescue.Unity.Water.Tests
             return new GameState(
                 Board: board,
                 Dock: new CoreDock(ImmutableArray<DebrisType?>.Empty, Size: 7),
-                Water: new WaterState(FloodedRows: floodedRows, ActionsUntilRise: actionsUntilRise, RiseInterval: 5, PauseUntilFirstAction: pauseUntilFirstAction),
+                Water: new WaterState(FloodedRows: floodedRows, ActionsUntilRise: actionsUntilRise, RiseInterval: riseInterval, PauseUntilFirstAction: pauseUntilFirstAction),
                 Vine: new VineState(0, 4, ImmutableArray<TileCoord>.Empty, 0, null),
                 Targets: ImmutableArray<TargetState>.Empty,
                 LevelConfig: new LevelConfig(
