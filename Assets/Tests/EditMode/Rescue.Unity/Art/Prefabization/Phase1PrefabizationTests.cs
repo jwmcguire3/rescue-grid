@@ -5,6 +5,7 @@ using Rescue.Core.State;
 using Rescue.Unity.Art.Registries;
 using Rescue.Unity.EditorTools.Art.Prefabs;
 using Rescue.Unity.EditorTools.Diagnostics;
+using Rescue.Unity.FX;
 using UnityEditor;
 using UnityEngine;
 
@@ -155,6 +156,26 @@ namespace Rescue.Unity.Art.Tests
         }
 
         [Test]
+        public void Phase1FxRegistry_HasAllRuntimeFxAssigned()
+        {
+            FxVisualRegistry fxRegistry = LoadAsset<FxVisualRegistry>(FxRegistryPath);
+
+            AssertFxPrefab(fxRegistry.GroupClearFx, nameof(FxVisualRegistry.GroupClearFx));
+            AssertFxPrefab(fxRegistry.InvalidTapFx, nameof(FxVisualRegistry.InvalidTapFx));
+            AssertFxPrefab(fxRegistry.CrateBreakFx, nameof(FxVisualRegistry.CrateBreakFx));
+            AssertFxPrefab(fxRegistry.IceRevealFx, nameof(FxVisualRegistry.IceRevealFx));
+            AssertFxPrefab(fxRegistry.VineClearFx, nameof(FxVisualRegistry.VineClearFx));
+            AssertFxPrefab(fxRegistry.VineGrowPreviewFx, nameof(FxVisualRegistry.VineGrowPreviewFx));
+            AssertFxPrefab(fxRegistry.DockInsertFx, nameof(FxVisualRegistry.DockInsertFx));
+            AssertFxPrefab(fxRegistry.DockTripleClearFx, nameof(FxVisualRegistry.DockTripleClearFx));
+            AssertFxPrefab(fxRegistry.WaterRiseFx, nameof(FxVisualRegistry.WaterRiseFx));
+            AssertFxPrefab(fxRegistry.TargetExtractionFx, nameof(FxVisualRegistry.TargetExtractionFx));
+            AssertFxPrefab(fxRegistry.NearRescueReliefFx, nameof(FxVisualRegistry.NearRescueReliefFx));
+            AssertFxPrefab(fxRegistry.WinFx, nameof(FxVisualRegistry.WinFx));
+            AssertFxPrefab(fxRegistry.LossFx, nameof(FxVisualRegistry.LossFx));
+        }
+
+        [Test]
         public void RealPrefabs_DoNotReferenceMissingMaterials()
         {
             string[] prefabGuids = AssetDatabase.FindAssets("t:Prefab", new[] { Phase1PrefabsPath });
@@ -228,6 +249,29 @@ namespace Rescue.Unity.Art.Tests
             T? asset = AssetDatabase.LoadAssetAtPath<T>(assetPath);
             Assert.That(asset, Is.Not.Null, $"Expected asset at '{assetPath}'.");
             return asset ?? throw new AssertionException($"Expected asset at '{assetPath}'.");
+        }
+
+        private static void AssertFxPrefab(GameObject? prefab, string registrySlotName)
+        {
+            Assert.That(prefab, Is.Not.Null, $"{registrySlotName} should be assigned in the Phase 1 FX registry.");
+            if (prefab is null)
+            {
+                throw new AssertionException($"{registrySlotName} should be assigned in the Phase 1 FX registry.");
+            }
+
+            SpriteSequenceFxPlayer? player = prefab.GetComponent<SpriteSequenceFxPlayer>();
+            SpriteRenderer? spriteRenderer = prefab.GetComponent<SpriteRenderer>();
+            Renderer? renderer = prefab.GetComponentInChildren<Renderer>(true);
+
+            Assert.That(
+                player is not null || renderer is not null,
+                Is.True,
+                $"{registrySlotName} should include a runtime-visible sprite sequence or renderer.");
+            if (player is not null)
+            {
+                Assert.That(spriteRenderer, Is.Not.Null, $"{registrySlotName} sprite-sequence FX should include a SpriteRenderer.");
+                Assert.That(spriteRenderer?.sprite, Is.Not.Null, $"{registrySlotName} should have an initial visible sprite assigned.");
+            }
         }
     }
 }

@@ -477,20 +477,26 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             EditorUtility.SetDirty(dockConfig);
 
             FxVisualRegistry fxRegistry = CreateOrLoadAsset<FxVisualRegistry>(CombinePath(registriesPath, "Phase1FxVisualRegistry.asset"));
-            fxRegistry.GroupClearFx = placeholderAssets.GroupClearFxPrefab;
-            fxRegistry.InvalidTapFx = placeholderAssets.InvalidTapFxPrefab;
-            fxRegistry.CrateBreakFx = placeholderAssets.CrateBreakFxPrefab;
+            string phase1FxPath = CombinePath(artRootPath, PrefabsFolderName, Phase1FolderName, FxFolderName);
+            fxRegistry.GroupClearFx = LoadPrefabOrFallback(CombinePath(phase1FxPath, "GroupClearFx.prefab"), placeholderAssets.GroupClearFxPrefab);
+            fxRegistry.InvalidTapFx = LoadPrefabOrFallback(CombinePath(phase1FxPath, "InvalidTapFx.prefab"), placeholderAssets.InvalidTapFxPrefab);
+            fxRegistry.CrateBreakFx = LoadPrefabOrFallback(CombinePath(phase1FxPath, "CrateBreakFx.prefab"), placeholderAssets.CrateBreakFxPrefab);
             fxRegistry.IceRevealFx = productionAssets.IceRevealFxPrefab ?? placeholderAssets.IceRevealFxPrefab;
-            fxRegistry.VineClearFx = placeholderAssets.VineClearFxPrefab;
-            fxRegistry.VineGrowPreviewFx = placeholderAssets.VineGrowPreviewFxPrefab;
-            fxRegistry.DockInsertFx = placeholderAssets.DockInsertFxPrefab;
-            fxRegistry.DockTripleClearFx = placeholderAssets.DockTripleClearFxPrefab;
-            fxRegistry.WaterRiseFx = placeholderAssets.WaterRiseFxPrefab;
-            fxRegistry.TargetExtractionFx = placeholderAssets.TargetExtractionFxPrefab;
-            fxRegistry.NearRescueReliefFx = placeholderAssets.NearRescueReliefFxPrefab;
-            fxRegistry.WinFx = placeholderAssets.WinFxPrefab;
-            fxRegistry.LossFx = placeholderAssets.LossFxPrefab;
+            fxRegistry.VineClearFx = LoadPrefabOrFallback(CombinePath(phase1FxPath, "VineClearFx.prefab"), placeholderAssets.VineClearFxPrefab);
+            fxRegistry.VineGrowPreviewFx = LoadPrefabOrFallback(CombinePath(phase1FxPath, "VineGrowPreviewFx.prefab"), placeholderAssets.VineGrowPreviewFxPrefab);
+            fxRegistry.DockInsertFx = LoadPrefabOrFallback(CombinePath(phase1FxPath, "DockInsertFx.prefab"), placeholderAssets.DockInsertFxPrefab);
+            fxRegistry.DockTripleClearFx = LoadPrefabOrFallback(CombinePath(phase1FxPath, "DockTripleClearFx.prefab"), placeholderAssets.DockTripleClearFxPrefab);
+            fxRegistry.WaterRiseFx = LoadPrefabOrFallback(CombinePath(phase1FxPath, "WaterRiseFx.prefab"), placeholderAssets.WaterRiseFxPrefab);
+            fxRegistry.TargetExtractionFx = LoadPrefabOrFallback(CombinePath(phase1FxPath, "TargetExtractionFx.prefab"), placeholderAssets.TargetExtractionFxPrefab);
+            fxRegistry.NearRescueReliefFx = LoadPrefabOrFallback(CombinePath(phase1FxPath, "NearRescueReliefFx.prefab"), placeholderAssets.NearRescueReliefFxPrefab);
+            fxRegistry.WinFx = LoadPrefabOrFallback(CombinePath(phase1FxPath, "WinFx.prefab"), placeholderAssets.WinFxPrefab);
+            fxRegistry.LossFx = LoadPrefabOrFallback(CombinePath(phase1FxPath, "LossFx.prefab"), placeholderAssets.LossFxPrefab);
             EditorUtility.SetDirty(fxRegistry);
+        }
+
+        private static GameObject LoadPrefabOrFallback(string assetPath, GameObject fallback)
+        {
+            return AssetDatabase.LoadAssetAtPath<GameObject>(assetPath) ?? fallback;
         }
 
         private static Material? CreateOrUpdateTexturedMaterial(

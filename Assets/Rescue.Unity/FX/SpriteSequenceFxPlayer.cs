@@ -13,6 +13,7 @@ namespace Rescue.Unity.FX
         [SerializeField] private bool playOnEnable = true;
         [SerializeField] private bool destroyAfterPlayback = true;
         [SerializeField] private bool loop;
+        [SerializeField] private bool faceMainCamera = true;
         [SerializeField] private int sortingOrder = 100;
 
         private Coroutine? playbackCoroutine;
@@ -20,6 +21,7 @@ namespace Rescue.Unity.FX
         private void Awake()
         {
             spriteRenderer ??= GetComponent<SpriteRenderer>();
+            ApplyCameraFacing();
             ApplyRendererSettings();
             ApplyFrame(0);
         }
@@ -127,6 +129,22 @@ namespace Rescue.Unity.FX
             }
 
             spriteRenderer.sortingOrder = sortingOrder;
+        }
+
+        private void ApplyCameraFacing()
+        {
+            if (!faceMainCamera)
+            {
+                return;
+            }
+
+            Camera? mainCamera = Camera.main;
+            if (mainCamera is null)
+            {
+                return;
+            }
+
+            transform.rotation = mainCamera.transform.rotation;
         }
 
 #if UNITY_EDITOR

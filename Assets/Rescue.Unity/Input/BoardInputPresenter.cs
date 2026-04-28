@@ -1,4 +1,5 @@
 using Rescue.Core.Pipeline;
+using Rescue.Core.Rules;
 using Rescue.Core.State;
 using Rescue.Unity.BoardPresentation;
 using Rescue.Unity.Presentation;
@@ -16,6 +17,7 @@ namespace Rescue.Unity.Input
         [SerializeField] private bool enableMouseInput = true;
         [SerializeField] private bool enableTouchInput;
         [SerializeField] private bool logStateViewDiagnostics = true;
+        [SerializeField] private float visualDebrisClickFallbackRadiusPixels = 96f;
 
         private GameState? fallbackState;
 
@@ -78,17 +80,43 @@ namespace Rescue.Unity.Input
             }
 
             Ray ray = cameraToUse.ScreenPointToRay(screenPosition);
-            if (!Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, boardCellLayer, QueryTriggerInteraction.Ignore))
+            GameObject? hitObject = null;
+            TileCoord coord = default;
+            bool hasCoord = false;
+            if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, boardCellLayer, QueryTriggerInteraction.Ignore))
+            {
+                hitObject = hit.collider.gameObject;
+                hasCoord = TryGetTileCoordFromObject(hitObject, out coord);
+            }
+
+            GameState? currentState = CurrentState;
+            if (currentState is not null &&
+                (!hasCoord || ShouldPreferVisibleDebrisCoord(currentState.Board, coord)) &&
+                TryFindNearestValidVisibleGroupCoord(
+                    cameraToUse,
+                    screenPosition,
+                    currentState,
+                    out TileCoord visualCoord,
+                    out GameObject? visualObject))
+            {
+                if (visualObject is null)
+                {
+                    return TryRunActionAt(visualCoord, screenPosition, gameObject, "<visual-debris>");
+                }
+
+                return TryRunActionAt(
+                    visualCoord,
+                    screenPosition,
+                    visualObject,
+                    GetObjectPath(visualObject.transform));
+            }
+
+            if (!hasCoord || hitObject is null)
             {
                 return false;
             }
 
-            if (!TryGetTileCoordFromObject(hit.collider.gameObject, out TileCoord coord))
-            {
-                return false;
-            }
-
-            return TryRunActionAt(coord, screenPosition, hit.collider.gameObject);
+            return TryRunActionAt(coord, screenPosition, hitObject);
         }
 
         private bool TryRunActionAt(TileCoord coord, Vector2 screenPosition, GameObject hitObject)
@@ -360,6 +388,36 @@ namespace Rescue.Unity.Input
 
             Debug.LogWarning($"{nameof(BoardInputPresenter)} is missing {nameof(inputCamera)}.", this);
             return null;
+        }
+
+        private bool TryFindNearestValidVisibleGroupCoord(
+            Camera cameraToUse,
+            Vector2 screenPosition,
+            GameState currentState,
+            out TileCoord visualCoord,
+            out GameObject? visualObject)
+        {
+            visualCoord = default;
+            visualObject = null;
+            return gameStateView is not null &&
+                gameStateView.TryFindNearestDebrisVisualCoord(
+                    cameraToUse,
+                    screenPosition,
+                    currentState,
+                    visualDebrisClickFallbackRadiusPixels,
+                    out visualCoord,
+                    out visualObject) &&
+                GroupOps.FindGroup(currentState.Board, visualCoord).HasValue;
+        }
+
+        private static bool ShouldPreferVisibleDebrisCoord(Board board, TileCoord coord)
+        {
+            if (!BoardHelpers.InBounds(board, coord))
+            {
+                return true;
+            }
+
+            return !GroupOps.FindGroup(board, coord).HasValue;
         }
 
         private static bool TryGetInvalidInput(

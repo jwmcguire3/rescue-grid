@@ -34,6 +34,26 @@ namespace Rescue.Unity.Presentation
                 : "board visual: <missing BoardContentViewPresenter>";
         }
 
+        public bool TryFindNearestDebrisVisualCoord(
+            Camera camera,
+            Vector2 screenPosition,
+            GameState state,
+            float maxScreenDistancePixels,
+            out TileCoord coord,
+            out GameObject? visualObject)
+        {
+            coord = default;
+            visualObject = null;
+            return boardContent is not null &&
+                boardContent.TryFindNearestDebrisVisualCoord(
+                    camera,
+                    screenPosition,
+                    state,
+                    maxScreenDistancePixels,
+                    out coord,
+                    out visualObject);
+        }
+
         public string DescribeDockVisuals()
         {
             return dockView is not null

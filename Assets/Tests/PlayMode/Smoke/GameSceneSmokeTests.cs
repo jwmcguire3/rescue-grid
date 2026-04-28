@@ -1,8 +1,13 @@
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
+using System.Reflection;
 using NUnit.Framework;
 using Rescue.Core.State;
+using Rescue.Unity.Art.Registries;
+using Rescue.Unity.BoardPresentation;
 using Rescue.Unity.Debugging;
+using Rescue.Unity.FX;
 using Rescue.Unity.Presentation;
+using Rescue.Unity.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
@@ -58,6 +63,97 @@ namespace Rescue.PlayMode.Tests.Smoke
             AssertBoardStageLayout(boardRoot, boardContentRoot, waterRoot, dockRoot);
 
             yield return null;
+        }
+
+        [UnityTest]
+        public System.Collections.IEnumerator GameScene_HasFxPlaybackWiring()
+        {
+            GameStateViewPresenter gameStateView = FindRequired<GameStateViewPresenter>();
+            ActionPlaybackController playbackController = FindRequired<ActionPlaybackController>();
+            FxEventRouter fxEventRouter = FindRequired<FxEventRouter>();
+            BoardGridViewPresenter boardGrid = FindRequired<BoardGridViewPresenter>();
+
+            Assert.That(
+                GetSerializedReference<GameStateViewPresenter, ActionPlaybackController>(gameStateView, "playbackController")
+                    ?? gameStateView.GetComponent<ActionPlaybackController>(),
+                Is.SameAs(playbackController),
+                "GameStateViewPresenter should use the scene ActionPlaybackController so FX route through playback beats.");
+            Assert.That(
+                GetSerializedReference<ActionPlaybackController, BoardGridViewPresenter>(playbackController, "boardGrid"),
+                Is.SameAs(boardGrid),
+                "ActionPlaybackController should have the board grid presenter assigned for FX beat positioning.");
+            Assert.That(
+                GetSerializedReference<ActionPlaybackController, BoardContentViewPresenter>(playbackController, "boardContent"),
+                Is.SameAs(FindRequired<BoardContentViewPresenter>()),
+                "ActionPlaybackController should have board content assigned for playback beats.");
+            Assert.That(
+                GetSerializedReference<ActionPlaybackController, WaterViewPresenter>(playbackController, "waterView"),
+                Is.SameAs(FindRequired<WaterViewPresenter>()),
+                "ActionPlaybackController should have water presentation assigned for water FX beats.");
+            Assert.That(
+                GetSerializedReference<ActionPlaybackController, DockViewPresenter>(playbackController, "dockView"),
+                Is.SameAs(FindRequired<DockViewPresenter>()),
+                "ActionPlaybackController should have dock presentation assigned for dock FX beats.");
+            Assert.That(
+                GetSerializedReference<ActionPlaybackController, FxEventRouter>(playbackController, "fxEventRouter"),
+                Is.SameAs(fxEventRouter),
+                "ActionPlaybackController should route playback beats through the scene FxEventRouter.");
+
+            FxVisualRegistry? fxRegistry = fxEventRouter.FxRegistry;
+            Assert.That(fxRegistry, Is.Not.Null, "Game.unity should assign the Phase 1 FX registry asset.");
+            if (fxRegistry is null)
+            {
+                throw new AssertionException("Game.unity should assign the Phase 1 FX registry asset.");
+            }
+
+            Assert.That(fxRegistry.WinFx, Is.Not.Null, "Game.unity should have terminal win FX assigned.");
+            Assert.That(fxRegistry.LossFx, Is.Not.Null, "Game.unity should have terminal loss FX assigned.");
+            Assert.That(fxEventRouter.BoardGrid, Is.SameAs(boardGrid), "FxEventRouter should resolve cell and row positions through the scene board grid presenter.");
+            Assert.That(fxEventRouter.FxRoot, Is.Not.Null, "Game.unity should assign an FX root for runtime-spawned FX instances.");
+
+            yield return null;
+        }
+
+        [UnityTest]
+        public System.Collections.IEnumerator GameScene_L00ActionSpawnsRuntimeFxUnderFxRoot()
+        {
+            PlayableLevelSession session = FindRequired<PlayableLevelSession>();
+            GameStateViewPresenter presenter = FindRequired<GameStateViewPresenter>();
+            FxEventRouter fxEventRouter = FindRequired<FxEventRouter>();
+            Transform fxRoot = fxEventRouter.FxRoot ?? fxEventRouter.transform;
+            int childCountBefore = fxRoot.childCount;
+
+            Assert.That(session.CurrentLevelId, Is.EqualTo("L00"));
+            Assert.That(session.TryRunAction(new TileCoord(4, 0)), Is.True);
+
+            GameObject? spawnedFx = null;
+            float deadline = Time.realtimeSinceStartup + 1.0f;
+            while (spawnedFx is null && Time.realtimeSinceStartup < deadline)
+            {
+                spawnedFx = FindChildByName(fxRoot, nameof(FxVisualRegistry.GroupClearFx));
+                if (spawnedFx is null)
+                {
+                    yield return null;
+                }
+            }
+
+            Assert.That(spawnedFx, Is.Not.Null, "A valid L00 action should spawn the group-clear FX prefab during playback.");
+            if (spawnedFx is null)
+            {
+                throw new AssertionException("Expected a spawned group-clear FX instance.");
+            }
+
+            Assert.That(spawnedFx.GetComponent<SpriteSequenceFxPlayer>(), Is.Not.Null, "Spawned FX should use the sprite sequence player.");
+            Assert.That(spawnedFx.transform.parent, Is.SameAs(fxRoot), "Runtime FX should spawn under the scene FX root.");
+            Assert.That(fxRoot.childCount, Is.GreaterThan(childCountBefore), "FX root should contain a runtime FX instance before it auto-destroys.");
+
+            yield return WaitForPlayback();
+            GameState? stateAfterAction = presenter.CurrentState;
+            Assert.That(stateAfterAction, Is.Not.Null);
+            if (stateAfterAction is not null)
+            {
+                Assert.That(stateAfterAction.ActionCount, Is.EqualTo(1), "FX playback should not prevent the action from reaching final state sync.");
+            }
         }
 
         [UnityTest]
@@ -121,6 +217,46 @@ namespace Rescue.PlayMode.Tests.Smoke
             }
 
             return value;
+        }
+
+        private static GameObject? FindChildByName(Transform parent, string childName)
+        {
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                Transform child = parent.GetChild(i);
+                if (child.name == childName)
+                {
+                    return child.gameObject;
+                }
+            }
+
+            return null;
+        }
+
+        private static TReference? GetSerializedReference<TOwner, TReference>(TOwner owner, string fieldName)
+            where TOwner : class
+            where TReference : class
+        {
+            return GetPrivateField<TOwner, TReference>(owner, fieldName);
+        }
+
+        private static TValue? GetPrivateField<TOwner, TValue>(TOwner owner, string fieldName)
+            where TOwner : class
+            where TValue : class
+        {
+            FieldInfo? field = typeof(TOwner).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.That(field, Is.Not.Null, $"Expected private field '{fieldName}' on {typeof(TOwner).Name}.");
+            if (field is null)
+            {
+                return null;
+            }
+
+            object? value = field.GetValue(owner);
+            Assert.That(
+                value is null || value is TValue,
+                Is.True,
+                $"Expected private field '{fieldName}' on {typeof(TOwner).Name} to hold {typeof(TValue).Name}.");
+            return value as TValue;
         }
 
         private static void AssertCameraUsesFrontTableOrthographicView()

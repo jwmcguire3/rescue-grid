@@ -65,6 +65,54 @@ namespace Rescue.Unity.BoardPresentation.Tests
         }
 
         [Test]
+        public void BoardContentViewPresenter_SpawnedDebrisCarriesBoardCellViewCoord()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new DebrisTile(DebrisType.A))));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            GameObject? debrisObject = GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 0));
+            Assert.That(debrisObject, Is.Not.Null);
+            BoardCellView? cellView = debrisObject!.GetComponent<BoardCellView>();
+
+            Assert.That(cellView, Is.Not.Null);
+            Assert.That(cellView!.Coord, Is.EqualTo(new TileCoord(0, 0)));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_FindsNearestDebrisVisualCoordInScreenSpace()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new DebrisTile(DebrisType.A),
+                    new DebrisTile(DebrisType.A),
+                    new EmptyTile())));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+            Camera camera = CreateTopDownCamera();
+            GameObject? debrisObject = GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 1));
+            Assert.That(debrisObject, Is.Not.Null);
+            Vector2 screenPosition = camera.WorldToScreenPoint(debrisObject!.transform.position);
+
+            bool found = harness.ContentPresenter.TryFindNearestDebrisVisualCoord(
+                camera,
+                screenPosition + new Vector2(6f, 0f),
+                state,
+                24f,
+                out TileCoord coord,
+                out GameObject? visualObject);
+
+            Assert.That(found, Is.True);
+            Assert.That(coord, Is.EqualTo(new TileCoord(0, 1)));
+            Assert.That(visualObject, Is.EqualTo(debrisObject));
+        }
+
+        [Test]
         public void BoardContentViewPresenter_RendersCrateIceVine()
         {
             PresenterHarness harness = CreateHarness();
@@ -1003,6 +1051,16 @@ namespace Rescue.Unity.BoardPresentation.Tests
             GameObject gameObject = new GameObject(name);
             createdObjects.Add(gameObject);
             return gameObject;
+        }
+
+        private Camera CreateTopDownCamera()
+        {
+            GameObject cameraObject = CreateTrackedGameObject("TestCamera");
+            Camera camera = cameraObject.AddComponent<Camera>();
+            camera.orthographic = true;
+            camera.orthographicSize = 3f;
+            camera.transform.SetPositionAndRotation(new Vector3(0f, 10f, 0f), Quaternion.Euler(90f, 0f, 0f));
+            return camera;
         }
 
         private T CreateRegistry<T>() where T : ScriptableObject

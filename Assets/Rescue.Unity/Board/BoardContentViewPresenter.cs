@@ -180,6 +180,61 @@ namespace Rescue.Unity.BoardPresentation
             return builder.ToString();
         }
 
+        public bool TryFindNearestDebrisVisualCoord(
+            Camera camera,
+            Vector2 screenPosition,
+            GameState state,
+            float maxScreenDistancePixels,
+            out TileCoord coord,
+            out GameObject? visualObject)
+        {
+            coord = default;
+            visualObject = null;
+            if (camera is null || state is null || maxScreenDistancePixels <= 0f)
+            {
+                return false;
+            }
+
+            float bestSqrDistance = maxScreenDistancePixels * maxScreenDistancePixels;
+            bool found = false;
+            List<TileCoord> debrisCoords = visualRegistry.Debris.GetCoordsSnapshot();
+            for (int i = 0; i < debrisCoords.Count; i++)
+            {
+                TileCoord candidateCoord = debrisCoords[i];
+                if (!BoardHelpers.InBounds(state.Board, candidateCoord) ||
+                    BoardHelpers.GetTile(state.Board, candidateCoord) is not DebrisTile)
+                {
+                    continue;
+                }
+
+                if (!visualRegistry.Debris.TryGet(candidateCoord, out BoardPieceView? view) ||
+                    view is null ||
+                    view.Object == null)
+                {
+                    continue;
+                }
+
+                Vector3 candidateScreenPosition = camera.WorldToScreenPoint(view.Object.transform.position);
+                if (candidateScreenPosition.z < 0f)
+                {
+                    continue;
+                }
+
+                float sqrDistance = ((Vector2)candidateScreenPosition - screenPosition).sqrMagnitude;
+                if (sqrDistance > bestSqrDistance)
+                {
+                    continue;
+                }
+
+                bestSqrDistance = sqrDistance;
+                coord = candidateCoord;
+                visualObject = view.Object;
+                found = true;
+            }
+
+            return found;
+        }
+
         public string DescribeStateMismatches(GameState state)
         {
             if (state is null)
@@ -1439,6 +1494,7 @@ namespace Rescue.Unity.BoardPresentation
 
             contentObject.name =
                 $"Content_{coord.Row.ToString("00", CultureInfo.InvariantCulture)}_{coord.Col.ToString("00", CultureInfo.InvariantCulture)}_{contentLabel}";
+            AttachOrUpdateBoardCellView(contentObject, coord);
         }
 
         private void MovePieceToCoord(
@@ -1472,6 +1528,7 @@ namespace Rescue.Unity.BoardPresentation
             Quaternion targetWorldRotation = anchor.rotation;
             contentObject.name =
                 $"Content_{coord.Row.ToString("00", CultureInfo.InvariantCulture)}_{coord.Col.ToString("00", CultureInfo.InvariantCulture)}_{contentLabel}";
+            AttachOrUpdateBoardCellView(contentObject, coord);
 
             int token = RegisterMoveAnimation(contentObject);
             StartCoroutine(AnimateWorldMoveRoutine(
@@ -1526,6 +1583,7 @@ namespace Rescue.Unity.BoardPresentation
             Transform parent = ResolveContentParent(anchor);
             GameObject contentObject = Instantiate(prefab, parent);
             contentObject.name = $"Content_{coord.Row:00}_{coord.Col:00}_{contentLabel}";
+            AttachOrUpdateBoardCellView(contentObject, coord);
 
             Transform contentTransform = contentObject.transform;
             if (parent == anchor)
@@ -1555,6 +1613,7 @@ namespace Rescue.Unity.BoardPresentation
             Transform parent = ResolveContentParent(anchor);
             GameObject contentObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
             contentObject.name = $"Content_{coord.Row:00}_{coord.Col:00}_{contentLabel}";
+            AttachOrUpdateBoardCellView(contentObject, coord);
             Collider? collider = contentObject.GetComponent<Collider>();
             if (collider is not null)
             {
@@ -1585,6 +1644,17 @@ namespace Rescue.Unity.BoardPresentation
             contentTransform.localScale = scaleMultiplier;
             spawnedContent.Add(contentObject);
             return contentObject;
+        }
+
+        private static void AttachOrUpdateBoardCellView(GameObject contentObject, TileCoord coord)
+        {
+            BoardCellView? cellView = contentObject.GetComponent<BoardCellView>();
+            if (cellView is null)
+            {
+                cellView = contentObject.AddComponent<BoardCellView>();
+            }
+
+            cellView.Initialize(coord);
         }
 
         private Vector3 ResolveCellWorldPositionWithYOffset(TileCoord coord, float yOffset)
