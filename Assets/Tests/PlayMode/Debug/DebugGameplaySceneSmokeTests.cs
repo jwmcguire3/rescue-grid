@@ -49,6 +49,7 @@ namespace Rescue.PlayMode.Tests.Debug
             Assert.That(dockRoot.childCount, Is.EqualTo(0));
             Assert.That(GameObject.Find("DockPieces"), Is.Null);
             Assert.That(dockRoot.Find("DockVisual"), Is.Null);
+            AssertCameraUsesIsometricOrthographicView();
 
             for (int slotIndex = 0; slotIndex < 7; slotIndex++)
             {
@@ -158,6 +159,22 @@ namespace Rescue.PlayMode.Tests.Debug
                     IsRuleTeach = false,
                 },
             };
+        }
+
+        private static void AssertCameraUsesIsometricOrthographicView()
+        {
+            Camera? camera = Camera.main;
+            Assert.That(camera, Is.Not.Null, "DebugGameplay.unity should include a tagged Main Camera.");
+            if (camera is null)
+            {
+                throw new AssertionException("DebugGameplay.unity should include a tagged Main Camera.");
+            }
+
+            Vector3 forward = camera.transform.forward;
+            Assert.That(camera.orthographic, Is.True, "DebugGameplay camera should stay orthographic for grid readability.");
+            Assert.That(Mathf.Abs(forward.x), Is.GreaterThan(0.1f), "DebugGameplay camera should have horizontal angle instead of top-down x=0.");
+            Assert.That(Mathf.Abs(forward.z), Is.GreaterThan(0.1f), "DebugGameplay camera should have depth angle instead of top-down z=0.");
+            Assert.That(Quaternion.Angle(camera.transform.rotation, Quaternion.Euler(90f, 0f, 0f)), Is.GreaterThan(1f));
         }
     }
 }

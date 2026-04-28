@@ -362,7 +362,8 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 CombinePath(prefabsPath, TargetsFolderName, "PuppyTarget_Phase1.prefab"),
                 CombinePath(artRootPath, "Models", "Targets", "Meshy_AI_Curious_Wet_Puppy_0424155427_texture.fbx"),
                 puppyMaterial,
-                TargetSizingProfile);
+                TargetSizingProfile,
+                new Vector3(-90.0f, 135.0f, 0.0f));
             GameObject? floodedRowOverlayPrefab = CreateMeshWrapperPrefab(
                 CombinePath(prefabsPath, WaterFolderName, "FloodedRowOverlay_Phase1.prefab"),
                 CombinePath(artRootPath, "Models", "Water", "Meshy_AI_Blue_Puddle_0425081657_texture.fbx"),
@@ -613,7 +614,12 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             return prefab;
         }
 
-        private static GameObject? CreateMeshWrapperPrefab(string assetPath, string sourceModelPath, Material? material, AssetSizingProfile sizingProfile)
+        private static GameObject? CreateMeshWrapperPrefab(
+            string assetPath,
+            string sourceModelPath,
+            Material? material,
+            AssetSizingProfile sizingProfile,
+            Vector3? visualEulerAngles = null)
         {
             GameObject? sourceModel = AssetDatabase.LoadAssetAtPath<GameObject>(sourceModelPath);
             if (sourceModel is null || material is null)
@@ -628,6 +634,11 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 art.name = "Visual";
                 art.transform.SetParent(root.transform, false);
                 NormalizeChildToFootprint(art, sizingProfile);
+                if (visualEulerAngles.HasValue)
+                {
+                    art.transform.localRotation = Quaternion.Euler(visualEulerAngles.Value);
+                }
+
                 AssignMaterialRecursively(art, material);
                 RemoveCollidersRecursively(art);
                 return root;

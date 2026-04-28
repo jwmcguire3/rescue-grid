@@ -50,6 +50,7 @@ namespace Rescue.PlayMode.Tests.Smoke
             Assert.That(GameObject.Find("BoardRoot").transform.childCount, Is.GreaterThan(0));
             Assert.That(GameObject.Find("BoardContentRoot").transform.childCount, Is.GreaterThan(0));
             Assert.That(GameObject.Find("WaterRoot").transform.childCount, Is.GreaterThan(0));
+            AssertCameraUsesIsometricOrthographicView();
 
             yield return null;
         }
@@ -115,6 +116,22 @@ namespace Rescue.PlayMode.Tests.Smoke
             }
 
             return value;
+        }
+
+        private static void AssertCameraUsesIsometricOrthographicView()
+        {
+            Camera? camera = Camera.main;
+            Assert.That(camera, Is.Not.Null, "Game.unity should include a tagged Main Camera.");
+            if (camera is null)
+            {
+                throw new AssertionException("Game.unity should include a tagged Main Camera.");
+            }
+
+            Vector3 forward = camera.transform.forward;
+            Assert.That(camera.orthographic, Is.True, "Game camera should stay orthographic for grid readability.");
+            Assert.That(Mathf.Abs(forward.x), Is.GreaterThan(0.1f), "Game camera should have horizontal angle instead of top-down x=0.");
+            Assert.That(Mathf.Abs(forward.z), Is.GreaterThan(0.1f), "Game camera should have depth angle instead of top-down z=0.");
+            Assert.That(Quaternion.Angle(camera.transform.rotation, Quaternion.Euler(90f, 0f, 0f)), Is.GreaterThan(1f));
         }
     }
 }
