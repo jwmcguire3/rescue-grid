@@ -18,6 +18,7 @@ namespace Rescue.Unity.BoardPresentation
         private const float DefaultBlockerDamagePulseScale = 1.06f;
         private const float DefaultBlockerDamageAlphaFloor = 0.70f;
         private const float MinimumTimelineDurationSeconds = 0.01f;
+        private const float MoveLandingPhaseRatio = 0.35f;
         private const string VinePreviewLabel = "VineGrowthPreview";
         private const string LastObstacleLabel = "TargetLastObstacle";
         private static readonly Vector3 HiddenDebrisScale = new Vector3(0.75f, 0.75f, 0.75f);
@@ -42,6 +43,7 @@ namespace Rescue.Unity.BoardPresentation
         [SerializeField] private float contentYOffset = 0.05f;
 
         private readonly List<GameObject> spawnedContent = new List<GameObject>();
+        private readonly Dictionary<GameObject, int> moveAnimationTokens = new Dictionary<GameObject, int>();
         private readonly BoardContentVisualRegistry visualRegistry = new BoardContentVisualRegistry();
         private readonly Dictionary<string, TargetVisualView> spawnedTargetsById = new Dictionary<string, TargetVisualView>();
         private readonly List<GameObject> targetObstacleMarkers = new List<GameObject>();
@@ -53,6 +55,9 @@ namespace Rescue.Unity.BoardPresentation
         private float iceRevealDurationSeconds = Presentation.ActionPlaybackSettings.DefaultBreakBlockerOrRevealDurationSeconds;
         private float spawnDurationSeconds = Presentation.ActionPlaybackSettings.DefaultSpawnDurationSeconds;
         private float targetExtractDurationSeconds = Presentation.ActionPlaybackSettings.DefaultTargetExtractDurationSeconds;
+        private float boardPieceLandingSquashXScale = Presentation.ActionPlaybackSettings.DefaultBoardPieceLandingSquashXScale;
+        private float boardPieceLandingSquashYScale = Presentation.ActionPlaybackSettings.DefaultBoardPieceLandingSquashYScale;
+        private float boardPieceLandingBounceDistance = Presentation.ActionPlaybackSettings.DefaultBoardPieceLandingBounceDistance;
 
         public void ApplyPlaybackSettings(Presentation.ActionPlaybackSettings settings)
         {
@@ -67,6 +72,9 @@ namespace Rescue.Unity.BoardPresentation
             iceRevealDurationSeconds = settings.BreakBlockerOrRevealDurationSeconds;
             spawnDurationSeconds = settings.SpawnDurationSeconds;
             targetExtractDurationSeconds = settings.TargetExtractDurationSeconds;
+            boardPieceLandingSquashXScale = settings.BoardPieceLandingSquashXScale;
+            boardPieceLandingSquashYScale = settings.BoardPieceLandingSquashYScale;
+            boardPieceLandingBounceDistance = settings.BoardPieceLandingBounceDistance;
         }
 
         public void SyncImmediate(GameState state)
@@ -131,6 +139,7 @@ namespace Rescue.Unity.BoardPresentation
         public void ForceSyncToState(GameState state)
         {
             StopAllCoroutines();
+            moveAnimationTokens.Clear();
             SyncImmediate(state);
         }
 
@@ -155,6 +164,7 @@ namespace Rescue.Unity.BoardPresentation
             }
 
             visualRegistry.Clear();
+            moveAnimationTokens.Clear();
             spawnedTargetsById.Clear();
             targetObstacleMarkers.Clear();
             vinePreviewObject = null;
@@ -210,7 +220,15 @@ namespace Rescue.Unity.BoardPresentation
                     continue;
                 }
 
-                MovePieceToCoord(debrisView.Object, anchor, to, debrisView.ContentLabel, contentYOffset, effectiveDurationSeconds);
+                MovePieceToCoord(
+                    debrisView.Object,
+                    anchor,
+                    to,
+                    debrisView.ContentLabel,
+                    contentYOffset,
+                    effectiveDurationSeconds,
+                    debrisView.BaseLocalScale,
+                    applyLandingFeedback: true);
             }
         }
 
@@ -274,6 +292,7 @@ namespace Rescue.Unity.BoardPresentation
 
             hiddenDebrisView.Coord = revealed.Coord;
             hiddenDebrisView.ContentLabel = $"Debris_{revealed.RevealedType}";
+            hiddenDebrisView.BaseLocalScale = Vector3.one;
             visualRegistry.Debris.Set(revealed.Coord, hiddenDebrisView);
 
             MoveContentObjectToAnchor(hiddenDebrisView.Object, anchor, revealed.Coord, hiddenDebrisView.ContentLabel, contentYOffset);
@@ -319,12 +338,20 @@ namespace Rescue.Unity.BoardPresentation
                     continue;
                 }
 
-                BoardPieceView debrisView = new BoardPieceView(coord, contentLabel, debrisObject);
+                BoardPieceView debrisView = new BoardPieceView(coord, contentLabel, debrisObject, debrisObject.transform.localScale);
                 visualRegistry.Debris.Set(coord, debrisView);
 
                 Vector3 entryPosition = GetSpawnEntryWorldPosition(coord);
                 PositionContentObjectAtWorldPose(debrisObject, anchor, entryPosition, anchor.rotation);
-                MovePieceToCoord(debrisObject, anchor, coord, contentLabel, contentYOffset, effectiveDurationSeconds);
+                MovePieceToCoord(
+                    debrisObject,
+                    anchor,
+                    coord,
+                    contentLabel,
+                    contentYOffset,
+                    effectiveDurationSeconds,
+                    debrisView.BaseLocalScale,
+                    applyLandingFeedback: true);
             }
         }
 
@@ -652,6 +679,7 @@ namespace Rescue.Unity.BoardPresentation
                 {
                     existingView.Coord = coord;
                     MoveContentObjectToAnchor(existingView.Object, anchor, coord, contentLabel, yOffset);
+                    existingView.Object.transform.localScale = existingView.BaseLocalScale;
                     return;
                 }
             }
@@ -662,7 +690,7 @@ namespace Rescue.Unity.BoardPresentation
                 return;
             }
 
-            registry.Set(coord, new BoardPieceView(coord, contentLabel, spawnedObject));
+            registry.Set(coord, new BoardPieceView(coord, contentLabel, spawnedObject, spawnedObject.transform.localScale));
         }
 
         private void EnsureTargetVisual(TileCoord coord, TargetState targetState, Transform anchor)
@@ -1120,6 +1148,8 @@ namespace Rescue.Unity.BoardPresentation
 
         private void RemoveSpawnedContentReference(GameObject contentObject)
         {
+            moveAnimationTokens.Remove(contentObject);
+
             for (int i = spawnedContent.Count - 1; i >= 0; i--)
             {
                 if (spawnedContent[i] != contentObject)
@@ -1179,11 +1209,14 @@ namespace Rescue.Unity.BoardPresentation
             TileCoord coord,
             string contentLabel,
             float yOffset,
-            float durationSeconds)
+            float durationSeconds,
+            Vector3 baseLocalScale,
+            bool applyLandingFeedback)
         {
             if (!Application.isPlaying || !isActiveAndEnabled || durationSeconds <= 0f)
             {
                 MoveContentObjectToAnchor(contentObject, anchor, coord, contentLabel, yOffset);
+                contentObject.transform.localScale = baseLocalScale;
                 return;
             }
 
@@ -1202,7 +1235,15 @@ namespace Rescue.Unity.BoardPresentation
             contentObject.name =
                 $"Content_{coord.Row.ToString("00", CultureInfo.InvariantCulture)}_{coord.Col.ToString("00", CultureInfo.InvariantCulture)}_{contentLabel}";
 
-            StartCoroutine(AnimateWorldMoveRoutine(contentObject, targetWorldPosition, targetWorldRotation, durationSeconds));
+            int token = RegisterMoveAnimation(contentObject);
+            StartCoroutine(AnimateWorldMoveRoutine(
+                contentObject,
+                targetWorldPosition,
+                targetWorldRotation,
+                durationSeconds,
+                baseLocalScale,
+                applyLandingFeedback,
+                token));
         }
 
         private Vector3 GetSpawnEntryWorldPosition(TileCoord coord)
@@ -1279,7 +1320,10 @@ namespace Rescue.Unity.BoardPresentation
             GameObject contentObject,
             Vector3 targetWorldPosition,
             Quaternion targetWorldRotation,
-            float durationSeconds)
+            float durationSeconds,
+            Vector3 baseLocalScale,
+            bool applyLandingFeedback,
+            int animationToken)
         {
             if (contentObject is null)
             {
@@ -1290,27 +1334,109 @@ namespace Rescue.Unity.BoardPresentation
             Vector3 startWorldPosition = contentTransform.position;
             Quaternion startWorldRotation = contentTransform.rotation;
             float clampedDuration = Mathf.Max(MinimumTimelineDurationSeconds, durationSeconds);
+            float movePhaseDuration = applyLandingFeedback
+                ? Mathf.Max(MinimumTimelineDurationSeconds, clampedDuration * (1.0f - MoveLandingPhaseRatio))
+                : clampedDuration;
+            float elapsed = 0f;
+
+            while (elapsed < movePhaseDuration)
+            {
+                if (contentObject is null || !IsCurrentMoveAnimation(contentObject, animationToken))
+                {
+                    yield break;
+                }
+
+                elapsed += Time.deltaTime;
+                float normalized = Mathf.Clamp01(elapsed / movePhaseDuration);
+                contentTransform.SetPositionAndRotation(
+                    Vector3.Lerp(startWorldPosition, targetWorldPosition, normalized),
+                    Quaternion.Lerp(startWorldRotation, targetWorldRotation, normalized));
+                contentTransform.localScale = baseLocalScale;
+                yield return null;
+            }
+
+            if (contentObject is null || !IsCurrentMoveAnimation(contentObject, animationToken))
+            {
+                yield break;
+            }
+
+            contentTransform.SetPositionAndRotation(targetWorldPosition, targetWorldRotation);
+
+            if (applyLandingFeedback)
+            {
+                yield return AnimateLandingFeedbackRoutine(
+                    contentObject,
+                    targetWorldPosition,
+                    targetWorldRotation,
+                    baseLocalScale,
+                    Mathf.Max(MinimumTimelineDurationSeconds, clampedDuration - movePhaseDuration),
+                    animationToken);
+            }
+
+            if (contentObject is not null && IsCurrentMoveAnimation(contentObject, animationToken))
+            {
+                contentTransform.SetPositionAndRotation(targetWorldPosition, targetWorldRotation);
+                contentTransform.localScale = baseLocalScale;
+                moveAnimationTokens.Remove(contentObject);
+            }
+        }
+
+        private System.Collections.IEnumerator AnimateLandingFeedbackRoutine(
+            GameObject contentObject,
+            Vector3 targetWorldPosition,
+            Quaternion targetWorldRotation,
+            Vector3 baseLocalScale,
+            float durationSeconds,
+            int animationToken)
+        {
+            Transform contentTransform = contentObject.transform;
+            Vector3 squashScale = Vector3.Scale(
+                baseLocalScale,
+                new Vector3(boardPieceLandingSquashXScale, boardPieceLandingSquashYScale, boardPieceLandingSquashXScale));
+            float clampedDuration = Mathf.Max(MinimumTimelineDurationSeconds, durationSeconds);
             float elapsed = 0f;
 
             while (elapsed < clampedDuration)
             {
-                if (contentObject is null)
+                if (contentObject is null || !IsCurrentMoveAnimation(contentObject, animationToken))
                 {
                     yield break;
                 }
 
                 elapsed += Time.deltaTime;
                 float normalized = Mathf.Clamp01(elapsed / clampedDuration);
-                contentTransform.SetPositionAndRotation(
-                    Vector3.Lerp(startWorldPosition, targetWorldPosition, normalized),
-                    Quaternion.Lerp(startWorldRotation, targetWorldRotation, normalized));
+                float squashPulse = Mathf.Sin(normalized * Mathf.PI);
+                float bouncePulse = Mathf.Sin(normalized * Mathf.PI * 2.0f) * (1.0f - normalized);
+                Vector3 bounceOffset = Vector3.up * (boardPieceLandingBounceDistance * Mathf.Max(0f, bouncePulse));
+                contentTransform.SetPositionAndRotation(targetWorldPosition + bounceOffset, targetWorldRotation);
+                contentTransform.localScale = Vector3.LerpUnclamped(baseLocalScale, squashScale, squashPulse);
                 yield return null;
             }
 
-            if (contentObject is not null)
+            if (contentObject is not null && IsCurrentMoveAnimation(contentObject, animationToken))
             {
                 contentTransform.SetPositionAndRotation(targetWorldPosition, targetWorldRotation);
+                contentTransform.localScale = baseLocalScale;
             }
+        }
+
+        private int RegisterMoveAnimation(GameObject contentObject)
+        {
+            if (!moveAnimationTokens.TryGetValue(contentObject, out int token))
+            {
+                token = 0;
+            }
+
+            token++;
+            moveAnimationTokens[contentObject] = token;
+            return token;
+        }
+
+        private bool IsCurrentMoveAnimation(GameObject contentObject, int token)
+        {
+            return contentObject != null &&
+                moveAnimationTokens.TryGetValue(contentObject, out int currentToken) &&
+                currentToken == token;
         }
 
         private Transform ResolveContentParent(Transform anchor)
@@ -1427,11 +1553,12 @@ namespace Rescue.Unity.BoardPresentation
 
         private sealed class BoardPieceView
         {
-            public BoardPieceView(TileCoord coord, string contentLabel, GameObject contentObject)
+            public BoardPieceView(TileCoord coord, string contentLabel, GameObject contentObject, Vector3 baseLocalScale)
             {
                 Coord = coord;
                 ContentLabel = contentLabel;
                 Object = contentObject;
+                BaseLocalScale = baseLocalScale;
             }
 
             public TileCoord Coord { get; set; }
@@ -1439,6 +1566,8 @@ namespace Rescue.Unity.BoardPresentation
             public string ContentLabel { get; set; }
 
             public GameObject Object { get; }
+
+            public Vector3 BaseLocalScale { get; set; }
         }
 
         private sealed class TargetVisualView

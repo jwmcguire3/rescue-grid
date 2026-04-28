@@ -286,6 +286,9 @@ namespace Rescue.Unity.BoardPresentation.Tests
             SetPrivateField(settings, "breakBlockerOrRevealDurationSeconds", 0.09f);
             SetPrivateField(settings, "spawnDurationSeconds", 0.14f);
             SetPrivateField(settings, "targetExtractDurationSeconds", 0.17f);
+            SetPrivateField(settings, "boardPieceLandingSquashXScale", 1.04f);
+            SetPrivateField(settings, "boardPieceLandingSquashYScale", 0.94f);
+            SetPrivateField(settings, "boardPieceLandingBounceDistance", 0.03f);
 
             harness.ContentPresenter.ApplyPlaybackSettings(settings);
 
@@ -295,6 +298,9 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "iceRevealDurationSeconds"), Is.EqualTo(0.09f));
             Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "spawnDurationSeconds"), Is.EqualTo(0.14f));
             Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "targetExtractDurationSeconds"), Is.EqualTo(0.17f));
+            Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "boardPieceLandingSquashXScale"), Is.EqualTo(1.04f));
+            Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "boardPieceLandingSquashYScale"), Is.EqualTo(0.94f));
+            Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "boardPieceLandingBounceDistance"), Is.EqualTo(0.03f));
         }
 
         [Test]
@@ -373,6 +379,31 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Assert.That(movedDebris, Is.Not.Null);
             Assert.That(movedDebris, Is.SameAs(originalDebris));
             Assert.That(movedDebris!.transform.position, Is.EqualTo(targetPosition).Using(Vector3ComparerWithEqualsOperator.Instance));
+            Assert.That(movedDebris.transform.localScale, Is.EqualTo(Vector3.one).Using(Vector3ComparerWithEqualsOperator.Instance));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_AnimateGravityMoveLandingJuiceRunsWithoutThrowing()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new DebrisTile(DebrisType.A),
+                    new EmptyTile()),
+                ImmutableArray.Create<Tile>(
+                    new EmptyTile(),
+                    new EmptyTile())));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            Assert.DoesNotThrow(() => harness.ContentPresenter.AnimateGravityMove(
+                new GravitySettled(
+                    ImmutableArray.Create((new TileCoord(0, 0), new TileCoord(1, 0))))));
+
+            GameObject? movedDebris = GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(1, 0));
+            Assert.That(movedDebris, Is.Not.Null);
+            Assert.That(movedDebris!.transform.localScale, Is.EqualTo(Vector3.one).Using(Vector3ComparerWithEqualsOperator.Instance));
         }
 
         [Test]
@@ -392,7 +423,29 @@ namespace Rescue.Unity.BoardPresentation.Tests
 
             Assert.That(FindChildByName(harness.ContentRoot, "Content_00_01_Debris_B"), Is.Not.Null);
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
-            Assert.That(GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 1)), Is.Not.Null);
+            GameObject? spawnedDebris = GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 1));
+            Assert.That(spawnedDebris, Is.Not.Null);
+            Assert.That(spawnedDebris!.transform.localScale, Is.EqualTo(Vector3.one).Using(Vector3ComparerWithEqualsOperator.Instance));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_AnimateSpawnLandingJuiceRunsWithoutThrowing()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new EmptyTile(),
+                    new EmptyTile())));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            Assert.DoesNotThrow(() => harness.ContentPresenter.AnimateSpawn(new Spawned(
+                ImmutableArray.Create((new TileCoord(0, 1), DebrisType.B)))));
+
+            GameObject? spawnedDebris = GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 1));
+            Assert.That(spawnedDebris, Is.Not.Null);
+            Assert.That(spawnedDebris!.transform.localScale, Is.EqualTo(Vector3.one).Using(Vector3ComparerWithEqualsOperator.Instance));
         }
 
         [Test]
@@ -481,6 +534,27 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Assert.That(FindChildByName(harness.ContentRoot, "Extra"), Is.Null);
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
             Assert.That(GetSpawnedContentList(harness.ContentPresenter).Count, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_SyncImmediateRepairsDebrisScaleAfterLandingJuice()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new DebrisTile(DebrisType.A))));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            GameObject? registeredDebris = GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 0));
+            Assert.That(registeredDebris, Is.Not.Null);
+            registeredDebris!.transform.localScale = new Vector3(1.35f, 0.65f, 1.35f);
+
+            harness.ContentPresenter.SyncImmediate(state);
+
+            GameObject? repairedDebris = GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 0));
+            Assert.That(repairedDebris, Is.SameAs(registeredDebris));
+            Assert.That(repairedDebris!.transform.localScale, Is.EqualTo(Vector3.one).Using(Vector3ComparerWithEqualsOperator.Instance));
         }
 
         [Test]
@@ -590,6 +664,29 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Assert.DoesNotThrow(() => harness.ContentPresenter.AnimateSpawn(
                 new Spawned(
                     ImmutableArray.Create((new TileCoord(0, 0), DebrisType.B)))));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_GravityLandingJuiceSkipsDestroyedVisualSafely()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new DebrisTile(DebrisType.A),
+                    new EmptyTile()),
+                ImmutableArray.Create<Tile>(
+                    new EmptyTile(),
+                    new EmptyTile())));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+            GameObject? registeredDebris = GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 0));
+            Assert.That(registeredDebris, Is.Not.Null);
+            Object.DestroyImmediate(registeredDebris);
+
+            Assert.DoesNotThrow(() => harness.ContentPresenter.AnimateGravityMove(
+                new GravitySettled(
+                    ImmutableArray.Create((new TileCoord(0, 0), new TileCoord(1, 0))))));
         }
 
         [Test]

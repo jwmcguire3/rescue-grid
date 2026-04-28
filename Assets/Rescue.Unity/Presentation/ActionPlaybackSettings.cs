@@ -16,6 +16,9 @@ namespace Rescue.Unity.Presentation
         public const float DefaultDockJamFeedbackDurationSeconds = 0.70f;
         public const float DefaultGravityDurationSeconds = 0.15f;
         public const float DefaultSpawnDurationSeconds = 0.12f;
+        public const float DefaultBoardPieceLandingSquashXScale = 1.06f;
+        public const float DefaultBoardPieceLandingSquashYScale = 0.92f;
+        public const float DefaultBoardPieceLandingBounceDistance = 0.04f;
         public const float DefaultTargetReactionDurationSeconds = 0.12f;
         public const float DefaultTargetExtractDurationSeconds = 0.12f;
         public const float DefaultWinFxDurationSeconds = 0.60f;
@@ -43,6 +46,9 @@ namespace Rescue.Unity.Presentation
         [SerializeField] private float dockJamFeedbackDurationSeconds = DefaultDockJamFeedbackDurationSeconds;
         [SerializeField] private float gravityDurationSeconds = DefaultGravityDurationSeconds;
         [SerializeField] private float spawnDurationSeconds = DefaultSpawnDurationSeconds;
+        [SerializeField] private float boardPieceLandingSquashXScale = DefaultBoardPieceLandingSquashXScale;
+        [SerializeField] private float boardPieceLandingSquashYScale = DefaultBoardPieceLandingSquashYScale;
+        [SerializeField] private float boardPieceLandingBounceDistance = DefaultBoardPieceLandingBounceDistance;
         [SerializeField] private float targetReactionDurationSeconds = DefaultTargetReactionDurationSeconds;
         [SerializeField] private float targetExtractDurationSeconds = DefaultTargetExtractDurationSeconds;
         [SerializeField] private float winFxDurationSeconds = DefaultWinFxDurationSeconds;
@@ -82,6 +88,12 @@ namespace Rescue.Unity.Presentation
         public float GravityDurationSeconds => ScaleDuration(gravityDurationSeconds);
 
         public float SpawnDurationSeconds => ScaleDuration(spawnDurationSeconds);
+
+        public float BoardPieceLandingSquashXScale => Mathf.Max(1.0f, boardPieceLandingSquashXScale);
+
+        public float BoardPieceLandingSquashYScale => Mathf.Clamp(boardPieceLandingSquashYScale, 0.75f, 1.0f);
+
+        public float BoardPieceLandingBounceDistance => Mathf.Max(0.0f, boardPieceLandingBounceDistance);
 
         public float TargetReactionDurationSeconds => ScaleDuration(targetReactionDurationSeconds);
 

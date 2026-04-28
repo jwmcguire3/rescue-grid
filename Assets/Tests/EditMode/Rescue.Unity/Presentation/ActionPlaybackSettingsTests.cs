@@ -19,6 +19,9 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(settings.DockJamFeedbackDurationSeconds, Is.GreaterThan(0f));
             Assert.That(settings.GravityDurationSeconds, Is.GreaterThan(0f));
             Assert.That(settings.SpawnDurationSeconds, Is.GreaterThan(0f));
+            Assert.That(settings.BoardPieceLandingSquashXScale, Is.GreaterThanOrEqualTo(1f));
+            Assert.That(settings.BoardPieceLandingSquashYScale, Is.LessThanOrEqualTo(1f));
+            Assert.That(settings.BoardPieceLandingBounceDistance, Is.GreaterThanOrEqualTo(0f));
             Assert.That(settings.TargetExtractDurationSeconds, Is.GreaterThan(0f));
             Assert.That(settings.WinFxDurationSeconds, Is.GreaterThan(0f));
             Assert.That(settings.LossFxDurationSeconds, Is.GreaterThan(0f));
@@ -43,6 +46,9 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(settings.DockJamFeedbackDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultDockJamFeedbackDurationSeconds));
             Assert.That(settings.GravityDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultGravityDurationSeconds));
             Assert.That(settings.SpawnDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultSpawnDurationSeconds));
+            Assert.That(settings.BoardPieceLandingSquashXScale, Is.EqualTo(ActionPlaybackSettings.DefaultBoardPieceLandingSquashXScale));
+            Assert.That(settings.BoardPieceLandingSquashYScale, Is.EqualTo(ActionPlaybackSettings.DefaultBoardPieceLandingSquashYScale));
+            Assert.That(settings.BoardPieceLandingBounceDistance, Is.EqualTo(ActionPlaybackSettings.DefaultBoardPieceLandingBounceDistance));
             Assert.That(settings.TargetExtractDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultTargetExtractDurationSeconds));
             Assert.That(settings.WinFxDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultWinFxDurationSeconds));
             Assert.That(settings.LossFxDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultLossFxDurationSeconds));
