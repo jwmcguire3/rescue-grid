@@ -16,6 +16,7 @@ namespace Rescue.Unity.Art.Tests
         private const string Phase1PrefabsPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1";
         private const string Phase1DockPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Dock/Dock_Shared_7Slot_Phase1.prefab";
         private const string DirectDryTilePrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Board/DryTile_Phase1.prefab";
+        private const string Phase1DebrisAPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Pieces/Debris_A_Phase1.prefab";
         private const string Phase1IceBlockPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Blockers/Ice_Block_Phase1.prefab";
         private const string Phase1VinePrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Blockers/Vine_Phase1.prefab";
         private const string Phase1FloodedRowPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Water/FloodedRowOverlay_Phase1.prefab";
@@ -207,6 +208,18 @@ namespace Rescue.Unity.Art.Tests
             {
                 Assert.That(reports[i].FillRatio, Is.GreaterThanOrEqualTo(0.88f), $"{reports[i].Label} is underfilled.");
             }
+        }
+
+        [Test]
+        public void Phase1DebrisAPrefab_MeetsBoardCellFillTolerance()
+        {
+            BoardAssetSpacingDiagnostics.AssetSpacingReport report = BoardAssetSpacingDiagnostics.AnalyzePrefabAsset(
+                "Debris A",
+                Phase1DebrisAPrefabPath,
+                Phase1PlaceholderPrefabFactory.DefaultBoardCellSize);
+
+            Assert.That(report.FillRatio, Is.GreaterThanOrEqualTo(0.88f));
+            Assert.That(report.Verdict, Is.EqualTo("within tolerance"));
         }
 
         private static T LoadAsset<T>(string assetPath)

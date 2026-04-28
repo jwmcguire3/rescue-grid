@@ -7,12 +7,23 @@ namespace Rescue.Unity.Art.Tests
     public sealed class DebrisInstanceTracerTests
     {
         private const string ArtRootPath = Phase1PlaceholderPrefabFactory.DefaultArtRootPath;
+        private const string DebrisAPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Pieces/Debris_A_Phase1.prefab";
         private const string DebrisCPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Pieces/Debris_C_Phase1.prefab";
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
             Phase1PlaceholderPrefabFactory.CreateAll(ArtRootPath);
+        }
+
+        [Test]
+        public void TraceDebrisAPrefab_ResolvesOliveRopeModelAsset()
+        {
+            PrefabTraceReport report = DebrisInstanceTracer.TracePrefabAsset(DebrisAPrefabPath);
+
+            Assert.That(report.ModelAssetPath, Does.EndWith("Meshy_AI_Olive_Green_Rope_Leas_0428090833_texture.fbx"));
+            Assert.That(report.FirstNonIdentityTransform, Is.Not.Null);
+            Assert.That(report.FirstNonIdentityTransform!.Path, Does.Contain("/Visual"));
         }
 
         [Test]
