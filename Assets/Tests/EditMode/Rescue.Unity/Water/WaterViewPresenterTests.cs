@@ -323,8 +323,19 @@ namespace Rescue.Unity.Water.Tests
 
             Assert.That(gridPresenter.TryGetRowWorldBounds(4, out BoardGridViewPresenter.RowWorldBounds rowBounds), Is.True);
             Transform repairedForecast = GetNamedChild(GetWaterRoot(presenter), "ForecastRow_04");
-            Assert.That(repairedForecast.position, Is.EqualTo(rowBounds.Center + new Vector3(0f, 0.1f, 0f)));
+            Assert.That(repairedForecast.position, Is.EqualTo(rowBounds.Center + new Vector3(0f, 0.23f, 0f)));
+            Assert.That(Quaternion.Angle(repairedForecast.rotation, rowBounds.Rotation * Quaternion.Euler(90f, 0f, 0f)), Is.LessThan(0.001f));
             Assert.That(repairedForecast.localScale.x, Is.EqualTo(rowBounds.Width).Within(0.001f));
+            Assert.That(repairedForecast.localScale.y, Is.EqualTo(rowBounds.Depth).Within(0.001f));
+            Assert.That(repairedForecast.localScale.z, Is.EqualTo(0.04f).Within(0.001f));
+
+            Assert.That(gridPresenter.TryGetRowWorldBounds(5, out BoardGridViewPresenter.RowWorldBounds floodedRowBounds), Is.True);
+            Transform repairedFlooded = GetNamedChild(GetWaterRoot(presenter), "FloodedRow_05");
+            Assert.That(repairedFlooded.position, Is.EqualTo(floodedRowBounds.Center + new Vector3(0f, 0.3f, 0f)));
+            Assert.That(Quaternion.Angle(repairedFlooded.rotation, floodedRowBounds.Rotation * Quaternion.Euler(90f, 0f, 0f)), Is.LessThan(0.001f));
+            Assert.That(repairedFlooded.localScale.x, Is.EqualTo(floodedRowBounds.Width).Within(0.001f));
+            Assert.That(repairedFlooded.localScale.y, Is.EqualTo(floodedRowBounds.Depth).Within(0.001f));
+            Assert.That(repairedFlooded.localScale.z, Is.EqualTo(0.04f).Within(0.001f));
         }
 
         [Test]

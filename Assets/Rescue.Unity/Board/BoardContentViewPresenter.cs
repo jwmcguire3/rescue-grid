@@ -40,7 +40,7 @@ namespace Rescue.Unity.BoardPresentation
         [SerializeField] private TargetVisualRegistry? targetRegistry;
         [SerializeField] private Transform? contentRoot;
         [SerializeField] private GameObject? fallbackContentPrefab;
-        [SerializeField] private float contentYOffset = 0.05f;
+        [SerializeField] private float contentYOffset = 0.15f;
 
         private readonly List<GameObject> spawnedContent = new List<GameObject>();
         private readonly Dictionary<GameObject, int> moveAnimationTokens = new Dictionary<GameObject, int>();

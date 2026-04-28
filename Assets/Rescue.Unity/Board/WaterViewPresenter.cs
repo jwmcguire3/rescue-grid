@@ -10,6 +10,11 @@ namespace Rescue.Unity.BoardPresentation
     public sealed class WaterViewPresenter : MonoBehaviour
     {
         private const string DefaultWaterRootName = "WaterOverlay";
+        private const string ForecastRowNamePrefix = "ForecastRow_";
+        private const float FloodedRowOverlayYOffset = 0.3f;
+        private const float ForecastRowOverlayYOffset = 0.23f;
+        private const float RowOverlayThickness = 0.04f;
+        private static readonly Quaternion RowOverlayRotationOffset = Quaternion.Euler(90f, 0f, 0f);
 
         [SerializeField] private BoardGridViewPresenter? gridView;
         [SerializeField] private GameObject? floodedRowOverlayPrefab;
@@ -349,7 +354,7 @@ namespace Rescue.Unity.BoardPresentation
                 forecastOverlayInstance = SpawnRowOverlay(
                     resolution.ForecastRowIndex,
                     prefab,
-                    $"ForecastRow_{resolution.ForecastRowIndex:00}",
+                    $"{ForecastRowNamePrefix}{resolution.ForecastRowIndex:00}",
                     state.Board.Width);
                 forecastOverlayRowIndex = forecastOverlayInstance is null ? null : resolution.ForecastRowIndex;
                 return;
@@ -366,11 +371,11 @@ namespace Rescue.Unity.BoardPresentation
                 return;
             }
 
-            ConfigureRowOverlay(
+            ConfigureForecastRowOverlay(
                 forecastOverlayInstance,
                 prefab.transform.localScale,
                 rowBounds,
-                $"ForecastRow_{resolution.ForecastRowIndex:00}");
+                $"{ForecastRowNamePrefix}{resolution.ForecastRowIndex:00}");
             forecastOverlayRowIndex = resolution.ForecastRowIndex;
         }
 
@@ -436,7 +441,15 @@ namespace Rescue.Unity.BoardPresentation
             }
 
             GameObject overlay = Instantiate(prefab, ResolveWaterRoot());
-            ConfigureRowOverlay(overlay, prefab.transform.localScale, rowBounds, objectName);
+            if (objectName.StartsWith(ForecastRowNamePrefix, System.StringComparison.Ordinal))
+            {
+                ConfigureForecastRowOverlay(overlay, prefab.transform.localScale, rowBounds, objectName);
+            }
+            else
+            {
+                ConfigureFloodedRowOverlay(overlay, prefab.transform.localScale, rowBounds, objectName);
+            }
+
             spawnedObjects.Add(overlay);
             return overlay;
         }
@@ -498,11 +511,20 @@ namespace Rescue.Unity.BoardPresentation
 
             floodedRowOverlays[promotedRow] = forecastOverlayInstance;
             forecastOverlayInstance.name = $"FloodedRow_{promotedRow:00}";
+            if (TryGetRowBounds(promotedRow, out BoardGridViewPresenter.RowWorldBounds rowBounds))
+            {
+                ConfigureFloodedRowOverlay(
+                    forecastOverlayInstance,
+                    ResolveOverlayPrefab(floodedRowOverlayPrefab)?.transform.localScale ?? Vector3.one,
+                    rowBounds,
+                    $"FloodedRow_{promotedRow:00}");
+            }
+
             forecastOverlayInstance = null;
             forecastOverlayRowIndex = null;
         }
 
-        private void ConfigureRowOverlay(
+        private void ConfigureFloodedRowOverlay(
             GameObject overlay,
             Vector3 baseScale,
             BoardGridViewPresenter.RowWorldBounds rowBounds,
@@ -511,9 +533,46 @@ namespace Rescue.Unity.BoardPresentation
             overlay.name = objectName;
             Transform overlayTransform = overlay.transform;
             overlayTransform.SetPositionAndRotation(
-                rowBounds.Center + new Vector3(0f, overlayYOffset, 0f),
-                rowBounds.Rotation);
-            overlayTransform.localScale = new Vector3(baseScale.x * rowBounds.Width, baseScale.y, baseScale.z);
+                rowBounds.Center + new Vector3(0f, FloodedRowOverlayYOffset, 0f),
+                rowBounds.Rotation * RowOverlayRotationOffset);
+            overlayTransform.localScale = ResolveRowOverlayScale(overlayTransform, baseScale, rowBounds);
+        }
+
+        private void ConfigureForecastRowOverlay(
+            GameObject overlay,
+            Vector3 baseScale,
+            BoardGridViewPresenter.RowWorldBounds rowBounds,
+            string objectName)
+        {
+            overlay.name = objectName;
+            Transform overlayTransform = overlay.transform;
+            overlayTransform.SetPositionAndRotation(
+                rowBounds.Center + new Vector3(0f, ForecastRowOverlayYOffset, 0f),
+                rowBounds.Rotation * RowOverlayRotationOffset);
+            overlayTransform.localScale = ResolveRowOverlayScale(overlayTransform, baseScale, rowBounds);
+        }
+
+        private static Vector3 ResolveRowOverlayScale(
+            Transform overlayTransform,
+            Vector3 baseScale,
+            BoardGridViewPresenter.RowWorldBounds rowBounds)
+        {
+            return new Vector3(
+                baseScale.x * ResolveLocalLengthForWorldAxis(overlayTransform, Vector3.right, rowBounds.Width),
+                baseScale.y * ResolveLocalLengthForWorldAxis(overlayTransform, Vector3.up, rowBounds.Depth),
+                baseScale.z * RowOverlayThickness);
+        }
+
+        private static float ResolveLocalLengthForWorldAxis(Transform transform, Vector3 localAxis, float worldLength)
+        {
+            Transform? parent = transform.parent;
+            if (parent is null)
+            {
+                return worldLength;
+            }
+
+            float worldAxisLength = parent.TransformVector(localAxis).magnitude;
+            return worldAxisLength <= Mathf.Epsilon ? worldLength : worldLength / worldAxisLength;
         }
 
         private void ConfigureWaterline(
@@ -528,7 +587,10 @@ namespace Rescue.Unity.BoardPresentation
             waterlineTransform.SetPositionAndRotation(
                 rowBounds.Center + new Vector3(0f, overlayYOffset, rowEdgeOffset),
                 rowBounds.Rotation);
-            waterlineTransform.localScale = new Vector3(baseScale.x * rowBounds.Width, baseScale.y, baseScale.z);
+            waterlineTransform.localScale = new Vector3(
+                baseScale.x * ResolveLocalLengthForWorldAxis(waterlineTransform, Vector3.right, rowBounds.Width),
+                baseScale.y,
+                baseScale.z);
         }
 
         private bool TryGetRowBounds(int rowIndex, out BoardGridViewPresenter.RowWorldBounds rowBounds)

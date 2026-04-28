@@ -47,10 +47,15 @@ namespace Rescue.PlayMode.Tests.Smoke
             Assert.That(presenter.CurrentState, Is.Not.Null);
             GameState currentState = presenter.CurrentState ?? throw new AssertionException("Game scene did not load a state.");
             Assert.That(currentState.LevelConfig.IsRuleTeach, Is.True);
-            Assert.That(GameObject.Find("BoardRoot").transform.childCount, Is.GreaterThan(0));
-            Assert.That(GameObject.Find("BoardContentRoot").transform.childCount, Is.GreaterThan(0));
-            Assert.That(GameObject.Find("WaterRoot").transform.childCount, Is.GreaterThan(0));
-            AssertCameraUsesIsometricOrthographicView();
+            Transform boardRoot = GameObject.Find("BoardRoot").transform;
+            Transform boardContentRoot = GameObject.Find("BoardContentRoot").transform;
+            Transform waterRoot = GameObject.Find("WaterRoot").transform;
+            Transform dockRoot = GameObject.Find("DockRoot").transform;
+            Assert.That(boardRoot.childCount, Is.GreaterThan(0));
+            Assert.That(boardContentRoot.childCount, Is.GreaterThan(0));
+            Assert.That(waterRoot.childCount, Is.GreaterThan(0));
+            AssertCameraUsesFrontTableOrthographicView();
+            AssertBoardStageLayout(boardRoot, boardContentRoot, waterRoot, dockRoot);
 
             yield return null;
         }
@@ -118,7 +123,7 @@ namespace Rescue.PlayMode.Tests.Smoke
             return value;
         }
 
-        private static void AssertCameraUsesIsometricOrthographicView()
+        private static void AssertCameraUsesFrontTableOrthographicView()
         {
             Camera? camera = Camera.main;
             Assert.That(camera, Is.Not.Null, "Game.unity should include a tagged Main Camera.");
@@ -128,10 +133,28 @@ namespace Rescue.PlayMode.Tests.Smoke
             }
 
             Vector3 forward = camera.transform.forward;
+            float horizontalForward = new Vector2(forward.x, forward.z).magnitude;
             Assert.That(camera.orthographic, Is.True, "Game camera should stay orthographic for grid readability.");
-            Assert.That(Mathf.Abs(forward.x), Is.GreaterThan(0.1f), "Game camera should have horizontal angle instead of top-down x=0.");
-            Assert.That(Mathf.Abs(forward.z), Is.GreaterThan(0.1f), "Game camera should have depth angle instead of top-down z=0.");
+            Assert.That(horizontalForward, Is.GreaterThan(0.1f), "Game camera should have a table-facing horizontal component instead of top-down.");
+            Assert.That(forward.y, Is.LessThan(-0.1f), "Game camera should look down toward the table.");
             Assert.That(Quaternion.Angle(camera.transform.rotation, Quaternion.Euler(90f, 0f, 0f)), Is.GreaterThan(1f));
+        }
+
+        private static void AssertBoardStageLayout(Transform boardRoot, Transform boardContentRoot, Transform waterRoot, Transform dockRoot)
+        {
+            Transform? stageRoot = boardRoot.parent;
+            Assert.That(stageRoot, Is.Not.Null, "BoardRoot should be parented under BoardStageRoot.");
+            if (stageRoot is null)
+            {
+                throw new AssertionException("BoardRoot should be parented under BoardStageRoot.");
+            }
+
+            Assert.That(stageRoot.name, Is.EqualTo("BoardStageRoot"));
+            Assert.That(boardContentRoot.parent, Is.SameAs(stageRoot), "Board content should share the board stage transform.");
+            Assert.That(waterRoot.parent, Is.SameAs(stageRoot), "Water overlays should share the board stage transform.");
+            Assert.That(dockRoot.parent, Is.Not.SameAs(stageRoot), "DockRoot should stay separate so its staging can be tuned independently.");
+            Assert.That(Mathf.Abs(stageRoot.localEulerAngles.x), Is.GreaterThan(1f), "Board stage should carry the table-view tilt.");
+            Assert.That(Quaternion.Angle(dockRoot.localRotation, Quaternion.Euler(15f, 0f, 0f)), Is.LessThan(0.1f), "DockRoot should match the staged dock tilt.");
         }
     }
 }

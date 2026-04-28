@@ -49,7 +49,8 @@ namespace Rescue.PlayMode.Tests.Debug
             Assert.That(dockRoot.childCount, Is.EqualTo(0));
             Assert.That(GameObject.Find("DockPieces"), Is.Null);
             Assert.That(dockRoot.Find("DockVisual"), Is.Null);
-            AssertCameraUsesIsometricOrthographicView();
+            AssertCameraUsesFrontTableOrthographicView();
+            AssertBoardStageLayout(boardRoot, boardContentRoot, waterRoot, dockRoot);
 
             for (int slotIndex = 0; slotIndex < 7; slotIndex++)
             {
@@ -161,7 +162,7 @@ namespace Rescue.PlayMode.Tests.Debug
             };
         }
 
-        private static void AssertCameraUsesIsometricOrthographicView()
+        private static void AssertCameraUsesFrontTableOrthographicView()
         {
             Camera? camera = Camera.main;
             Assert.That(camera, Is.Not.Null, "DebugGameplay.unity should include a tagged Main Camera.");
@@ -171,10 +172,28 @@ namespace Rescue.PlayMode.Tests.Debug
             }
 
             Vector3 forward = camera.transform.forward;
+            float horizontalForward = new Vector2(forward.x, forward.z).magnitude;
             Assert.That(camera.orthographic, Is.True, "DebugGameplay camera should stay orthographic for grid readability.");
-            Assert.That(Mathf.Abs(forward.x), Is.GreaterThan(0.1f), "DebugGameplay camera should have horizontal angle instead of top-down x=0.");
-            Assert.That(Mathf.Abs(forward.z), Is.GreaterThan(0.1f), "DebugGameplay camera should have depth angle instead of top-down z=0.");
+            Assert.That(horizontalForward, Is.GreaterThan(0.1f), "DebugGameplay camera should have a table-facing horizontal component instead of top-down.");
+            Assert.That(forward.y, Is.LessThan(-0.1f), "DebugGameplay camera should look down toward the table.");
             Assert.That(Quaternion.Angle(camera.transform.rotation, Quaternion.Euler(90f, 0f, 0f)), Is.GreaterThan(1f));
+        }
+
+        private static void AssertBoardStageLayout(Transform boardRoot, Transform boardContentRoot, Transform waterRoot, Transform dockRoot)
+        {
+            Transform? stageRoot = boardRoot.parent;
+            Assert.That(stageRoot, Is.Not.Null, "BoardRoot should be parented under BoardStageRoot.");
+            if (stageRoot is null)
+            {
+                throw new AssertionException("BoardRoot should be parented under BoardStageRoot.");
+            }
+
+            Assert.That(stageRoot.name, Is.EqualTo("BoardStageRoot"));
+            Assert.That(boardContentRoot.parent, Is.SameAs(stageRoot), "Board content should share the board stage transform.");
+            Assert.That(waterRoot.parent, Is.SameAs(stageRoot), "Water overlays should share the board stage transform.");
+            Assert.That(dockRoot.parent, Is.Not.SameAs(stageRoot), "DockRoot should stay separate so its staging can be tuned independently.");
+            Assert.That(Mathf.Abs(stageRoot.localEulerAngles.x), Is.GreaterThan(1f), "Board stage should carry the table-view tilt.");
+            Assert.That(Quaternion.Angle(dockRoot.localRotation, Quaternion.Euler(15f, 0f, 0f)), Is.LessThan(0.1f), "DockRoot should match the staged dock tilt.");
         }
     }
 }
