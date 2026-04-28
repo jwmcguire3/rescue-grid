@@ -22,6 +22,9 @@ namespace Rescue.Unity.BoardPresentation
         private const string VinePreviewLabel = "VineGrowthPreview";
         private const string LastObstacleLabel = "TargetLastObstacle";
         private const string RescuePathLabel = "RescuePath";
+        private const string RescuePathWashName = "RescuePathWash";
+        private const string RescuePathChevronPrefix = "RescuePathChevron_";
+        private const float MinimumRescuePathYOffset = 0.18f;
         private static readonly Vector3 HiddenDebrisScale = new Vector3(0.75f, 0.75f, 0.75f);
         private static readonly Color TargetTrappedColor = new Color(0.62f, 0.72f, 0.92f, 0.82f);
         private static readonly Color TargetProgressingColor = new Color(0.86f, 0.95f, 0.76f, 1f);
@@ -29,7 +32,10 @@ namespace Rescue.Unity.BoardPresentation
         private static readonly Color TargetExtractableColor = new Color(1f, 0.64f, 0.24f, 1f);
         private static readonly Color TargetDistressedColor = new Color(0.35f, 0.72f, 1f, 1f);
         private static readonly Color VinePreviewColor = new Color(0.52f, 0.95f, 0.48f, 0.72f);
-        private static readonly Color RescuePathColor = new Color(1f, 0.72f, 0.32f, 0.54f);
+        private static readonly Color RescuePathWashColor = new Color(0.435f, 0.141f, 0.122f, 0.22f);
+        private static readonly Color RescuePathChevronColor = new Color(0.435f, 0.141f, 0.122f, 0.82f);
+        private static Material? rescuePathWashMaterial;
+        private static Material? rescuePathChevronMaterial;
         private static readonly Vector3 TargetTrappedScale = new Vector3(0.92f, 0.92f, 0.92f);
         private static readonly Vector3 TargetProgressingScale = new Vector3(1f, 1f, 1f);
         private static readonly Vector3 TargetOneClearAwayScale = new Vector3(1.08f, 1.08f, 1.08f);
@@ -523,7 +529,10 @@ namespace Rescue.Unity.BoardPresentation
                     continue;
                 }
 
-                EnsureRescuePathVisual(coord, anchor);
+                Vector3 outwardDirection = ResolveRescuePathOutwardDirectionFromTargetVisual(
+                    coord,
+                    lockedPath.TargetId);
+                EnsureRescuePathVisual(coord, anchor, outwardDirectionOverride: outwardDirection);
             }
         }
 
@@ -758,9 +767,9 @@ namespace Rescue.Unity.BoardPresentation
                 case EmptyTile:
                 case FloodedTile:
                     return;
-                case RescuePathTile:
+                case RescuePathTile rescuePathTile:
                     expectedRescuePath.Add(coord);
-                    EnsureRescuePathVisual(coord, anchor);
+                    EnsureRescuePathVisual(coord, anchor, rescuePathTile.TargetIds, targetsById);
                     return;
                 case DebrisTile debrisTile:
                     expectedDebris.Add(coord);
@@ -810,23 +819,171 @@ namespace Rescue.Unity.BoardPresentation
             }
         }
 
-        private void EnsureRescuePathVisual(TileCoord coord, Transform anchor)
+        private void EnsureRescuePathVisual(
+            TileCoord coord,
+            Transform anchor,
+            ImmutableArray<string> targetIds = default,
+            IReadOnlyDictionary<string, TargetState>? targetsById = null,
+            Vector3? outwardDirectionOverride = null)
         {
-            EnsureMarkerVisual(
-                visualRegistry.RescuePath,
-                coord,
-                RescuePathLabel,
-                fallbackContentPrefab,
-                anchor,
-                contentYOffset * 0.22f,
-                new Vector3(0.86f, 0.05f, 0.86f));
+            Vector3 outwardDirection = outwardDirectionOverride
+                ?? ResolveRescuePathOutwardDirection(coord, targetIds, targetsById);
+            float yOffset = Mathf.Max(MinimumRescuePathYOffset, contentYOffset * 0.65f);
 
-            if (visualRegistry.RescuePath.TryGet(coord, out BoardPieceView? pathView)
-                && pathView is not null
-                && pathView.Object != null)
+            if (visualRegistry.RescuePath.TryGet(coord, out BoardPieceView? existingView) &&
+                existingView is not null &&
+                existingView.Object != null)
             {
-                ApplyTint(pathView.Object, RescuePathColor);
+                if (existingView.ContentLabel != RescuePathLabel)
+                {
+                    RemoveAndDestroyPiece(visualRegistry.RescuePath, coord);
+                }
+                else
+                {
+                    existingView.Coord = coord;
+                    MoveContentObjectToAnchor(existingView.Object, anchor, coord, RescuePathLabel, yOffset);
+                    existingView.Object.transform.localScale = existingView.BaseLocalScale;
+                    ConfigureRescuePathMarker(existingView.Object, outwardDirection);
+                    return;
+                }
             }
+
+            GameObject markerObject = SpawnRescuePathMarkerAtAnchor(coord, anchor, yOffset, outwardDirection);
+            visualRegistry.RescuePath.Set(
+                coord,
+                new BoardPieceView(coord, RescuePathLabel, markerObject, markerObject.transform.localScale));
+        }
+
+        private static Vector3 ResolveRescuePathOutwardDirection(
+            TileCoord coord,
+            ImmutableArray<string> targetIds,
+            IReadOnlyDictionary<string, TargetState>? targetsById)
+        {
+            if (targetsById is not null && !targetIds.IsDefaultOrEmpty)
+            {
+                for (int i = 0; i < targetIds.Length; i++)
+                {
+                    string targetId = targetIds[i];
+                    if (!targetsById.TryGetValue(targetId, out TargetState targetState))
+                    {
+                        continue;
+                    }
+
+                    int rowDelta = coord.Row - targetState.Coord.Row;
+                    int colDelta = coord.Col - targetState.Coord.Col;
+                    if (System.Math.Abs(rowDelta) + System.Math.Abs(colDelta) != 1)
+                    {
+                        continue;
+                    }
+
+                    return new Vector3(colDelta, 0f, -rowDelta);
+                }
+            }
+
+            return Vector3.forward;
+        }
+
+        private Vector3 ResolveRescuePathOutwardDirectionFromTargetVisual(TileCoord coord, string targetId)
+        {
+            if (!string.IsNullOrWhiteSpace(targetId) &&
+                TryGetLiveTargetView(targetId, out TargetVisualView? targetView) &&
+                targetView is not null &&
+                targetView.Object != null &&
+                targetView.Object.TryGetComponent(out BoardCellView targetCell))
+            {
+                TileCoord targetCoord = targetCell.Coord;
+                int rowDelta = coord.Row - targetCoord.Row;
+                int colDelta = coord.Col - targetCoord.Col;
+                if (System.Math.Abs(rowDelta) + System.Math.Abs(colDelta) == 1)
+                {
+                    return new Vector3(colDelta, 0f, -rowDelta);
+                }
+            }
+
+            return Vector3.forward;
+        }
+
+        private GameObject SpawnRescuePathMarkerAtAnchor(
+            TileCoord coord,
+            Transform anchor,
+            float yOffset,
+            Vector3 outwardDirection)
+        {
+            Transform parent = ResolveContentParent(anchor);
+            GameObject markerObject = new GameObject($"Content_{coord.Row:00}_{coord.Col:00}_{RescuePathLabel}");
+            AttachOrUpdateBoardCellView(markerObject, coord);
+            Transform markerTransform = markerObject.transform;
+            markerTransform.SetParent(parent, worldPositionStays: false);
+
+            if (parent == anchor)
+            {
+                markerTransform.localPosition = new Vector3(0f, yOffset, 0f);
+                markerTransform.localRotation = Quaternion.identity;
+            }
+            else
+            {
+                markerTransform.SetPositionAndRotation(
+                    ResolveCellWorldPositionWithYOffset(coord, yOffset),
+                    anchor.rotation);
+            }
+
+            markerTransform.localScale = Vector3.one;
+            CreateRescuePathWash(markerTransform);
+            CreateRescuePathChevron(markerTransform, 0, 0.02f);
+            CreateRescuePathChevron(markerTransform, 1, -0.18f);
+            ConfigureRescuePathMarker(markerObject, outwardDirection);
+            spawnedContent.Add(markerObject);
+            return markerObject;
+        }
+
+        private static void CreateRescuePathWash(Transform parent)
+        {
+            GameObject wash = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            wash.name = RescuePathWashName;
+            RemoveCollider(wash);
+            wash.transform.SetParent(parent, worldPositionStays: false);
+            wash.transform.localPosition = new Vector3(0f, 0.004f, 0f);
+            wash.transform.localRotation = Quaternion.identity;
+            wash.transform.localScale = new Vector3(0.84f, 0.012f, 0.84f);
+            AssignGeneratedRescuePathWashMaterial(wash);
+        }
+
+        private static void CreateRescuePathChevron(Transform parent, int index, float zOffset)
+        {
+            GameObject chevron = new GameObject($"{RescuePathChevronPrefix}{index:00}");
+            chevron.transform.SetParent(parent, worldPositionStays: false);
+            chevron.transform.localPosition = new Vector3(0f, 0.024f + (index * 0.006f), zOffset);
+            chevron.transform.localRotation = Quaternion.identity;
+            chevron.transform.localScale = Vector3.one;
+            CreateRescuePathChevronArm(chevron.transform, "LeftArm", -0.12f, 28f);
+            CreateRescuePathChevronArm(chevron.transform, "RightArm", 0.12f, -28f);
+        }
+
+        private static void CreateRescuePathChevronArm(Transform parent, string name, float xOffset, float yRotation)
+        {
+            GameObject arm = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            arm.name = name;
+            RemoveCollider(arm);
+            arm.transform.SetParent(parent, worldPositionStays: false);
+            arm.transform.localPosition = new Vector3(xOffset, 0f, -0.02f);
+            arm.transform.localRotation = Quaternion.Euler(0f, yRotation, 0f);
+            arm.transform.localScale = new Vector3(0.115f, 0.028f, 0.47f);
+            Renderer? renderer = arm.GetComponent<Renderer>();
+            if (renderer is not null)
+            {
+                renderer.sharedMaterial = GetRescuePathChevronMaterial();
+            }
+        }
+
+        private static void ConfigureRescuePathMarker(GameObject markerObject, Vector3 outwardDirection)
+        {
+            Vector3 flattened = new Vector3(outwardDirection.x, 0f, outwardDirection.z);
+            if (flattened.sqrMagnitude <= 0.0001f)
+            {
+                flattened = Vector3.forward;
+            }
+
+            markerObject.transform.localRotation = Quaternion.LookRotation(flattened.normalized, Vector3.up);
         }
 
         private void EnsureMarkerVisual(
@@ -1191,6 +1348,86 @@ namespace Rescue.Unity.BoardPresentation
             }
         }
 
+        private static void AssignGeneratedRescuePathWashMaterial(GameObject contentObject)
+        {
+            Renderer? renderer = contentObject.GetComponent<Renderer>();
+            if (renderer is not null)
+            {
+                renderer.sharedMaterial = GetRescuePathWashMaterial();
+            }
+        }
+
+        private static Material GetRescuePathWashMaterial()
+        {
+            if (rescuePathWashMaterial == null)
+            {
+                rescuePathWashMaterial = CreateGeneratedTransparentMaterial(RescuePathWashColor);
+            }
+
+            return rescuePathWashMaterial;
+        }
+
+        private static Material GetRescuePathChevronMaterial()
+        {
+            if (rescuePathChevronMaterial == null)
+            {
+                rescuePathChevronMaterial = CreateGeneratedTransparentMaterial(RescuePathChevronColor);
+            }
+
+            return rescuePathChevronMaterial;
+        }
+
+        private static Material CreateGeneratedTransparentMaterial(Color color)
+        {
+            Shader? shader = Shader.Find("Standard");
+            shader ??= Shader.Find("Unlit/Transparent");
+            shader ??= Shader.Find("Sprites/Default");
+            if (shader is null)
+            {
+                throw new System.InvalidOperationException("Could not resolve a shader for the rescue path marker.");
+            }
+
+            Material material = new Material(shader)
+            {
+                name = $"Generated_RescuePath_{ColorUtility.ToHtmlStringRGBA(color)}",
+                color = color,
+            };
+
+            material.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
+
+            if (shader.name == "Standard")
+            {
+                material.SetFloat("_Mode", 3.0f);
+                material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                material.SetInt("_ZWrite", 0);
+                material.DisableKeyword("_ALPHATEST_ON");
+                material.EnableKeyword("_ALPHABLEND_ON");
+                material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+                material.renderQueue = 3000;
+            }
+
+            return material;
+        }
+
+        private static void RemoveCollider(GameObject contentObject)
+        {
+            Collider? collider = contentObject.GetComponent<Collider>();
+            if (collider is null)
+            {
+                return;
+            }
+
+            if (Application.isPlaying)
+            {
+                Object.Destroy(collider);
+            }
+            else
+            {
+                Object.DestroyImmediate(collider);
+            }
+        }
+
         private void RemoveUnexpectedPieces(BoardPieceRegistry registry, HashSet<TileCoord> expectedCoords)
         {
             foreach (TileCoord coord in registry.GetCoordsSnapshot())
@@ -1353,6 +1590,7 @@ namespace Rescue.Unity.BoardPresentation
             CleanupDestroyedPieceReferences(visualRegistry.Debris);
             CleanupDestroyedPieceReferences(visualRegistry.Blockers);
             CleanupDestroyedPieceReferences(visualRegistry.HiddenDebris);
+            CleanupDestroyedPieceReferences(visualRegistry.RescuePath);
 
             List<string> targetIds = new List<string>(spawnedTargetsById.Keys);
             for (int i = 0; i < targetIds.Count; i++)

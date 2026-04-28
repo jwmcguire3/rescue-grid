@@ -298,6 +298,8 @@ namespace Rescue.Unity.BoardPresentation.Tests
             GameObject? pathObject = GetRegisteredPieceObject(harness.ContentPresenter, "RescuePath", new TileCoord(0, 0));
             Assert.That(pathObject, Is.Not.Null);
             Assert.That(pathObject!.name, Does.Contain("RescuePath"));
+            AssertRescuePathMarkerShape(pathObject);
+            Assert.That(pathObject.transform.position.y, Is.GreaterThan(0.17f));
 
             harness.ContentPresenter.SyncImmediate(emptyState);
 
@@ -320,6 +322,28 @@ namespace Rescue.Unity.BoardPresentation.Tests
             GameObject? pathObject = GetRegisteredPieceObject(harness.ContentPresenter, "RescuePath", new TileCoord(0, 0));
             Assert.That(pathObject, Is.Not.Null);
             Assert.That(pathObject!.name, Does.Contain("RescuePath"));
+            AssertRescuePathMarkerShape(pathObject);
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_AnimateRescuePathLockedOrientsMarkerBeforeSpawning()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new TargetTile("puppy-1", Extracted: false),
+                    new EmptyTile())));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+            harness.ContentPresenter.AnimateRescuePathLocked(new TargetRescuePathLocked(
+                "puppy-1",
+                ImmutableArray.Create(new TileCoord(0, 1))));
+
+            GameObject? pathObject = GetRegisteredPieceObject(harness.ContentPresenter, "RescuePath", new TileCoord(0, 1));
+            Assert.That(pathObject, Is.Not.Null);
+            AssertRescuePathMarkerShape(pathObject!);
+            AssertRescuePathDirection(pathObject, Vector3.right);
         }
 
         [Test]
@@ -336,7 +360,63 @@ namespace Rescue.Unity.BoardPresentation.Tests
             GameObject? pathObject = GetRegisteredPieceObject(harness.ContentPresenter, "RescuePath", new TileCoord(0, 0));
             Assert.That(pathObject, Is.Not.Null);
             Assert.That(pathObject!.name, Does.Contain("RescuePath"));
-            Assert.That(pathObject.GetComponent<Collider>(), Is.Null);
+            AssertRescuePathMarkerShape(pathObject);
+            Assert.That(pathObject.GetComponentsInChildren<Collider>(includeInactive: true), Is.Empty);
+        }
+
+        [TestCase(1, 1, 1, 2, 1f, 0f)]
+        [TestCase(1, 1, 1, 0, -1f, 0f)]
+        [TestCase(1, 1, 0, 1, 0f, 1f)]
+        [TestCase(1, 1, 2, 1, 0f, -1f)]
+        public void BoardContentViewPresenter_RescuePathChevronsPointOutwardFromTarget(
+            int targetRow,
+            int targetCol,
+            int pathRow,
+            int pathCol,
+            float expectedX,
+            float expectedZ)
+        {
+            PresenterHarness harness = CreateHarness();
+            TileCoord targetCoord = new TileCoord(targetRow, targetCol);
+            TileCoord pathCoord = new TileCoord(pathRow, pathCol);
+            GameState state = CreateState(
+                CreateRowsWithTargetAndPath(3, 3, targetCoord, pathCoord, ImmutableArray.Create("puppy-1")),
+                ImmutableArray.Create(new TargetState("puppy-1", targetCoord, TargetReadiness.OneClearAway)));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            GameObject? pathObject = GetRegisteredPieceObject(harness.ContentPresenter, "RescuePath", pathCoord);
+            Assert.That(pathObject, Is.Not.Null);
+            AssertRescuePathDirection(pathObject!, new Vector3(expectedX, 0f, expectedZ));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_RescuePathChevronsUseFirstAdjacentResolvedTarget()
+        {
+            PresenterHarness harness = CreateHarness();
+            TileCoord pathCoord = new TileCoord(1, 1);
+            TileCoord adjacentTargetCoord = new TileCoord(1, 0);
+            TileCoord nonAdjacentTargetCoord = new TileCoord(0, 0);
+            GameState state = CreateState(
+                CreateRowsWithTargetsAndPath(
+                    3,
+                    3,
+                    pathCoord,
+                    ImmutableArray.Create(
+                        ("far", nonAdjacentTargetCoord),
+                        ("puppy-1", adjacentTargetCoord)),
+                    ImmutableArray.Create("missing", "far", "puppy-1")),
+                ImmutableArray.Create(
+                    new TargetState("far", nonAdjacentTargetCoord, TargetReadiness.OneClearAway),
+                    new TargetState("puppy-1", adjacentTargetCoord, TargetReadiness.OneClearAway)));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            GameObject? pathObject = GetRegisteredPieceObject(harness.ContentPresenter, "RescuePath", pathCoord);
+            Assert.That(pathObject, Is.Not.Null);
+            AssertRescuePathDirection(pathObject!, Vector3.right);
         }
 
         [Test]
@@ -723,7 +803,10 @@ namespace Rescue.Unity.BoardPresentation.Tests
             harness.GridPresenter.RebuildGrid(state);
 
             Assert.DoesNotThrow(() => harness.ContentPresenter.SyncImmediate(state));
-            Assert.That(GetRegisteredPieceObject(harness.ContentPresenter, "RescuePath", new TileCoord(0, 0)), Is.Not.Null);
+            GameObject? pathObject = GetRegisteredPieceObject(harness.ContentPresenter, "RescuePath", new TileCoord(0, 0));
+            Assert.That(pathObject, Is.Not.Null);
+            AssertRescuePathMarkerShape(pathObject!);
+            Assert.That(pathObject!.GetComponentsInChildren<Collider>(includeInactive: true), Is.Empty);
         }
 
         [Test]
@@ -1157,6 +1240,30 @@ namespace Rescue.Unity.BoardPresentation.Tests
             return (List<GameObject>)value!;
         }
 
+        private static void AssertRescuePathMarkerShape(GameObject pathObject)
+        {
+            Assert.That(pathObject.transform.Find("RescuePathWash"), Is.Not.Null);
+            Transform? firstChevron = pathObject.transform.Find("RescuePathChevron_00");
+            Transform? secondChevron = pathObject.transform.Find("RescuePathChevron_01");
+            Assert.That(firstChevron, Is.Not.Null);
+            Assert.That(secondChevron, Is.Not.Null);
+            Assert.That(firstChevron!.Find("LeftArm"), Is.Not.Null);
+            Assert.That(firstChevron.Find("RightArm"), Is.Not.Null);
+            Assert.That(secondChevron!.Find("LeftArm"), Is.Not.Null);
+            Assert.That(secondChevron.Find("RightArm"), Is.Not.Null);
+            Assert.That(pathObject.GetComponentsInChildren<Collider>(includeInactive: true), Is.Empty);
+            Assert.That(pathObject.GetComponentsInChildren<Renderer>(includeInactive: true), Has.Length.EqualTo(5));
+        }
+
+        private static void AssertRescuePathDirection(GameObject pathObject, Vector3 expectedDirection)
+        {
+            Vector3 actualDirection = pathObject.transform.localRotation * Vector3.forward;
+            actualDirection.y = 0f;
+            actualDirection.Normalize();
+            Vector3 normalizedExpected = expectedDirection.normalized;
+            Assert.That(Vector3.Dot(actualDirection, normalizedExpected), Is.GreaterThan(0.99f));
+        }
+
         private static object? GetPrivateFieldValue(object target, string fieldName)
         {
             System.Reflection.FieldInfo? field = target.GetType().GetField(
@@ -1165,6 +1272,64 @@ namespace Rescue.Unity.BoardPresentation.Tests
 
             Assert.That(field, Is.Not.Null, $"Expected private field '{fieldName}'.");
             return field?.GetValue(target);
+        }
+
+        private static ImmutableArray<ImmutableArray<Tile>> CreateRowsWithTargetAndPath(
+            int width,
+            int height,
+            TileCoord targetCoord,
+            TileCoord pathCoord,
+            ImmutableArray<string> pathTargetIds)
+        {
+            return CreateRowsWithTargetsAndPath(
+                width,
+                height,
+                pathCoord,
+                ImmutableArray.Create(("puppy-1", targetCoord)),
+                pathTargetIds);
+        }
+
+        private static ImmutableArray<ImmutableArray<Tile>> CreateRowsWithTargetsAndPath(
+            int width,
+            int height,
+            TileCoord pathCoord,
+            ImmutableArray<(string Id, TileCoord Coord)> targetCoords,
+            ImmutableArray<string> pathTargetIds)
+        {
+            ImmutableArray<ImmutableArray<Tile>>.Builder rows = ImmutableArray.CreateBuilder<ImmutableArray<Tile>>(height);
+            for (int row = 0; row < height; row++)
+            {
+                ImmutableArray<Tile>.Builder tiles = ImmutableArray.CreateBuilder<Tile>(width);
+                for (int col = 0; col < width; col++)
+                {
+                    TileCoord coord = new TileCoord(row, col);
+                    if (coord.Equals(pathCoord))
+                    {
+                        tiles.Add(new RescuePathTile(pathTargetIds));
+                        continue;
+                    }
+
+                    string? targetId = FindTargetIdAt(targetCoords, coord);
+                    tiles.Add(targetId is null ? new EmptyTile() : new TargetTile(targetId, Extracted: false));
+                }
+
+                rows.Add(tiles.ToImmutable());
+            }
+
+            return rows.ToImmutable();
+        }
+
+        private static string? FindTargetIdAt(ImmutableArray<(string Id, TileCoord Coord)> targetCoords, TileCoord coord)
+        {
+            for (int i = 0; i < targetCoords.Length; i++)
+            {
+                if (targetCoords[i].Coord.Equals(coord))
+                {
+                    return targetCoords[i].Id;
+                }
+            }
+
+            return null;
         }
 
         private static GameState CreateState(
