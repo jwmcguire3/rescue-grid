@@ -20,6 +20,9 @@ namespace Rescue.Unity.BoardPresentation
         [SerializeField] private GameObject? fallbackOverlayPrefab;
         [SerializeField] private float overlayYOffset = 0.1f;
         [SerializeField] private float forecastPulseScale = 1.08f;
+        [SerializeField] private float calmPressureScale = 1.025f;
+        [SerializeField] private float riseRowPressureScale = 1.06f;
+        [SerializeField] private float waterlineWarningScale = 1.05f;
 
         private readonly List<GameObject> spawnedObjects = new List<GameObject>();
         private readonly Dictionary<int, GameObject> floodedRowOverlays = new Dictionary<int, GameObject>();
@@ -598,13 +601,17 @@ namespace Rescue.Unity.BoardPresentation
         {
             if (feedback.HasNearRiseWarning && forecastOverlay is not null)
             {
-                PulseTransform(forecastOverlay.transform, forecastPulseDurationSeconds, forecastPulseScale);
+                PulseRowPressure(forecastOverlay.transform, forecastPulseDurationSeconds, forecastPulseScale);
                 PulseAlpha(forecastOverlay, forecastPulseDurationSeconds, targetAlphaMultiplier: 1.2f);
+            }
+            else if (feedback.ShouldEmphasizeCounter && !feedback.HasWaterRise && forecastOverlay is not null)
+            {
+                PulseRowPressure(forecastOverlay.transform, forecastTransitionDurationSeconds, calmPressureScale);
             }
 
             if (feedback.ShouldPulseWaterline && waterline is not null)
             {
-                PulseTransform(waterline.transform, waterlinePulseDurationSeconds, forecastPulseScale);
+                PulseWaterlinePressure(waterline.transform, waterlinePulseDurationSeconds, waterlineWarningScale);
                 PulseAlpha(waterline, waterlinePulseDurationSeconds, targetAlphaMultiplier: 1.25f);
             }
 
@@ -614,7 +621,9 @@ namespace Rescue.Unity.BoardPresentation
                 {
                     if (floodedRowOverlays.TryGetValue(feedback.NewlyFloodedRowIndices[i], out GameObject overlay))
                     {
-                        PulseAlpha(overlay, Mathf.Max(0.01f, customRiseDuration ?? waterRiseDurationSeconds), targetAlphaMultiplier: 1.15f);
+                        float duration = Mathf.Max(0.01f, customRiseDuration ?? waterRiseDurationSeconds);
+                        PulseRowPressure(overlay.transform, duration, riseRowPressureScale);
+                        PulseAlpha(overlay, duration, targetAlphaMultiplier: 1.15f);
                     }
                 }
             }
@@ -648,7 +657,7 @@ namespace Rescue.Unity.BoardPresentation
             }
 
             float duration = durationSeconds ?? forecastTransitionDurationSeconds;
-            PulseTransform(forecastOverlayInstance.transform, duration, forecastPulseScale);
+            PulseRowPressure(forecastOverlayInstance.transform, duration, forecastPulseScale);
             PulseAlpha(forecastOverlayInstance, duration, targetAlphaMultiplier: 1.15f);
         }
 
@@ -680,6 +689,46 @@ namespace Rescue.Unity.BoardPresentation
 
             Vector3 baseScale = target.localScale;
             Vector3 pulseScale = baseScale * Mathf.Max(1f, scaleMultiplier);
+
+            if (!Application.isPlaying || !isActiveAndEnabled)
+            {
+                target.localScale = baseScale;
+                return;
+            }
+
+            StartCoroutine(AnimatePulse(target, baseScale, pulseScale, duration));
+        }
+
+        private void PulseRowPressure(Transform target, float duration, float scaleMultiplier)
+        {
+            if (target is null)
+            {
+                return;
+            }
+
+            Vector3 baseScale = target.localScale;
+            float multiplier = Mathf.Max(1f, scaleMultiplier);
+            Vector3 pulseScale = new Vector3(baseScale.x, baseScale.y * multiplier, baseScale.z * multiplier);
+
+            if (!Application.isPlaying || !isActiveAndEnabled)
+            {
+                target.localScale = baseScale;
+                return;
+            }
+
+            StartCoroutine(AnimatePulse(target, baseScale, pulseScale, duration));
+        }
+
+        private void PulseWaterlinePressure(Transform target, float duration, float scaleMultiplier)
+        {
+            if (target is null)
+            {
+                return;
+            }
+
+            Vector3 baseScale = target.localScale;
+            float multiplier = Mathf.Max(1f, scaleMultiplier);
+            Vector3 pulseScale = new Vector3(baseScale.x, baseScale.y * multiplier, baseScale.z);
 
             if (!Application.isPlaying || !isActiveAndEnabled)
             {

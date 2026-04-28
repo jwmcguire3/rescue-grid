@@ -81,6 +81,7 @@ namespace Rescue.Unity.UI
         private const float DefaultPulseScaleMultiplier = 1.08f;
         private const float FailedHoldScaleMultiplier = 1.04f;
         private const float TripleClearMinScaleMultiplier = 0.9f;
+        private const float TripleClearPopScaleMultiplier = 1.04f;
 
         [Header("Feedback Target")]
         [SerializeField] private Transform? feedbackTarget;
@@ -91,6 +92,7 @@ namespace Rescue.Unity.UI
 
         [Header("Pressure")]
         [SerializeField] private float acuteShakeAmount = 0.05f;
+        [SerializeField] private float failedShakeAmount = 0.04f;
 
         [Header("Curves")]
         [SerializeField] private AnimationCurve? insertCurve;
@@ -153,12 +155,16 @@ namespace Rescue.Unity.UI
 
         public void PlayAcuteFeedback()
         {
-            PlayRoutine(CreateShakeRoutine(acuteShakeDurationSeconds, acuteShakeAmount, ResolveShakeCurve()));
+            PlayRoutine(CreatePressureShakeRoutine(
+                acuteShakeDurationSeconds,
+                acuteShakeAmount,
+                DefaultPulseScaleMultiplier,
+                ResolveShakeCurve()));
         }
 
         public void PlayFailedFeedback()
         {
-            PlayRoutine(CreatePulseRoutine(failedPulseDurationSeconds, FailedHoldScaleMultiplier, ResolvePulseCurve(), holdAtEnd: true));
+            PlayRoutine(CreateFailedHoldRoutine(failedPulseDurationSeconds));
         }
 
         public void PlayTripleClearFeedback()
@@ -273,7 +279,11 @@ namespace Rescue.Unity.UI
             target.localScale = holdAtEnd ? peakScale : baseScale;
         }
 
-        private IEnumerator CreateShakeRoutine(float duration, float amount, AnimationCurve curve)
+        private IEnumerator CreatePressureShakeRoutine(
+            float duration,
+            float amount,
+            float peakScaleMultiplier,
+            AnimationCurve curve)
         {
             if (!TryGetTarget(out Transform target))
             {
@@ -282,6 +292,8 @@ namespace Rescue.Unity.UI
 
             float safeDuration = Mathf.Max(0.01f, duration);
             float safeAmount = Mathf.Max(0f, amount);
+            Vector3 baseScale = _baseLocalScale;
+            Vector3 peakScale = baseScale * Mathf.Max(1f, peakScaleMultiplier);
             float elapsed = 0f;
 
             while (elapsed < safeDuration)
@@ -290,11 +302,52 @@ namespace Rescue.Unity.UI
                 float normalized = Mathf.Clamp01(elapsed / safeDuration);
                 float strength = Mathf.Clamp01(1f - normalized);
                 float wave = curve.Evaluate(normalized) * safeAmount * strength;
+                float pulse = Mathf.Sin(normalized * Mathf.PI) * strength;
+
                 target.localPosition = _baseLocalPosition + new Vector3(Mathf.Sin(normalized * Mathf.PI * 8f) * wave, 0f, 0f);
+                target.localScale = Vector3.LerpUnclamped(baseScale, peakScale, pulse);
                 yield return null;
             }
 
             target.localPosition = _baseLocalPosition;
+            target.localScale = baseScale;
+        }
+
+        private IEnumerator CreateFailedHoldRoutine(float durationSeconds)
+        {
+            if (!TryGetTarget(out Transform target))
+            {
+                yield break;
+            }
+
+            float duration = Mathf.Max(0.01f, durationSeconds);
+            float settleDuration = duration * 0.65f;
+            float holdDuration = duration - settleDuration;
+            float elapsed = 0f;
+            Vector3 baseScale = _baseLocalScale;
+            Vector3 holdScale = baseScale * FailedHoldScaleMultiplier;
+            AnimationCurve curve = ResolveShakeCurve();
+
+            while (elapsed < settleDuration)
+            {
+                elapsed += Time.deltaTime;
+                float normalized = Mathf.Clamp01(elapsed / settleDuration);
+                float strength = Mathf.Clamp01(1f - normalized);
+                float wave = curve.Evaluate(normalized) * Mathf.Max(0f, failedShakeAmount) * strength;
+                float pulse = Mathf.Sin(normalized * Mathf.PI);
+
+                target.localPosition = _baseLocalPosition + new Vector3(Mathf.Sin(normalized * Mathf.PI * 10f) * wave, 0f, 0f);
+                target.localScale = Vector3.LerpUnclamped(baseScale, holdScale, Mathf.Max(normalized, pulse * 0.75f));
+                yield return null;
+            }
+
+            target.localPosition = _baseLocalPosition;
+            target.localScale = holdScale;
+
+            if (holdDuration > 0f)
+            {
+                yield return new WaitForSeconds(holdDuration);
+            }
         }
 
         private IEnumerator CreateTripleClearRoutine(float durationSeconds)
@@ -309,16 +362,21 @@ namespace Rescue.Unity.UI
             float elapsed = 0f;
             Vector3 baseScale = _baseLocalScale;
             Vector3 minScale = baseScale * TripleClearMinScaleMultiplier;
+            Vector3 popScale = baseScale * TripleClearPopScaleMultiplier;
 
             while (elapsed < duration)
             {
                 elapsed += Time.deltaTime;
                 float normalized = Mathf.Clamp01(elapsed / duration);
-                float eased = normalized * normalized;
-                target.localScale = Vector3.LerpUnclamped(baseScale, minScale, eased);
+                float eased = normalized < 0.55f
+                    ? Mathf.SmoothStep(0f, 1f, normalized / 0.55f)
+                    : Mathf.SmoothStep(1f, 0f, (normalized - 0.55f) / 0.45f);
+                target.localScale = normalized < 0.55f
+                    ? Vector3.LerpUnclamped(baseScale, minScale, eased)
+                    : Vector3.LerpUnclamped(minScale, popScale, 1f - eased);
                 if (canvasGroup != null)
                 {
-                    canvasGroup.alpha = 1f - eased;
+                    canvasGroup.alpha = Mathf.Lerp(_baseAlpha, _baseAlpha * 0.65f, Mathf.Sin(normalized * Mathf.PI));
                 }
 
                 yield return null;

@@ -42,6 +42,21 @@ namespace Rescue.Unity.Water.Tests
         }
 
         [Test]
+        public void WaterViewPresenter_RebuildFailsSoftWhenGridReferenceMissing()
+        {
+            GameObject presenterObject = CreateTrackedObject("WaterPresenter");
+            WaterViewPresenter presenter = presenterObject.AddComponent<WaterViewPresenter>();
+
+            Assert.DoesNotThrow(() => presenter.RebuildWater(CreateState(width: 6, height: 7, floodedRows: 2)));
+            Assert.DoesNotThrow(() => presenter.AnimateForecastTransition(
+                CreateState(width: 6, height: 7, floodedRows: 1, actionsUntilRise: 2),
+                CreateState(width: 6, height: 7, floodedRows: 1, actionsUntilRise: 1)));
+            Assert.DoesNotThrow(() => presenter.AnimateWaterRise(
+                CreateState(width: 6, height: 7, floodedRows: 1, actionsUntilRise: 1),
+                CreateState(width: 6, height: 7, floodedRows: 2, actionsUntilRise: 5)));
+        }
+
+        [Test]
         public void WaterFeedbackPresenter_DoesNotThrowWithMissingArt()
         {
             BoardGridViewPresenter gridPresenter = CreateGridPresenter(out _);
@@ -196,6 +211,23 @@ namespace Rescue.Unity.Water.Tests
         }
 
         [Test]
+        public void WaterViewPresenter_WarningAndRiseFeedbackRunSafely()
+        {
+            BoardGridViewPresenter gridPresenter = CreateGridPresenter(out _);
+            GameState baselineState = CreateState(width: 6, height: 7, floodedRows: 1, actionsUntilRise: 2);
+            GameState warningState = CreateState(width: 6, height: 7, floodedRows: 1, actionsUntilRise: 1);
+            GameState riseState = CreateState(width: 6, height: 7, floodedRows: 2, actionsUntilRise: 5);
+            gridPresenter.RebuildGrid(riseState);
+
+            WaterViewPresenter presenter = CreateWaterPresenter(gridPresenter, useFallbackOverlay: true);
+            presenter.SyncImmediate(baselineState);
+
+            Assert.DoesNotThrow(() => presenter.AnimateForecastTransition(baselineState, warningState, durationSeconds: 0.05f));
+            Assert.DoesNotThrow(() => presenter.AnimateWaterRise(warningState, riseState, preferredFloodedRow: 5, durationSeconds: 0.15f));
+            Assert.That(GetNamedChild(GetWaterRoot(presenter), "FloodedRow_05"), Is.Not.Null);
+        }
+
+        [Test]
         public void WaterViewPresenter_AnimateWaterRisePromotesForecastOverlayWithoutExtraOverlayPop()
         {
             BoardGridViewPresenter gridPresenter = CreateGridPresenter(out _);
@@ -271,6 +303,28 @@ namespace Rescue.Unity.Water.Tests
             presenter.ForceSyncToState(currentState);
 
             Assert.That(waterRoot.childCount, Is.EqualTo(4));
+        }
+
+        [Test]
+        public void WaterViewPresenter_ForceSyncToStateRepairsOverlayTransformsAfterPlayback()
+        {
+            BoardGridViewPresenter gridPresenter = CreateGridPresenter(out _);
+            GameState state = CreateState(width: 6, height: 7, floodedRows: 2, actionsUntilRise: 1);
+            gridPresenter.RebuildGrid(state);
+
+            WaterViewPresenter presenter = CreateWaterPresenter(gridPresenter, useFallbackOverlay: true);
+            presenter.SyncImmediate(state);
+
+            Transform forecast = GetNamedChild(GetWaterRoot(presenter), "ForecastRow_04");
+            forecast.localScale = new Vector3(99f, 99f, 99f);
+            forecast.localPosition = new Vector3(99f, 99f, 99f);
+
+            presenter.ForceSyncToState(state);
+
+            Assert.That(gridPresenter.TryGetRowWorldBounds(4, out BoardGridViewPresenter.RowWorldBounds rowBounds), Is.True);
+            Transform repairedForecast = GetNamedChild(GetWaterRoot(presenter), "ForecastRow_04");
+            Assert.That(repairedForecast.position, Is.EqualTo(rowBounds.Center + new Vector3(0f, 0.1f, 0f)));
+            Assert.That(repairedForecast.localScale.x, Is.EqualTo(rowBounds.Width).Within(0.001f));
         }
 
         [Test]

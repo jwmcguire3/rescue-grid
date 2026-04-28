@@ -20,7 +20,7 @@ namespace Rescue.Unity.Art.Tests
         {
             PrefabTraceReport report = DebrisInstanceTracer.TracePrefabAsset(DebrisCPrefabPath);
 
-            Assert.That(report.ModelAssetPath, Does.EndWith("Meshy_AI_Knot_of_Colors_0424154848_texture.fbx"));
+            Assert.That(report.ModelAssetPath, Does.EndWith("Meshy_AI_Multicolored_Rope_Kno_0428040509_texture.fbx"));
             Assert.That(report.FirstNonIdentityTransform, Is.Not.Null);
             Assert.That(report.FirstNonIdentityTransform!.Path, Does.Contain("/Visual"));
         }
@@ -32,7 +32,7 @@ namespace Rescue.Unity.Art.Tests
             ModelTraceReport modelReport = DebrisInstanceTracer.TraceModelAsset(prefabReport.ModelAssetPath);
 
             Assert.That(modelReport.Nodes.Count, Is.GreaterThan(0));
-            Assert.That(modelReport.ModelAssetPath, Does.EndWith("Meshy_AI_Knot_of_Colors_0424154848_texture.fbx"));
+            Assert.That(modelReport.ModelAssetPath, Does.EndWith("Meshy_AI_Multicolored_Rope_Kno_0428040509_texture.fbx"));
             Assert.That(modelReport.Nodes[0].Path, Does.Contain(modelReport.ModelName));
 
             if (modelReport.FirstOffsetTransform is not null)

@@ -115,6 +115,27 @@ namespace Rescue.Unity.UI.Tests
         }
 
         [Test]
+        public void DockFeedbackPresenter_ForceSyncRepairsScaleAndPositionAfterFailedHold()
+        {
+            GameObject presenterObject = CreateTrackedObject("DockFeedbackPresenter");
+            DockFeedbackPresenter presenter = presenterObject.AddComponent<DockFeedbackPresenter>();
+            GameObject targetObject = CreateTrackedObject("DockFeedbackTarget");
+            targetObject.transform.localScale = new Vector3(2f, 1f, 1f);
+            targetObject.transform.localPosition = new Vector3(3f, 0f, 0f);
+
+            presenter.SetFeedbackTarget(targetObject.transform);
+            presenter.ForceSyncToState(7, 7);
+
+            Assert.That(targetObject.transform.localScale.x, Is.GreaterThan(2f));
+
+            targetObject.transform.localPosition = new Vector3(99f, 0f, 0f);
+            presenter.ForceSyncToState(2, 7);
+
+            Assert.That(targetObject.transform.localScale, Is.EqualTo(new Vector3(2f, 1f, 1f)));
+            Assert.That(targetObject.transform.localPosition, Is.EqualTo(new Vector3(3f, 0f, 0f)));
+        }
+
+        [Test]
         public void DockFeedbackPresenter_ApplyPlaybackSettingsOverridesFeedbackDurations()
         {
             GameObject presenterObject = CreateTrackedObject("DockFeedbackPresenter");
@@ -355,6 +376,19 @@ namespace Rescue.Unity.UI.Tests
             Assert.That(presenter.GetTrackedSlotObject(0), Is.SameAs(slotZeroBefore));
             Assert.That(presenter.GetTrackedSlotObject(1), Is.SameAs(slotOneBefore));
             Assert.That(pieceContainer.childCount, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void DockViewPresenter_FeedbackMethodsFailSoftWhenVisualReferencesAreMissing()
+        {
+            GameObject presenterObject = CreateTrackedObject("DockPresenter");
+            DockViewPresenter presenter = presenterObject.AddComponent<DockViewPresenter>();
+
+            Assert.DoesNotThrow(() => presenter.PlayInsertFeedback(new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 1, OverflowCount: 0)));
+            Assert.DoesNotThrow(() => presenter.PlayClearFeedback(new DockCleared(DebrisType.A, SetsCleared: 1, OccupancyAfterClear: 0)));
+            Assert.DoesNotThrow(() => presenter.PlayWarningFeedback(new DockWarningChanged(DockWarningLevel.Safe, DockWarningLevel.Acute)));
+            Assert.DoesNotThrow(() => presenter.PlayJamFeedback(new DockJamTriggered(OverflowCount: 1)));
+            Assert.DoesNotThrow(() => presenter.PlayOverflowFeedback(new DockOverflowTriggered(OverflowCount: 1)));
         }
 
         [Test]

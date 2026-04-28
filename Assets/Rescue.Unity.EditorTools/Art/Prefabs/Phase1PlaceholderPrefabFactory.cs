@@ -234,7 +234,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             Material? debrisCMaterial = CreateOrUpdateTexturedMaterial(
                 CombinePath(materialsPath, "Debris_C_Phase1.mat"),
                 shader,
-                CombinePath(artRootPath, "Textures", "Pieces", "Meshy_AI_Knot_of_Colors_0424154848_texture.png"));
+                CombinePath(artRootPath, "Textures", "Pieces", "Meshy_AI_Multicolored_Rope_Kno_0428040509_texture.png"));
             Material? debrisDMaterial = CreateOrUpdateTexturedMaterial(
                 CombinePath(materialsPath, "Debris_D_Phase1.mat"),
                 shader,
@@ -322,7 +322,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 DebrisSizingProfile);
             GameObject? debrisCPrefab = CreateMeshWrapperPrefab(
                 CombinePath(prefabsPath, PiecesFolderName, "Debris_C_Phase1.prefab"),
-                CombinePath(artRootPath, "Models", "Pieces", "Meshy_AI_Knot_of_Colors_0424154848_texture.fbx"),
+                CombinePath(artRootPath, "Models", "Pieces", "Meshy_AI_Multicolored_Rope_Kno_0428040509_texture.fbx"),
                 debrisCMaterial,
                 DebrisSizingProfile);
             GameObject? debrisDPrefab = CreateMeshWrapperPrefab(
