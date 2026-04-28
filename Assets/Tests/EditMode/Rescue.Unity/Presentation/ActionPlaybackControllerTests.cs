@@ -7,6 +7,7 @@ using Rescue.Core.Pipeline;
 using Rescue.Core.Rng;
 using Rescue.Core.State;
 using Rescue.Unity.BoardPresentation;
+using Rescue.Unity.Feedback;
 using Rescue.Unity.FX;
 using Rescue.Unity.UI;
 using UnityEngine;
@@ -446,6 +447,130 @@ namespace Rescue.Unity.Presentation.Tests
 
             Assert.That(finalSyncCalls, Is.EqualTo(1));
             Assert.That(harness.Controller.IsPlaying, Is.False);
+        }
+
+        [Test]
+        public void ActionPlaybackController_RoutesAudioOnceForRelevantPlaybackSteps()
+        {
+            ControllerHarness harness = CreateControllerHarness(
+                playbackEnabled: true,
+                yieldBetweenSteps: false,
+                audioRouterType: typeof(SpyAudioEventRouter));
+            SpyAudioEventRouter audioRouter = (SpyAudioEventRouter)harness.AudioRouter!;
+            audioRouter.Registry = CreateAudioRegistry(
+                Entry(FeedbackEventId.GroupClear),
+                Entry(FeedbackEventId.DockInsert),
+                Entry(FeedbackEventId.GravitySettle),
+                Entry(FeedbackEventId.SpawnLand),
+                Entry(FeedbackEventId.WaterRise));
+            GameState previousState = CreateState();
+            harness.GridPresenter.RebuildGrid(previousState);
+
+            ActionResult result = CreateResult(
+                previousState,
+                actionCount: 6,
+                new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1))),
+                new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 1, OverflowCount: 0),
+                new GravitySettled(ImmutableArray.Create((new TileCoord(0, 0), new TileCoord(1, 0)))),
+                new Spawned(ImmutableArray.Create((new TileCoord(0, 0), DebrisType.C))),
+                new WaterRose(FloodedRow: 1));
+
+            bool handled = harness.Controller.TryPlayAction(
+                previousState,
+                new ActionInput(new TileCoord(0, 0)),
+                result,
+                _ => { });
+
+            Assert.That(handled, Is.True);
+            Assert.That(audioRouter.PlayedIds, Is.EqualTo(new[]
+            {
+                FeedbackEventId.GroupClear,
+                FeedbackEventId.DockInsert,
+                FeedbackEventId.GravitySettle,
+                FeedbackEventId.SpawnLand,
+                FeedbackEventId.WaterRise,
+            }));
+        }
+
+        [Test]
+        public void ActionPlaybackController_DoesNotRouteResultOnlyAudioDuringPlayback()
+        {
+            ControllerHarness harness = CreateControllerHarness(
+                playbackEnabled: true,
+                yieldBetweenSteps: false,
+                audioRouterType: typeof(SpyAudioEventRouter));
+            SpyAudioEventRouter audioRouter = (SpyAudioEventRouter)harness.AudioRouter!;
+            audioRouter.Registry = CreateAudioRegistry(
+                Entry(FeedbackEventId.WaterWarning),
+                Entry(FeedbackEventId.VinePreview),
+                Entry(FeedbackEventId.VineGrow),
+                Entry(FeedbackEventId.Win),
+                Entry(FeedbackEventId.LossDockOverflow));
+            GameState previousState = CreateState();
+
+            ActionResult result = CreateResult(
+                previousState with { Frozen = true },
+                actionCount: 7,
+                new WaterWarning(ActionsUntilRise: 1, NextFloodRow: 1),
+                new VinePreviewChanged(new TileCoord(1, 0)),
+                new VineGrown(new TileCoord(1, 0)),
+                new Won("pup-1", TotalActions: 7, ExtractedTargetOrder: ImmutableArray.Create("pup-1")));
+
+            bool handled = harness.Controller.TryPlayAction(
+                previousState,
+                new ActionInput(new TileCoord(0, 0)),
+                result,
+                _ => { });
+
+            Assert.That(handled, Is.True);
+            Assert.That(audioRouter.PlayedIds, Is.Empty);
+        }
+
+        [Test]
+        public void ActionPlaybackController_AudioFailureDoesNotPreventFinalSync()
+        {
+            ControllerHarness harness = CreateControllerHarness(
+                playbackEnabled: true,
+                yieldBetweenSteps: false,
+                audioRouterType: typeof(ThrowingAudioEventRouter));
+            ThrowingAudioEventRouter audioRouter = (ThrowingAudioEventRouter)harness.AudioRouter!;
+            audioRouter.Registry = CreateAudioRegistry(Entry(FeedbackEventId.GroupClear));
+            GameState previousState = CreateState();
+            ActionResult result = CreateResult(
+                previousState,
+                actionCount: 6,
+                new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1))));
+            int finalSyncCalls = 0;
+
+            Assert.DoesNotThrow(() =>
+            {
+                bool handled = harness.Controller.TryPlayAction(
+                    previousState,
+                    new ActionInput(new TileCoord(0, 0)),
+                    result,
+                    _ => finalSyncCalls++);
+                Assert.That(handled, Is.True);
+            });
+
+            Assert.That(finalSyncCalls, Is.EqualTo(1));
+            Assert.That(harness.Controller.IsPlaying, Is.False);
+        }
+
+        [Test]
+        public void ActionPlaybackController_MissingAudioRouterDoesNotThrow()
+        {
+            ActionPlaybackController controller = CreateController(playbackEnabled: true, yieldBetweenSteps: false);
+            ActionResult result = CreateResult(actionCount: 3);
+
+            Assert.DoesNotThrow(() =>
+            {
+                bool handled = controller.TryPlayAction(
+                    CreateState(),
+                    new ActionInput(new TileCoord(0, 0)),
+                    result,
+                    _ => { });
+                Assert.That(handled, Is.True);
+            });
         }
 
         [Test]
@@ -1069,12 +1194,19 @@ namespace Rescue.Unity.Presentation.Tests
             return controller;
         }
 
-        private ControllerHarness CreateControllerHarness(bool playbackEnabled, bool yieldBetweenSteps, Type? fxRouterType = null)
+        private ControllerHarness CreateControllerHarness(
+            bool playbackEnabled,
+            bool yieldBetweenSteps,
+            Type? fxRouterType = null,
+            Type? audioRouterType = null)
         {
-            return CreateControllerHarness(CreateSettings(playbackEnabled, yieldBetweenSteps), fxRouterType);
+            return CreateControllerHarness(CreateSettings(playbackEnabled, yieldBetweenSteps), fxRouterType, audioRouterType);
         }
 
-        private ControllerHarness CreateControllerHarness(ActionPlaybackSettings settings, Type? fxRouterType = null)
+        private ControllerHarness CreateControllerHarness(
+            ActionPlaybackSettings settings,
+            Type? fxRouterType = null,
+            Type? audioRouterType = null)
         {
             GameObject presenterObject = CreateTrackedGameObject("PlaybackHarness");
             BoardGridViewPresenter gridPresenter = presenterObject.AddComponent<BoardGridViewPresenter>();
@@ -1134,6 +1266,12 @@ namespace Rescue.Unity.Presentation.Tests
 
             FxEventRouter fxRouter = (FxEventRouter)presenterObject.AddComponent(fxRouterType ?? typeof(SpyFxEventRouter));
             fxRouter.BoardGrid = gridPresenter;
+            AudioEventRouter? audioRouter = null;
+            if (audioRouterType is not null)
+            {
+                audioRouter = (AudioEventRouter)presenterObject.AddComponent(audioRouterType);
+                audioRouter.BoardGrid = gridPresenter;
+            }
 
             ActionPlaybackController controller = presenterObject.AddComponent<ActionPlaybackController>();
             SetPrivateField(controller, "settings", settings);
@@ -1142,6 +1280,7 @@ namespace Rescue.Unity.Presentation.Tests
             SetPrivateField(controller, "waterView", waterPresenter);
             SetPrivateField(controller, "dockView", dockPresenter);
             SetPrivateField(controller, "fxEventRouter", fxRouter);
+            SetPrivateField(controller, "audioEventRouter", audioRouter);
 
             return new ControllerHarness(
                 controller,
@@ -1150,6 +1289,7 @@ namespace Rescue.Unity.Presentation.Tests
                 waterPresenter,
                 dockPresenter,
                 fxRouter,
+                audioRouter,
                 contentRoot,
                 waterRoot,
                 dockPieceContainer,
@@ -1172,6 +1312,31 @@ namespace Rescue.Unity.Presentation.Tests
             SetPrivateField(settings, "waterRiseDurationSeconds", 0.15f);
             SetPrivateField(settings, "waterForecastTransitionDurationSeconds", 0.10f);
             return settings;
+        }
+
+        private AudioFeedbackRegistry CreateAudioRegistry(params AudioFeedbackEntry[] entries)
+        {
+            AudioFeedbackRegistry registry = ScriptableObject.CreateInstance<AudioFeedbackRegistry>();
+            registry.SetEntries(entries);
+            createdObjects.Add(registry);
+            return registry;
+        }
+
+        private AudioFeedbackEntry Entry(FeedbackEventId eventId)
+        {
+            return new AudioFeedbackEntry(
+                eventId,
+                new[] { CreateAudioClip(eventId.ToString()) },
+                volume: 0.7f,
+                pitchVariance: 0f,
+                maxPlaysPerRoute: 1);
+        }
+
+        private AudioClip CreateAudioClip(string name)
+        {
+            AudioClip clip = AudioClip.Create(name, lengthSamples: 32, channels: 1, frequency: 8000, stream: false);
+            createdObjects.Add(clip);
+            return clip;
         }
 
         private static void SetPrivateField(object target, string fieldName, object? value)
@@ -1382,6 +1547,7 @@ namespace Rescue.Unity.Presentation.Tests
                 WaterViewPresenter waterPresenter,
                 DockViewPresenter dockPresenter,
                 FxEventRouter fxRouter,
+                AudioEventRouter? audioRouter,
                 Transform contentRoot,
                 Transform waterRoot,
                 Transform dockPieceContainer,
@@ -1394,6 +1560,7 @@ namespace Rescue.Unity.Presentation.Tests
                 WaterPresenter = waterPresenter;
                 DockPresenter = dockPresenter;
                 FxRouter = fxRouter;
+                AudioRouter = audioRouter;
                 ContentRoot = contentRoot;
                 WaterRoot = waterRoot;
                 DockPieceContainer = dockPieceContainer;
@@ -1412,6 +1579,8 @@ namespace Rescue.Unity.Presentation.Tests
             public DockViewPresenter DockPresenter { get; }
 
             public FxEventRouter FxRouter { get; }
+
+            public AudioEventRouter? AudioRouter { get; }
 
             public Transform ContentRoot { get; }
 
@@ -1456,6 +1625,31 @@ namespace Rescue.Unity.Presentation.Tests
             protected override void PlayGroupClear(Vector3 worldPosition)
             {
                 throw new InvalidOperationException("Synthetic FX failure.");
+            }
+        }
+
+        private sealed class SpyAudioEventRouter : AudioEventRouter
+        {
+            private readonly List<FeedbackEventId> playedIds = new List<FeedbackEventId>();
+
+            public IReadOnlyList<FeedbackEventId> PlayedIds => playedIds;
+
+            protected override void PlayClip(AudioClip clip, AudioFeedbackEntry entry, Vector3 worldPosition)
+            {
+                _ = clip;
+                _ = worldPosition;
+                playedIds.Add(entry.EventId);
+            }
+        }
+
+        private sealed class ThrowingAudioEventRouter : AudioEventRouter
+        {
+            protected override void PlayClip(AudioClip clip, AudioFeedbackEntry entry, Vector3 worldPosition)
+            {
+                _ = clip;
+                _ = entry;
+                _ = worldPosition;
+                throw new InvalidOperationException("Synthetic audio failure.");
             }
         }
     }

@@ -411,6 +411,11 @@ namespace Rescue.Unity.Presentation
 
         private void TryRoutePlaybackAudio(ActionPlaybackStep step, GameState previousState, ActionInput input, GameState resultState)
         {
+            if (!IsAudioPlaybackBeat(step.SourceEvent))
+            {
+                return;
+            }
+
             AudioEventRouter? router = ResolveAudioEventRouter();
             if (router is null)
             {
@@ -429,6 +434,23 @@ namespace Rescue.Unity.Presentation
                     $"{nameof(ActionPlaybackController)} skipped audio for playback step '{step.SourceEventName ?? step.StepType.ToString()}' after an exception: {exception.Message}",
                     this);
             }
+        }
+
+        private static bool IsAudioPlaybackBeat(ActionEvent? actionEvent)
+        {
+            return actionEvent is GroupRemoved
+                or BlockerDamaged
+                or BlockerBroken
+                or IceRevealed
+                or DockInserted
+                or DockCleared
+                or DockWarningChanged
+                or DockOverflowTriggered
+                or DockJamTriggered
+                or GravitySettled
+                or Spawned
+                or TargetExtracted
+                or WaterRose;
         }
 
         private void ApplyPlaybackSettingsToPresenters()

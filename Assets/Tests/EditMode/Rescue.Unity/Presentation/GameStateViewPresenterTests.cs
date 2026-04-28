@@ -6,6 +6,7 @@ using Rescue.Core.Pipeline;
 using Rescue.Core.Rng;
 using Rescue.Core.State;
 using Rescue.Unity.BoardPresentation;
+using Rescue.Unity.Feedback;
 using Rescue.Unity.Presentation;
 using Rescue.Unity.UI;
 using UnityEngine;
@@ -379,6 +380,143 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
+        public void GameStateViewPresenter_RoutesResultAudioForNonPlaybackSignals()
+        {
+            PresenterHarness harness = CreateHarness(audioRouterType: typeof(SpyAudioEventRouter));
+            SpyAudioEventRouter audioRouter = (SpyAudioEventRouter)harness.AudioRouter!;
+            audioRouter.Registry = CreateAudioRegistry(
+                Entry(FeedbackEventId.InvalidTap),
+                Entry(FeedbackEventId.WaterWarning),
+                Entry(FeedbackEventId.TargetOneClearAway),
+                Entry(FeedbackEventId.VinePreview),
+                Entry(FeedbackEventId.VineGrow),
+                Entry(FeedbackEventId.Win),
+                Entry(FeedbackEventId.LossWaterOnTarget));
+            GameState previousState = CreateState();
+            ActionResult result = new ActionResult(
+                previousState with { Frozen = true },
+                ImmutableArray.Create<ActionEvent>(
+                    new InvalidInput(new TileCoord(0, 0), InvalidInputReason.SingleTile),
+                    new WaterWarning(ActionsUntilRise: 1, NextFloodRow: 1),
+                    new TargetOneClearAway("puppy-1", new TileCoord(0, 2)),
+                    new VinePreviewChanged(new TileCoord(1, 1)),
+                    new VineGrown(new TileCoord(1, 1)),
+                    new Won("puppy-1", TotalActions: 5, ExtractedTargetOrder: ImmutableArray.Create("puppy-1")),
+                    new Lost(ActionOutcome.LossDistressedExpired)),
+                ActionOutcome.Win,
+                Snapshot: null);
+
+            harness.Presenter.ApplyActionResult(previousState, new ActionInput(new TileCoord(0, 0)), result);
+
+            Assert.That(audioRouter.PlayedIds, Is.EqualTo(new[]
+            {
+                FeedbackEventId.InvalidTap,
+                FeedbackEventId.WaterWarning,
+                FeedbackEventId.TargetOneClearAway,
+                FeedbackEventId.VinePreview,
+                FeedbackEventId.VineGrow,
+                FeedbackEventId.Win,
+                FeedbackEventId.LossWaterOnTarget,
+            }));
+        }
+
+        [Test]
+        public void GameStateViewPresenter_AudioFailureDoesNotPreventFinalSync()
+        {
+            PresenterHarness harness = CreateHarness(audioRouterType: typeof(ThrowingAudioEventRouter));
+            ThrowingAudioEventRouter audioRouter = (ThrowingAudioEventRouter)harness.AudioRouter!;
+            audioRouter.Registry = CreateAudioRegistry(Entry(FeedbackEventId.InvalidTap));
+            GameState previousState = CreateState();
+            GameState resultState = previousState with { ActionCount = previousState.ActionCount + 1 };
+            ActionResult result = new ActionResult(
+                resultState,
+                ImmutableArray.Create<ActionEvent>(new InvalidInput(new TileCoord(0, 0), InvalidInputReason.SingleTile)),
+                ActionOutcome.Ok,
+                Snapshot: null);
+
+            Assert.DoesNotThrow(() => harness.Presenter.ApplyActionResult(
+                previousState,
+                new ActionInput(new TileCoord(0, 0)),
+                result));
+
+            Assert.That(harness.Presenter.CurrentState, Is.EqualTo(resultState));
+        }
+
+        [Test]
+        public void GameStateViewPresenter_MissingAudioRouterDoesNotThrow()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState previousState = CreateState();
+            GameState resultState = previousState with { ActionCount = previousState.ActionCount + 1 };
+            ActionResult result = new ActionResult(
+                resultState,
+                ImmutableArray.Create<ActionEvent>(new InvalidInput(new TileCoord(0, 0), InvalidInputReason.SingleTile)),
+                ActionOutcome.Ok,
+                Snapshot: null);
+
+            Assert.DoesNotThrow(() => harness.Presenter.ApplyActionResult(
+                previousState,
+                new ActionInput(new TileCoord(0, 0)),
+                result));
+
+            Assert.That(harness.Presenter.CurrentState, Is.EqualTo(resultState));
+        }
+
+        [Test]
+        public void GameStateViewPresenter_DoesNotDuplicateWinAudioWhenPlaybackAlsoRuns()
+        {
+            PresenterHarness harness = CreateHarness(
+                withPlaybackController: true,
+                audioRouterType: typeof(SpyAudioEventRouter));
+            SpyAudioEventRouter audioRouter = (SpyAudioEventRouter)harness.AudioRouter!;
+            audioRouter.Registry = CreateAudioRegistry(
+                Entry(FeedbackEventId.TargetExtract),
+                Entry(FeedbackEventId.Win));
+            GameState previousState = CreateState();
+            GameState resultState = CreateWinState(previousState);
+            ActionResult result = new ActionResult(
+                resultState,
+                ImmutableArray.Create<ActionEvent>(
+                    new TargetExtracted("puppy-1", new TileCoord(0, 2)),
+                    new Won("puppy-1", TotalActions: 4, ExtractedTargetOrder: ImmutableArray.Create("puppy-1"))),
+                ActionOutcome.Win,
+                Snapshot: null);
+
+            harness.Presenter.Rebuild(previousState);
+            harness.Presenter.ApplyActionResult(previousState, new ActionInput(new TileCoord(0, 0)), result);
+
+            Assert.That(audioRouter.PlayedIds.Count(id => id == FeedbackEventId.Win), Is.EqualTo(1));
+            Assert.That(audioRouter.PlayedIds.Count(id => id == FeedbackEventId.TargetExtract), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void GameStateViewPresenter_DoesNotDuplicateLossAudioWhenPlaybackAlsoRuns()
+        {
+            PresenterHarness harness = CreateHarness(
+                withPlaybackController: true,
+                audioRouterType: typeof(SpyAudioEventRouter));
+            SpyAudioEventRouter audioRouter = (SpyAudioEventRouter)harness.AudioRouter!;
+            audioRouter.Registry = CreateAudioRegistry(
+                Entry(FeedbackEventId.DockInsert),
+                Entry(FeedbackEventId.LossDockOverflow));
+            GameState previousState = CreateState();
+            GameState resultState = CreateLossState(previousState);
+            ActionResult result = new ActionResult(
+                resultState,
+                ImmutableArray.Create<ActionEvent>(
+                    new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 8, OverflowCount: 1),
+                    new Lost(ActionOutcome.LossDockOverflow)),
+                ActionOutcome.LossDockOverflow,
+                Snapshot: null);
+
+            harness.Presenter.Rebuild(previousState);
+            harness.Presenter.ApplyActionResult(previousState, new ActionInput(new TileCoord(0, 0)), result);
+
+            Assert.That(audioRouter.PlayedIds.Count(id => id == FeedbackEventId.LossDockOverflow), Is.EqualTo(1));
+            Assert.That(audioRouter.PlayedIds.Count(id => id == FeedbackEventId.DockInsert), Is.EqualTo(1));
+        }
+
+        [Test]
         public void GameStateViewPresenter_ForceSyncToStateRepairsVisibleStateAfterMismatch()
         {
             PresenterHarness harness = CreateHarness();
@@ -428,7 +566,8 @@ namespace Rescue.Unity.Presentation.Tests
             bool assignTargetFeedbackToPresenter = true,
             bool withPlaybackController = false,
             bool playbackEnabled = true,
-            bool yieldBetweenSteps = false)
+            bool yieldBetweenSteps = false,
+            System.Type? audioRouterType = null)
         {
             GameObject presenterObject = CreateTrackedGameObject("GameStateViewRoot");
             GameStateViewPresenter presenter = presenterObject.AddComponent<GameStateViewPresenter>();
@@ -512,14 +651,27 @@ namespace Rescue.Unity.Presentation.Tests
                 SetPrivateField(presenter, "targetFeedback", targetFeedback);
             }
 
+            AudioEventRouter? audioRouter = null;
+            if (audioRouterType is not null)
+            {
+                audioRouter = (AudioEventRouter)presenterObject.AddComponent(audioRouterType);
+                audioRouter.BoardGrid = boardGrid;
+                SetPrivateField(presenter, "audioEventRouter", audioRouter);
+            }
+
             if (withPlaybackController)
             {
                 ActionPlaybackController playbackController = presenterObject.AddComponent<ActionPlaybackController>();
                 SetPrivateField(playbackController, "settings", CreateSettings(playbackEnabled, yieldBetweenSteps));
+                SetPrivateField(playbackController, "boardGrid", boardGrid);
+                SetPrivateField(playbackController, "boardContent", boardContent);
+                SetPrivateField(playbackController, "waterView", waterView);
+                SetPrivateField(playbackController, "dockView", dockView);
+                SetPrivateField(playbackController, "audioEventRouter", audioRouter);
                 SetPrivateField(presenter, "playbackController", playbackController);
             }
 
-            return new PresenterHarness(presenter, boardRoot, contentRoot, waterRoot, dockPieceContainer, victoryScreen, lossScreen);
+            return new PresenterHarness(presenter, boardRoot, contentRoot, waterRoot, dockPieceContainer, victoryScreen, lossScreen, audioRouter);
         }
 
         private GameObject CreateTrackedGameObject(string name)
@@ -561,6 +713,31 @@ namespace Rescue.Unity.Presentation.Tests
             SetPrivateField(settings, "playbackEnabled", playbackEnabled);
             SetPrivateField(settings, "yieldBetweenSteps", yieldBetweenSteps);
             return settings;
+        }
+
+        private AudioFeedbackRegistry CreateAudioRegistry(params AudioFeedbackEntry[] entries)
+        {
+            AudioFeedbackRegistry registry = ScriptableObject.CreateInstance<AudioFeedbackRegistry>();
+            registry.SetEntries(entries);
+            createdObjects.Add(registry);
+            return registry;
+        }
+
+        private AudioFeedbackEntry Entry(FeedbackEventId eventId)
+        {
+            return new AudioFeedbackEntry(
+                eventId,
+                new[] { CreateAudioClip(eventId.ToString()) },
+                volume: 0.7f,
+                pitchVariance: 0f,
+                maxPlaysPerRoute: 1);
+        }
+
+        private AudioClip CreateAudioClip(string name)
+        {
+            AudioClip clip = AudioClip.Create(name, lengthSamples: 32, channels: 1, frequency: 8000, stream: false);
+            createdObjects.Add(clip);
+            return clip;
         }
 
         private static GameState CreateState()
@@ -655,7 +832,8 @@ namespace Rescue.Unity.Presentation.Tests
                 Transform waterRoot,
                 Transform dockPieceContainer,
                 VictoryScreenPresenter victoryScreen,
-                LossScreenPresenter lossScreen)
+                LossScreenPresenter lossScreen,
+                AudioEventRouter? audioRouter)
             {
                 Presenter = presenter;
                 BoardRoot = boardRoot;
@@ -664,6 +842,7 @@ namespace Rescue.Unity.Presentation.Tests
                 DockPieceContainer = dockPieceContainer;
                 VictoryScreen = victoryScreen;
                 LossScreen = lossScreen;
+                AudioRouter = audioRouter;
             }
 
             public GameStateViewPresenter Presenter { get; }
@@ -679,6 +858,33 @@ namespace Rescue.Unity.Presentation.Tests
             public VictoryScreenPresenter VictoryScreen { get; }
 
             public LossScreenPresenter LossScreen { get; }
+
+            public AudioEventRouter? AudioRouter { get; }
+        }
+
+        private sealed class SpyAudioEventRouter : AudioEventRouter
+        {
+            private readonly List<FeedbackEventId> playedIds = new List<FeedbackEventId>();
+
+            public IReadOnlyList<FeedbackEventId> PlayedIds => playedIds;
+
+            protected override void PlayClip(AudioClip clip, AudioFeedbackEntry entry, Vector3 worldPosition)
+            {
+                _ = clip;
+                _ = worldPosition;
+                playedIds.Add(entry.EventId);
+            }
+        }
+
+        private sealed class ThrowingAudioEventRouter : AudioEventRouter
+        {
+            protected override void PlayClip(AudioClip clip, AudioFeedbackEntry entry, Vector3 worldPosition)
+            {
+                _ = clip;
+                _ = entry;
+                _ = worldPosition;
+                throw new System.InvalidOperationException("Synthetic audio failure.");
+            }
         }
     }
 }
