@@ -72,7 +72,7 @@ namespace Rescue.Core.Tests.Rules
         }
 
         [Test]
-        public void RescuePathTileBlocksGravityRefill()
+        public void RescuePathTileAllowsDebrisToFallThroughButStaysReserved()
         {
             GameState state = PipelineTestFixtures.CreateState(
                 PipelineTestFixtures.CreateBoard(
@@ -82,10 +82,57 @@ namespace Rescue.Core.Tests.Rules
 
             StepResult result = Step07_Gravity.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
 
-            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(0, 0)), Is.EqualTo(new DebrisTile(DebrisType.A)));
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(0, 0)), Is.TypeOf<EmptyTile>());
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(1, 0)), Is.TypeOf<RescuePathTile>());
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(2, 0)), Is.EqualTo(new DebrisTile(DebrisType.A)));
+            AssertGravityEventsEqual(
+                result.Events,
+                (new TileCoord(0, 0), new TileCoord(2, 0)));
+        }
+
+        [Test]
+        public void RescuePathTileIsSkippedAsGravityDestinationInMixedColumn()
+        {
+            GameState state = PipelineTestFixtures.CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    ImmutableArray.Create<Tile>(new DebrisTile(DebrisType.A)),
+                    ImmutableArray.Create<Tile>(new RescuePathTile(ImmutableArray.Create("target"))),
+                    ImmutableArray.Create<Tile>(new DebrisTile(DebrisType.B)),
+                    ImmutableArray.Create<Tile>(new EmptyTile()),
+                    ImmutableArray.Create<Tile>(new EmptyTile())));
+
+            StepResult result = Step07_Gravity.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
+
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(0, 0)), Is.TypeOf<EmptyTile>());
             Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(1, 0)), Is.TypeOf<RescuePathTile>());
             Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(2, 0)), Is.TypeOf<EmptyTile>());
-            Assert.That(result.Events, Is.Empty);
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(3, 0)), Is.EqualTo(new DebrisTile(DebrisType.A)));
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(4, 0)), Is.EqualTo(new DebrisTile(DebrisType.B)));
+            AssertGravityEventsEqual(
+                result.Events,
+                (new TileCoord(2, 0), new TileCoord(4, 0)),
+                (new TileCoord(0, 0), new TileCoord(3, 0)));
+        }
+
+        [Test]
+        public void GravityMovesSpawnLineageThroughRescuePathTile()
+        {
+            GameState state = PipelineTestFixtures.CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    ImmutableArray.Create<Tile>(new DebrisTile(DebrisType.A)),
+                    ImmutableArray.Create<Tile>(new RescuePathTile(ImmutableArray.Create("target"))),
+                    ImmutableArray.Create<Tile>(new EmptyTile())))
+                with
+                {
+                    SpawnLineageByCoord = ImmutableDictionary<TileCoord, SpawnLineage>.Empty
+                        .Add(new TileCoord(0, 0), new SpawnLineage(8, DebrisType.A, new TileCoord(0, 0))),
+                };
+
+            StepResult result = Step07_Gravity.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
+
+            Assert.That(result.State.SpawnLineageByCoord.ContainsKey(new TileCoord(0, 0)), Is.False);
+            Assert.That(result.State.SpawnLineageByCoord.ContainsKey(new TileCoord(1, 0)), Is.False);
+            Assert.That(result.State.SpawnLineageByCoord[new TileCoord(2, 0)].LineageId, Is.EqualTo(8));
         }
 
         [Test]

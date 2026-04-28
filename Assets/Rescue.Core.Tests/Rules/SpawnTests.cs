@@ -193,7 +193,7 @@ namespace Rescue.Core.Tests.Rules
         }
 
         [Test]
-        public void Step08SpawnDoesNotFillRescuePathTiles()
+        public void Step08SpawnSkipsRescuePathTileButFillsReachableEmptyBelow()
         {
             GameState state = CreateSpawnState(
                 PipelineTestFixtures.CreateBoard(
@@ -204,8 +204,61 @@ namespace Rescue.Core.Tests.Rules
             StepResult result = Step08_Spawn.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
 
             Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(0, 0)), Is.TypeOf<RescuePathTile>());
-            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(1, 0)), Is.TypeOf<EmptyTile>());
-            Assert.That(result.Events, Is.Empty);
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(1, 0)), Is.TypeOf<DebrisTile>());
+            Assert.That(result.Events, Has.Exactly(1).TypeOf<Spawned>());
+            Spawned spawned = (Spawned)result.Events[0];
+            Assert.That(spawned.Pieces.Length, Is.EqualTo(1));
+            Assert.That(spawned.Pieces[0].Coord, Is.EqualTo(new TileCoord(1, 0)));
+        }
+
+        [Test]
+        public void Step08SpawnPassesThroughRescuePathTilesWithoutFillingThem()
+        {
+            GameState state = CreateSpawnState(
+                PipelineTestFixtures.CreateBoard(
+                    Row(new EmptyTile(), new EmptyTile()),
+                    Row(new RescuePathTile(ImmutableArray.Create("target")), new EmptyTile()),
+                    Row(new EmptyTile(), new BlockerTile(BlockerType.Crate, 1, Hidden: null))),
+                assistanceChance: 0.0d);
+
+            StepResult result = Step08_Spawn.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
+
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(0, 0)), Is.TypeOf<DebrisTile>());
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(1, 0)), Is.TypeOf<RescuePathTile>());
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(2, 0)), Is.TypeOf<DebrisTile>());
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(0, 1)), Is.TypeOf<DebrisTile>());
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(1, 1)), Is.TypeOf<DebrisTile>());
+            Assert.That(result.Events, Has.Exactly(1).TypeOf<Spawned>());
+            Spawned spawned = (Spawned)result.Events[0];
+            Assert.That(spawned.Pieces.Length, Is.EqualTo(4));
+            Assert.That(spawned.Pieces[0].Coord, Is.EqualTo(new TileCoord(0, 0)));
+            Assert.That(spawned.Pieces[1].Coord, Is.EqualTo(new TileCoord(2, 0)));
+            Assert.That(spawned.Pieces[2].Coord, Is.EqualTo(new TileCoord(0, 1)));
+            Assert.That(spawned.Pieces[3].Coord, Is.EqualTo(new TileCoord(1, 1)));
+        }
+
+        [Test]
+        public void Step08SpawnPopulatesBelowTargetWhenColumnStartsWithRescuePathTile()
+        {
+            GameState state = CreateSpawnState(
+                PipelineTestFixtures.CreateBoard(
+                    Row(new RescuePathTile(ImmutableArray.Create("target"))),
+                    Row(new TargetTile("target", Extracted: false)),
+                    Row(new EmptyTile()),
+                    Row(new EmptyTile())),
+                assistanceChance: 0.0d);
+
+            StepResult result = Step08_Spawn.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
+
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(0, 0)), Is.TypeOf<RescuePathTile>());
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(1, 0)), Is.TypeOf<TargetTile>());
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(2, 0)), Is.TypeOf<DebrisTile>());
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(3, 0)), Is.TypeOf<DebrisTile>());
+            Assert.That(result.Events, Has.Exactly(1).TypeOf<Spawned>());
+            Spawned spawned = (Spawned)result.Events[0];
+            Assert.That(spawned.Pieces.Length, Is.EqualTo(2));
+            Assert.That(spawned.Pieces[0].Coord, Is.EqualTo(new TileCoord(2, 0)));
+            Assert.That(spawned.Pieces[1].Coord, Is.EqualTo(new TileCoord(3, 0)));
         }
 
         [Test]

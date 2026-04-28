@@ -60,7 +60,7 @@ namespace Rescue.Core.Pipeline.Steps
         {
             Board updatedBoard = board;
             ImmutableDictionary<TileCoord, SpawnLineage> updatedLineage = lineageByCoord;
-            int targetRow = segmentEnd;
+            int targetRow = FindNextFillableRow(updatedBoard, col, segmentEnd, segmentStart);
 
             for (int row = segmentEnd; row >= segmentStart; row--)
             {
@@ -83,12 +83,17 @@ namespace Rescue.Core.Pipeline.Steps
                     events.Add(new GravitySettled(ImmutableArray.Create((sourceCoord, targetCoord))));
                 }
 
-                targetRow--;
+                targetRow = FindNextFillableRow(updatedBoard, col, targetRow - 1, segmentStart);
             }
 
             for (int row = targetRow; row >= segmentStart; row--)
             {
                 TileCoord coord = new TileCoord(row, col);
+                if (BoardHelpers.GetTile(updatedBoard, coord) is RescuePathTile)
+                {
+                    continue;
+                }
+
                 if (BoardHelpers.GetTile(updatedBoard, coord) is not EmptyTile)
                 {
                     updatedBoard = BoardHelpers.SetTile(updatedBoard, coord, new EmptyTile());
@@ -99,9 +104,23 @@ namespace Rescue.Core.Pipeline.Steps
             return (updatedBoard, updatedLineage);
         }
 
+        private static int FindNextFillableRow(Board board, int col, int startRow, int segmentStart)
+        {
+            for (int row = startRow; row >= segmentStart; row--)
+            {
+                Tile tile = BoardHelpers.GetTile(board, new TileCoord(row, col));
+                if (tile is not RescuePathTile)
+                {
+                    return row;
+                }
+            }
+
+            return segmentStart - 1;
+        }
+
         private static bool IsGravityBarrier(Tile tile)
         {
-            return tile is FloodedTile or BlockerTile or TargetTile or RescuePathTile;
+            return tile is FloodedTile or BlockerTile or TargetTile;
         }
     }
 }

@@ -190,7 +190,8 @@ This order is a locked rules contract. If action order is fuzzy, fairness become
 5. **Target state update and extraction latch**
    - All targets update their visible rescue-readiness state.
    - Any open required orthogonal neighbor of an unextracted target becomes locked rescue-path empty.
-   - Locked rescue-path empty tiles remain empty through gravity and spawn until that target extracts.
+   - Locked rescue-path empty tiles remain reserved through gravity and spawn until that target extracts.
+   - Debris may fall through locked rescue-path empty tiles, but cannot land on them or replace them.
    - Any target with all required orthogonal neighbors open becomes extractable immediately.
    - Extractable state latches now.
    - Latching happens before dock insertion, gravity, spawn, and hazard advance.
@@ -234,10 +235,13 @@ This order is a locked rules contract. If action order is fuzzy, fairness become
 
 11. **Gravity settle**
    - Dry, active pieces fall into empty dry spaces.
+   - Locked rescue-path empty tiles are transparent to falling debris, but remain reserved and unoccupied.
    - Gravity does not affect already-latched extraction.
 
 12. **Spawn**
    - New pieces spawn from top into dry space only.
+   - Spawn may pass through locked rescue-path empty tiles to fill reachable empty dry spaces, but cannot occupy the locked tiles.
+   - If a column enters through a locked rescue-path tile above a target, spawn also passes over that target to replenish empty dry spaces below it; the target itself is never occupied.
    - Spawn assistance may apply according to tuning rules.
    - Assisted spawns must be tagged in telemetry.
 
@@ -451,7 +455,7 @@ A target extracts when all required orthogonal neighbors are open.
 - Edge target: all existing orthogonal sides
 - Corner target: 2 sides
 
-Open required neighbors become locked rescue-path empty as soon as target state updates. These tiles are visually distinct from ordinary empty spaces and cannot be refilled by gravity or spawn before the rescue resolves.
+Open required neighbors become locked rescue-path empty as soon as target state updates. These tiles are visually distinct from ordinary empty spaces and cannot be occupied by falling debris or spawn before the rescue resolves. Falling debris may pass through them to lower empty spaces.
 
 ### Extraction latch
 

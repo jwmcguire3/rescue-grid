@@ -234,6 +234,10 @@ namespace Rescue.Unity.Debugging
         private void Update()
         {
             RefreshPlaybackDebugUi();
+            if (TrySyncCurrentStateFromVisualPresenter())
+            {
+                RefreshUi();
+            }
 
             if (!_isPlaying || _currentState is null)
             {
@@ -497,11 +501,13 @@ namespace Rescue.Unity.Debugging
 
         public string ExportStateJson()
         {
+            TrySyncCurrentStateFromVisualPresenter();
             return DebugJson.Serialize(BuildBugReportExport(CurrentState));
         }
 
         public string ExportFullGameStateJson()
         {
+            TrySyncCurrentStateFromVisualPresenter();
             return DebugJson.Serialize(BuildGameStateExport(CurrentState));
         }
 
@@ -600,6 +606,23 @@ namespace Rescue.Unity.Debugging
             }
 
             presenter.ApplyActionResult(previousState, input, result);
+        }
+
+        private bool TrySyncCurrentStateFromVisualPresenter()
+        {
+            GameStateViewPresenter? presenter = ResolveGameStateViewPresenter();
+            if (presenter is null || presenter.IsPlaybackActive || presenter.CurrentState is null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(_currentState, presenter.CurrentState))
+            {
+                return false;
+            }
+
+            _currentState = presenter.CurrentState;
+            return true;
         }
 
         private GameStateViewPresenter? ResolveGameStateViewPresenter()
