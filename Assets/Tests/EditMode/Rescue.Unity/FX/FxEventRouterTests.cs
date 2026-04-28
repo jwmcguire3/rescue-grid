@@ -6,6 +6,7 @@ using Rescue.Core.Rng;
 using Rescue.Core.State;
 using Rescue.Unity.BoardPresentation;
 using Rescue.Unity.Presentation;
+using Rescue.Unity.UI;
 using UnityEngine;
 
 namespace Rescue.Unity.FX.Tests
@@ -258,11 +259,16 @@ namespace Rescue.Unity.FX.Tests
         {
             GameState state = CreateState();
             BoardGridViewPresenter grid = CreateGrid(state);
-            SpyFxEventRouter router = CreateRouter(grid);
+            DockViewPresenter dock = CreateDockView(CreateDockState(DebrisType.A, DebrisType.A, DebrisType.A, null, null, null, null));
+            SpyFxEventRouter router = CreateRouter(grid, dock);
 
             Vector3 expectedGroupPosition =
                 (grid.GetCellWorldPosition(new TileCoord(0, 0)) + grid.GetCellWorldPosition(new TileCoord(0, 1))) * 0.5f;
             Vector3 expectedTargetPosition = grid.GetCellWorldPosition(new TileCoord(2, 1));
+            Vector3 expectedDockInsertPosition =
+                (GetDockSlotPosition(dock, 2) + GetDockSlotPosition(dock, 3)) * 0.5f;
+            Vector3 expectedDockClearPosition =
+                (GetDockSlotPosition(dock, 0) + GetDockSlotPosition(dock, 1) + GetDockSlotPosition(dock, 2)) / 3f;
             bool foundRow = grid.TryGetRowWorldBounds(2, out BoardGridViewPresenter.RowWorldBounds rowBounds);
 
             Assert.That(foundRow, Is.True);
@@ -281,10 +287,28 @@ namespace Rescue.Unity.FX.Tests
                 state,
                 new ActionInput(new TileCoord(0, 0)),
                 state,
+                CreatePlaybackStep(ActionPlaybackStepType.DockFeedback, new DockInserted(
+                    ImmutableArray.Create(DebrisType.B, DebrisType.C),
+                    OccupancyAfterInsert: 4,
+                    OverflowCount: 0)));
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.DockFeedback, new DockCleared(
+                    DebrisType.A,
+                    SetsCleared: 1,
+                    OccupancyAfterClear: 0)));
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
                 CreatePlaybackStep(ActionPlaybackStepType.WaterRise, new WaterRose(FloodedRow: 2)));
 
             AssertVector3Equal(expectedGroupPosition, router.LastGroupClearPosition);
             AssertVector3Equal(expectedTargetPosition, router.LastTargetExtractionPosition);
+            AssertVector3Equal(expectedDockInsertPosition, router.LastDockInsertPosition);
+            AssertVector3Equal(expectedDockClearPosition, router.LastDockTripleClearPosition);
             AssertVector3Equal(rowBounds.Center, router.LastWaterRisePosition);
         }
 
@@ -410,11 +434,12 @@ namespace Rescue.Unity.FX.Tests
             }));
         }
 
-        private SpyFxEventRouter CreateRouter(BoardGridViewPresenter? grid = null)
+        private SpyFxEventRouter CreateRouter(BoardGridViewPresenter? grid = null, DockViewPresenter? dock = null)
         {
             GameObject gameObject = CreateGameObject("SpyFxRouter");
             SpyFxEventRouter router = gameObject.AddComponent<SpyFxEventRouter>();
             router.BoardGrid = grid;
+            router.DockView = dock;
             return router;
         }
 
@@ -492,6 +517,52 @@ namespace Rescue.Unity.FX.Tests
             return gridPresenter;
         }
 
+        private DockViewPresenter CreateDockView(GameState state)
+        {
+            GameObject dockObject = CreateGameObject("Dock");
+            dockObject.transform.position = new Vector3(20f, 3f, -2f);
+            DockViewPresenter dockPresenter = dockObject.AddComponent<DockViewPresenter>();
+            Transform pieceContainer = CreateGameObject("DockPieces").transform;
+            pieceContainer.SetParent(dockObject.transform, false);
+            GameObject fallbackPiecePrefab = CreateGameObject("FallbackPiecePrefab");
+
+            for (int slotIndex = 0; slotIndex < DockViewPresenter.Phase1SlotCount; slotIndex++)
+            {
+                GameObject anchor = CreateGameObject($"Slot_{slotIndex:00}");
+                anchor.transform.SetParent(dockObject.transform, false);
+                anchor.transform.localPosition = new Vector3(slotIndex * 2f, 0.5f, 0f);
+            }
+
+            SetPrivateField(dockPresenter, "pieceContainer", pieceContainer);
+            SetPrivateField(dockPresenter, "fallbackPiecePrefab", fallbackPiecePrefab);
+            dockPresenter.Rebuild(state);
+            return dockPresenter;
+        }
+
+        private static GameState CreateDockState(
+            DebrisType? slot0,
+            DebrisType? slot1,
+            DebrisType? slot2,
+            DebrisType? slot3,
+            DebrisType? slot4,
+            DebrisType? slot5,
+            DebrisType? slot6)
+        {
+            return CreateState() with
+            {
+                Dock = new Dock(
+                    ImmutableArray.Create(slot0, slot1, slot2, slot3, slot4, slot5, slot6),
+                    Size: DockViewPresenter.Phase1SlotCount),
+            };
+        }
+
+        private static Vector3 GetDockSlotPosition(DockViewPresenter dock, int slotIndex)
+        {
+            bool found = dock.TryGetSlotWorldPosition(slotIndex, out Vector3 position);
+            Assert.That(found, Is.True, $"Expected dock slot {slotIndex} to resolve.");
+            return position;
+        }
+
         private static void SetPrivateField(object target, string fieldName, object? value)
         {
             System.Reflection.FieldInfo? field = target.GetType().GetField(
@@ -545,6 +616,10 @@ namespace Rescue.Unity.FX.Tests
 
             public Vector3 LastWaterRisePosition { get; private set; }
 
+            public Vector3 LastDockInsertPosition { get; private set; }
+
+            public Vector3 LastDockTripleClearPosition { get; private set; }
+
             protected override void PlayGroupClear(Vector3 worldPosition)
             {
                 GroupClearCount++;
@@ -581,9 +656,16 @@ namespace Rescue.Unity.FX.Tests
                 DockInsertCount++;
             }
 
+            protected override void PlayDockInsert(Vector3 worldPosition)
+            {
+                DockInsertCount++;
+                LastDockInsertPosition = worldPosition;
+            }
+
             protected override void PlayDockTripleClear(Vector3 worldPosition)
             {
                 DockTripleClearCount++;
+                LastDockTripleClearPosition = worldPosition;
             }
 
             protected override void PlayDockWarning()

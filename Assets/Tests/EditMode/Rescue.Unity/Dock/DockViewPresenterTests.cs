@@ -258,6 +258,30 @@ namespace Rescue.Unity.UI.Tests
         }
 
         [Test]
+        public void DockViewPresenter_ResolvesSlotAndCenterWorldPositions()
+        {
+            GameObject presenterObject = CreateTrackedObject("DockPresenter");
+            presenterObject.transform.position = new Vector3(10f, 2f, -1f);
+            DockViewPresenter presenter = presenterObject.AddComponent<DockViewPresenter>();
+
+            for (int i = 0; i < 7; i++)
+            {
+                Transform anchor = CreateTrackedAnchor(presenterObject.transform, i);
+                anchor.localPosition = new Vector3(i * 0.5f, 1f, 0f);
+            }
+
+            bool foundSlot = presenter.TryGetSlotWorldPosition(3, out Vector3 slotPosition);
+            bool foundCenter = presenter.TryGetDockCenterWorldPosition(out Vector3 centerPosition);
+            bool foundOutOfRange = presenter.TryGetSlotWorldPosition(7, out _);
+
+            Assert.That(foundSlot, Is.True);
+            Assert.That(foundCenter, Is.True);
+            Assert.That(foundOutOfRange, Is.False);
+            Assert.That(slotPosition, Is.EqualTo(new Vector3(11.5f, 3f, -1f)));
+            Assert.That(centerPosition, Is.EqualTo(new Vector3(11.5f, 3f, -1f)));
+        }
+
+        [Test]
         public void DockViewPresenter_ClearSlotsRemovesSpawnedPieces()
         {
             GameObject presenterObject = CreateTrackedObject("DockPresenter");

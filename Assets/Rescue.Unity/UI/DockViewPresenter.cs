@@ -463,7 +463,9 @@ namespace Rescue.Unity.UI
 
     public sealed class DockViewPresenter : MonoBehaviour
     {
-        private const int Phase1DockSize = 7;
+        public const int Phase1SlotCount = 7;
+
+        private const int Phase1DockSize = Phase1SlotCount;
         private const int MaxTrackedDockSlots = 96;
         private const string DefaultPieceContainerName = "DockPieces";
         private const string SharedDockInstanceName = "SharedDockVisualInstance";
@@ -694,6 +696,55 @@ namespace Rescue.Unity.UI
             }
 
             return _trackedSlotObjects[slotIndex];
+        }
+
+        public bool TryGetSlotWorldPosition(int slotIndex, out Vector3 position)
+        {
+            position = Vector3.zero;
+            if (slotIndex < 0)
+            {
+                return false;
+            }
+
+            Transform[] anchors = ResolveSlotAnchors();
+            if (slotIndex >= anchors.Length || anchors[slotIndex] is null)
+            {
+                return false;
+            }
+
+            position = anchors[slotIndex].position;
+            return true;
+        }
+
+        public bool TryGetDockCenterWorldPosition(out Vector3 position)
+        {
+            position = Vector3.zero;
+            Transform[] anchors = ResolveSlotAnchors();
+            if (anchors.Length == 0)
+            {
+                return false;
+            }
+
+            Vector3 accumulated = Vector3.zero;
+            int resolvedCount = 0;
+            for (int i = 0; i < anchors.Length; i++)
+            {
+                if (anchors[i] is null)
+                {
+                    continue;
+                }
+
+                accumulated += anchors[i].position;
+                resolvedCount++;
+            }
+
+            if (resolvedCount == 0)
+            {
+                return false;
+            }
+
+            position = accumulated / resolvedCount;
+            return true;
         }
 
         public string DescribeTrackedSlots()

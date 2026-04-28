@@ -4,6 +4,7 @@ using Rescue.Core.State;
 using Rescue.Unity.Art.Registries;
 using Rescue.Unity.BoardPresentation;
 using Rescue.Unity.Presentation;
+using Rescue.Unity.UI;
 using UnityEngine;
 
 namespace Rescue.Unity.FX
@@ -14,6 +15,7 @@ namespace Rescue.Unity.FX
         [SerializeField] private FxVisualRegistry? fxRegistry;
         [SerializeField] private Transform? fxRoot;
         [SerializeField] private BoardGridViewPresenter? boardGrid;
+        [SerializeField] private DockViewPresenter? dockView;
 
         public FxVisualRegistry? FxRegistry
         {
@@ -31,6 +33,12 @@ namespace Rescue.Unity.FX
         {
             get => boardGrid;
             set => boardGrid = value;
+        }
+
+        public DockViewPresenter? DockView
+        {
+            get => dockView;
+            set => dockView = value;
         }
 
         public void Route(GameState previousState, ActionInput input, ActionResult result)
@@ -122,11 +130,11 @@ namespace Rescue.Unity.FX
                 case IceRevealed revealed:
                     PlayIceReveal(ResolveCellWorldPosition(revealed.Coord));
                     break;
-                case DockCleared:
-                    PlayDockTripleClear(GetSafeFallbackPosition());
+                case DockCleared cleared:
+                    PlayDockTripleClear(ResolveDockClearWorldPosition(cleared));
                     break;
-                case DockInserted:
-                    PlayDockInsert();
+                case DockInserted inserted:
+                    PlayDockInsert(ResolveDockInsertWorldPosition(inserted));
                     break;
                 case DockWarningChanged warningChanged when warningChanged.After != DockWarningLevel.Safe:
                     PlayDockWarning();
@@ -240,6 +248,11 @@ namespace Rescue.Unity.FX
         protected virtual void PlayDockInsert()
         {
             TrySpawn(fxRegistry?.DockInsertFx, nameof(FxVisualRegistry.DockInsertFx));
+        }
+
+        protected virtual void PlayDockInsert(Vector3 worldPosition)
+        {
+            TrySpawn(fxRegistry?.DockInsertFx, nameof(FxVisualRegistry.DockInsertFx), worldPosition);
         }
 
         protected virtual void PlayDockTripleClear()
@@ -359,6 +372,89 @@ namespace Rescue.Unity.FX
             return GetSafeFallbackPosition();
         }
 
+        private Vector3 ResolveDockInsertWorldPosition(DockInserted inserted)
+        {
+            if (inserted.Pieces.IsDefaultOrEmpty)
+            {
+                return ResolveDockCenterWorldPosition();
+            }
+
+            int firstInsertedSlot = Mathf.Max(0, inserted.OccupancyAfterInsert - inserted.Pieces.Length);
+            int lastInsertedSlotExclusive = firstInsertedSlot + inserted.Pieces.Length;
+
+            Vector3 accumulated = Vector3.zero;
+            int resolvedCount = 0;
+            for (int slotIndex = firstInsertedSlot; slotIndex < lastInsertedSlotExclusive; slotIndex++)
+            {
+                if (!TryResolveDockSlotWorldPosition(slotIndex, out Vector3 slotPosition))
+                {
+                    continue;
+                }
+
+                accumulated += slotPosition;
+                resolvedCount++;
+            }
+
+            return resolvedCount > 0
+                ? accumulated / resolvedCount
+                : ResolveDockCenterWorldPosition();
+        }
+
+        private Vector3 ResolveDockClearWorldPosition(DockCleared cleared)
+        {
+            DockViewPresenter? resolvedDockView = ResolveDockView();
+            if (resolvedDockView is not null)
+            {
+                int piecesToClear = Mathf.Max(0, cleared.SetsCleared * 3);
+                Vector3 accumulated = Vector3.zero;
+                int resolvedCount = 0;
+
+                for (int slotIndex = 0; slotIndex < DockViewPresenter.Phase1SlotCount && resolvedCount < piecesToClear; slotIndex++)
+                {
+                    if (resolvedDockView.GetTrackedSlotType(slotIndex) != cleared.Type ||
+                        !resolvedDockView.TryGetSlotWorldPosition(slotIndex, out Vector3 slotPosition))
+                    {
+                        continue;
+                    }
+
+                    accumulated += slotPosition;
+                    resolvedCount++;
+                }
+
+                if (resolvedCount > 0)
+                {
+                    return accumulated / resolvedCount;
+                }
+            }
+
+            return ResolveDockCenterWorldPosition();
+        }
+
+        private Vector3 ResolveDockCenterWorldPosition()
+        {
+            DockViewPresenter? resolvedDockView = ResolveDockView();
+            if (resolvedDockView is not null &&
+                resolvedDockView.TryGetDockCenterWorldPosition(out Vector3 dockCenter))
+            {
+                return dockCenter;
+            }
+
+            return GetSafeFallbackPosition();
+        }
+
+        private bool TryResolveDockSlotWorldPosition(int slotIndex, out Vector3 worldPosition)
+        {
+            DockViewPresenter? resolvedDockView = ResolveDockView();
+            if (resolvedDockView is not null &&
+                resolvedDockView.TryGetSlotWorldPosition(slotIndex, out worldPosition))
+            {
+                return true;
+            }
+
+            worldPosition = GetSafeFallbackPosition();
+            return false;
+        }
+
         private BoardGridViewPresenter? ResolveBoardGrid()
         {
             if (boardGrid is not null)
@@ -368,6 +464,17 @@ namespace Rescue.Unity.FX
 
             boardGrid = GetComponent<BoardGridViewPresenter>();
             return boardGrid;
+        }
+
+        private DockViewPresenter? ResolveDockView()
+        {
+            if (dockView is not null)
+            {
+                return dockView;
+            }
+
+            dockView = GetComponent<DockViewPresenter>();
+            return dockView;
         }
 
         private Vector3 GetSafeFallbackPosition()

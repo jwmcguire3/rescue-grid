@@ -399,6 +399,7 @@ namespace Rescue.Unity.Presentation
             }
 
             router.BoardGrid ??= ResolveBoardGrid();
+            router.DockView ??= ResolveDockView();
 
             try
             {
