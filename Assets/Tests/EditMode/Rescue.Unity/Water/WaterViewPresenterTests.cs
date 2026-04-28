@@ -323,7 +323,7 @@ namespace Rescue.Unity.Water.Tests
 
             Assert.That(gridPresenter.TryGetRowWorldBounds(4, out BoardGridViewPresenter.RowWorldBounds rowBounds), Is.True);
             Transform repairedForecast = GetNamedChild(GetWaterRoot(presenter), "ForecastRow_04");
-            Assert.That(repairedForecast.position, Is.EqualTo(rowBounds.Center + new Vector3(0f, 0.23f, 0f)));
+            Assert.That(repairedForecast.position, Is.EqualTo(rowBounds.Center + new Vector3(0f, 0.38f, 0f)));
             Assert.That(Quaternion.Angle(repairedForecast.rotation, rowBounds.Rotation * Quaternion.Euler(90f, 0f, 0f)), Is.LessThan(0.001f));
             Assert.That(repairedForecast.localScale.x, Is.EqualTo(rowBounds.Width).Within(0.001f));
             Assert.That(repairedForecast.localScale.y, Is.EqualTo(rowBounds.Depth).Within(0.001f));
@@ -351,7 +351,7 @@ namespace Rescue.Unity.Water.Tests
 
             Assert.That(gridPresenter.TryGetRowWorldBounds(4, out BoardGridViewPresenter.RowWorldBounds rowBounds), Is.True);
             Transform forecast = GetNamedChild(GetWaterRoot(presenter), "ForecastRow_04");
-            Vector3 expectedPosition = rowBounds.Center + new Vector3(0f, 0.23f, -rowBounds.Depth * (11f / 12f) * 0.5f);
+            Vector3 expectedPosition = rowBounds.Center + new Vector3(0f, 0.38f, -rowBounds.Depth * (11f / 12f) * 0.5f);
 
             Assert.That(forecast.localScale.x, Is.EqualTo(rowBounds.Width).Within(0.001f));
             Assert.That(forecast.localScale.y, Is.EqualTo(rowBounds.Depth / 12f).Within(0.001f));
@@ -416,7 +416,7 @@ namespace Rescue.Unity.Water.Tests
 
             Assert.That(gridPresenter.TryGetRowWorldBounds(4, out BoardGridViewPresenter.RowWorldBounds rowBounds), Is.True);
             Transform repairedForecast = GetNamedChild(GetWaterRoot(presenter), "ForecastRow_04");
-            Vector3 expectedPosition = rowBounds.Center + new Vector3(0f, 0.23f, -rowBounds.Depth * 0.25f);
+            Vector3 expectedPosition = rowBounds.Center + new Vector3(0f, 0.38f, -rowBounds.Depth * 0.25f);
 
             Assert.That(repairedForecast.position, Is.EqualTo(expectedPosition));
             Assert.That(repairedForecast.localScale.y, Is.EqualTo(rowBounds.Depth * 0.5f).Within(0.001f));

@@ -12,7 +12,7 @@ namespace Rescue.Unity.BoardPresentation
         private const string DefaultWaterRootName = "WaterOverlay";
         private const string ForecastRowNamePrefix = "ForecastRow_";
         private const float FloodedRowOverlayYOffset = 0.3f;
-        private const float ForecastRowOverlayYOffset = 0.23f;
+        private const float ForecastRowOverlayYOffset = 0.38f;
         private const float RowOverlayThickness = 0.04f;
         private static readonly Quaternion RowOverlayRotationOffset = Quaternion.Euler(90f, 0f, 0f);
 
