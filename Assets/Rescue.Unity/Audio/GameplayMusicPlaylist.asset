@@ -12,10 +12,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: adb9e21b830945fc8362f74085a80326, type: 3}
   m_Name: GameplayMusicPlaylist
   m_EditorClassIdentifier: Rescue.Unity::Rescue.Unity.Audio.MusicPlaylist
-  tracks: []
+  tracks:
+  - clip: {fileID: 8300000, guid: 336ed485c84a30e4bbf1200214cce5c0, type: 3}
+    volume: 1
+    overrideDefaultVolume: 0
+  - clip: {fileID: 8300000, guid: a42882609983f1c4e81b47539f9d2fab, type: 3}
+    volume: 1
+    overrideDefaultVolume: 0
+  - clip: {fileID: 8300000, guid: 09c8dfed7589fcd489fd48bfb4beef12, type: 3}
+    volume: 1
+    overrideDefaultVolume: 0
+  - clip: {fileID: 8300000, guid: dc6eb15a368fce642a5ad45d1d1f7a1c, type: 3}
+    volume: 1
+    overrideDefaultVolume: 0
+  - clip: {fileID: 8300000, guid: 8cbaba5a740036d40b9de7602c4dd46a, type: 3}
+    volume: 1
+    overrideDefaultVolume: 0
+  - clip: {fileID: 8300000, guid: 29b2b77e106d35c4f8247006bda6689f, type: 3}
+    volume: 1
+    overrideDefaultVolume: 0
+  - clip: {fileID: 8300000, guid: 50205d482a37a8f489e4e91eb29e8033, type: 3}
+    volume: 1
+    overrideDefaultVolume: 0
+  - clip: {fileID: 8300000, guid: b89d0d723897b5b46b4d991285542329, type: 3}
+    volume: 1
+    overrideDefaultVolume: 0
+  - clip: {fileID: 8300000, guid: 011f38d08ef81c1439ccfed32f6cb2b6, type: 3}
+    volume: 1
+    overrideDefaultVolume: 0
   shuffle: 1
   avoidImmediateRepeat: 1
   loopPlaylist: 1
   fadeInDurationSeconds: 0.5
   fadeOutDurationSeconds: 0.5
-  defaultVolume: 1
+  defaultVolume: 0.3
