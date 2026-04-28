@@ -181,7 +181,7 @@ namespace Rescue.Replay.Tests
                         new[] { "B", "T0", "B" },
                     },
                 },
-                DebrisTypePool = new[] { DebrisType.A, DebrisType.B, DebrisType.C, DebrisType.D },
+                DebrisTypePool = new[] { DebrisType.A, DebrisType.B, DebrisType.C, DebrisType.D, DebrisType.E },
                 Targets = new[] { new TargetJson { Id = "0", Row = 2, Col = 1 } },
                 InitialFloodedRows = 0,
                 Water = new WaterJson { RiseInterval = 1 },
@@ -228,7 +228,7 @@ namespace Rescue.Replay.Tests
                         new[] { ".", ".", "T0" },
                     },
                 },
-                DebrisTypePool = new[] { DebrisType.A, DebrisType.B, DebrisType.C, DebrisType.D },
+                DebrisTypePool = new[] { DebrisType.A, DebrisType.B, DebrisType.C, DebrisType.D, DebrisType.E },
                 Targets = new[] { new TargetJson { Id = "0", Row = 2, Col = 2 } },
                 InitialFloodedRows = 0,
                 Water = new WaterJson

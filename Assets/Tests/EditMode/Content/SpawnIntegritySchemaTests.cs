@@ -84,7 +84,7 @@ namespace Rescue.Content.Tests
                         new[] { "B", "B", "." },
                     },
                 },
-                DebrisTypePool = new[] { DebrisType.A, DebrisType.B, DebrisType.C, DebrisType.D },
+                DebrisTypePool = new[] { DebrisType.A, DebrisType.B, DebrisType.C, DebrisType.D, DebrisType.E },
                 Targets = new[] { new TargetJson { Id = "0", Row = 1, Col = 1 } },
                 InitialFloodedRows = 0,
                 Water = new WaterJson { RiseInterval = 10 },

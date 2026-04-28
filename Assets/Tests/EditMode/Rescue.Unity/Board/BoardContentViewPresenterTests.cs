@@ -275,6 +275,46 @@ namespace Rescue.Unity.BoardPresentation.Tests
         }
 
         [Test]
+        public void BoardContentViewPresenter_RescuePathRendersWithoutFallbackPrefab()
+        {
+            PresenterHarness harness = CreateHarness();
+            SetPrivateField(harness.ContentPresenter, "fallbackContentPrefab", null);
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new RescuePathTile(ImmutableArray.Create("puppy-1")))));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            GameObject? pathObject = GetRegisteredPieceObject(harness.ContentPresenter, "RescuePath", new TileCoord(0, 0));
+            Assert.That(pathObject, Is.Not.Null);
+            Assert.That(pathObject!.name, Does.Contain("RescuePath"));
+            Assert.That(pathObject.GetComponent<Collider>(), Is.Null);
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_LastObstacleMarkerSkipsOpenRescuePathTiles()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState state = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(
+                        new DebrisTile(DebrisType.A),
+                        new TargetTile("puppy-1", Extracted: false),
+                        new RescuePathTile(ImmutableArray.Create("puppy-1")))),
+                ImmutableArray.Create(new TargetState(
+                    "puppy-1",
+                    new TileCoord(0, 1),
+                    TargetReadiness.OneClearAway)));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            GameObject? debrisObject = GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 0));
+            Assert.That(debrisObject, Is.Not.Null);
+            Assert.That(FindChildByName(debrisObject!.transform, "TargetLastObstacle"), Is.Not.Null);
+        }
+
+        [Test]
         public void BoardContentViewPresenter_ClearContentRemovesGeneratedObjects()
         {
             PresenterHarness harness = CreateHarness();

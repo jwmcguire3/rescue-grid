@@ -684,11 +684,11 @@ namespace Rescue.Unity.BoardPresentation
 
         private void EnsureRescuePathVisual(TileCoord coord, Transform anchor)
         {
-            EnsurePieceVisual(
+            EnsureMarkerVisual(
                 visualRegistry.RescuePath,
                 coord,
                 RescuePathLabel,
-                ResolveFallbackPrefab("rescue path glow"),
+                fallbackContentPrefab,
                 anchor,
                 contentYOffset * 0.22f,
                 new Vector3(0.86f, 0.05f, 0.86f));
@@ -699,6 +699,43 @@ namespace Rescue.Unity.BoardPresentation
             {
                 ApplyTint(pathView.Object, RescuePathColor);
             }
+        }
+
+        private void EnsureMarkerVisual(
+            BoardPieceRegistry registry,
+            TileCoord coord,
+            string contentLabel,
+            GameObject? prefab,
+            Transform anchor,
+            float yOffset,
+            Vector3 scaleMultiplier)
+        {
+            if (registry.TryGet(coord, out BoardPieceView? existingView) &&
+                existingView is not null &&
+                existingView.Object != null)
+            {
+                if (existingView.ContentLabel != contentLabel)
+                {
+                    RemoveAndDestroyPiece(registry, coord);
+                }
+                else
+                {
+                    existingView.Coord = coord;
+                    MoveContentObjectToAnchor(existingView.Object, anchor, coord, contentLabel, yOffset);
+                    existingView.Object.transform.localScale = existingView.BaseLocalScale;
+                    return;
+                }
+            }
+
+            GameObject? spawnedObject = prefab is not null
+                ? SpawnAtAnchor(coord, contentLabel, prefab, anchor, yOffset, scaleMultiplier)
+                : SpawnPrimitiveMarkerAtAnchor(coord, contentLabel, anchor, yOffset, scaleMultiplier);
+            if (spawnedObject is null)
+            {
+                return;
+            }
+
+            registry.Set(coord, new BoardPieceView(coord, contentLabel, spawnedObject, spawnedObject.transform.localScale));
         }
 
         private void EnsurePieceVisual(
@@ -897,7 +934,7 @@ namespace Rescue.Unity.BoardPresentation
             for (int i = 0; i < neighbors.Length; i++)
             {
                 TileCoord coord = neighbors[i];
-                if (BoardHelpers.GetTile(board, coord) is EmptyTile)
+                if (BoardHelpers.GetTile(board, coord) is EmptyTile or RescuePathTile)
                 {
                     continue;
                 }
@@ -1346,6 +1383,48 @@ namespace Rescue.Unity.BoardPresentation
             }
 
             contentTransform.localScale = Vector3.Scale(prefab.transform.localScale, scaleMultiplier);
+            spawnedContent.Add(contentObject);
+            return contentObject;
+        }
+
+        private GameObject SpawnPrimitiveMarkerAtAnchor(
+            TileCoord coord,
+            string contentLabel,
+            Transform anchor,
+            float yOffset,
+            Vector3 scaleMultiplier)
+        {
+            Transform parent = ResolveContentParent(anchor);
+            GameObject contentObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            contentObject.name = $"Content_{coord.Row:00}_{coord.Col:00}_{contentLabel}";
+            Collider? collider = contentObject.GetComponent<Collider>();
+            if (collider is not null)
+            {
+                if (Application.isPlaying)
+                {
+                    Object.Destroy(collider);
+                }
+                else
+                {
+                    Object.DestroyImmediate(collider);
+                }
+            }
+
+            Transform contentTransform = contentObject.transform;
+            contentTransform.SetParent(parent, worldPositionStays: false);
+            if (parent == anchor)
+            {
+                contentTransform.localPosition = new Vector3(0f, yOffset, 0f);
+                contentTransform.localRotation = Quaternion.identity;
+            }
+            else
+            {
+                contentTransform.SetPositionAndRotation(
+                    ResolveCellWorldPositionWithYOffset(coord, yOffset),
+                    anchor.rotation);
+            }
+
+            contentTransform.localScale = scaleMultiplier;
             spawnedContent.Add(contentObject);
             return contentObject;
         }
