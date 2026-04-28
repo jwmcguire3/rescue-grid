@@ -91,6 +91,7 @@ namespace Rescue.Unity.Feedback.Tests
 
         [TestCase(ActionOutcome.LossDockOverflow, FeedbackEventId.LossDockOverflow)]
         [TestCase(ActionOutcome.LossWaterOnTarget, FeedbackEventId.LossWaterOnTarget)]
+        [TestCase(ActionOutcome.LossRescuePathFlooded, FeedbackEventId.LossWaterOnTarget)]
         [TestCase(ActionOutcome.LossDistressedExpired, FeedbackEventId.LossWaterOnTarget)]
         public void FeedbackEventClassifier_LostMapsToCauseSpecificFeedback(
             ActionOutcome outcome,
@@ -179,6 +180,7 @@ namespace Rescue.Unity.Feedback.Tests
                 new object[] { new Won("pup-1", TotalActions: 4, ExtractedTargetOrder: ImmutableArray.Create("pup-1")), FeedbackEventId.Win },
                 new object[] { new Lost(ActionOutcome.LossDockOverflow), FeedbackEventId.LossDockOverflow },
                 new object[] { new Lost(ActionOutcome.LossWaterOnTarget), FeedbackEventId.LossWaterOnTarget },
+                new object[] { new Lost(ActionOutcome.LossRescuePathFlooded), FeedbackEventId.LossWaterOnTarget },
             };
         }
 

@@ -18,6 +18,7 @@ namespace Rescue.Telemetry
     {
         public const string DockOverflow = "dock_overflow";
         public const string WaterOnTarget = "water_on_target";
+        public const string RescuePathFlooded = "rescue_path_flooded";
         public const string DistressedExpired = "distressed_expired";
         public const string DockJamUnresolved = "dock_jam_unresolved";
         public const string ManualAbandon = "manual_abandon";

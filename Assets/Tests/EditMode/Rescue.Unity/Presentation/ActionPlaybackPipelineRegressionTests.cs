@@ -253,6 +253,32 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
+        public void PipelinePlayback_RescuePathFloodedLossShowsWaterRiseThenPathLoss()
+        {
+            GameState state = CreateState(
+                Rows(
+                    Row(new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new EmptyTile()),
+                    Row(new EmptyTile(), new TargetTile("pup-1", Extracted: false), new EmptyTile()),
+                    Row(new EmptyTile(), new BlockerTile(BlockerType.Crate, 1, null), new EmptyTile())),
+                water: new WaterState(FloodedRows: 0, ActionsUntilRise: 1, RiseInterval: 3),
+                targets: ImmutableArray.Create(new TargetState("pup-1", new TileCoord(1, 1), Extracted: false, OneClearAway: false)));
+
+            AssertPipelinePlan(
+                state,
+                new TileCoord(0, 0),
+                ActionOutcome.LossRescuePathFlooded,
+                nameof(GroupRemoved),
+                nameof(TargetRescuePathLocked),
+                nameof(TargetOneClearAway),
+                nameof(DockInserted),
+                nameof(DockInserted),
+                nameof(Spawned),
+                nameof(WaterRose),
+                nameof(TargetRescuePathFlooded),
+                nameof(Lost));
+        }
+
+        [Test]
         public void PipelinePlayback_AllSupportedRealEventStreamsPreserveCanonicalMappedOrder()
         {
             foreach (Scenario scenario in Scenarios())
@@ -298,6 +324,7 @@ namespace Rescue.Unity.Presentation.Tests
                     TargetProgressed => ActionPlaybackStepType.TargetReaction,
                     TargetRescuePathLocked => ActionPlaybackStepType.TargetReaction,
                     TargetOneClearAway => ActionPlaybackStepType.TargetReaction,
+                    TargetRescuePathFlooded => ActionPlaybackStepType.TargetReaction,
                     TargetExtractionLatched => ActionPlaybackStepType.TargetLatch,
                     DockInserted => ActionPlaybackStepType.DockFeedback,
                     DockCleared => ActionPlaybackStepType.DockFeedback,

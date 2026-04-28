@@ -20,8 +20,14 @@ namespace Rescue.Core.Pipeline
         Win,
         LossDockOverflow,
         LossWaterOnTarget,
+        LossRescuePathFlooded,
         LossDistressedExpired,
     }
+
+    internal readonly record struct FloodedRescuePath(
+        string TargetId,
+        TileCoord TargetCoord,
+        TileCoord BlockedCoord);
 
     internal sealed record StepResult(
         GameState State,

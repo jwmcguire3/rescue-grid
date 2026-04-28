@@ -50,6 +50,7 @@ namespace Rescue.Unity.Presentation.Tests
 
         [TestCase(ActionOutcome.LossDockOverflow, "Dock overflow.")]
         [TestCase(ActionOutcome.LossWaterOnTarget, "Water reached a puppy.")]
+        [TestCase(ActionOutcome.LossRescuePathFlooded, "Water blocked the rescue path.")]
         [TestCase(ActionOutcome.LossDistressedExpired, "Distressed puppy was not rescued in time.")]
         public void LossScreenPresenter_ShowUsesOneSpecificReason(ActionOutcome outcome, string expected)
         {

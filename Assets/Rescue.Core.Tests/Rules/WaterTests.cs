@@ -183,6 +183,35 @@ namespace Rescue.Core.Tests.Rules
             }).AsCollection);
         }
 
+        [TestCase(WaterContactMode.ImmediateLoss)]
+        [TestCase(WaterContactMode.OneTickGrace)]
+        public void WaterFloodingBlockedRequiredNeighborLosesImmediately(WaterContactMode waterContactMode)
+        {
+            GameState state = CreateRescuePathFloodedState(waterContactMode);
+
+            ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(
+                state,
+                new ActionInput(new TileCoord(0, 0)));
+
+            Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.LossRescuePathFlooded));
+            Assert.That(result.State.Frozen, Is.True);
+            Assert.That(result.State.Targets[0].Extracted, Is.False);
+            Assert.That(result.State.Targets[0].Readiness, Is.Not.EqualTo(TargetReadiness.Distressed));
+            Assert.That(result.Events, Has.Some.EqualTo(new WaterRose(2)));
+            Assert.That(result.Events, Has.Some.EqualTo(new TargetRescuePathFlooded(
+                "target",
+                new TileCoord(1, 1),
+                new TileCoord(2, 1))));
+            Assert.That(result.Events, Has.Some.EqualTo(new Lost(ActionOutcome.LossRescuePathFlooded)));
+            Assert.That(result.Events, Has.None.TypeOf<TargetDistressedEntered>());
+
+            int waterRoseIndex = IndexOf<WaterRose>(result);
+            int pathFloodedIndex = IndexOf<TargetRescuePathFlooded>(result);
+            int lostIndex = IndexOf<Lost>(result);
+            Assert.That(waterRoseIndex, Is.LessThan(pathFloodedIndex));
+            Assert.That(pathFloodedIndex, Is.LessThan(lostIndex));
+        }
+
         [Test]
         public void TargetThatExtractsOnSameActionWaterRisesIsSaved()
         {
@@ -255,6 +284,50 @@ namespace Rescue.Core.Tests.Rules
                     ActionsUntilRise: actionsUntilRise,
                     RiseInterval: riseInterval),
             };
+        }
+
+        private static GameState CreateRescuePathFloodedState(WaterContactMode waterContactMode)
+        {
+            return CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    Row(
+                        new DebrisTile(DebrisType.A),
+                        new DebrisTile(DebrisType.A),
+                        new EmptyTile()),
+                    Row(
+                        new EmptyTile(),
+                        new TargetTile("target", Extracted: false),
+                        new EmptyTile()),
+                    Row(
+                        new EmptyTile(),
+                        new BlockerTile(BlockerType.Crate, 1, Hidden: null),
+                        new EmptyTile())),
+                targets: ImmutableArray.Create(new TargetState(
+                    "target",
+                    new TileCoord(1, 1),
+                    Extracted: false,
+                    OneClearAway: false)),
+                actionsUntilRise: 1) with
+            {
+                LevelConfig = PipelineTestFixtures.CreateLevelConfig() with
+                {
+                    WaterContactMode = waterContactMode,
+                },
+            };
+        }
+
+        private static int IndexOf<TEvent>(ActionResult result)
+            where TEvent : ActionEvent
+        {
+            for (int i = 0; i < result.Events.Length; i++)
+            {
+                if (result.Events[i] is TEvent)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         private static void AssertFloodedRow(Board board, int row)

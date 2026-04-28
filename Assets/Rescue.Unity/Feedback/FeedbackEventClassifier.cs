@@ -126,6 +126,7 @@ namespace Rescue.Unity.Feedback
                     feedbackEvent = Create(FeedbackEventId.LossDockOverflow, actionEvent);
                     return true;
                 case Lost lost when lost.Outcome == ActionOutcome.LossWaterOnTarget
+                    || lost.Outcome == ActionOutcome.LossRescuePathFlooded
                     || lost.Outcome == ActionOutcome.LossDistressedExpired:
                     feedbackEvent = Create(FeedbackEventId.LossWaterOnTarget, actionEvent);
                     return true;
@@ -147,6 +148,7 @@ namespace Rescue.Unity.Feedback
                 ActionOutcome.Win => FeedbackEventId.Win,
                 ActionOutcome.LossDockOverflow => FeedbackEventId.LossDockOverflow,
                 ActionOutcome.LossWaterOnTarget => FeedbackEventId.LossWaterOnTarget,
+                ActionOutcome.LossRescuePathFlooded => FeedbackEventId.LossWaterOnTarget,
                 ActionOutcome.LossDistressedExpired => FeedbackEventId.LossWaterOnTarget,
                 _ => null,
             };

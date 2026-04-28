@@ -713,6 +713,7 @@ namespace Rescue.Unity.Debugging
         {
             return outcome == ActionOutcome.LossDockOverflow
                 || outcome == ActionOutcome.LossWaterOnTarget
+                || outcome == ActionOutcome.LossRescuePathFlooded
                 || outcome == ActionOutcome.LossDistressedExpired;
         }
 
@@ -838,6 +839,7 @@ namespace Rescue.Unity.Debugging
         {
             if (outcome != ActionOutcome.LossDockOverflow
                 && outcome != ActionOutcome.LossWaterOnTarget
+                && outcome != ActionOutcome.LossRescuePathFlooded
                 && outcome != ActionOutcome.LossDistressedExpired)
             {
                 return null;

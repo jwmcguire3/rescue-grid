@@ -53,6 +53,7 @@ namespace Rescue.Unity.Presentation
                 ActionOutcome.Win => MaeReactionState.Relief,
                 ActionOutcome.LossDockOverflow => MaeReactionState.Concern,
                 ActionOutcome.LossWaterOnTarget => MaeReactionState.Grief,
+                ActionOutcome.LossRescuePathFlooded => MaeReactionState.Grief,
                 ActionOutcome.LossDistressedExpired => MaeReactionState.Grief,
                 _ => currentReaction,
             };

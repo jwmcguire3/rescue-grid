@@ -105,6 +105,20 @@ namespace Rescue.Core.Pipeline.Steps
                 }
             }
 
+            if (!context.FloodedRescuePathsThisAction.IsDefaultOrEmpty)
+            {
+                FloodedRescuePath floodedPath = context.FloodedRescuePathsThisAction[0];
+                events.Add(new TargetRescuePathFlooded(
+                    floodedPath.TargetId,
+                    floodedPath.TargetCoord,
+                    floodedPath.BlockedCoord));
+                events.Add(new Lost(ActionOutcome.LossRescuePathFlooded));
+                return new CheckLossResult(
+                    state with { Frozen = true },
+                    events.ToImmutable(),
+                    ActionOutcome.LossRescuePathFlooded);
+            }
+
             GameState resolvedState = updatedTargets is null
                 ? state
                 : state with { Targets = updatedTargets.ToImmutable() };

@@ -45,6 +45,7 @@ namespace Rescue.Unity.Presentation.Tests
 
         [TestCase(ActionOutcome.LossDockOverflow, MaeReactionState.Concern)]
         [TestCase(ActionOutcome.LossWaterOnTarget, MaeReactionState.Grief)]
+        [TestCase(ActionOutcome.LossRescuePathFlooded, MaeReactionState.Grief)]
         [TestCase(ActionOutcome.LossDistressedExpired, MaeReactionState.Grief)]
         public void MaeReactionPresenter_ReactsToLoss(ActionOutcome outcome, MaeReactionState expected)
         {

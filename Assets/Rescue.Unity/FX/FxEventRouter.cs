@@ -170,6 +170,7 @@ namespace Rescue.Unity.FX
                     PlayLossDockOverflow();
                     break;
                 case Lost lost when lost.Outcome == ActionOutcome.LossWaterOnTarget
+                    || lost.Outcome == ActionOutcome.LossRescuePathFlooded
                     || lost.Outcome == ActionOutcome.LossDistressedExpired:
                     PlayLossWaterOnTarget();
                     break;

@@ -367,6 +367,7 @@ namespace Rescue.Unity.Presentation
         {
             return outcome == ActionOutcome.LossDockOverflow
                 || outcome == ActionOutcome.LossWaterOnTarget
+                || outcome == ActionOutcome.LossRescuePathFlooded
                 || outcome == ActionOutcome.LossDistressedExpired;
         }
     }

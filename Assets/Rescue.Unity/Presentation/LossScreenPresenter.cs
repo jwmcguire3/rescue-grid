@@ -86,6 +86,7 @@ namespace Rescue.Unity.Presentation
             {
                 ActionOutcome.LossDockOverflow => "Dock overflow.",
                 ActionOutcome.LossWaterOnTarget => "Water reached a puppy.",
+                ActionOutcome.LossRescuePathFlooded => "Water blocked the rescue path.",
                 ActionOutcome.LossDistressedExpired => "Distressed puppy was not rescued in time.",
                 _ => "Rescue stalled.",
             };

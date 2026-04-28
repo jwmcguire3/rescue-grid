@@ -442,6 +442,34 @@ namespace Rescue.Telemetry.Tests
         }
 
         [Test]
+        public void OnAction_RescuePathFloodedLoss_EmitsSpecificLossReasonAndTarget()
+        {
+            GameState state = CreateRescuePathFloodedLossState();
+            string path = TempPath();
+
+            ActionInput input = new ActionInput(new TileCoord(0, 0));
+            ActionResult result = Pipeline.RunAction(state, input);
+
+            using (TelemetryLogger logger = new TelemetryLogger(path, TelemetryConfig.DevDefaults))
+            {
+                TelemetrySessionState session = new TelemetrySessionState { LevelStartMs = 0 };
+                TelemetryHooks.OnAction("L1", state, input, result, 1UL, 0, 100, session, logger);
+            }
+
+            List<ITelemetryEvent> events = ReadEvents(path);
+
+            LevelLossEvent? loss = FindEvent<LevelLossEvent>(events);
+            TargetLostEvent? targetLost = FindEvent<TargetLostEvent>(events);
+
+            Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.LossRescuePathFlooded));
+            Assert.That(loss, Is.Not.Null);
+            Assert.That(loss!.Reason, Is.EqualTo(LossReasons.RescuePathFlooded));
+            Assert.That(loss.LostTargetId, Is.EqualTo("pup"));
+            Assert.That(targetLost, Is.Not.Null);
+            Assert.That(targetLost!.TargetId, Is.EqualTo("pup"));
+        }
+
+        [Test]
         public void OnLevelAbandoned_EmitsLossWithManualAbandonReason()
         {
             string path = TempPath();
@@ -667,6 +695,34 @@ namespace Rescue.Telemetry.Tests
                 Vine: NoVine(),
                 Targets: ImmutableArray.Create(new TargetState("pup", new TileCoord(1, 0), TargetReadiness.Distressed)),
                 LevelConfig: SimpleConfig() with { WaterContactMode = WaterContactMode.OneTickGrace },
+                RngState: new RngState(1u, 2u),
+                ActionCount: 0,
+                DockJamUsed: false,
+                UndoAvailable: true,
+                ExtractedTargetOrder: ImmutableArray<string>.Empty,
+                Frozen: false,
+                ConsecutiveEmergencySpawns: 0,
+                SpawnRecoveryCounter: 0);
+        }
+
+        private static GameState CreateRescuePathFloodedLossState()
+        {
+            ImmutableArray<Tile> row0 = ImmutableArray.Create<Tile>(
+                new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new EmptyTile());
+            ImmutableArray<Tile> row1 = ImmutableArray.Create<Tile>(
+                new EmptyTile(), new TargetTile("pup", Extracted: false), new EmptyTile());
+            ImmutableArray<Tile> row2 = ImmutableArray.Create<Tile>(
+                new EmptyTile(), new BlockerTile(BlockerType.Crate, 1, Hidden: null), new EmptyTile());
+
+            Board board = new Board(3, 3, ImmutableArray.Create(row0, row1, row2));
+
+            return new GameState(
+                Board: board,
+                Dock: EmptyDock(),
+                Water: new WaterState(FloodedRows: 0, ActionsUntilRise: 1, RiseInterval: 3),
+                Vine: NoVine(),
+                Targets: ImmutableArray.Create(new TargetState("pup", new TileCoord(1, 1), false, false)),
+                LevelConfig: SimpleConfig(),
                 RngState: new RngState(1u, 2u),
                 ActionCount: 0,
                 DockJamUsed: false,

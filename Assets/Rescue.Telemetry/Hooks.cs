@@ -363,10 +363,9 @@ namespace Rescue.Telemetry
             }
 
             // target_lost (water on target)
-            if (result.Outcome == ActionOutcome.LossWaterOnTarget
-                || result.Outcome == ActionOutcome.LossDistressedExpired)
+            if (IsWaterFamilyLoss(result.Outcome))
             {
-                string? lostTargetId = FindLostTarget(stateBefore, result.State);
+                string? lostTargetId = FindLostTarget(stateBefore, result.State, result.Events);
                 if (lostTargetId is not null)
                 {
                     logger.Append(new TargetLostEvent(
@@ -417,9 +416,8 @@ namespace Rescue.Telemetry
             else if (result.Outcome != ActionOutcome.Ok)
             {
                 string reason = MapLossReason(result.Outcome, dockJamWasActive);
-                string? lostTargetId = result.Outcome == ActionOutcome.LossWaterOnTarget
-                    || result.Outcome == ActionOutcome.LossDistressedExpired
-                    ? FindLostTarget(stateBefore, result.State)
+                string? lostTargetId = IsWaterFamilyLoss(result.Outcome)
+                    ? FindLostTarget(stateBefore, result.State, result.Events)
                     : null;
 
                 logger.Append(new LevelLossEvent(
@@ -881,13 +879,37 @@ namespace Rescue.Telemetry
                 ActionOutcome.LossDockOverflow when dockJamWasActive => LossReasons.DockJamUnresolved,
                 ActionOutcome.LossDockOverflow => LossReasons.DockOverflow,
                 ActionOutcome.LossWaterOnTarget => LossReasons.WaterOnTarget,
+                ActionOutcome.LossRescuePathFlooded => LossReasons.RescuePathFlooded,
                 ActionOutcome.LossDistressedExpired => LossReasons.DistressedExpired,
                 _ => LossReasons.DockOverflow,
             };
         }
 
-        private static string? FindLostTarget(GameState stateBefore, GameState stateAfter)
+        private static bool IsWaterFamilyLoss(ActionOutcome outcome)
         {
+            return outcome == ActionOutcome.LossWaterOnTarget
+                || outcome == ActionOutcome.LossRescuePathFlooded
+                || outcome == ActionOutcome.LossDistressedExpired;
+        }
+
+        private static string? FindLostTarget(
+            GameState stateBefore,
+            GameState stateAfter,
+            ImmutableArray<ActionEvent> events)
+        {
+            for (int i = 0; i < events.Length; i++)
+            {
+                if (events[i] is TargetRescuePathFlooded flooded)
+                {
+                    return flooded.TargetId;
+                }
+
+                if (events[i] is TargetDistressedExpired expired)
+                {
+                    return expired.TargetId;
+                }
+            }
+
             int floodStartRow = stateAfter.Board.Height - stateAfter.Water.FloodedRows;
             foreach (TargetState target in stateBefore.Targets)
             {

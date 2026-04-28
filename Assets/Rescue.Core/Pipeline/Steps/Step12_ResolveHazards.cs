@@ -22,10 +22,18 @@ namespace Rescue.Core.Pipeline.Steps
                 int floodedRow = nextFloodRow.Value;
                 Board floodedBoard = updatedState.Board;
                 ImmutableDictionary<TileCoord, SpawnLineage> lineageByCoord = updatedState.SpawnLineageByCoord;
+                ImmutableArray<FloodedRescuePath>.Builder floodedRescuePaths = ImmutableArray.CreateBuilder<FloodedRescuePath>();
                 for (int col = 0; col < floodedBoard.Width; col++)
                 {
                     TileCoord coord = new TileCoord(floodedRow, col);
-                    if (BoardHelpers.GetTile(floodedBoard, coord) is TargetTile)
+                    Tile tileBeforeFlood = BoardHelpers.GetTile(floodedBoard, coord);
+                    AddBlockedRescuePathsForFloodedTile(
+                        updatedState,
+                        coord,
+                        tileBeforeFlood,
+                        floodedRescuePaths);
+
+                    if (tileBeforeFlood is TargetTile)
                     {
                         continue;
                     }
@@ -47,6 +55,7 @@ namespace Rescue.Core.Pipeline.Steps
                 updatedContext = updatedContext with
                 {
                     WaterRisePending = false,
+                    FloodedRescuePathsThisAction = floodedRescuePaths.ToImmutable(),
                 };
                 events.Add(new WaterRose(floodedRow));
             }
@@ -112,6 +121,52 @@ namespace Rescue.Core.Pipeline.Steps
         {
             return BoardHelpers.InBounds(board, coord)
                 && BoardHelpers.GetTile(board, coord) is EmptyTile;
+        }
+
+        private static void AddBlockedRescuePathsForFloodedTile(
+            GameState state,
+            TileCoord coord,
+            Tile tileBeforeFlood,
+            ImmutableArray<FloodedRescuePath>.Builder floodedRescuePaths)
+        {
+            if (tileBeforeFlood is EmptyTile or RescuePathTile or TargetTile)
+            {
+                return;
+            }
+
+            for (int i = 0; i < state.Targets.Length; i++)
+            {
+                TargetState target = state.Targets[i];
+                if (target.Extracted || target.ExtractableLatched)
+                {
+                    continue;
+                }
+
+                if (IsOrthogonalNeighbor(target.Coord, coord))
+                {
+                    floodedRescuePaths.Add(new FloodedRescuePath(
+                        target.TargetId,
+                        target.Coord,
+                        coord));
+                }
+            }
+        }
+
+        private static bool IsOrthogonalNeighbor(TileCoord a, TileCoord b)
+        {
+            int rowDelta = a.Row - b.Row;
+            if (rowDelta < 0)
+            {
+                rowDelta = -rowDelta;
+            }
+
+            int colDelta = a.Col - b.Col;
+            if (colDelta < 0)
+            {
+                colDelta = -colDelta;
+            }
+
+            return rowDelta + colDelta == 1;
         }
     }
 }
