@@ -15,10 +15,10 @@ Preview output uses the JSON tile-code grammar directly. No second symbol system
 | Symbol | Meaning |
 |--------|---------|
 | `.`    | Empty tile |
-| `A`–`E`| Debris of that type |
+| `A`–`F`| Debris of that type |
 | `CR`   | Crate (1 HP) |
 | `CX`   | Reinforced crate (2 HP) — off by default in Phase 1 |
-| `IA`–`IE` | Ice revealing debris of that type underneath |
+| `IA`–`IF` | Ice revealing debris of that type underneath |
 | `V`    | Vine |
 | `T0`–`T9` | Target with that id |
 | `~`    | Flooded tile (rendered for `initialFloodedRows` bottom rows) |

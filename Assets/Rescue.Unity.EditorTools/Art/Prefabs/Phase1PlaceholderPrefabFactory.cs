@@ -104,6 +104,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             Material debrisCMaterial = CreateOrUpdateMaterial(CombinePath(materialsPath, "Debris_C.mat"), shader, new Color(0.36f, 0.72f, 0.49f));
             Material debrisDMaterial = CreateOrUpdateMaterial(CombinePath(materialsPath, "Debris_D.mat"), shader, new Color(0.33f, 0.61f, 0.86f));
             Material debrisEMaterial = CreateOrUpdateMaterial(CombinePath(materialsPath, "Debris_E.mat"), shader, new Color(0.69f, 0.46f, 0.83f));
+            Material debrisFMaterial = CreateOrUpdateMaterial(CombinePath(materialsPath, "Debris_F.mat"), shader, new Color(0.86f, 0.76f, 0.56f));
             Material crateMaterial = CreateOrUpdateMaterial(CombinePath(materialsPath, "Crate.mat"), shader, new Color(0.53f, 0.35f, 0.18f));
             Material iceMaterial = CreateOrUpdateMaterial(CombinePath(materialsPath, "Ice.mat"), shader, new Color(0.67f, 0.90f, 1.00f), transparent: true);
             Material vineMaterial = CreateOrUpdateMaterial(CombinePath(materialsPath, "Vine.mat"), shader, new Color(0.23f, 0.57f, 0.20f));
@@ -136,6 +137,9 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             GameObject debrisEPrefab = CreateOrUpdatePrefab(
                 CombinePath(prefabsPath, PiecesFolderName, "Debris_E.prefab"),
                 () => CreatePrimitivePlaceholder("Debris_E", PrimitiveType.Cube, debrisEMaterial, new Vector3(0.70f, 0.25f, 0.50f), new Vector3(0.0f, 0.125f, 0.0f), new Vector3(0.0f, -24.0f, 11.0f)));
+            GameObject debrisFPrefab = CreateOrUpdatePrefab(
+                CombinePath(prefabsPath, PiecesFolderName, "Debris_F.prefab"),
+                () => CreatePrimitivePlaceholder("Debris_F", PrimitiveType.Cube, debrisFMaterial, new Vector3(0.64f, 0.30f, 0.46f), new Vector3(0.0f, 0.15f, 0.0f), new Vector3(-8.0f, 18.0f, 6.0f)));
 
             GameObject cratePrefab = CreateOrUpdatePrefab(
                 CombinePath(prefabsPath, BlockersFolderName, "Crate.prefab"),
@@ -186,6 +190,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 debrisCPrefab,
                 debrisDPrefab,
                 debrisEPrefab,
+                debrisFPrefab,
                 cratePrefab,
                 icePrefab,
                 vinePrefab,
@@ -243,6 +248,11 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 CombinePath(materialsPath, "Debris_E_Phase1.mat"),
                 shader,
                 CombinePath(artRootPath, "Textures", "Pieces", "Meshy_AI_Beige_terry_towel_wit_0424155142_texture.png"));
+            Material? debrisFMaterial = CreateOrUpdateTexturedMaterial(
+                CombinePath(materialsPath, "Debris_F_Phase1.mat"),
+                shader,
+                CombinePath(artRootPath, "Textures", "Pieces", "Meshy_AI_Nodular_Ivory_Bone_0428073440_texture.png"),
+                CombinePath(artRootPath, "Textures", "Pieces", "Meshy_AI_Nodular_Ivory_Bone_0428073440_texture_normal.png"));
 
             Material? crateMaterial = CreateOrUpdateTexturedMaterial(
                 CombinePath(materialsPath, "Crate_Phase1.mat"),
@@ -335,6 +345,11 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 CombinePath(artRootPath, "Models", "Pieces", "Meshy_AI_Beige_terry_towel_wit_0424155142_texture.fbx"),
                 debrisEMaterial,
                 DebrisSizingProfile);
+            GameObject? debrisFPrefab = CreateMeshWrapperPrefab(
+                CombinePath(prefabsPath, PiecesFolderName, "Debris_F_Phase1.prefab"),
+                CombinePath(artRootPath, "Models", "Pieces", "Meshy_AI_Nodular_Ivory_Bone_0428073440_texture.fbx"),
+                debrisFMaterial,
+                DebrisSizingProfile);
 
             GameObject? cratePrefab = CreateMeshWrapperPrefab(
                 CombinePath(prefabsPath, BlockersFolderName, "Crate_Phase1.prefab"),
@@ -392,6 +407,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 debrisCPrefab,
                 debrisDPrefab,
                 debrisEPrefab,
+                debrisFPrefab,
                 cratePrefab,
                 iceBlockPrefab ?? iceOverlayPrefab,
                 vineMeshPrefab ?? vineOverlayPrefab,
@@ -431,6 +447,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             pieceRegistry.DebrisCPrefab = productionAssets.DebrisCPrefab ?? placeholderAssets.DebrisCPrefab;
             pieceRegistry.DebrisDPrefab = productionAssets.DebrisDPrefab ?? placeholderAssets.DebrisDPrefab;
             pieceRegistry.DebrisEPrefab = productionAssets.DebrisEPrefab ?? placeholderAssets.DebrisEPrefab;
+            pieceRegistry.DebrisFPrefab = productionAssets.DebrisFPrefab ?? placeholderAssets.DebrisFPrefab;
             pieceRegistry.FallbackPrefab = productionAssets.DebrisAPrefab ?? placeholderAssets.DebrisAPrefab;
             EditorUtility.SetDirty(pieceRegistry);
 
@@ -990,6 +1007,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 GameObject debrisCPrefab,
                 GameObject debrisDPrefab,
                 GameObject debrisEPrefab,
+                GameObject debrisFPrefab,
                 GameObject cratePrefab,
                 GameObject icePrefab,
                 GameObject vinePrefab,
@@ -1022,6 +1040,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 DebrisCPrefab = debrisCPrefab;
                 DebrisDPrefab = debrisDPrefab;
                 DebrisEPrefab = debrisEPrefab;
+                DebrisFPrefab = debrisFPrefab;
                 CratePrefab = cratePrefab;
                 IcePrefab = icePrefab;
                 VinePrefab = vinePrefab;
@@ -1055,6 +1074,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             public GameObject DebrisCPrefab { get; }
             public GameObject DebrisDPrefab { get; }
             public GameObject DebrisEPrefab { get; }
+            public GameObject DebrisFPrefab { get; }
             public GameObject CratePrefab { get; }
             public GameObject IcePrefab { get; }
             public GameObject VinePrefab { get; }
@@ -1091,6 +1111,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 GameObject? debrisCPrefab,
                 GameObject? debrisDPrefab,
                 GameObject? debrisEPrefab,
+                GameObject? debrisFPrefab,
                 GameObject? cratePrefab,
                 GameObject icePrefab,
                 GameObject vinePrefab,
@@ -1114,6 +1135,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 DebrisCPrefab = debrisCPrefab;
                 DebrisDPrefab = debrisDPrefab;
                 DebrisEPrefab = debrisEPrefab;
+                DebrisFPrefab = debrisFPrefab;
                 CratePrefab = cratePrefab;
                 IcePrefab = icePrefab;
                 VinePrefab = vinePrefab;
@@ -1138,6 +1160,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             public GameObject? DebrisCPrefab { get; }
             public GameObject? DebrisDPrefab { get; }
             public GameObject? DebrisEPrefab { get; }
+            public GameObject? DebrisFPrefab { get; }
             public GameObject? CratePrefab { get; }
             public GameObject IcePrefab { get; }
             public GameObject VinePrefab { get; }

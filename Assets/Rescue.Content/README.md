@@ -13,12 +13,13 @@
     "height": 7,
     "tiles": [[".", ".", ".", ".", ".", "."]]
   },
-  "debrisTypePool": ["A", "B", "C", "D"],
+  "debrisTypePool": ["A", "B", "C", "D", "F"],
   "baseDistribution": {
     "A": 1.0,
     "B": 1.0,
     "C": 1.0,
-    "D": 1.0
+    "D": 1.0,
+    "F": 1.0
   },
   "targets": [
     { "id": "0", "row": 2, "col": 3 }
@@ -60,7 +61,7 @@
 ## Tile codes
 
 - `.`: empty tile
-- `A`..`E`: debris tiles
+- `A`..`F`: debris tiles
 - `CR`: crate with 1 HP
 - `CX`: reinforced crate with 2 HP (off by default in Phase 1)
 - `I<X>`: ice with hidden debris `X`, for example `IA`

@@ -12,6 +12,7 @@ namespace Rescue.Unity.Art.Registries
         [SerializeField] private GameObject? debrisCPrefab;
         [SerializeField] private GameObject? debrisDPrefab;
         [SerializeField] private GameObject? debrisEPrefab;
+        [SerializeField] private GameObject? debrisFPrefab;
         [SerializeField] private GameObject? fallbackPrefab;
 
         public GameObject? DebrisAPrefab
@@ -44,6 +45,12 @@ namespace Rescue.Unity.Art.Registries
             set => debrisEPrefab = value;
         }
 
+        public GameObject? DebrisFPrefab
+        {
+            get => debrisFPrefab;
+            set => debrisFPrefab = value;
+        }
+
         public GameObject? FallbackPrefab
         {
             get => fallbackPrefab;
@@ -59,6 +66,7 @@ namespace Rescue.Unity.Art.Registries
                 DebrisType.C => debrisCPrefab,
                 DebrisType.D => debrisDPrefab,
                 DebrisType.E => debrisEPrefab,
+                DebrisType.F => debrisFPrefab,
                 _ => null,
             };
 

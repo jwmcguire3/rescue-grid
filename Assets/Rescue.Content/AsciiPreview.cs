@@ -6,7 +6,7 @@ namespace Rescue.Content
     public static class AsciiPreview
     {
         // Each tile code is padded to this width so columns align.
-        // Phase 1 max code length is 2 (CR, CX, IA-IE, T0-T9).
+        // Phase 1 max code length is 2 (CR, CX, IA-IF, T0-T9).
         private const int CellWidth = 2;
 
         public static string Render(LevelJson level)

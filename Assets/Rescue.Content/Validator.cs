@@ -124,12 +124,12 @@ namespace Rescue.Content
 
         private static void ValidatePoolAndDistribution(LevelJson level, List<ValidationError> errors)
         {
-            if (level.DebrisTypePool.Length < 4 || level.DebrisTypePool.Length > 5)
+            if (level.DebrisTypePool.Length < 5 || level.DebrisTypePool.Length > 6)
             {
                 errors.Add(new ValidationError(
                     ValidationSeverity.Error,
                     "debris.pool.size",
-                    "debrisTypePool must contain 4 or 5 entries.",
+                    "debrisTypePool must contain 5 or 6 entries.",
                     "$.debrisTypePool"));
             }
 
@@ -437,9 +437,9 @@ namespace Rescue.Content
                         "$.dock.jamEnabled"));
                 }
 
-                if (levelNumber >= 1)
+                if (levelNumber >= 0)
                 {
-                    int expectedPoolSize = levelNumber <= 4 ? 4 : 5;
+                    int expectedPoolSize = levelNumber <= 4 ? 5 : 6;
                     if (level.DebrisTypePool.Length != expectedPoolSize)
                     {
                         errors.Add(new ValidationError(
@@ -856,6 +856,7 @@ namespace Rescue.Content
                 "C" => Assign(DebrisType.C, out debrisType),
                 "D" => Assign(DebrisType.D, out debrisType),
                 "E" => Assign(DebrisType.E, out debrisType),
+                "F" => Assign(DebrisType.F, out debrisType),
                 _ => false,
             };
         }

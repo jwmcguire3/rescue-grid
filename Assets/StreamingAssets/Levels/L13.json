@@ -16,7 +16,7 @@
       [".", ".", ".", ".", ".", ".", "."]
     ]
   },
-  "debrisTypePool": ["A", "B", "C", "D", "E"],
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
   "baseDistribution": null,
   "targets": [
     { "id": "0", "row": 5, "col": 1 },

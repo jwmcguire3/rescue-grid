@@ -12,6 +12,7 @@ namespace Rescue.Core.State
         C,
         D,
         E,
+        F,
     }
 
     public abstract record Tile;

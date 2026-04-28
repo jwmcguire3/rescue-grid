@@ -111,8 +111,8 @@ Not desired:
 ### Movable pieces
 
 - Debris only in Phase 1
-- 4 debris types in Levels 1–4
-- 5 debris types in Levels 5–15
+- 5 debris types in Levels 0–4
+- 6 debris types in Levels 5–15
 
 ### Targets
 
@@ -685,8 +685,8 @@ If players ignore water until cleanup, increase urgency via start flood or targe
 
 ### Base piece pool
 
-- Levels 1–4: 4 debris types
-- Levels 5–15: 5 debris types
+- Levels 0–4: 5 debris types (`A`, `B`, `C`, `D`, `F`)
+- Levels 5–15: 6 debris types (`A`–`F`)
 
 ### Base spawn distribution
 
@@ -805,7 +805,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 ## Level 0 — Rule teach
 
 **Geometry:** 6x7 rectangle  
-**Composition:** 1 puppy, 2 crates, 4 debris types, one visible opening pair  
+**Composition:** 1 puppy, 2 crates, 5 debris types, one visible opening pair  
 **Pressure:** water held before first valid action, then rises immediately on that action and resumes normal ticking  
 **Intent:** teach the core rule through contrast — thinking is free, acting advances danger  
 **Expected path:** tap the visible pair, observe the first rise, then free the puppy  
@@ -815,7 +815,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 ## Level 1 — First rescue
 
 **Geometry:** 6x7 rectangle  
-**Composition:** 1 puppy upper-middle, 6 crates, 4 debris types  
+**Composition:** 1 puppy upper-middle, 6 crates, 5 debris types  
 **Pressure:** water starts at 0 rows, 12 actions/row, Dock Jam on  
 **Intent:** teach tap group, dock clear, target state progression, rescue extraction, water is coming  
 **Expected path:** clear lower-center pairs, see puppy progress state, open direct lane, free puppy before second water rise  
@@ -825,7 +825,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 ## Level 2 — Dock discipline serves rescue
 
 **Geometry:** 6x7 with one narrow middle lane  
-**Composition:** 1 puppy, 8 crates, 4 debris types, denser singles  
+**Composition:** 1 puppy, 8 crates, 5 debris types, denser singles  
 **Pressure:** no water, Dock Jam on  
 **Intent:** teach that the dock is not a bag of free storage while keeping the puppy as the reason for the route  
 **Expected path:** clear with dock discipline to open the puppy lane, avoid hoarding mismatched singles  
@@ -835,7 +835,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 ## Level 3 — Rescue order arrives
 
 **Geometry:** 6x7 split lower-left / upper-right  
-**Composition:** 2 puppies, 6 crates, 4 debris types  
+**Composition:** 2 puppies, 6 crates, 5 debris types  
 **Pressure:** water 10 actions/row  
 **Intent:** force first clear priority between near-water puppy and easier-but-safer puppy  
 **Expected path:** save lower puppy first even though upper puppy looks more open  
@@ -845,7 +845,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 ## Level 4 — Ice introduction
 
 **Geometry:** 6x7  
-**Composition:** 1 puppy, 4 crates, 4 ice, 4 debris types  
+**Composition:** 1 puppy, 4 crates, 4 ice, 5 debris types  
 **Pressure:** water 10 actions/row  
 **Intent:** teach revealed future value and adjacency literacy  
 **Expected path:** break ice on urgent lane before cashing easier dock sets elsewhere  
@@ -855,7 +855,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 ## Level 5 — Sequencing with mixed blockers
 
 **Geometry:** 6x8  
-**Composition:** 2 puppies, crates + ice, 5 debris types  
+**Composition:** 2 puppies, crates + ice, 6 debris types  
 **Pressure:** water 9 actions/row  
 **Intent:** combine order choice with blocker choice  
 **Expected path:** open lower target through ice first, then pivot top target  
@@ -865,7 +865,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 ## Level 6 — First bigger read
 
 **Geometry:** 7x8  
-**Composition:** 2 puppies, 10 blockers mixed crate/ice, 5 debris types  
+**Composition:** 2 puppies, 10 blockers mixed crate/ice, 6 debris types  
 **Pressure:** water 9 actions/row  
 **Intent:** test first-read readability on a larger board  
 **Expected path:** take central lane, not the broad outer clear  
@@ -875,7 +875,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 ## Level 7 — Vine introduction, static first
 
 **Geometry:** 7x8  
-**Composition:** 1 puppy, 5 crates, 3 vines, 5 debris types  
+**Composition:** 1 puppy, 5 crates, 3 vines, 6 debris types  
 **Pressure:** water 8 actions/row, vine growth off  
 **Intent:** teach vine as visible route blocker before it starts pressuring  
 **Expected path:** clear vine lane because it is obviously shortest  
@@ -885,7 +885,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 ## Level 8 — Vine growth tutorial
 
 **Geometry:** 7x8  
-**Composition:** 1 puppy, 4 crates, 4 vines, 5 debris types  
+**Composition:** 1 puppy, 4 crates, 4 vines, 6 debris types  
 **Pressure:** water 8 actions/row, vine grows every 4 untouched actions  
 **Intent:** teach that ignoring vine creates future cost  
 **Expected path:** cut vine when preview appears, then continue route  
@@ -895,7 +895,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 ## Level 9 — Order plus vine pressure
 
 **Geometry:** 7x8 split into two approach pockets  
-**Composition:** 2 puppies, crates + vines, 5 debris types  
+**Composition:** 2 puppies, crates + vines, 6 debris types  
 **Pressure:** water 8 actions/row, vine every 4 untouched actions  
 **Intent:** make player choose between the lower water threat and the lane that vine is about to worsen  
 **Expected path:** solve water-near puppy first, clip one vine on the way  
@@ -905,7 +905,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 ## Level 10 — First packet midpoint exam
 
 **Geometry:** 7x8 with central choke  
-**Composition:** 2 puppies, mixed crates/ice/vines, 5 debris types  
+**Composition:** 2 puppies, mixed crates/ice/vines, 6 debris types  
 **Pressure:** 1 row pre-flooded, water 7 actions/row  
 **Intent:** pressure first meaningful route planning under all current rules  
 **Expected path:** take choke quickly, then branch  
@@ -925,7 +925,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 ## Level 12 — Three-target readability test
 
 **Geometry:** 7x9 broad board  
-**Composition:** 3 puppies, moderate blockers, 5 debris types  
+**Composition:** 3 puppies, moderate blockers, 6 debris types  
 **Pressure:** 1 row pre-flooded, water 7 actions/row  
 **Intent:** first true triage board  
 **Expected path:** lower-left, then center, then top-right  
@@ -945,7 +945,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 ## Level 14 — Late packet stress test
 
 **Geometry:** 8x9  
-**Composition:** 3 puppies, dense mixed blockers, 5 debris types  
+**Composition:** 3 puppies, dense mixed blockers, 6 debris types  
 **Pressure:** 1 row pre-flooded, water 6 actions/row  
 **Intent:** determine whether the system still feels fair when difficulty rises sharply  
 **Expected path:** commit fully to one rescue, pivot hard to second, ignore tempting low-value clears  

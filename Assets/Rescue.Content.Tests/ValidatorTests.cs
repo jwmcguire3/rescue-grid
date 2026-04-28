@@ -188,7 +188,7 @@ namespace Rescue.Content.Tests
             LevelJson level = TestLevels.MinimalLevel() with
             {
                 Id = "L05",
-                DebrisTypePool = new[] { DebrisType.A, DebrisType.B, DebrisType.C, DebrisType.D },
+                DebrisTypePool = new[] { DebrisType.A, DebrisType.B, DebrisType.C, DebrisType.D, DebrisType.E },
             };
 
             ValidationResult result = Validator.Validate(TestLevels.Serialize(level));

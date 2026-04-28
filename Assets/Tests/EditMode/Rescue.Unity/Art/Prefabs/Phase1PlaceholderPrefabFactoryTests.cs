@@ -71,6 +71,7 @@ namespace Rescue.Unity.Art.Tests
             Assert.That(AssetDatabase.LoadAssetAtPath<GameObject>($"{TempRootPath}/Prefabs/Pieces/Debris_C.prefab"), Is.Not.Null);
             Assert.That(AssetDatabase.LoadAssetAtPath<GameObject>($"{TempRootPath}/Prefabs/Pieces/Debris_D.prefab"), Is.Not.Null);
             Assert.That(AssetDatabase.LoadAssetAtPath<GameObject>($"{TempRootPath}/Prefabs/Pieces/Debris_E.prefab"), Is.Not.Null);
+            Assert.That(AssetDatabase.LoadAssetAtPath<GameObject>($"{TempRootPath}/Prefabs/Pieces/Debris_F.prefab"), Is.Not.Null);
         }
 
         [Test]
@@ -93,6 +94,7 @@ namespace Rescue.Unity.Art.Tests
             Assert.That(LoadPrefab($"{TempRootPath}/Prefabs/Pieces/Debris_C.prefab").transform.localScale.y, Is.EqualTo(0.34f).Within(0.001f));
             Assert.That(LoadPrefab($"{TempRootPath}/Prefabs/Pieces/Debris_D.prefab").transform.localScale.y, Is.EqualTo(0.30f).Within(0.001f));
             Assert.That(LoadPrefab($"{TempRootPath}/Prefabs/Pieces/Debris_E.prefab").transform.localScale.y, Is.EqualTo(0.25f).Within(0.001f));
+            Assert.That(LoadPrefab($"{TempRootPath}/Prefabs/Pieces/Debris_F.prefab").transform.localScale.y, Is.EqualTo(0.30f).Within(0.001f));
 
             Assert.That(LoadPrefab($"{TempRootPath}/Prefabs/Blockers/Crate.prefab").transform.localScale.y, Is.EqualTo(0.90f).Within(0.001f));
             Assert.That(LoadPrefab($"{TempRootPath}/Prefabs/Blockers/Ice.prefab").transform.localScale.y, Is.EqualTo(0.52f).Within(0.001f));

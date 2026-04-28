@@ -341,6 +341,7 @@ namespace Rescue.Content
                 "C" => Assign(DebrisType.C, out debrisType),
                 "D" => Assign(DebrisType.D, out debrisType),
                 "E" => Assign(DebrisType.E, out debrisType),
+                "F" => Assign(DebrisType.F, out debrisType),
                 _ => false,
             };
         }

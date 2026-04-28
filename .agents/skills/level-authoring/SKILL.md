@@ -42,7 +42,7 @@ Full schema documentation lives in `Assets/Rescue/Content/README.md` and is auth
       ...
     ]
   },
-  "debrisTypePool": ["A", "B", "C", "D"],
+  "debrisTypePool": ["A", "B", "C", "D", "F"],
   "baseDistribution": null,
   "targets": [
     { "id": "T0", "row": 5, "col": 1 },
@@ -73,8 +73,8 @@ Full schema documentation lives in `Assets/Rescue/Content/README.md` and is auth
 
 ### Field rules
 
-- `id`: `L01` through `L15` for Phase 1. Must match filename without extension.
-- `debrisTypePool`: 4 entries for L01–L04, 5 entries for L05–L15. Must be distinct. Letters from `A`–`E`.
+- `id`: `L00` through `L15` for Phase 1. Must match filename without extension.
+- `debrisTypePool`: 5 entries for L00–L04 (`A`, `B`, `C`, `D`, `F`), 6 entries for L05–L15 (`A`–`F`). Must be distinct.
 - `baseDistribution`: `null` for even distribution (default). Only use weighted distributions if the level intent calls for it explicitly.
 - `water.riseInterval`: `0` means water is disabled for this level (Phase 1 uses this only on L02).
 - `dock.size`: always `7` in Phase 1. Do not change.
@@ -88,7 +88,7 @@ Full schema documentation lives in `Assets/Rescue/Content/README.md` and is auth
 | Code   | Meaning                        | Notes                                                    |
 |--------|--------------------------------|----------------------------------------------------------|
 | `.`    | Empty tile                     | Gravity settles into these                               |
-| `A`–`E`| Debris of that type            | Must appear in `debrisTypePool`                          |
+| `A`–`F`| Debris of that type            | Must appear in `debrisTypePool`                          |
 | `CR`   | Crate                          | Breaks on 1 adjacent clear                               |
 | `CX`   | Reinforced crate               | Breaks on 2 adjacent clears. **Off by default in Phase 1.** Only use if approved during late-packet tuning. |
 | `I<X>` | Ice with debris X underneath   | E.g. `IA` = ice revealing A on break. X must be in pool. |
@@ -147,15 +147,15 @@ Vine growth fires once per trigger (one new tile per growth event). Never simult
 
 | Levels   | `debrisTypePool` count |
 |----------|------------------------|
-| L01–L04  | 4                      |
-| L05–L15  | 5                      |
+| L00–L04  | 5                      |
+| L05–L15  | 6                      |
 
 ## Per-level design intents (Phase 1 package section 3)
 
 These are the authored design intents for all 15 Phase 1 levels. Do not invent new intents when authoring these levels — execute these.
 
 ### L01 — First rescue
-- **Board:** 6×7. 1 puppy upper-middle. 6 crates. 4 debris types.
+- **Board:** 6×7. 1 puppy upper-middle. 6 crates. 5 debris types.
 - **Water:** starts at 0 rows, 12 actions/row. Dock Jam on.
 - **Intent:** teach tap group, dock clear, rescue extraction, water is coming.
 - **Expected path:** clear lower-center pairs, open direct lane, free puppy before second water rise.
@@ -163,7 +163,7 @@ These are the authored design intents for all 15 Phase 1 levels. Do not invent n
 - **Proves:** the game can deliver "save the puppy" before it reads as abstract clearing.
 
 ### L02 — Dock pressure
-- **Board:** 6×7 with one narrow middle lane. 1 puppy. 8 crates. 4 debris types, denser singles.
+- **Board:** 6×7 with one narrow middle lane. 1 puppy. 8 crates. 5 debris types, denser singles.
 - **Water:** none. Dock Jam on.
 - **Intent:** teach that the dock is not a bag of free storage.
 - **Expected path:** clear with dock discipline, avoid hoarding mismatched singles.
@@ -171,7 +171,7 @@ These are the authored design intents for all 15 Phase 1 levels. Do not invent n
 - **Proves:** losses can read as self-authored even with no hazard present.
 
 ### L03 — Rescue order arrives
-- **Board:** 6×7 split lower-left / upper-right. 2 puppies. 6 crates. 4 debris types.
+- **Board:** 6×7 split lower-left / upper-right. 2 puppies. 6 crates. 5 debris types.
 - **Water:** 10 actions/row.
 - **Intent:** force first clear priority between near-water puppy and easier-but-safer puppy.
 - **Expected path:** save lower puppy first even though upper puppy looks more open.
@@ -179,7 +179,7 @@ These are the authored design intents for all 15 Phase 1 levels. Do not invent n
 - **Proves:** by Level 3, rescue order is the puzzle. **This is the most important level in the packet. Author it with extra care.**
 
 ### L04 — Ice introduction
-- **Board:** 6×7. 1 puppy. 4 crates. 4 ice. 4 debris types.
+- **Board:** 6×7. 1 puppy. 4 crates. 4 ice. 5 debris types.
 - **Water:** 10 actions/row.
 - **Intent:** teach revealed future value and adjacency literacy.
 - **Expected path:** break ice on urgent lane before cashing easier dock sets elsewhere.
@@ -187,7 +187,7 @@ These are the authored design intents for all 15 Phase 1 levels. Do not invent n
 - **Proves:** ice reads immediately and does not muddle the seed.
 
 ### L05 — Sequencing with mixed blockers
-- **Board:** 6×8. 2 puppies. Crates + ice. 5 debris types.
+- **Board:** 6×8. 2 puppies. Crates + ice. 6 debris types.
 - **Water:** 9 actions/row.
 - **Intent:** combine order choice with blocker choice.
 - **Expected path:** open lower target through ice first, then pivot top target.
@@ -195,7 +195,7 @@ These are the authored design intents for all 15 Phase 1 levels. Do not invent n
 - **Proves:** rescue order survives once the board gets slightly messier.
 
 ### L06 — First bigger read
-- **Board:** 7×8. 2 puppies. 10 blockers mixed crate/ice. 5 debris types.
+- **Board:** 7×8. 2 puppies. 10 blockers mixed crate/ice. 6 debris types.
 - **Water:** 9 actions/row.
 - **Intent:** test first-read readability on a larger board.
 - **Expected path:** take central lane, not the broad outer clear.
@@ -203,7 +203,7 @@ These are the authored design intents for all 15 Phase 1 levels. Do not invent n
 - **Proves:** the player can orient in a larger greybox without the game turning mushy.
 
 ### L07 — Vine introduction, static first
-- **Board:** 7×8. 1 puppy. 5 crates. 3 vines. 5 debris types.
+- **Board:** 7×8. 1 puppy. 5 crates. 3 vines. 6 debris types.
 - **Water:** 8 actions/row.
 - **Vine:** growth off (use `growthThreshold: 999` or similar — the validator accepts large thresholds). Or set the vine count such that no growth priority entries exist.
 - **Intent:** teach vine as visible route blocker before it starts pressuring.
@@ -212,7 +212,7 @@ These are the authored design intents for all 15 Phase 1 levels. Do not invent n
 - **Proves:** vine can enter as pressure visualization, not confusion.
 
 ### L08 — Vine growth tutorial
-- **Board:** 7×8. 1 puppy. 4 crates. 4 vines. 5 debris types.
+- **Board:** 7×8. 1 puppy. 4 crates. 4 vines. 6 debris types.
 - **Water:** 8 actions/row. Vine growth threshold: 4.
 - **Intent:** teach that ignoring vine creates future cost.
 - **Expected path:** cut vine when preview appears, then continue route.
@@ -220,7 +220,7 @@ These are the authored design intents for all 15 Phase 1 levels. Do not invent n
 - **Proves:** route urgency can be visual and fair.
 
 ### L09 — Order plus vine pressure
-- **Board:** 7×8 split into two approach pockets. 2 puppies. Crates + vines. 5 debris types.
+- **Board:** 7×8 split into two approach pockets. 2 puppies. Crates + vines. 6 debris types.
 - **Water:** 8 actions/row. Vine threshold: 4.
 - **Intent:** make player choose between the lower water threat and the lane that vine is about to worsen.
 - **Expected path:** solve water-near puppy first, clip one vine on the way.
@@ -228,7 +228,7 @@ These are the authored design intents for all 15 Phase 1 levels. Do not invent n
 - **Proves:** the prototype can create triage, not just obstacle management.
 
 ### L10 — First packet midpoint exam
-- **Board:** 7×8 with central choke. 2 puppies. Mixed crates/ice/vines. 5 debris types.
+- **Board:** 7×8 with central choke. 2 puppies. Mixed crates/ice/vines. 6 debris types.
 - **Pressure:** 1 row pre-flooded. Water 7 actions/row.
 - **Intent:** pressure first meaningful route planning under all current rules.
 - **Expected path:** take choke quickly, then branch.
@@ -244,7 +244,7 @@ These are the authored design intents for all 15 Phase 1 levels. Do not invent n
 - **Proves:** order remains legible even when the board tempts the wrong answer.
 
 ### L12 — Three-target readability test
-- **Board:** 7×9 broad board. 3 puppies. Moderate blockers. 5 debris types.
+- **Board:** 7×9 broad board. 3 puppies. Moderate blockers. 6 debris types.
 - **Pressure:** 1 row pre-flooded. Water 7 actions/row.
 - **Intent:** first true triage board.
 - **Expected path:** lower-left, then center, then top-right.
@@ -260,7 +260,7 @@ These are the authored design intents for all 15 Phase 1 levels. Do not invent n
 - **Proves:** vine supports the seed rather than becoming a side mechanic.
 
 ### L14 — Late packet stress test
-- **Board:** 8×9. 3 puppies. Dense mixed blockers. 5 debris types.
+- **Board:** 8×9. 3 puppies. Dense mixed blockers. 6 debris types.
 - **Pressure:** 1 row pre-flooded. Water 6 actions/row. Vine threshold: 3.
 - **Intent:** determine whether the system still feels fair when difficulty rises sharply.
 - **Expected path:** commit fully to one rescue, pivot hard to second, ignore tempting low-value clears.
@@ -327,8 +327,8 @@ These are the authoring errors that show up most often. Check against this list 
 ### Validator errors
 
 - **Tile grid size mismatch.** `tiles.length != board.height`, or a row length mismatch. Count rows and columns manually; JSON arrays are easy to miscount.
-- **Debris code not in pool.** A tile uses `E` but `debrisTypePool` only has `A`–`D`. Happens when adapting a 5-pool level down to 4.
-- **Ice hidden code not in pool.** `IE` in a 4-pool level. Same root cause as above.
+- **Debris code not in pool.** A tile uses `F` but `debrisTypePool` only has `A`–`E`. Happens when adapting a 6-pool level down to 5.
+- **Ice hidden code not in pool.** `IF` in a 5-pool level. Same root cause as above.
 - **Target coord/id mismatch.** `targets[]` says `T0` is at `(5, 1)` but `tiles[5][1]` is `T1`. Keep the two in sync every time you move a target.
 - **Vine growth priority out of bounds.** Easy to miss because the validator only checks bounds, not reachability.
 - **Out-of-band assistance chance.** `0.7` is correct for L01–L03; `70` is wrong. It's a fraction, not a percent.
