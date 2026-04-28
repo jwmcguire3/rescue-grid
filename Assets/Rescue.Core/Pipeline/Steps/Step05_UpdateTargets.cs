@@ -19,6 +19,14 @@ namespace Rescue.Core.Pipeline.Steps
 
                 if (!before.Extracted)
                 {
+                    (board, ImmutableArray<TileCoord> newlyLockedCoords) = LockOpenRequiredNeighbors(
+                        board,
+                        before);
+                    if (!newlyLockedCoords.IsDefaultOrEmpty)
+                    {
+                        events.Add(new TargetRescuePathLocked(before.TargetId, newlyLockedCoords));
+                    }
+
                     int blockedRequiredNeighbors = CountBlockedRequiredNeighbors(
                         board,
                         before.Coord,
@@ -57,6 +65,7 @@ namespace Rescue.Core.Pipeline.Steps
 
             GameState updatedState = state with
             {
+                Board = board,
                 Targets = targets.ToImmutable(),
             };
             StepContext updatedContext = context with
@@ -64,6 +73,43 @@ namespace Rescue.Core.Pipeline.Steps
                 LatchedTargetIdsThisAction = latchedTargetIds.ToImmutable(),
             };
             return new StepResult(updatedState, updatedContext, events.ToImmutable());
+        }
+
+        private static (
+            Board Board,
+            ImmutableArray<TileCoord> NewlyLockedCoords) LockOpenRequiredNeighbors(
+            Board board,
+            TargetState target)
+        {
+            Board updatedBoard = board;
+            ImmutableArray<TileCoord>.Builder newlyLockedCoords = ImmutableArray.CreateBuilder<TileCoord>();
+            ImmutableArray<TileCoord> neighbors = BoardHelpers.OrthogonalNeighbors(board, target.Coord);
+
+            for (int i = 0; i < neighbors.Length; i++)
+            {
+                TileCoord neighbor = neighbors[i];
+                Tile tile = BoardHelpers.GetTile(updatedBoard, neighbor);
+                if (tile is EmptyTile)
+                {
+                    updatedBoard = BoardHelpers.SetTile(
+                        updatedBoard,
+                        neighbor,
+                        new RescuePathTile(ImmutableArray.Create(target.TargetId)));
+                    newlyLockedCoords.Add(neighbor);
+                    continue;
+                }
+
+                if (tile is RescuePathTile rescuePath && !ContainsTargetId(rescuePath.TargetIds, target.TargetId))
+                {
+                    updatedBoard = BoardHelpers.SetTile(
+                        updatedBoard,
+                        neighbor,
+                        rescuePath with { TargetIds = rescuePath.TargetIds.Add(target.TargetId) });
+                    newlyLockedCoords.Add(neighbor);
+                }
+            }
+
+            return (updatedBoard, newlyLockedCoords.ToImmutable());
         }
 
         private static TargetReadiness CalculateReadiness(Board board, TileCoord targetCoord, int blockedRequiredNeighbors)
@@ -110,7 +156,9 @@ namespace Rescue.Core.Pipeline.Steps
             for (int i = 0; i < neighbors.Length; i++)
             {
                 Tile tile = BoardHelpers.GetTile(board, neighbors[i]);
-                bool open = tile is EmptyTile || (treatFloodedAsOpen && tile is FloodedTile);
+                bool open = tile is EmptyTile
+                    || tile is RescuePathTile
+                    || (treatFloodedAsOpen && tile is FloodedTile);
                 if (!open)
                 {
                     blocked++;
@@ -118,6 +166,19 @@ namespace Rescue.Core.Pipeline.Steps
             }
 
             return blocked;
+        }
+
+        private static bool ContainsTargetId(ImmutableArray<string> targetIds, string targetId)
+        {
+            for (int i = 0; i < targetIds.Length; i++)
+            {
+                if (targetIds[i] == targetId)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

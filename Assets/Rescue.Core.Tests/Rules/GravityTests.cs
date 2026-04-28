@@ -72,6 +72,23 @@ namespace Rescue.Core.Tests.Rules
         }
 
         [Test]
+        public void RescuePathTileBlocksGravityRefill()
+        {
+            GameState state = PipelineTestFixtures.CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    ImmutableArray.Create<Tile>(new DebrisTile(DebrisType.A)),
+                    ImmutableArray.Create<Tile>(new RescuePathTile(ImmutableArray.Create("target"))),
+                    ImmutableArray.Create<Tile>(new EmptyTile())));
+
+            StepResult result = Step07_Gravity.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
+
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(0, 0)), Is.EqualTo(new DebrisTile(DebrisType.A)));
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(1, 0)), Is.TypeOf<RescuePathTile>());
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(2, 0)), Is.TypeOf<EmptyTile>());
+            Assert.That(result.Events, Is.Empty);
+        }
+
+        [Test]
         public void GravityIsIdempotent()
         {
             GameState state = PipelineTestFixtures.CreateState(

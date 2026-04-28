@@ -55,6 +55,7 @@ namespace Rescue.Unity.Presentation
 
                 case TargetProgressed:
                 case TargetOneClearAway:
+                case TargetRescuePathLocked:
                 case TargetDistressedEntered:
                 case TargetDistressedRecovered:
                 case TargetDistressedExpired:

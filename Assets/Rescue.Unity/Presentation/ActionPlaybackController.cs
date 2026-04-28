@@ -209,6 +209,9 @@ namespace Rescue.Unity.Presentation
                 case TargetExtracted extracted:
                     boardContent?.AnimateTargetExtract(extracted);
                     break;
+                case TargetRescuePathLocked locked:
+                    boardContent?.AnimateRescuePathLocked(locked);
+                    break;
                 case WaterWarning:
                     ResolveWaterView()?.AnimateForecastTransition(
                         previousState,

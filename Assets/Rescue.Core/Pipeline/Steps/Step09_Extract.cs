@@ -30,6 +30,7 @@ namespace Rescue.Core.Pipeline.Steps
                     if (!before.Extracted && after.Extracted)
                     {
                         board = BoardHelpers.SetTile(board, after.Coord, new EmptyTile());
+                        board = ReleaseRescuePathTiles(board, after.TargetId, after.Coord);
                         extractedOrder = extractedOrder.Add(after.TargetId);
                         extractedTargetIds.Add(after.TargetId);
                         events.Add(new TargetExtracted(after.TargetId, after.Coord));
@@ -50,6 +51,42 @@ namespace Rescue.Core.Pipeline.Steps
                 ExtractedTargetIdsThisAction = extractedTargetIds.ToImmutable(),
             };
             return new StepResult(updatedState, updatedContext, events.ToImmutable());
+        }
+
+        private static Board ReleaseRescuePathTiles(Board board, string targetId, TileCoord targetCoord)
+        {
+            Board updatedBoard = board;
+            ImmutableArray<TileCoord> neighbors = BoardHelpers.OrthogonalNeighbors(board, targetCoord);
+            for (int i = 0; i < neighbors.Length; i++)
+            {
+                TileCoord neighbor = neighbors[i];
+                if (BoardHelpers.GetTile(updatedBoard, neighbor) is not RescuePathTile rescuePath)
+                {
+                    continue;
+                }
+
+                ImmutableArray<string> updatedTargetIds = RemoveTargetId(rescuePath.TargetIds, targetId);
+                updatedBoard = BoardHelpers.SetTile(
+                    updatedBoard,
+                    neighbor,
+                    updatedTargetIds.IsEmpty ? new EmptyTile() : rescuePath with { TargetIds = updatedTargetIds });
+            }
+
+            return updatedBoard;
+        }
+
+        private static ImmutableArray<string> RemoveTargetId(ImmutableArray<string> targetIds, string targetId)
+        {
+            ImmutableArray<string>.Builder builder = ImmutableArray.CreateBuilder<string>(targetIds.Length);
+            for (int i = 0; i < targetIds.Length; i++)
+            {
+                if (targetIds[i] != targetId)
+                {
+                    builder.Add(targetIds[i]);
+                }
+            }
+
+            return builder.ToImmutable();
         }
     }
 }

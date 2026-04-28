@@ -101,7 +101,7 @@ namespace Rescue.Core.Pipeline.Steps
 
         private static bool IsGravityBarrier(Tile tile)
         {
-            return tile is FloodedTile or BlockerTile or TargetTile;
+            return tile is FloodedTile or BlockerTile or TargetTile or RescuePathTile;
         }
     }
 }

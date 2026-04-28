@@ -189,6 +189,8 @@ This order is a locked rules contract. If action order is fuzzy, fairness become
 
 5. **Target state update and extraction latch**
    - All targets update their visible rescue-readiness state.
+   - Any open required orthogonal neighbor of an unextracted target becomes locked rescue-path empty.
+   - Locked rescue-path empty tiles remain empty through gravity and spawn until that target extracts.
    - Any target with all required orthogonal neighbors open becomes extractable immediately.
    - Extractable state latches now.
    - Latching happens before dock insertion, gravity, spawn, and hazard advance.
@@ -448,6 +450,8 @@ A target extracts when all required orthogonal neighbors are open.
 - Interior target: 4 sides
 - Edge target: all existing orthogonal sides
 - Corner target: 2 sides
+
+Open required neighbors become locked rescue-path empty as soon as target state updates. These tiles are visually distinct from ordinary empty spaces and cannot be refilled by gravity or spawn before the rescue resolves.
 
 ### Extraction latch
 

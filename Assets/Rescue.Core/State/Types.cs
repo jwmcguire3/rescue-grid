@@ -19,6 +19,8 @@ namespace Rescue.Core.State
 
     public sealed record EmptyTile : Tile;
 
+    public sealed record RescuePathTile(ImmutableArray<string> TargetIds) : Tile;
+
     public sealed record DebrisTile(DebrisType Type) : Tile;
 
     public enum BlockerType

@@ -842,7 +842,7 @@ namespace Rescue.Core.Rules
 
         private static bool IsOpenRequiredNeighbor(Tile tile)
         {
-            return tile is EmptyTile;
+            return tile is EmptyTile or RescuePathTile;
         }
 
         private static bool IsRouteAdjacent(TileCoord coord, UrgentRoute route)

@@ -51,10 +51,8 @@ namespace Rescue.Core.Tests.Rules
             Assert.That(result.State.Targets[0].OneClearAway, Is.True);
             Assert.That(result.State.Targets[0].ExtractableLatched, Is.False);
             Assert.That(result.State.ExtractedTargetOrder, Is.Empty);
-            Assert.That(result.Events, Is.EqualTo(new ActionEvent[]
-            {
-                new TargetOneClearAway("target", new TileCoord(1, 1)),
-            }).AsCollection);
+            AssertRescuePathEvent(result.Events, "target", new TileCoord(0, 1), new TileCoord(1, 2), new TileCoord(2, 1));
+            Assert.That(result.Events, Has.Some.EqualTo(new TargetOneClearAway("target", new TileCoord(1, 1))));
         }
 
         [Test]
@@ -142,10 +140,7 @@ namespace Rescue.Core.Tests.Rules
             StepResult result = Step05_UpdateTargets.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
 
             Assert.That(result.State.Targets[0].Readiness, Is.EqualTo(TargetReadiness.OneClearAway));
-            Assert.That(result.Events, Is.EqualTo(new ActionEvent[]
-            {
-                new TargetOneClearAway("target", new TileCoord(0, 1)),
-            }).AsCollection);
+            Assert.That(result.Events, Has.Some.EqualTo(new TargetOneClearAway("target", new TileCoord(0, 1))));
         }
 
         [Test]
@@ -160,10 +155,7 @@ namespace Rescue.Core.Tests.Rules
             StepResult result = Step05_UpdateTargets.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(1, 0))));
 
             Assert.That(result.State.Targets[0].Readiness, Is.EqualTo(TargetReadiness.OneClearAway));
-            Assert.That(result.Events, Is.EqualTo(new ActionEvent[]
-            {
-                new TargetOneClearAway("target", new TileCoord(0, 0)),
-            }).AsCollection);
+            Assert.That(result.Events, Has.Some.EqualTo(new TargetOneClearAway("target", new TileCoord(0, 0))));
         }
 
         [Test]
@@ -179,10 +171,7 @@ namespace Rescue.Core.Tests.Rules
             StepResult result = Step05_UpdateTargets.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 1))));
 
             Assert.That(result.State.Targets[0].Readiness, Is.EqualTo(TargetReadiness.Progressing));
-            Assert.That(result.Events, Is.EqualTo(new ActionEvent[]
-            {
-                new TargetProgressed("target", new TileCoord(1, 1)),
-            }).AsCollection);
+            Assert.That(result.Events, Has.Some.EqualTo(new TargetProgressed("target", new TileCoord(1, 1))));
         }
 
         [Test]
@@ -198,10 +187,7 @@ namespace Rescue.Core.Tests.Rules
             StepResult result = Step05_UpdateTargets.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 1))));
 
             Assert.That(result.State.Targets[0].Readiness, Is.EqualTo(TargetReadiness.OneClearAway));
-            Assert.That(result.Events, Is.EqualTo(new ActionEvent[]
-            {
-                new TargetOneClearAway("target", new TileCoord(1, 1)),
-            }).AsCollection);
+            Assert.That(result.Events, Has.Some.EqualTo(new TargetOneClearAway("target", new TileCoord(1, 1))));
         }
 
         [Test]
@@ -218,10 +204,7 @@ namespace Rescue.Core.Tests.Rules
 
             Assert.That(result.State.Targets[0].Readiness, Is.EqualTo(TargetReadiness.ExtractableLatched));
             Assert.That(result.Context.LatchedTargetIdsThisAction, Is.EqualTo(new[] { "target" }).AsCollection);
-            Assert.That(result.Events, Is.EqualTo(new ActionEvent[]
-            {
-                new TargetExtractionLatched("target", new TileCoord(1, 1)),
-            }).AsCollection);
+            Assert.That(result.Events, Has.Some.EqualTo(new TargetExtractionLatched("target", new TileCoord(1, 1))));
         }
 
         [Test]
@@ -258,7 +241,7 @@ namespace Rescue.Core.Tests.Rules
                 alreadyOneClearAway,
                 StepContext.Create(alreadyOneClearAway, new ActionInput(new TileCoord(0, 0))));
 
-            Assert.That(repeatedState.Events, Is.Empty);
+            Assert.That(repeatedState.Events, Has.None.TypeOf<TargetOneClearAway>());
 
             GameState noLongerOneClearAway = CreateStateForStep(
                 PipelineTestFixtures.CreateBoard(
@@ -272,10 +255,7 @@ namespace Rescue.Core.Tests.Rules
                 StepContext.Create(noLongerOneClearAway, new ActionInput(new TileCoord(0, 0))));
 
             Assert.That(downgradedState.State.Targets[0].Readiness, Is.EqualTo(TargetReadiness.Progressing));
-            Assert.That(downgradedState.Events, Is.EqualTo(new ActionEvent[]
-            {
-                new TargetProgressed("target", new TileCoord(1, 1)),
-            }).AsCollection);
+            Assert.That(downgradedState.Events, Has.Some.EqualTo(new TargetProgressed("target", new TileCoord(1, 1))));
         }
 
         [Test]
@@ -408,12 +388,91 @@ namespace Rescue.Core.Tests.Rules
             StepResult result = Step05_UpdateTargets.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
 
             Assert.That(result.State.Targets[0].Readiness, Is.EqualTo(TargetReadiness.ExtractableLatched));
-            Assert.That(result.Events, Is.Empty);
+            Assert.That(result.Events, Has.None.TypeOf<TargetExtractionLatched>());
+        }
+
+        [Test]
+        public void TargetUpdateLocksOpenRequiredNeighborsAsRescuePath()
+        {
+            GameState state = CreateStateForStep(
+                PipelineTestFixtures.CreateBoard(
+                    Row(new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                    Row(new DebrisTile(DebrisType.B), new TargetTile("target", Extracted: false), new EmptyTile()),
+                    Row(new EmptyTile(), new EmptyTile(), new EmptyTile())),
+                new TargetState("target", new TileCoord(1, 1), TargetReadiness.Trapped));
+
+            StepResult result = Step05_UpdateTargets.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 1))));
+
+            AssertRescuePath(result.State.Board, new TileCoord(0, 1), "target");
+            AssertRescuePath(result.State.Board, new TileCoord(1, 2), "target");
+            AssertRescuePath(result.State.Board, new TileCoord(2, 1), "target");
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(1, 0)), Is.TypeOf<DebrisTile>());
+            AssertRescuePathEvent(result.Events, "target", new TileCoord(0, 1), new TileCoord(1, 2), new TileCoord(2, 1));
+        }
+
+        [Test]
+        public void RescuePathCountsAsOpenForExtraction()
+        {
+            GameState state = CreateStateForStep(
+                PipelineTestFixtures.CreateBoard(
+                    Row(new EmptyTile(), new RescuePathTile(ImmutableArray.Create("target")), new EmptyTile()),
+                    Row(new RescuePathTile(ImmutableArray.Create("target")), new TargetTile("target", Extracted: false), new RescuePathTile(ImmutableArray.Create("target"))),
+                    Row(new EmptyTile(), new RescuePathTile(ImmutableArray.Create("target")), new EmptyTile())),
+                new TargetState("target", new TileCoord(1, 1), TargetReadiness.OneClearAway));
+
+            StepResult result = Step05_UpdateTargets.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 1))));
+
+            Assert.That(result.State.Targets[0].Readiness, Is.EqualTo(TargetReadiness.ExtractableLatched));
+            Assert.That(result.Context.LatchedTargetIdsThisAction, Is.EqualTo(new[] { "target" }).AsCollection);
+        }
+
+        [Test]
+        public void ExtractionReleasesOnlyThatTargetsRescuePathLocks()
+        {
+            GameState state = CreateStateForStep(
+                PipelineTestFixtures.CreateBoard(
+                    Row(new EmptyTile(), new RescuePathTile(ImmutableArray.Create("target", "other")), new EmptyTile()),
+                    Row(new RescuePathTile(ImmutableArray.Create("target")), new TargetTile("target", Extracted: false), new RescuePathTile(ImmutableArray.Create("target"))),
+                    Row(new EmptyTile(), new RescuePathTile(ImmutableArray.Create("target")), new EmptyTile())),
+                new TargetState("target", new TileCoord(1, 1), TargetReadiness.ExtractableLatched));
+
+            StepResult result = Step09_Extract.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 1))));
+
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(1, 0)), Is.TypeOf<EmptyTile>());
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(1, 2)), Is.TypeOf<EmptyTile>());
+            AssertRescuePath(result.State.Board, new TileCoord(0, 1), "other");
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(1, 1)), Is.TypeOf<EmptyTile>());
         }
 
         private static GameState CreateStateForStep(Board board, TargetState target)
         {
             return PipelineTestFixtures.CreateState(board, ImmutableArray.Create(target));
+        }
+
+        private static void AssertRescuePath(Board board, TileCoord coord, string targetId)
+        {
+            Assert.That(BoardHelpers.GetTile(board, coord), Is.TypeOf<RescuePathTile>());
+            RescuePathTile rescuePath = (RescuePathTile)BoardHelpers.GetTile(board, coord);
+            Assert.That(rescuePath.TargetIds, Does.Contain(targetId));
+        }
+
+        private static void AssertRescuePathEvent(
+            ImmutableArray<ActionEvent> events,
+            string targetId,
+            params TileCoord[] expectedCoords)
+        {
+            for (int i = 0; i < events.Length; i++)
+            {
+                if (events[i] is not TargetRescuePathLocked locked || locked.TargetId != targetId)
+                {
+                    continue;
+                }
+
+                Assert.That(locked.Coords, Is.EqualTo(expectedCoords).AsCollection);
+                return;
+            }
+
+            Assert.Fail($"Expected {nameof(TargetRescuePathLocked)} for target '{targetId}'.");
         }
 
         private static StepResult RunUpdateAndExtract(GameState state)

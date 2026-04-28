@@ -233,7 +233,7 @@ namespace Rescue.Core.Pipeline
                 {
                     TileCoord neighbor = neighbors[j];
                     Tile tile = BoardHelpers.GetTile(state.Board, neighbor);
-                    if (tile is EmptyTile)
+                    if (tile is EmptyTile or RescuePathTile)
                     {
                         continue;
                     }

@@ -193,6 +193,22 @@ namespace Rescue.Core.Tests.Rules
         }
 
         [Test]
+        public void Step08SpawnDoesNotFillRescuePathTiles()
+        {
+            GameState state = CreateSpawnState(
+                PipelineTestFixtures.CreateBoard(
+                    Row(new RescuePathTile(ImmutableArray.Create("target"))),
+                    Row(new EmptyTile())),
+                assistanceChance: 0.0d);
+
+            StepResult result = Step08_Spawn.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
+
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(0, 0)), Is.TypeOf<RescuePathTile>());
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(1, 0)), Is.TypeOf<EmptyTile>());
+            Assert.That(result.Events, Is.Empty);
+        }
+
+        [Test]
         public void SpawnIntegrity_AllowsGroupsOfFourAndFive()
         {
             Board fourBoard = PipelineTestFixtures.CreateBoard(

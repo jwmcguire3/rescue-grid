@@ -94,6 +94,8 @@ namespace Rescue.Core.Pipeline
 
     public sealed record TargetOneClearAway(string TargetId, TileCoord Coord) : ActionEvent;
 
+    public sealed record TargetRescuePathLocked(string TargetId, ImmutableArray<TileCoord> Coords) : ActionEvent;
+
     public sealed record TargetExtractionLatched(string TargetId, TileCoord Coord) : ActionEvent;
 
     public sealed record TargetExtracted(string TargetId, TileCoord Coord) : ActionEvent;

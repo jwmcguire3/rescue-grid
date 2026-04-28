@@ -21,6 +21,7 @@ namespace Rescue.Unity.BoardPresentation
         private const float MoveLandingPhaseRatio = 0.35f;
         private const string VinePreviewLabel = "VineGrowthPreview";
         private const string LastObstacleLabel = "TargetLastObstacle";
+        private const string RescuePathLabel = "RescuePath";
         private static readonly Vector3 HiddenDebrisScale = new Vector3(0.75f, 0.75f, 0.75f);
         private static readonly Color TargetTrappedColor = new Color(0.62f, 0.72f, 0.92f, 0.82f);
         private static readonly Color TargetProgressingColor = new Color(0.86f, 0.95f, 0.76f, 1f);
@@ -28,6 +29,7 @@ namespace Rescue.Unity.BoardPresentation
         private static readonly Color TargetExtractableColor = new Color(1f, 0.64f, 0.24f, 1f);
         private static readonly Color TargetDistressedColor = new Color(0.35f, 0.72f, 1f, 1f);
         private static readonly Color VinePreviewColor = new Color(0.52f, 0.95f, 0.48f, 0.72f);
+        private static readonly Color RescuePathColor = new Color(1f, 0.72f, 0.32f, 0.54f);
         private static readonly Vector3 TargetTrappedScale = new Vector3(0.92f, 0.92f, 0.92f);
         private static readonly Vector3 TargetProgressingScale = new Vector3(1f, 1f, 1f);
         private static readonly Vector3 TargetOneClearAwayScale = new Vector3(1.08f, 1.08f, 1.08f);
@@ -97,6 +99,7 @@ namespace Rescue.Unity.BoardPresentation
             HashSet<TileCoord> expectedDebris = new HashSet<TileCoord>();
             HashSet<TileCoord> expectedBlockers = new HashSet<TileCoord>();
             HashSet<TileCoord> expectedHiddenDebris = new HashSet<TileCoord>();
+            HashSet<TileCoord> expectedRescuePath = new HashSet<TileCoord>();
             HashSet<string> expectedTargets = new HashSet<string>();
             Dictionary<string, TargetState> targetsById = CreateTargetsById(state);
             ClearTargetObstacleMarkers();
@@ -122,6 +125,7 @@ namespace Rescue.Unity.BoardPresentation
                         expectedDebris,
                         expectedBlockers,
                         expectedHiddenDebris,
+                        expectedRescuePath,
                         expectedTargets,
                         targetsById);
                 }
@@ -132,6 +136,7 @@ namespace Rescue.Unity.BoardPresentation
             RemoveUnexpectedPieces(visualRegistry.Debris, expectedDebris);
             RemoveUnexpectedPieces(visualRegistry.Blockers, expectedBlockers);
             RemoveUnexpectedPieces(visualRegistry.HiddenDebris, expectedHiddenDebris);
+            RemoveUnexpectedPieces(visualRegistry.RescuePath, expectedRescuePath);
             RemoveUnexpectedTargets(expectedTargets);
             RemoveUntrackedContentObjects();
         }
@@ -380,6 +385,20 @@ namespace Rescue.Unity.BoardPresentation
             StartCoroutine(AnimateTargetExtractRoutine(extraction.TargetId, targetObject, effectiveDurationSeconds));
         }
 
+        public void AnimateRescuePathLocked(TargetRescuePathLocked lockedPath)
+        {
+            for (int i = 0; i < lockedPath.Coords.Length; i++)
+            {
+                TileCoord coord = lockedPath.Coords[i];
+                if (!TryGetAnchor(coord, out Transform anchor))
+                {
+                    continue;
+                }
+
+                EnsureRescuePathVisual(coord, anchor);
+            }
+        }
+
         public bool TryGetTargetInstance(string targetId, out GameObject? targetObject)
         {
             if (string.IsNullOrWhiteSpace(targetId))
@@ -602,6 +621,7 @@ namespace Rescue.Unity.BoardPresentation
             HashSet<TileCoord> expectedDebris,
             HashSet<TileCoord> expectedBlockers,
             HashSet<TileCoord> expectedHiddenDebris,
+            HashSet<TileCoord> expectedRescuePath,
             HashSet<string> expectedTargets,
             IReadOnlyDictionary<string, TargetState> targetsById)
         {
@@ -609,6 +629,10 @@ namespace Rescue.Unity.BoardPresentation
             {
                 case EmptyTile:
                 case FloodedTile:
+                    return;
+                case RescuePathTile:
+                    expectedRescuePath.Add(coord);
+                    EnsureRescuePathVisual(coord, anchor);
                     return;
                 case DebrisTile debrisTile:
                     expectedDebris.Add(coord);
@@ -655,6 +679,25 @@ namespace Rescue.Unity.BoardPresentation
                     return;
                 default:
                     return;
+            }
+        }
+
+        private void EnsureRescuePathVisual(TileCoord coord, Transform anchor)
+        {
+            EnsurePieceVisual(
+                visualRegistry.RescuePath,
+                coord,
+                RescuePathLabel,
+                ResolveFallbackPrefab("rescue path glow"),
+                anchor,
+                contentYOffset * 0.22f,
+                new Vector3(0.86f, 0.05f, 0.86f));
+
+            if (visualRegistry.RescuePath.TryGet(coord, out BoardPieceView? pathView)
+                && pathView is not null
+                && pathView.Object != null)
+            {
+                ApplyTint(pathView.Object, RescuePathColor);
             }
         }
 
@@ -1656,11 +1699,14 @@ namespace Rescue.Unity.BoardPresentation
 
             public BoardPieceRegistry HiddenDebris { get; } = new BoardPieceRegistry();
 
+            public BoardPieceRegistry RescuePath { get; } = new BoardPieceRegistry();
+
             public void AddTrackedObjects(ISet<GameObject> trackedObjects)
             {
                 Debris.AddTrackedObjects(trackedObjects);
                 Blockers.AddTrackedObjects(trackedObjects);
                 HiddenDebris.AddTrackedObjects(trackedObjects);
+                RescuePath.AddTrackedObjects(trackedObjects);
             }
 
             public void Clear()
@@ -1668,6 +1714,7 @@ namespace Rescue.Unity.BoardPresentation
                 Debris.Clear();
                 Blockers.Clear();
                 HiddenDebris.Clear();
+                RescuePath.Clear();
             }
         }
 

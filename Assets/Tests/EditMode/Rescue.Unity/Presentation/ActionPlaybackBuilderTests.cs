@@ -432,6 +432,7 @@ namespace Rescue.Unity.Presentation.Tests
                     new BlockerBroken(new TileCoord(0, 2), BlockerType.Crate),
                     new IceRevealed(new TileCoord(1, 0), DebrisType.B),
                     new TargetProgressed("pup-1", new TileCoord(2, 1)),
+                    new TargetRescuePathLocked("pup-1", ImmutableArray.Create(new TileCoord(2, 0))),
                     new TargetOneClearAway("pup-1", new TileCoord(2, 1)),
                     new TargetExtractionLatched("pup-1", new TileCoord(2, 1)),
                     new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 1, OverflowCount: 0),
@@ -454,6 +455,7 @@ namespace Rescue.Unity.Presentation.Tests
                 ("BlockerBroken", ActionPlaybackStepType.BreakBlockerOrReveal),
                 ("IceRevealed", ActionPlaybackStepType.BreakBlockerOrReveal),
                 ("TargetProgressed", ActionPlaybackStepType.TargetReaction),
+                ("TargetRescuePathLocked", ActionPlaybackStepType.TargetReaction),
                 ("TargetOneClearAway", ActionPlaybackStepType.TargetReaction),
                 ("TargetExtractionLatched", ActionPlaybackStepType.TargetLatch),
                 ("DockInserted", ActionPlaybackStepType.DockFeedback),
@@ -479,6 +481,7 @@ namespace Rescue.Unity.Presentation.Tests
                 new ActionInput(new TileCoord(0, 0)),
                 CreateResult(
                     new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1))),
+                    new TargetRescuePathLocked("pup-1", ImmutableArray.Create(new TileCoord(2, 0))),
                     new TargetProgressed("pup-1", new TileCoord(2, 1)),
                     new TargetOneClearAway("pup-1", new TileCoord(2, 1)),
                     new TargetExtractionLatched("pup-1", new TileCoord(2, 1)),
@@ -488,6 +491,7 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(plan.Take(plan.Count - 1).Select(step => (step.SourceEventName, step.StepType)), Is.EqualTo(new[]
             {
                 (nameof(GroupRemoved), ActionPlaybackStepType.RemoveGroup),
+                (nameof(TargetRescuePathLocked), ActionPlaybackStepType.TargetReaction),
                 (nameof(TargetProgressed), ActionPlaybackStepType.TargetReaction),
                 (nameof(TargetOneClearAway), ActionPlaybackStepType.TargetReaction),
                 (nameof(TargetExtractionLatched), ActionPlaybackStepType.TargetLatch),

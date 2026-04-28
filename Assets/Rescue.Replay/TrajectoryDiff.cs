@@ -125,6 +125,7 @@ namespace Rescue.Replay
             return tile switch
             {
                 EmptyTile => ".",
+                RescuePathTile rescuePath => "P[" + string.Join("&", rescuePath.TargetIds) + "]",
                 FloodedTile => "~",
                 DebrisTile debris => debris.Type.ToString(),
                 BlockerTile blocker when blocker.Type == BlockerType.Crate => blocker.Hp > 1 ? "CX" : "CR",
