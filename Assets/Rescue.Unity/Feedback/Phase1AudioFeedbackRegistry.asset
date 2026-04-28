@@ -12,4 +12,163 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48ed87807a40f9c4ab920e662b156cc5, type: 3}
   m_Name: Phase1AudioFeedbackRegistry
   m_EditorClassIdentifier: Rescue.Unity::Rescue.Unity.Feedback.AudioFeedbackRegistry
-  entries: []
+  entries:
+  - eventId: 0
+    clips:
+    - {fileID: 8300000, guid: da032702e3a6c6f4fb8f839e517b011b, type: 3}
+    - {fileID: 8300000, guid: a7a733e5d5c77cf4b896c5f4689737c9, type: 3}
+    volume: 0.45
+    pitchVariance: 0.03
+    maxPlaysPerRoute: 1
+  - eventId: 1
+    clips:
+    - {fileID: 8300000, guid: bd69380aa346b24498f64f5e07100ea5, type: 3}
+    - {fileID: 8300000, guid: e0a0fb5fe948ee44fa4ee9012aeef66a, type: 3}
+    - {fileID: 8300000, guid: 6b57f9345a47d3f4889892a73afa4c4f, type: 3}
+    - {fileID: 8300000, guid: f6c5b04938a3ad44385d6514babe66c6, type: 3}
+    - {fileID: 8300000, guid: 43d1e243ddb4f9d4b8c6fb1093c47340, type: 3}
+    - {fileID: 8300000, guid: 092074f5fd05dc346a8e495d2e0f9e25, type: 3}
+    volume: 0.7
+    pitchVariance: 0.04
+    maxPlaysPerRoute: 1
+  - eventId: 2
+    clips:
+    - {fileID: 8300000, guid: 92e2cf8e15badbc4ab07b939ba2a9416, type: 3}
+    - {fileID: 8300000, guid: a2a174371a4a1384ab0a4aa2310d8c0a, type: 3}
+    - {fileID: 8300000, guid: 0d24ec146d3d31642a099fcec179fbfc, type: 3}
+    volume: 0.6
+    pitchVariance: 0.05
+    maxPlaysPerRoute: 1
+  - eventId: 3
+    clips:
+    - {fileID: 8300000, guid: 761b25cb9f18d294e8f6a92af7fca4d0, type: 3}
+    volume: 0.75
+    pitchVariance: 0.03
+    maxPlaysPerRoute: 1
+  - eventId: 4
+    clips:
+    - {fileID: 8300000, guid: 61e3f78b550a7844abda898f616fcbd8, type: 3}
+    - {fileID: 8300000, guid: ae4067e7eb8810a478d6e4620b0cb459, type: 3}
+    - {fileID: 8300000, guid: a457a9cd78c7c4c468743e4cf9857e3c, type: 3}
+    volume: 0.7
+    pitchVariance: 0.03
+    maxPlaysPerRoute: 1
+  - eventId: 5
+    clips:
+    - {fileID: 8300000, guid: fe56a3bd36b6cf245a5e9fb2b0bb8cfd, type: 3}
+    volume: 0.65
+    pitchVariance: 0.03
+    maxPlaysPerRoute: 1
+  - eventId: 6
+    clips:
+    - {fileID: 8300000, guid: 4e82fa6551510a04098c7d11556d6c87, type: 3}
+    - {fileID: 8300000, guid: 6763bf27dd818e448843899aacc20e88, type: 3}
+    - {fileID: 8300000, guid: 7c7258c474f999b488ca0f65563685bf, type: 3}
+    - {fileID: 8300000, guid: 9ef9aecf09e1beb4aa4a39c0127e0ccc, type: 3}
+    volume: 0.6
+    pitchVariance: 0.04
+    maxPlaysPerRoute: 1
+  - eventId: 7
+    clips:
+    - {fileID: 8300000, guid: bb539ea970927e643b0093793dfdc253, type: 3}
+    - {fileID: 8300000, guid: 13f181dd393bbc9449e5b5231ed54459, type: 3}
+    - {fileID: 8300000, guid: 924ad4fc42673bc4c864e7044bd91b03, type: 3}
+    volume: 0.75
+    pitchVariance: 0.02
+    maxPlaysPerRoute: 1
+  - eventId: 8
+    clips:
+    - {fileID: 8300000, guid: 94ae3373c1e4f3946a61b894986ab735, type: 3}
+    - {fileID: 8300000, guid: ae25f6bae5fb6a24688f0081af0e85d7, type: 3}
+    - {fileID: 8300000, guid: f278b2af631a0684b80b25cedbbb71e5, type: 3}
+    volume: 0.7
+    pitchVariance: 0
+    maxPlaysPerRoute: 1
+  - eventId: 9
+    clips:
+    - {fileID: 8300000, guid: f278b2af631a0684b80b25cedbbb71e5, type: 3}
+    - {fileID: 8300000, guid: d154c3d2e580f3d4b9fa8bb01b74d536, type: 3}
+    - {fileID: 8300000, guid: e806479479544e04ea28b36bf8f150b2, type: 3}
+    - {fileID: 8300000, guid: 550cce4703adc41489c351f8799c514a, type: 3}
+    volume: 0.85
+    pitchVariance: 0
+    maxPlaysPerRoute: 1
+  - eventId: 10
+    clips:
+    - {fileID: 8300000, guid: 6b30fd0182430c84aa5516ad041a90b0, type: 3}
+    - {fileID: 8300000, guid: 21cc2b9a3b8223846a5297a311a92c00, type: 3}
+    - {fileID: 8300000, guid: 3de23a82167a7ec4399b2469a4c0eb7a, type: 3}
+    volume: 0.85
+    pitchVariance: 0
+    maxPlaysPerRoute: 1
+  - eventId: 11
+    clips:
+    - {fileID: 8300000, guid: 2231640888844da46b1efef8f0a709b8, type: 3}
+    volume: 0.4
+    pitchVariance: 0.05
+    maxPlaysPerRoute: 1
+  - eventId: 12
+    clips:
+    - {fileID: 8300000, guid: 2231640888844da46b1efef8f0a709b8, type: 3}
+    volume: 0.35
+    pitchVariance: 0.05
+    maxPlaysPerRoute: 1
+  - eventId: 13
+    clips:
+    - {fileID: 8300000, guid: 7eb111569ce895245bffbf1d44172c54, type: 3}
+    - {fileID: 8300000, guid: 8b7e7c23d47aad54b8c4d8883e006858, type: 3}
+    volume: 0.45
+    pitchVariance: 0
+    maxPlaysPerRoute: 1
+  - eventId: 14
+    clips:
+    - {fileID: 8300000, guid: f69a3cde6a2fdaf45ae247ec37bf1d55, type: 3}
+    - {fileID: 8300000, guid: 1406b5a28fdfff74c8f5df4304bdb353, type: 3}
+    - {fileID: 8300000, guid: b53a342f40a96f0429d10504a80908af, type: 3}
+    volume: 0.75
+    pitchVariance: 0
+    maxPlaysPerRoute: 1
+  - eventId: 15
+    clips:
+    - {fileID: 8300000, guid: 395fd02facd9c4143a168863466f3d98, type: 3}
+    - {fileID: 8300000, guid: 572843e13417ec242a58f30b02e64774, type: 3}
+    - {fileID: 8300000, guid: 550cce4703adc41489c351f8799c514a, type: 3}
+    volume: 0.7
+    pitchVariance: 0
+    maxPlaysPerRoute: 1
+  - eventId: 16
+    clips:
+    - {fileID: 8300000, guid: a106c874490e15842b5f1e82d5a474b7, type: 3}
+    volume: 0.8
+    pitchVariance: 0
+    maxPlaysPerRoute: 1
+  - eventId: 18
+    clips:
+    - {fileID: 8300000, guid: a53e3515ad1cbdf4faf21c58c94f820e, type: 3}
+    volume: 0.7
+    pitchVariance: 0.03
+    maxPlaysPerRoute: 1
+  - eventId: 19
+    clips:
+    - {fileID: 8300000, guid: 25e84b806012da5499c54fd12f6e2007, type: 3}
+    - {fileID: 8300000, guid: 24f797d4959f1ed429dbd82a6f474323, type: 3}
+    - {fileID: 8300000, guid: b53a342f40a96f0429d10504a80908af, type: 3}
+    volume: 0.8
+    pitchVariance: 0
+    maxPlaysPerRoute: 1
+  - eventId: 20
+    clips:
+    - {fileID: 8300000, guid: 6b30fd0182430c84aa5516ad041a90b0, type: 3}
+    - {fileID: 8300000, guid: 21cc2b9a3b8223846a5297a311a92c00, type: 3}
+    - {fileID: 8300000, guid: dd32e7cf713a0d547b50efc5024ca262, type: 3}
+    volume: 0.75
+    pitchVariance: 0
+    maxPlaysPerRoute: 1
+  - eventId: 21
+    clips:
+    - {fileID: 8300000, guid: dd32e7cf713a0d547b50efc5024ca262, type: 3}
+    - {fileID: 8300000, guid: a8e173d11da89cd47aee5014caf0105c, type: 3}
+    - {fileID: 8300000, guid: 8b7e7c23d47aad54b8c4d8883e006858, type: 3}
+    volume: 0.65
+    pitchVariance: 0
+    maxPlaysPerRoute: 1
