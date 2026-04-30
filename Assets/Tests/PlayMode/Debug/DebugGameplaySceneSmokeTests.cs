@@ -119,7 +119,7 @@ namespace Rescue.PlayMode.Tests.Debug
                         new[] { ".", "T0", "B" },
                     },
                 },
-                DebrisTypePool = new[] { DebrisType.A, DebrisType.B, DebrisType.C, DebrisType.D },
+                DebrisTypePool = new[] { DebrisType.A, DebrisType.B, DebrisType.C, DebrisType.D, DebrisType.E },
                 Targets = new[]
                 {
                     new TargetJson

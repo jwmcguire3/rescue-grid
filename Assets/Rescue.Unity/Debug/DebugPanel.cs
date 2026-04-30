@@ -1926,7 +1926,7 @@ namespace Rescue.Unity.Debugging
                         new[] { ".", "T0", "." },
                     },
                 },
-                DebrisTypePool = new[] { DebrisType.A, DebrisType.B, DebrisType.C, DebrisType.D },
+                DebrisTypePool = new[] { DebrisType.A, DebrisType.B, DebrisType.C, DebrisType.D, DebrisType.E },
                 Targets = new[]
                 {
                     new TargetJson

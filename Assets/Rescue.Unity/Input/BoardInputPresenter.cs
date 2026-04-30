@@ -16,7 +16,7 @@ namespace Rescue.Unity.Input
         [SerializeField] private LayerMask boardCellLayer = ~0;
         [SerializeField] private bool enableMouseInput = true;
         [SerializeField] private bool enableTouchInput;
-        [SerializeField] private bool logStateViewDiagnostics = true;
+        [SerializeField] private bool logStateViewDiagnostics;
         [SerializeField] private float visualDebrisClickFallbackRadiusPixels = 96f;
 
         private GameState? fallbackState;

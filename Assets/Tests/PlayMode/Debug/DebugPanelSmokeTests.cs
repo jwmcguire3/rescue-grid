@@ -384,7 +384,7 @@ namespace Rescue.PlayMode.Tests.Debug
                         new[] { ".", "T0", "." },
                     },
                 },
-                DebrisTypePool = new[] { Rescue.Core.State.DebrisType.A, Rescue.Core.State.DebrisType.B, Rescue.Core.State.DebrisType.C, Rescue.Core.State.DebrisType.D },
+                DebrisTypePool = new[] { Rescue.Core.State.DebrisType.A, Rescue.Core.State.DebrisType.B, Rescue.Core.State.DebrisType.C, Rescue.Core.State.DebrisType.D, Rescue.Core.State.DebrisType.E },
                 Targets = new[]
                 {
                     new TargetJson
@@ -444,7 +444,7 @@ namespace Rescue.PlayMode.Tests.Debug
                         new[] { ".", "T0", "." },
                     },
                 },
-                DebrisTypePool = new[] { Rescue.Core.State.DebrisType.A, Rescue.Core.State.DebrisType.B, Rescue.Core.State.DebrisType.C, Rescue.Core.State.DebrisType.D },
+                DebrisTypePool = new[] { Rescue.Core.State.DebrisType.A, Rescue.Core.State.DebrisType.B, Rescue.Core.State.DebrisType.C, Rescue.Core.State.DebrisType.D, Rescue.Core.State.DebrisType.E },
                 Targets = new[]
                 {
                     new TargetJson
@@ -486,3 +486,4 @@ namespace Rescue.PlayMode.Tests.Debug
     }
 }
 #endif
+

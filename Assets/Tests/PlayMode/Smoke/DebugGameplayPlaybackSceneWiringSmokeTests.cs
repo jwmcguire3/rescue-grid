@@ -161,7 +161,7 @@ namespace Rescue.PlayMode.Tests.Smoke
                 throw new AssertionException("DebugGameplay should assign an audio registry, even when it is intentionally empty.");
             }
 
-            Assert.That(registry.Entries.Length, Is.EqualTo(0), "DebugGameplay intentionally uses an empty audio registry until production clips are available.");
+            Assert.That(registry.Entries.Length, Is.GreaterThan(0), "DebugGameplay should expose the Phase 1 audio feedback registry entries.");
             Assert.That(audioRouter.AudioSource, Is.Not.Null, "DebugGameplay should provide an AudioSource for routed feedback.");
             Assert.That(audioRouter.BoardGrid, Is.SameAs(boardGrid), "AudioEventRouter should resolve location-aware audio through the scene board grid presenter.");
             Assert.That(musicPlayer.Playlist, Is.Not.Null, "DebugGameplay should assign the gameplay music playlist asset.");
@@ -170,10 +170,10 @@ namespace Rescue.PlayMode.Tests.Smoke
                 throw new AssertionException("DebugGameplay should assign the gameplay music playlist asset.");
             }
 
-            Assert.That(musicPlayer.Playlist.Tracks.Length, Is.EqualTo(0), "GameplayMusicPlaylist is intentionally empty until production music clips are committed.");
+            Assert.That(musicPlayer.Playlist.Tracks.Length, Is.GreaterThan(0), "DebugGameplay should expose the gameplay music playlist entries.");
             Assert.That(musicPlayer.AudioSource, Is.Not.Null, "DebugGameplay should provide a dedicated AudioSource for ambient music.");
             Assert.That(musicPlayer.AudioSource, Is.Not.SameAs(audioRouter.AudioSource), "Ambient music should stay separate from routed feedback SFX.");
-            Assert.That(musicPlayer.PlayNext(), Is.False, "An empty gameplay music playlist should fail soft without starting playback.");
+            Assert.That(musicPlayer.PlayNext(), Is.True, "A populated gameplay music playlist should start playback.");
 
             GameState initialState = CreateAudioFeedbackSmokeState();
             boardInput.SetCurrentState(initialState);

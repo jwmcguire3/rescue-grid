@@ -6,8 +6,8 @@
   "ExpectAlternateSeedDivergence": true,
   "Actions": [
     {
-      "Row": 4,
-      "Col": 5
+      "Row": 5,
+      "Col": 6
     },
     {
       "Row": 0,
@@ -15,7 +15,7 @@
     },
     {
       "Row": 4,
-      "Col": 4
+      "Col": 1
     }
   ]
 }

@@ -337,6 +337,10 @@ namespace Rescue.PlayMode.Tests.Smoke
                         case EmptyTile:
                         case FloodedTile:
                             break;
+                        case RescuePathTile:
+                            expectedVisualCount++;
+                            Assert.That(FindChildByName(contentRoot, $"Content_{row:00}_{col:00}_RescuePath"), Is.Not.Null);
+                            break;
                         case DebrisTile debris:
                             expectedVisualCount++;
                             Assert.That(FindChildByName(contentRoot, $"Content_{row:00}_{col:00}_Debris_{debris.Type}"), Is.Not.Null);
