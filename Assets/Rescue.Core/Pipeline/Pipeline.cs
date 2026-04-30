@@ -152,7 +152,7 @@ namespace Rescue.Core.Pipeline
         private static ImmutableArray<ActionEvent> DetectDeadboardDiagnostics(GameState state)
         {
             ImmutableArray<ActionEvent>.Builder events = ImmutableArray.CreateBuilder<ActionEvent>();
-            bool hasValidGroup = HasValidGroup(state.Board);
+            bool hasValidGroup = GroupOps.HasValidGroup(state.Board, state.Water);
             string? impossibleTargetId = FindRescueImpossibleTarget(state);
             if (impossibleTargetId is not null)
             {
@@ -177,22 +177,6 @@ namespace Rescue.Core.Pipeline
             }
 
             return events.ToImmutable();
-        }
-
-        private static bool HasValidGroup(Board board)
-        {
-            for (int row = 0; row < board.Height; row++)
-            {
-                for (int col = 0; col < board.Width; col++)
-                {
-                    if (GroupOps.FindGroup(board, new TileCoord(row, col)).HasValue)
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
         }
 
         private static string? FindRescueImpossibleTarget(GameState state)

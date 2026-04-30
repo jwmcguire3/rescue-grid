@@ -45,6 +45,66 @@ namespace Rescue.Core.Rules
             return group.Count >= 2 ? group.ToImmutable() : null;
         }
 
+        public static bool HasValidGroup(Board board, WaterState water)
+        {
+            for (int row = 0; row < board.Height; row++)
+            {
+                for (int col = 0; col < board.Width; col++)
+                {
+                    TileCoord coord = new TileCoord(row, col);
+                    if (!IsDry(board, water, coord) || BoardHelpers.GetTile(board, coord) is not DebrisTile start)
+                    {
+                        continue;
+                    }
+
+                    if (HasValidGroupFrom(board, water, coord, start.Type))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private static bool HasValidGroupFrom(Board board, WaterState water, TileCoord coord, DebrisType type)
+        {
+            Stack<TileCoord> frontier = new Stack<TileCoord>();
+            HashSet<TileCoord> visited = new HashSet<TileCoord>();
+            int groupSize = 0;
+
+            frontier.Push(coord);
+            visited.Add(coord);
+
+            while (frontier.Count > 0)
+            {
+                TileCoord current = frontier.Pop();
+                groupSize++;
+                if (groupSize >= 2)
+                {
+                    return true;
+                }
+
+                ImmutableArray<TileCoord> neighbors = BoardHelpers.OrthogonalNeighbors(board, current);
+                for (int i = 0; i < neighbors.Length; i++)
+                {
+                    TileCoord neighbor = neighbors[i];
+                    if (visited.Contains(neighbor) || !IsDry(board, water, neighbor))
+                    {
+                        continue;
+                    }
+
+                    if (BoardHelpers.GetTile(board, neighbor) is DebrisTile debris && debris.Type == type)
+                    {
+                        visited.Add(neighbor);
+                        frontier.Push(neighbor);
+                    }
+                }
+            }
+
+            return false;
+        }
+
         public static ImmutableArray<TileCoord> FindAdjacentBlockers(Board board, ImmutableArray<TileCoord> coords)
         {
             if (coords.IsDefaultOrEmpty)
@@ -93,6 +153,12 @@ namespace Rescue.Core.Rules
                 EmptyTile => false,
                 _ => false,
             };
+        }
+
+        private static bool IsDry(Board board, WaterState water, TileCoord coord)
+        {
+            int floodStartRow = board.Height - water.FloodedRows;
+            return water.FloodedRows <= 0 || coord.Row < floodStartRow;
         }
     }
 }

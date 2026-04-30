@@ -117,5 +117,105 @@ namespace Rescue.Core.Tests.Rules
 
             Assert.That(group, Is.Null);
         }
+
+        [Test]
+        public void HasValidGroupReturnsTrueWhenDryTappableDebrisPairExists()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                PipelineTestFixtures.DebrisRow(DebrisType.A, DebrisType.A));
+
+            bool hasValidGroup = GroupOps.HasValidGroup(
+                board,
+                new WaterState(FloodedRows: 0, ActionsUntilRise: 3, RiseInterval: 3));
+
+            Assert.That(hasValidGroup, Is.True);
+        }
+
+        [Test]
+        public void HasValidGroupReturnsFalseForSingleTilesOnly()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                PipelineTestFixtures.DebrisRow(DebrisType.A, DebrisType.B));
+
+            bool hasValidGroup = GroupOps.HasValidGroup(
+                board,
+                new WaterState(FloodedRows: 0, ActionsUntilRise: 3, RiseInterval: 3));
+
+            Assert.That(hasValidGroup, Is.False);
+        }
+
+        [Test]
+        public void HasValidGroupIgnoresGroupsInFloodedRowsFromWaterState()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                PipelineTestFixtures.DebrisRow(DebrisType.B, DebrisType.C),
+                PipelineTestFixtures.DebrisRow(DebrisType.A, DebrisType.A));
+
+            bool hasValidGroup = GroupOps.HasValidGroup(
+                board,
+                new WaterState(FloodedRows: 1, ActionsUntilRise: 3, RiseInterval: 3));
+
+            Assert.That(hasValidGroup, Is.False);
+        }
+
+        [Test]
+        public void HasValidGroupDoesNotJoinDryDebrisToFloodedRowsFromWaterState()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                ImmutableArray.Create<Tile>(new DebrisTile(DebrisType.A)),
+                ImmutableArray.Create<Tile>(new DebrisTile(DebrisType.A)));
+
+            bool hasValidGroup = GroupOps.HasValidGroup(
+                board,
+                new WaterState(FloodedRows: 1, ActionsUntilRise: 3, RiseInterval: 3));
+
+            Assert.That(hasValidGroup, Is.False);
+        }
+
+        [Test]
+        public void HasValidGroupDoesNotJoinDryDebrisToFloodedTile()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                ImmutableArray.Create<Tile>(new DebrisTile(DebrisType.A)),
+                ImmutableArray.Create<Tile>(new FloodedTile()));
+
+            bool hasValidGroup = GroupOps.HasValidGroup(
+                board,
+                new WaterState(FloodedRows: 0, ActionsUntilRise: 3, RiseInterval: 3));
+
+            Assert.That(hasValidGroup, Is.False);
+        }
+
+        [Test]
+        public void HasValidGroupFindsDryGroupsAboveFloodedRows()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                PipelineTestFixtures.DebrisRow(DebrisType.A, DebrisType.A),
+                PipelineTestFixtures.DebrisRow(DebrisType.B, DebrisType.B));
+
+            bool hasValidGroup = GroupOps.HasValidGroup(
+                board,
+                new WaterState(FloodedRows: 1, ActionsUntilRise: 3, RiseInterval: 3));
+
+            Assert.That(hasValidGroup, Is.True);
+        }
+
+        [Test]
+        public void HasValidGroupIgnoresBlockedTargetRescuePathAndHiddenIceContents()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                ImmutableArray.Create<Tile>(
+                    new BlockerTile(BlockerType.Crate, 1, Hidden: null),
+                    new BlockerTile(BlockerType.Ice, 1, new DebrisTile(DebrisType.A))),
+                ImmutableArray.Create<Tile>(
+                    new TargetTile("target", Extracted: false),
+                    new RescuePathTile(ImmutableArray.Create("target"))));
+
+            bool hasValidGroup = GroupOps.HasValidGroup(
+                board,
+                new WaterState(FloodedRows: 0, ActionsUntilRise: 3, RiseInterval: 3));
+
+            Assert.That(hasValidGroup, Is.False);
+        }
     }
 }
