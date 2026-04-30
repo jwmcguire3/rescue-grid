@@ -1391,4 +1391,69 @@ Phase 2 animation and presentation work should proceed only on load-bearing beat
 - win/loss explanation
 - aftercare stub
 
+
+## Gravity and Deadboard Integrity Addendum
+
+### Controlled diagonal settling
+
+After vertical gravity resolves, the board may perform controlled diagonal settling to prevent blocked columns from creating unreachable dry voids.
+
+A movable debris piece may slide diagonally down-left or down-right into an empty dry cell only if:
+
+- the destination is dry and active;
+- the destination is not flooded;
+- the destination is not a blocker;
+- the destination is not a target;
+- the destination is not rescue-reserved;
+- the piece is movable debris;
+- vertical fall into that destination is unavailable because the column above is blocked or exhausted.
+
+Diagonal settling occurs during the Gravity settle step, after target extraction and final rescue win check, and before Spawn.
+
+Diagonal settling must be deterministic, replayable, and telemetry-visible.
+
+Diagonal settling must not undo or obscure rescue progress. It may not occupy locked rescue-path empty tiles.
+
+### Runtime no-legal-move protection
+
+At Return Control, the game checks whether at least one valid tappable debris group exists.
+
+If no valid group exists and the level is not already won or lost, the game performs a minimal debris reshuffle.
+
+The reshuffle may only reassign movable debris types among dry, active, non-reserved debris cells.
+
+The reshuffle may not move or alter:
+
+- targets;
+- blockers;
+- vines;
+- flooded rows;
+- rescue-reserved tiles;
+- dock contents;
+- water counters;
+- vine counters;
+- target states;
+- extraction latches;
+- undo snapshot data.
+
+The goal is only to restore at least one legal move, not to solve the rescue route.
+
+### Soft-deadboard detection
+
+The game should detect and log soft-deadboard-like states where legal moves exist but no meaningful rescue route appears available.
+
+Soft-deadboards are not automatically fixed in Phase 1 unless they are caused by generator or gravity bugs.
+
+Every deadboard-like event must be tagged as:
+
+- no-legal-move;
+- soft-deadboard;
+- rescue-impossible;
+- player-authored;
+- generator-caused;
+- gravity-caused;
+- spawn-caused;
+- level-geometry-caused.
+
+Deadboard repair must be telemetry-visible and replayable.
 Do not polish generic board spectacle before the player can explain, in one sentence, why the puppy was saved or lost.
