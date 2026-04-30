@@ -62,6 +62,16 @@ namespace Rescue.Unity.FX
             playbackCoroutine = StartCoroutine(PlaySequence());
         }
 
+        public void EnsureMinimumPlaybackDuration(float minimumDurationSeconds)
+        {
+            if (minimumDurationSeconds <= 0f || frames.Length <= 0)
+            {
+                return;
+            }
+
+            secondsPerFrame = Mathf.Max(secondsPerFrame, minimumDurationSeconds / frames.Length);
+        }
+
         private IEnumerator PlaySequence()
         {
             spriteRenderer ??= GetComponent<SpriteRenderer>();

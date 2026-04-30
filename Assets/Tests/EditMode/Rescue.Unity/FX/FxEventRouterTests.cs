@@ -5,9 +5,11 @@ using Rescue.Core.Pipeline;
 using Rescue.Core.Rng;
 using Rescue.Core.State;
 using Rescue.Unity.BoardPresentation;
+using Rescue.Unity.Art.Registries;
 using Rescue.Unity.Presentation;
 using Rescue.Unity.UI;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Rescue.Unity.FX.Tests
 {
@@ -366,6 +368,58 @@ namespace Rescue.Unity.FX.Tests
         }
 
         [Test]
+        public void FxEventRouter_DiagnosticsLogPrefabAssignmentAndPosition()
+        {
+            GameObject fxRoot = CreateGameObject("FxRoot");
+            GameObject prefab = CreateGameObject("GroupClearPrefab");
+            FxVisualRegistry registry = ScriptableObject.CreateInstance<FxVisualRegistry>();
+            createdObjects.Add(registry);
+            registry.GroupClearFx = prefab;
+
+            FxEventRouter router = CreateGameObject("FxRouter").AddComponent<FxEventRouter>();
+            router.FxRoot = fxRoot.transform;
+            router.FxRegistry = registry;
+            router.DiagnosticsEnabled = true;
+
+            LogAssert.Expect(LogType.Log, new System.Text.RegularExpressions.Regex(
+                "\\[FX Diagnostics\\] hook=GroupClear source=GroupRemoved instance=GroupClearFx prefab=GroupClearPrefab assigned=yes position="));
+
+            router.RoutePlaybackBeat(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateState(),
+                CreatePlaybackStep(ActionPlaybackStepType.RemoveGroup, new GroupRemoved(
+                    DebrisType.A,
+                    ImmutableArray.Create(new TileCoord(9, 9)))));
+        }
+
+        [UnityTest]
+        public System.Collections.IEnumerator FxEventRouter_PlayAllRegisteredFxForDiagnosticsSpawnsRegistryPrefabs()
+        {
+            GameObject fxRoot = CreateGameObject("FxRoot");
+            GameObject groupPrefab = CreateSpriteFxPrefab("GroupFx");
+            GameObject invalidPrefab = CreateSpriteFxPrefab("InvalidFx");
+            FxVisualRegistry registry = ScriptableObject.CreateInstance<FxVisualRegistry>();
+            createdObjects.Add(registry);
+            registry.GroupClearFx = groupPrefab;
+            registry.InvalidTapFx = invalidPrefab;
+
+            FxEventRouter router = CreateGameObject("FxRouter").AddComponent<FxEventRouter>();
+            router.FxRoot = fxRoot.transform;
+            router.FxRegistry = registry;
+
+            LogAssert.Expect(LogType.Log, new System.Text.RegularExpressions.Regex("\\[FX Diagnostics\\] hook=GroupClear"));
+            LogAssert.Expect(LogType.Log, new System.Text.RegularExpressions.Regex("\\[FX Diagnostics\\] hook=InvalidTap"));
+
+            router.PlayAllRegisteredFxForDiagnostics(new Vector3(1f, 2f, 3f), spacingSeconds: 0.05f);
+
+            yield return new WaitForSeconds(0.08f);
+
+            Assert.That(fxRoot.transform.Find(nameof(FxVisualRegistry.GroupClearFx)), Is.Not.Null);
+            Assert.That(fxRoot.transform.Find(nameof(FxVisualRegistry.InvalidTapFx)), Is.Not.Null);
+        }
+
+        [Test]
         public void FxEventClassifier_DoesNotDuplicateWinWhenOutcomeAndEventMatch()
         {
             GameState state = CreateState();
@@ -448,6 +502,15 @@ namespace Rescue.Unity.FX.Tests
             GameObject gameObject = new GameObject(name);
             createdObjects.Add(gameObject);
             return gameObject;
+        }
+
+        private GameObject CreateSpriteFxPrefab(string name)
+        {
+            GameObject prefab = CreateGameObject(name);
+            prefab.SetActive(false);
+            prefab.AddComponent<SpriteRenderer>();
+            prefab.AddComponent<SpriteSequenceFxPlayer>();
+            return prefab;
         }
 
         private static ActionResult CreateResult(params ActionEvent[] events)

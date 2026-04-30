@@ -487,6 +487,10 @@ namespace Rescue.Unity.Debugging
             scroll.Add(playbackEnabled);
             scroll.Add(MakeFieldRow("Playback Speed", out _playbackSpeedSelector, "playback-speed-selector"));
             scroll.Add(MakeRow(out _playbackStepValue, "playback-step-value", "Playback step: Idle"));
+            Toggle fxDiagnostics = new Toggle("FX Diagnostics") { name = "fx-diagnostics-toggle" };
+            _fxDiagnosticsToggle = fxDiagnostics;
+            scroll.Add(fxDiagnostics);
+            scroll.Add(MakeButton("Play All FX Diagnostics", "play-all-fx-button", out _playAllFxButton));
 
             scroll.Add(MakeButton("Debug Undo", "debug-undo-button", out _debugUndoButton));
             scroll.Add(MakeButton("Reset Level", "reset-button", out _resetButton));

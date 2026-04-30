@@ -43,6 +43,10 @@ namespace Rescue.Unity.Presentation
         {
             switch (actionEvent)
             {
+                case InvalidInput:
+                    mappedSteps.Add(CreateStep(ActionPlaybackStepType.RemoveGroup, actionEvent));
+                    return;
+
                 case GroupRemoved:
                     mappedSteps.Add(CreateStep(ActionPlaybackStepType.RemoveGroup, actionEvent));
                     return;

@@ -12,6 +12,7 @@ using Rescue.Core.Undo;
 using Rescue.Replay;
 using Rescue.Telemetry;
 using Rescue.Unity.Presentation;
+using Rescue.Unity.FX;
 using Rescue.Unity.Telemetry;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -68,6 +69,8 @@ namespace Rescue.Unity.Debugging
         private Toggle? _playbackEnabledToggle;
         private DropdownField? _playbackSpeedSelector;
         private Label? _playbackStepValue;
+        private Toggle? _fxDiagnosticsToggle;
+        private Button? _playAllFxButton;
         private Button? _debugUndoButton;
         private Button? _resetButton;
         private TextField? _replayPathField;
@@ -773,6 +776,70 @@ namespace Rescue.Unity.Debugging
             }
         }
 
+        private void PlayAllFxDiagnostics()
+        {
+            FxEventRouter? router = ResolveFxEventRouter();
+            if (router is null)
+            {
+                SetStatus("No FX event router found.");
+                return;
+            }
+
+            Vector3 position = ResolveFxDiagnosticPosition(router);
+            router.PlayAllRegisteredFxForDiagnostics(position);
+            _fxDiagnosticsToggle?.SetValueWithoutNotify(router.DiagnosticsEnabled);
+            SetStatus($"Playing all FX diagnostics at {position}.");
+        }
+
+        private void ApplyFxDiagnosticsFromUi()
+        {
+            FxEventRouter? router = ResolveFxEventRouter();
+            if (router is null)
+            {
+                SetStatus("No FX event router found.");
+                return;
+            }
+
+            bool enabled = _fxDiagnosticsToggle?.value ?? router.DiagnosticsEnabled;
+            router.DiagnosticsEnabled = enabled;
+            router.DiagnosticMinimumVisibleSeconds = enabled ? Mathf.Max(router.DiagnosticMinimumVisibleSeconds, 0.5f) : 0f;
+            SetStatus(enabled ? "FX diagnostics enabled." : "FX diagnostics disabled.");
+        }
+
+        private FxEventRouter? ResolveFxEventRouter()
+        {
+            ActionPlaybackController? controller = ResolveActionPlaybackController();
+            if (controller is not null && controller.TryGetComponent(out FxEventRouter router))
+            {
+                return router;
+            }
+
+            return UnityEngine.Object.FindFirstObjectByType<FxEventRouter>();
+        }
+
+        private Vector3 ResolveFxDiagnosticPosition(FxEventRouter router)
+        {
+            if (_currentState is not null
+                && _currentState.Board.Height > 0
+                && _currentState.Board.Width > 0
+                && router.BoardGrid is not null)
+            {
+                int row = Mathf.Clamp(_currentState.Board.Height / 2, 0, _currentState.Board.Height - 1);
+                int col = Mathf.Clamp(_currentState.Board.Width / 2, 0, _currentState.Board.Width - 1);
+                if (router.BoardGrid.TryGetCellWorldPosition(new TileCoord(row, col), out Vector3 cellPosition))
+                {
+                    return cellPosition;
+                }
+            }
+
+            if (router.FxRoot is not null)
+            {
+                return router.FxRoot.position;
+            }
+
+            return router.transform.position;
+        }
+
         private static float ParseSpeedMultiplier(string? speed)
         {
             return speed switch
@@ -1002,6 +1069,8 @@ namespace Rescue.Unity.Debugging
             _playbackEnabledToggle = panel.Q<Toggle>("playback-enabled-toggle");
             _playbackSpeedSelector = panel.Q<DropdownField>("playback-speed-selector");
             _playbackStepValue = panel.Q<Label>("playback-step-value");
+            _fxDiagnosticsToggle = panel.Q<Toggle>("fx-diagnostics-toggle");
+            _playAllFxButton = panel.Q<Button>("play-all-fx-button");
             _debugUndoButton = panel.Q<Button>("debug-undo-button");
             _resetButton = panel.Q<Button>("reset-button");
             _replayPathField = panel.Q<TextField>("replay-path-field");
@@ -1139,6 +1208,26 @@ namespace Rescue.Unity.Debugging
                     }
 
                     ApplyPlaybackControlsFromUi();
+                });
+            }
+
+            if (_playAllFxButton is not null)
+            {
+                _playAllFxButton.clicked += PlayAllFxDiagnostics;
+            }
+
+            if (_fxDiagnosticsToggle is not null)
+            {
+                FxEventRouter? router = ResolveFxEventRouter();
+                _fxDiagnosticsToggle.SetValueWithoutNotify(router is not null && router.DiagnosticsEnabled);
+                _fxDiagnosticsToggle.RegisterValueChangedCallback(evt =>
+                {
+                    if (!_initialized || evt.previousValue == evt.newValue)
+                    {
+                        return;
+                    }
+
+                    ApplyFxDiagnosticsFromUi();
                 });
             }
 

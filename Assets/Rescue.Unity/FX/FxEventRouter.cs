@@ -16,6 +16,11 @@ namespace Rescue.Unity.FX
         [SerializeField] private Transform? fxRoot;
         [SerializeField] private BoardGridViewPresenter? boardGrid;
         [SerializeField] private DockViewPresenter? dockView;
+        [SerializeField] private bool diagnosticsEnabled;
+        [SerializeField] private float diagnosticMinimumVisibleSeconds;
+
+        private Coroutine? diagnosticPlaybackCoroutine;
+        private string? currentDiagnosticSourceEvent;
 
         public FxVisualRegistry? FxRegistry
         {
@@ -39,6 +44,18 @@ namespace Rescue.Unity.FX
         {
             get => dockView;
             set => dockView = value;
+        }
+
+        public bool DiagnosticsEnabled
+        {
+            get => diagnosticsEnabled;
+            set => diagnosticsEnabled = value;
+        }
+
+        public float DiagnosticMinimumVisibleSeconds
+        {
+            get => diagnosticMinimumVisibleSeconds;
+            set => diagnosticMinimumVisibleSeconds = Mathf.Max(0f, value);
         }
 
         public void Route(GameState previousState, ActionInput input, ActionResult result)
@@ -113,76 +130,97 @@ namespace Rescue.Unity.FX
                 return;
             }
 
-            switch (playbackStep.SourceEvent)
+            currentDiagnosticSourceEvent = playbackStep.SourceEventName ?? playbackStep.SourceEvent.GetType().Name;
+            try
             {
-                case InvalidInput invalidInput:
-                    PlayInvalidTap(ResolveCellWorldPosition(invalidInput.TappedCoord));
-                    break;
-                case GroupRemoved removed:
-                    PlayGroupClear(ResolveGroupWorldPosition(removed.Coords));
-                    break;
-                case BlockerBroken broken when broken.Type == BlockerType.Crate:
-                    PlayCrateBreak(ResolveCellWorldPosition(broken.Coord));
-                    break;
-                case BlockerBroken broken when broken.Type == BlockerType.Vine:
-                    PlayVineClear(ResolveCellWorldPosition(broken.Coord));
-                    break;
-                case IceRevealed revealed:
-                    PlayIceReveal(ResolveCellWorldPosition(revealed.Coord));
-                    break;
-                case DockCleared cleared:
-                    PlayDockTripleClear(ResolveDockClearWorldPosition(cleared));
-                    break;
-                case DockInserted inserted:
-                    PlayDockInsert(ResolveDockInsertWorldPosition(inserted));
-                    break;
-                case DockWarningChanged warningChanged when warningChanged.After != DockWarningLevel.Safe:
-                    PlayDockWarning();
-                    break;
-                case DockOverflowTriggered:
-                    PlayLossDockOverflow();
-                    break;
-                case DockJamTriggered:
-                    // No dock-jam-specific FX prefab exists yet; reuse the optional dock warning fallback.
-                    PlayDockWarning();
-                    break;
-                case TargetProgressed progressed:
-                    PlayNearRescueRelief(ResolveCellWorldPosition(progressed.Coord));
-                    break;
-                case TargetOneClearAway oneClearAway:
-                    PlayNearRescueRelief(ResolveCellWorldPosition(oneClearAway.Coord));
-                    break;
-                case TargetExtractionLatched latched:
-                    PlayNearRescueRelief(ResolveCellWorldPosition(latched.Coord));
-                    break;
-                case TargetExtracted extracted:
-                    PlayTargetExtraction(ResolveCellWorldPosition(extracted.Coord));
-                    break;
-                case WaterWarning warning:
-                    PlayWaterRise(ResolveRowWorldPosition(warning.NextFloodRow));
-                    break;
-                case WaterRose rose:
-                    PlayWaterRise(ResolveRowWorldPosition(rose.FloodedRow));
-                    break;
-                case VinePreviewChanged previewChanged when previewChanged.PendingTile.HasValue:
-                    PlayVineGrowthPreview(ResolveCellWorldPosition(previewChanged.PendingTile.Value));
-                    break;
-                case VineGrown grown:
-                    // Placeholder until final art exists: reuse the authored pressure preview hook at the grown tile.
-                    PlayVineGrowthPreview(ResolveCellWorldPosition(grown.Coord));
-                    break;
-                case Won:
-                    PlayWin();
-                    break;
-                case Lost lost when lost.Outcome == ActionOutcome.LossDockOverflow:
-                    PlayLossDockOverflow();
-                    break;
-                case Lost lost when lost.Outcome == ActionOutcome.LossWaterOnTarget
-                    || lost.Outcome == ActionOutcome.LossRescuePathFlooded
-                    || lost.Outcome == ActionOutcome.LossDistressedExpired:
-                    PlayLossWaterOnTarget();
-                    break;
+                switch (playbackStep.SourceEvent)
+                {
+                    case InvalidInput invalidInput:
+                        PlayInvalidTap(ResolveCellWorldPosition(invalidInput.TappedCoord));
+                        break;
+                    case GroupRemoved removed:
+                        PlayGroupClear(ResolveGroupWorldPosition(removed.Coords));
+                        break;
+                    case BlockerBroken broken when broken.Type == BlockerType.Crate:
+                        PlayCrateBreak(ResolveCellWorldPosition(broken.Coord));
+                        break;
+                    case BlockerBroken broken when broken.Type == BlockerType.Vine:
+                        PlayVineClear(ResolveCellWorldPosition(broken.Coord));
+                        break;
+                    case IceRevealed revealed:
+                        PlayIceReveal(ResolveCellWorldPosition(revealed.Coord));
+                        break;
+                    case DockCleared cleared:
+                        PlayDockTripleClear(ResolveDockClearWorldPosition(cleared));
+                        break;
+                    case DockInserted inserted:
+                        PlayDockInsert(ResolveDockInsertWorldPosition(inserted));
+                        break;
+                    case DockWarningChanged warningChanged when warningChanged.After != DockWarningLevel.Safe:
+                        PlayDockWarning();
+                        break;
+                    case DockOverflowTriggered:
+                        PlayLossDockOverflow();
+                        break;
+                    case DockJamTriggered:
+                        // No dock-jam-specific FX prefab exists yet; reuse the optional dock warning fallback.
+                        PlayDockWarning();
+                        break;
+                    case TargetProgressed progressed:
+                        PlayNearRescueRelief(ResolveCellWorldPosition(progressed.Coord));
+                        break;
+                    case TargetOneClearAway oneClearAway:
+                        PlayNearRescueRelief(ResolveCellWorldPosition(oneClearAway.Coord));
+                        break;
+                    case TargetExtractionLatched latched:
+                        PlayNearRescueRelief(ResolveCellWorldPosition(latched.Coord));
+                        break;
+                    case TargetExtracted extracted:
+                        PlayTargetExtraction(ResolveCellWorldPosition(extracted.Coord));
+                        break;
+                    case WaterWarning warning:
+                        PlayWaterRise(ResolveRowWorldPosition(warning.NextFloodRow));
+                        break;
+                    case WaterRose rose:
+                        PlayWaterRise(ResolveRowWorldPosition(rose.FloodedRow));
+                        break;
+                    case VinePreviewChanged previewChanged when previewChanged.PendingTile.HasValue:
+                        PlayVineGrowthPreview(ResolveCellWorldPosition(previewChanged.PendingTile.Value));
+                        break;
+                    case VineGrown grown:
+                        // Placeholder until final art exists: reuse the authored pressure preview hook at the grown tile.
+                        PlayVineGrowthPreview(ResolveCellWorldPosition(grown.Coord));
+                        break;
+                    case Won:
+                        PlayWin();
+                        break;
+                    case Lost lost when lost.Outcome == ActionOutcome.LossDockOverflow:
+                        PlayLossDockOverflow();
+                        break;
+                    case Lost lost when lost.Outcome == ActionOutcome.LossWaterOnTarget
+                        || lost.Outcome == ActionOutcome.LossRescuePathFlooded
+                        || lost.Outcome == ActionOutcome.LossDistressedExpired:
+                        PlayLossWaterOnTarget();
+                        break;
+                }
             }
+            finally
+            {
+                currentDiagnosticSourceEvent = null;
+            }
+        }
+
+        public void PlayAllRegisteredFxForDiagnostics(Vector3 worldPosition, float spacingSeconds = 0.65f)
+        {
+            if (diagnosticPlaybackCoroutine is not null)
+            {
+                StopCoroutine(diagnosticPlaybackCoroutine);
+                diagnosticPlaybackCoroutine = null;
+            }
+
+            DiagnosticsEnabled = true;
+            DiagnosticMinimumVisibleSeconds = Mathf.Max(DiagnosticMinimumVisibleSeconds, 0.5f);
+            diagnosticPlaybackCoroutine = StartCoroutine(PlayAllRegisteredFxSequence(worldPosition, Mathf.Max(0.05f, spacingSeconds)));
         }
 
         protected virtual void PlayGroupClear()
@@ -192,7 +230,7 @@ namespace Rescue.Unity.FX
 
         protected virtual void PlayGroupClear(Vector3 worldPosition)
         {
-            TrySpawn(fxRegistry?.GroupClearFx, nameof(FxVisualRegistry.GroupClearFx), worldPosition);
+            TrySpawn(fxRegistry?.GroupClearFx, nameof(FxVisualRegistry.GroupClearFx), FxEventHook.GroupClear, worldPosition);
         }
 
         protected virtual void PlayInvalidTap()
@@ -202,7 +240,7 @@ namespace Rescue.Unity.FX
 
         protected virtual void PlayInvalidTap(Vector3 worldPosition)
         {
-            TrySpawn(fxRegistry?.InvalidTapFx, nameof(FxVisualRegistry.InvalidTapFx), worldPosition);
+            TrySpawn(fxRegistry?.InvalidTapFx, nameof(FxVisualRegistry.InvalidTapFx), FxEventHook.InvalidTap, worldPosition);
         }
 
         protected virtual void PlayCrateBreak()
@@ -212,7 +250,7 @@ namespace Rescue.Unity.FX
 
         protected virtual void PlayCrateBreak(Vector3 worldPosition)
         {
-            TrySpawn(fxRegistry?.CrateBreakFx, nameof(FxVisualRegistry.CrateBreakFx), worldPosition);
+            TrySpawn(fxRegistry?.CrateBreakFx, nameof(FxVisualRegistry.CrateBreakFx), FxEventHook.CrateBreak, worldPosition);
         }
 
         protected virtual void PlayIceReveal()
@@ -222,7 +260,7 @@ namespace Rescue.Unity.FX
 
         protected virtual void PlayIceReveal(Vector3 worldPosition)
         {
-            TrySpawn(fxRegistry?.IceRevealFx, nameof(FxVisualRegistry.IceRevealFx), worldPosition);
+            TrySpawn(fxRegistry?.IceRevealFx, nameof(FxVisualRegistry.IceRevealFx), FxEventHook.IceReveal, worldPosition);
         }
 
         protected virtual void PlayVineClear()
@@ -232,7 +270,7 @@ namespace Rescue.Unity.FX
 
         protected virtual void PlayVineClear(Vector3 worldPosition)
         {
-            TrySpawn(fxRegistry?.VineClearFx, nameof(FxVisualRegistry.VineClearFx), worldPosition);
+            TrySpawn(fxRegistry?.VineClearFx, nameof(FxVisualRegistry.VineClearFx), FxEventHook.VineClear, worldPosition);
         }
 
         protected virtual void PlayVineGrowthPreview()
@@ -242,17 +280,17 @@ namespace Rescue.Unity.FX
 
         protected virtual void PlayVineGrowthPreview(Vector3 worldPosition)
         {
-            TrySpawn(fxRegistry?.VineGrowPreviewFx, nameof(FxVisualRegistry.VineGrowPreviewFx), worldPosition);
+            TrySpawn(fxRegistry?.VineGrowPreviewFx, nameof(FxVisualRegistry.VineGrowPreviewFx), FxEventHook.VineGrowthPreview, worldPosition);
         }
 
         protected virtual void PlayDockInsert()
         {
-            TrySpawn(fxRegistry?.DockInsertFx, nameof(FxVisualRegistry.DockInsertFx));
+            TrySpawn(fxRegistry?.DockInsertFx, nameof(FxVisualRegistry.DockInsertFx), FxEventHook.DockInsert);
         }
 
         protected virtual void PlayDockInsert(Vector3 worldPosition)
         {
-            TrySpawn(fxRegistry?.DockInsertFx, nameof(FxVisualRegistry.DockInsertFx), worldPosition);
+            TrySpawn(fxRegistry?.DockInsertFx, nameof(FxVisualRegistry.DockInsertFx), FxEventHook.DockInsert, worldPosition);
         }
 
         protected virtual void PlayDockTripleClear()
@@ -262,12 +300,12 @@ namespace Rescue.Unity.FX
 
         protected virtual void PlayDockTripleClear(Vector3 worldPosition)
         {
-            TrySpawn(fxRegistry?.DockTripleClearFx, nameof(FxVisualRegistry.DockTripleClearFx), worldPosition);
+            TrySpawn(fxRegistry?.DockTripleClearFx, nameof(FxVisualRegistry.DockTripleClearFx), FxEventHook.DockTripleClear, worldPosition);
         }
 
         protected virtual void PlayDockWarning()
         {
-            TrySpawn(fxRegistry?.DockInsertFx, $"{nameof(FxVisualRegistry.DockInsertFx)}_WarningFallback");
+            TrySpawn(fxRegistry?.DockInsertFx, $"{nameof(FxVisualRegistry.DockInsertFx)}_WarningFallback", FxEventHook.DockWarning);
         }
 
         protected virtual void PlayWaterRise()
@@ -277,7 +315,7 @@ namespace Rescue.Unity.FX
 
         protected virtual void PlayWaterRise(Vector3 worldPosition)
         {
-            TrySpawn(fxRegistry?.WaterRiseFx, nameof(FxVisualRegistry.WaterRiseFx), worldPosition);
+            TrySpawn(fxRegistry?.WaterRiseFx, nameof(FxVisualRegistry.WaterRiseFx), FxEventHook.WaterRise, worldPosition);
         }
 
         protected virtual void PlayNearRescueRelief()
@@ -287,7 +325,7 @@ namespace Rescue.Unity.FX
 
         protected virtual void PlayNearRescueRelief(Vector3 worldPosition)
         {
-            TrySpawn(fxRegistry?.NearRescueReliefFx, nameof(FxVisualRegistry.NearRescueReliefFx), worldPosition);
+            TrySpawn(fxRegistry?.NearRescueReliefFx, nameof(FxVisualRegistry.NearRescueReliefFx), FxEventHook.NearRescueRelief, worldPosition);
         }
 
         protected virtual void PlayTargetExtraction()
@@ -297,22 +335,69 @@ namespace Rescue.Unity.FX
 
         protected virtual void PlayTargetExtraction(Vector3 worldPosition)
         {
-            TrySpawn(fxRegistry?.TargetExtractionFx, nameof(FxVisualRegistry.TargetExtractionFx), worldPosition);
+            TrySpawn(fxRegistry?.TargetExtractionFx, nameof(FxVisualRegistry.TargetExtractionFx), FxEventHook.TargetExtraction, worldPosition);
         }
 
         protected virtual void PlayWin()
         {
-            TrySpawn(fxRegistry?.WinFx, nameof(FxVisualRegistry.WinFx));
+            TrySpawn(fxRegistry?.WinFx, nameof(FxVisualRegistry.WinFx), FxEventHook.Win);
         }
 
         protected virtual void PlayLossDockOverflow()
         {
-            TrySpawn(fxRegistry?.LossFx, $"{nameof(FxVisualRegistry.LossFx)}_DockOverflow");
+            TrySpawn(fxRegistry?.LossFx, $"{nameof(FxVisualRegistry.LossFx)}_DockOverflow", FxEventHook.LossDockOverflow);
         }
 
         protected virtual void PlayLossWaterOnTarget()
         {
-            TrySpawn(fxRegistry?.LossFx, $"{nameof(FxVisualRegistry.LossFx)}_WaterOnTarget");
+            TrySpawn(fxRegistry?.LossFx, $"{nameof(FxVisualRegistry.LossFx)}_WaterOnTarget", FxEventHook.LossWaterOnTarget);
+        }
+
+        private System.Collections.IEnumerator PlayAllRegisteredFxSequence(Vector3 worldPosition, float spacingSeconds)
+        {
+            currentDiagnosticSourceEvent = "ManualDiagnostic";
+            try
+            {
+                SpawnDiagnosticFx(fxRegistry?.GroupClearFx, nameof(FxVisualRegistry.GroupClearFx), FxEventHook.GroupClear, worldPosition);
+                yield return new WaitForSeconds(spacingSeconds);
+                SpawnDiagnosticFx(fxRegistry?.InvalidTapFx, nameof(FxVisualRegistry.InvalidTapFx), FxEventHook.InvalidTap, worldPosition);
+                yield return new WaitForSeconds(spacingSeconds);
+                SpawnDiagnosticFx(fxRegistry?.CrateBreakFx, nameof(FxVisualRegistry.CrateBreakFx), FxEventHook.CrateBreak, worldPosition);
+                yield return new WaitForSeconds(spacingSeconds);
+                SpawnDiagnosticFx(fxRegistry?.IceRevealFx, nameof(FxVisualRegistry.IceRevealFx), FxEventHook.IceReveal, worldPosition);
+                yield return new WaitForSeconds(spacingSeconds);
+                SpawnDiagnosticFx(fxRegistry?.VineClearFx, nameof(FxVisualRegistry.VineClearFx), FxEventHook.VineClear, worldPosition);
+                yield return new WaitForSeconds(spacingSeconds);
+                SpawnDiagnosticFx(fxRegistry?.VineGrowPreviewFx, nameof(FxVisualRegistry.VineGrowPreviewFx), FxEventHook.VineGrowthPreview, worldPosition);
+                yield return new WaitForSeconds(spacingSeconds);
+                SpawnDiagnosticFx(fxRegistry?.DockInsertFx, nameof(FxVisualRegistry.DockInsertFx), FxEventHook.DockInsert, worldPosition);
+                yield return new WaitForSeconds(spacingSeconds);
+                SpawnDiagnosticFx(fxRegistry?.DockTripleClearFx, nameof(FxVisualRegistry.DockTripleClearFx), FxEventHook.DockTripleClear, worldPosition);
+                yield return new WaitForSeconds(spacingSeconds);
+                SpawnDiagnosticFx(fxRegistry?.DockInsertFx, $"{nameof(FxVisualRegistry.DockInsertFx)}_WarningFallback", FxEventHook.DockWarning, worldPosition);
+                yield return new WaitForSeconds(spacingSeconds);
+                SpawnDiagnosticFx(fxRegistry?.WaterRiseFx, nameof(FxVisualRegistry.WaterRiseFx), FxEventHook.WaterRise, worldPosition);
+                yield return new WaitForSeconds(spacingSeconds);
+                SpawnDiagnosticFx(fxRegistry?.NearRescueReliefFx, nameof(FxVisualRegistry.NearRescueReliefFx), FxEventHook.NearRescueRelief, worldPosition);
+                yield return new WaitForSeconds(spacingSeconds);
+                SpawnDiagnosticFx(fxRegistry?.TargetExtractionFx, nameof(FxVisualRegistry.TargetExtractionFx), FxEventHook.TargetExtraction, worldPosition);
+                yield return new WaitForSeconds(spacingSeconds);
+                SpawnDiagnosticFx(fxRegistry?.WinFx, nameof(FxVisualRegistry.WinFx), FxEventHook.Win, worldPosition);
+                yield return new WaitForSeconds(spacingSeconds);
+                SpawnDiagnosticFx(fxRegistry?.LossFx, $"{nameof(FxVisualRegistry.LossFx)}_DockOverflow", FxEventHook.LossDockOverflow, worldPosition);
+                yield return new WaitForSeconds(spacingSeconds);
+                SpawnDiagnosticFx(fxRegistry?.LossFx, $"{nameof(FxVisualRegistry.LossFx)}_WaterOnTarget", FxEventHook.LossWaterOnTarget, worldPosition);
+            }
+            finally
+            {
+                currentDiagnosticSourceEvent = null;
+                diagnosticPlaybackCoroutine = null;
+            }
+        }
+
+        private void SpawnDiagnosticFx(GameObject? prefab, string instanceName, FxEventHook hook, Vector3 worldPosition)
+        {
+            TrySpawn(prefab, instanceName, hook, worldPosition);
         }
 
         private Vector3 ResolveGroupWorldPosition(ImmutableArray<TileCoord> coords)
@@ -483,13 +568,14 @@ namespace Rescue.Unity.FX
             return parent.position;
         }
 
-        private GameObject? TrySpawn(GameObject? prefab, string instanceName)
+        private GameObject? TrySpawn(GameObject? prefab, string instanceName, FxEventHook hook)
         {
-            return TrySpawn(prefab, instanceName, GetSafeFallbackPosition());
+            return TrySpawn(prefab, instanceName, hook, GetSafeFallbackPosition());
         }
 
-        private GameObject? TrySpawn(GameObject? prefab, string instanceName, Vector3 worldPosition)
+        private GameObject? TrySpawn(GameObject? prefab, string instanceName, FxEventHook hook, Vector3 worldPosition)
         {
+            LogDiagnostic(hook, instanceName, prefab, worldPosition);
             if (prefab is null)
             {
                 return null;
@@ -499,7 +585,43 @@ namespace Rescue.Unity.FX
             GameObject instance = Instantiate(prefab, parent);
             instance.name = instanceName;
             instance.transform.position = worldPosition;
+            ApplyDiagnosticVisibility(instance, hook);
             return instance;
+        }
+
+        private void ApplyDiagnosticVisibility(GameObject instance, FxEventHook hook)
+        {
+            if (!diagnosticsEnabled || diagnosticMinimumVisibleSeconds <= 0f)
+            {
+                return;
+            }
+
+            SpriteSequenceFxPlayer? player = instance.GetComponent<SpriteSequenceFxPlayer>();
+            if (player is null)
+            {
+                Debug.Log(
+                    $"[FX Diagnostics] hook={hook} spawned '{instance.name}' without {nameof(SpriteSequenceFxPlayer)}; no debug slow-down applied.",
+                    this);
+                return;
+            }
+
+            player.EnsureMinimumPlaybackDuration(diagnosticMinimumVisibleSeconds);
+            player.StartPlayback();
+        }
+
+        private void LogDiagnostic(FxEventHook hook, string instanceName, GameObject? prefab, Vector3 worldPosition)
+        {
+            if (!diagnosticsEnabled)
+            {
+                return;
+            }
+
+            string assigned = prefab is null ? "no" : "yes";
+            string prefabName = prefab is null ? "<missing>" : prefab.name;
+            string sourceEvent = currentDiagnosticSourceEvent ?? "<direct>";
+            Debug.Log(
+                $"[FX Diagnostics] hook={hook} source={sourceEvent} instance={instanceName} prefab={prefabName} assigned={assigned} position={worldPosition}",
+                this);
         }
     }
 }

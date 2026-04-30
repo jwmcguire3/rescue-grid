@@ -317,6 +317,7 @@ namespace Rescue.Unity.Presentation.Tests
             {
                 ActionPlaybackStepType? stepType = actionEvent switch
                 {
+                    InvalidInput => ActionPlaybackStepType.RemoveGroup,
                     GroupRemoved => ActionPlaybackStepType.RemoveGroup,
                     BlockerDamaged => ActionPlaybackStepType.BreakBlockerOrReveal,
                     BlockerBroken => ActionPlaybackStepType.BreakBlockerOrReveal,

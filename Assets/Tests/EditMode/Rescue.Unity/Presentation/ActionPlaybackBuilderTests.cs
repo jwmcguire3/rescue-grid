@@ -354,6 +354,7 @@ namespace Rescue.Unity.Presentation.Tests
 
             Assert.That(plan.Select(step => step.StepType), Is.EqualTo(new[]
             {
+                ActionPlaybackStepType.RemoveGroup,
                 ActionPlaybackStepType.WaterWarning,
                 ActionPlaybackStepType.RemoveGroup,
                 ActionPlaybackStepType.TerminalOutcome,
