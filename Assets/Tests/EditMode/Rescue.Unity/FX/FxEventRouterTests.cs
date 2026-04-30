@@ -368,6 +368,42 @@ namespace Rescue.Unity.FX.Tests
         }
 
         [Test]
+        public void FxEventRouter_SpawnedFxAlignToBoardPresentationPlane()
+        {
+            GameState state = CreateState();
+            BoardGridViewPresenter grid = CreateGrid(state);
+            grid.transform.rotation = Quaternion.Euler(15f, 0f, 0f);
+            GameObject fxRoot = CreateGameObject("FxRoot");
+            GameObject prefab = CreateGameObject("GroupClearPrefab");
+            FxVisualRegistry registry = ScriptableObject.CreateInstance<FxVisualRegistry>();
+            createdObjects.Add(registry);
+            registry.GroupClearFx = prefab;
+
+            FxEventRouter router = CreateGameObject("FxRouter").AddComponent<FxEventRouter>();
+            router.BoardGrid = grid;
+            router.FxRoot = fxRoot.transform;
+            router.FxRegistry = registry;
+
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.RemoveGroup, new GroupRemoved(
+                    DebrisType.A,
+                    ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1)))));
+
+            Transform? spawned = fxRoot.transform.Find(nameof(FxVisualRegistry.GroupClearFx));
+            Vector3 expectedPosition =
+                ((grid.GetCellWorldPosition(new TileCoord(0, 0)) + grid.GetCellWorldPosition(new TileCoord(0, 1))) * 0.5f)
+                + (grid.transform.up * 0.28f);
+
+            Assert.That(spawned, Is.Not.Null);
+            Quaternion expectedRotation = grid.transform.rotation * Quaternion.Euler(90f, 0f, 0f);
+            Assert.That(Quaternion.Angle(expectedRotation, spawned!.rotation), Is.LessThanOrEqualTo(0.001f));
+            AssertVector3Equal(expectedPosition, spawned.position);
+        }
+
+        [Test]
         public void FxEventRouter_DiagnosticsLogPrefabAssignmentAndPosition()
         {
             GameObject fxRoot = CreateGameObject("FxRoot");
@@ -411,9 +447,10 @@ namespace Rescue.Unity.FX.Tests
             LogAssert.Expect(LogType.Log, new System.Text.RegularExpressions.Regex("\\[FX Diagnostics\\] hook=GroupClear"));
             LogAssert.Expect(LogType.Log, new System.Text.RegularExpressions.Regex("\\[FX Diagnostics\\] hook=InvalidTap"));
 
-            router.PlayAllRegisteredFxForDiagnostics(new Vector3(1f, 2f, 3f), spacingSeconds: 0.05f);
+            router.PlayAllRegisteredFxForDiagnostics(new Vector3(1f, 2f, 3f), spacingSeconds: 0f);
 
-            yield return new WaitForSeconds(0.08f);
+            yield return null;
+            yield return null;
 
             Assert.That(fxRoot.transform.Find(nameof(FxVisualRegistry.GroupClearFx)), Is.Not.Null);
             Assert.That(fxRoot.transform.Find(nameof(FxVisualRegistry.InvalidTapFx)), Is.Not.Null);

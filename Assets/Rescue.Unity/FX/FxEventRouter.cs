@@ -16,6 +16,9 @@ namespace Rescue.Unity.FX
         [SerializeField] private Transform? fxRoot;
         [SerializeField] private BoardGridViewPresenter? boardGrid;
         [SerializeField] private DockViewPresenter? dockView;
+        [SerializeField] private bool alignSpawnedFxToPresentationPlane = true;
+        [SerializeField] private Vector3 spawnedFxPlaneEulerOffset = new Vector3(90f, 0f, 0f);
+        [SerializeField] private float spawnedFxSurfaceOffset = 0.28f;
         [SerializeField] private bool diagnosticsEnabled;
         [SerializeField] private float diagnosticMinimumVisibleSeconds;
 
@@ -44,6 +47,24 @@ namespace Rescue.Unity.FX
         {
             get => dockView;
             set => dockView = value;
+        }
+
+        public bool AlignSpawnedFxToPresentationPlane
+        {
+            get => alignSpawnedFxToPresentationPlane;
+            set => alignSpawnedFxToPresentationPlane = value;
+        }
+
+        public Vector3 SpawnedFxPlaneEulerOffset
+        {
+            get => spawnedFxPlaneEulerOffset;
+            set => spawnedFxPlaneEulerOffset = value;
+        }
+
+        public float SpawnedFxSurfaceOffset
+        {
+            get => spawnedFxSurfaceOffset;
+            set => spawnedFxSurfaceOffset = Mathf.Max(0f, value);
         }
 
         public bool DiagnosticsEnabled
@@ -220,7 +241,7 @@ namespace Rescue.Unity.FX
 
             DiagnosticsEnabled = true;
             DiagnosticMinimumVisibleSeconds = Mathf.Max(DiagnosticMinimumVisibleSeconds, 0.5f);
-            diagnosticPlaybackCoroutine = StartCoroutine(PlayAllRegisteredFxSequence(worldPosition, Mathf.Max(0.05f, spacingSeconds)));
+            diagnosticPlaybackCoroutine = StartCoroutine(PlayAllRegisteredFxSequence(worldPosition, Mathf.Max(0f, spacingSeconds)));
         }
 
         protected virtual void PlayGroupClear()
@@ -584,9 +605,62 @@ namespace Rescue.Unity.FX
             Transform parent = fxRoot != null ? fxRoot : transform;
             GameObject instance = Instantiate(prefab, parent);
             instance.name = instanceName;
-            instance.transform.position = worldPosition;
+            instance.transform.position = ResolveFxWorldPosition(worldPosition);
+            instance.transform.rotation = ResolveFxWorldRotation();
             ApplyDiagnosticVisibility(instance, hook);
             return instance;
+        }
+
+        private Vector3 ResolveFxWorldPosition(Vector3 worldPosition)
+        {
+            if (!alignSpawnedFxToPresentationPlane || spawnedFxSurfaceOffset <= 0f)
+            {
+                return worldPosition;
+            }
+
+            return worldPosition + (ResolveFxSurfaceNormal() * spawnedFxSurfaceOffset);
+        }
+
+        private Quaternion ResolveFxWorldRotation()
+        {
+            if (!alignSpawnedFxToPresentationPlane)
+            {
+                Transform parent = fxRoot != null ? fxRoot : transform;
+                return parent.rotation;
+            }
+
+            BoardGridViewPresenter? resolvedBoardGrid = ResolveBoardGrid();
+            if (resolvedBoardGrid is not null)
+            {
+                return resolvedBoardGrid.transform.rotation * Quaternion.Euler(spawnedFxPlaneEulerOffset);
+            }
+
+            DockViewPresenter? resolvedDockView = ResolveDockView();
+            if (resolvedDockView is not null)
+            {
+                return resolvedDockView.transform.rotation * Quaternion.Euler(spawnedFxPlaneEulerOffset);
+            }
+
+            Transform fallbackParent = fxRoot != null ? fxRoot : transform;
+            return fallbackParent.rotation;
+        }
+
+        private Vector3 ResolveFxSurfaceNormal()
+        {
+            BoardGridViewPresenter? resolvedBoardGrid = ResolveBoardGrid();
+            if (resolvedBoardGrid is not null)
+            {
+                return resolvedBoardGrid.transform.up;
+            }
+
+            DockViewPresenter? resolvedDockView = ResolveDockView();
+            if (resolvedDockView is not null)
+            {
+                return resolvedDockView.transform.up;
+            }
+
+            Transform fallbackParent = fxRoot != null ? fxRoot : transform;
+            return fallbackParent.up;
         }
 
         private void ApplyDiagnosticVisibility(GameObject instance, FxEventHook hook)
