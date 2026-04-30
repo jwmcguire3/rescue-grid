@@ -12,7 +12,44 @@ namespace Rescue.Core.Pipeline.Steps
             ImmutableArray<ActionEvent>.Builder events = ImmutableArray.CreateBuilder<ActionEvent>();
             int dryHeight = state.Board.Height - state.Water.FloodedRows;
 
-            for (int col = 0; col < state.Board.Width; col++)
+            (updatedBoard, lineageByCoord) = CollapseVertically(updatedBoard, lineageByCoord, dryHeight, events);
+
+            bool movedDiagonally;
+            do
+            {
+                (updatedBoard, lineageByCoord, movedDiagonally) = SettleDiagonally(
+                    updatedBoard,
+                    lineageByCoord,
+                    dryHeight,
+                    events);
+
+                if (movedDiagonally)
+                {
+                    (updatedBoard, lineageByCoord) = CollapseVertically(updatedBoard, lineageByCoord, dryHeight, events);
+                }
+            }
+            while (movedDiagonally);
+
+            return new StepResult(
+                state with
+                {
+                    Board = updatedBoard,
+                    SpawnLineageByCoord = lineageByCoord,
+                },
+                context,
+                events.ToImmutable());
+        }
+
+        private static (Board Board, ImmutableDictionary<TileCoord, SpawnLineage> LineageByCoord) CollapseVertically(
+            Board board,
+            ImmutableDictionary<TileCoord, SpawnLineage> lineageByCoord,
+            int dryHeight,
+            ImmutableArray<ActionEvent>.Builder events)
+        {
+            Board updatedBoard = board;
+            ImmutableDictionary<TileCoord, SpawnLineage> updatedLineage = lineageByCoord;
+
+            for (int col = 0; col < updatedBoard.Width; col++)
             {
                 int row = dryHeight - 1;
                 while (row >= 0)
@@ -30,9 +67,9 @@ namespace Rescue.Core.Pipeline.Steps
                     }
 
                     int segmentStart = row + 1;
-                    (updatedBoard, lineageByCoord) = CollapseSegment(
+                    (updatedBoard, updatedLineage) = CollapseSegment(
                         updatedBoard,
-                        lineageByCoord,
+                        updatedLineage,
                         col,
                         segmentStart,
                         segmentEnd,
@@ -40,14 +77,68 @@ namespace Rescue.Core.Pipeline.Steps
                 }
             }
 
-            return new StepResult(
-                state with
+            return (updatedBoard, updatedLineage);
+        }
+
+        private static (
+            Board Board,
+            ImmutableDictionary<TileCoord, SpawnLineage> LineageByCoord,
+            bool Moved) SettleDiagonally(
+                Board board,
+                ImmutableDictionary<TileCoord, SpawnLineage> lineageByCoord,
+                int dryHeight,
+                ImmutableArray<ActionEvent>.Builder events)
+        {
+            Board updatedBoard = board;
+            ImmutableDictionary<TileCoord, SpawnLineage> updatedLineage = lineageByCoord;
+            bool moved = false;
+
+            for (int row = dryHeight - 1; row >= 0; row--)
+            {
+                for (int col = 0; col < updatedBoard.Width; col++)
                 {
-                    Board = updatedBoard,
-                    SpawnLineageByCoord = lineageByCoord,
-                },
-                context,
-                events.ToImmutable());
+                    TileCoord destination = new TileCoord(row, col);
+                    if (!CanAcceptDiagonalSettling(updatedBoard, destination, dryHeight))
+                    {
+                        continue;
+                    }
+
+                    if (!IsStableLandingDestination(updatedBoard, destination, dryHeight))
+                    {
+                        continue;
+                    }
+
+                    if (CanBeFilledVertically(updatedBoard, destination))
+                    {
+                        continue;
+                    }
+
+                    if (!HasGravityBarrierAbove(updatedBoard, destination))
+                    {
+                        continue;
+                    }
+
+                    TileCoord? source = FindDiagonalSource(updatedBoard, destination);
+                    if (!source.HasValue)
+                    {
+                        continue;
+                    }
+
+                    TileCoord sourceCoord = source.Value;
+                    DebrisTile debris = (DebrisTile)BoardHelpers.GetTile(updatedBoard, sourceCoord);
+                    updatedBoard = BoardHelpers.SetTile(updatedBoard, sourceCoord, new EmptyTile());
+                    updatedBoard = BoardHelpers.SetTile(updatedBoard, destination, debris);
+                    if (updatedLineage.TryGetValue(sourceCoord, out SpawnLineage lineage))
+                    {
+                        updatedLineage = updatedLineage.Remove(sourceCoord).SetItem(destination, lineage);
+                    }
+
+                    events.Add(new GravitySettled(ImmutableArray.Create((sourceCoord, destination))));
+                    moved = true;
+                }
+            }
+
+            return (updatedBoard, updatedLineage, moved);
         }
 
         private static (Board Board, ImmutableDictionary<TileCoord, SpawnLineage> LineageByCoord) CollapseSegment(
@@ -116,6 +207,85 @@ namespace Rescue.Core.Pipeline.Steps
             }
 
             return segmentStart - 1;
+        }
+
+        private static bool CanAcceptDiagonalSettling(Board board, TileCoord destination, int dryHeight)
+        {
+            return destination.Row >= 0
+                && destination.Row < dryHeight
+                && BoardHelpers.InBounds(board, destination)
+                && BoardHelpers.GetTile(board, destination) is EmptyTile;
+        }
+
+        private static bool IsStableLandingDestination(Board board, TileCoord destination, int dryHeight)
+        {
+            for (int row = destination.Row + 1; row < dryHeight; row++)
+            {
+                Tile tile = BoardHelpers.GetTile(board, new TileCoord(row, destination.Col));
+                if (tile is RescuePathTile)
+                {
+                    continue;
+                }
+
+                return tile is not EmptyTile;
+            }
+
+            return true;
+        }
+
+        private static bool CanBeFilledVertically(Board board, TileCoord destination)
+        {
+            for (int row = destination.Row - 1; row >= 0; row--)
+            {
+                Tile tile = BoardHelpers.GetTile(board, new TileCoord(row, destination.Col));
+                if (IsGravityBarrier(tile))
+                {
+                    return false;
+                }
+
+                if (tile is DebrisTile)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool HasGravityBarrierAbove(Board board, TileCoord destination)
+        {
+            for (int row = destination.Row - 1; row >= 0; row--)
+            {
+                if (IsGravityBarrier(BoardHelpers.GetTile(board, new TileCoord(row, destination.Col))))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static TileCoord? FindDiagonalSource(Board board, TileCoord destination)
+        {
+            TileCoord aboveLeft = new TileCoord(destination.Row - 1, destination.Col - 1);
+            if (IsDiagonalSource(board, aboveLeft))
+            {
+                return aboveLeft;
+            }
+
+            TileCoord aboveRight = new TileCoord(destination.Row - 1, destination.Col + 1);
+            if (IsDiagonalSource(board, aboveRight))
+            {
+                return aboveRight;
+            }
+
+            return null;
+        }
+
+        private static bool IsDiagonalSource(Board board, TileCoord coord)
+        {
+            return BoardHelpers.InBounds(board, coord)
+                && BoardHelpers.GetTile(board, coord) is DebrisTile;
         }
 
         private static bool IsGravityBarrier(Tile tile)
