@@ -136,6 +136,31 @@ namespace Rescue.Telemetry
         public int SchemaVersion => 1;
     }
 
+    public sealed record GravityDiagonalSettleAppliedEvent(
+        string LevelId,
+        long TimestampMs,
+        int ActionIndex,
+        TileCoordMoveTelemetry[] Moves) : ITelemetryEvent
+    {
+        public string EventType => "gravity_diagonal_settle_applied";
+        public int SchemaVersion => 1;
+    }
+
+    public sealed record GravitySettleAppliedEvent(
+        string LevelId,
+        long TimestampMs,
+        int ActionIndex,
+        string Mode,
+        TileCoordMoveTelemetry[] Moves) : ITelemetryEvent
+    {
+        public string EventType => "gravity_settle_applied";
+        public int SchemaVersion => 1;
+    }
+
+    public sealed record TileCoordMoveTelemetry(
+        TileCoord From,
+        TileCoord To);
+
     public sealed record VineGrowthEvent(
         string LevelId,
         long TimestampMs,
@@ -366,6 +391,33 @@ namespace Rescue.Telemetry
         public int SchemaVersion => 1;
     }
 
+    public sealed record HardNoMoveDetectedEvent(
+        string LevelId,
+        long TimestampMs,
+        int ActionIndex,
+        string Reason) : ITelemetryEvent
+    {
+        public string EventType => "hard_no_move_detected";
+        public int SchemaVersion => 1;
+    }
+
+    public sealed record DeadboardMinimalRepairAppliedEvent(
+        string LevelId,
+        long TimestampMs,
+        int ActionIndex,
+        string Reason,
+        int ChangeCount,
+        DeadboardRepairChangeTelemetry[] Changes) : ITelemetryEvent
+    {
+        public string EventType => "deadboard_minimal_repair_applied";
+        public int SchemaVersion => 1;
+    }
+
+    public sealed record DeadboardRepairChangeTelemetry(
+        TileCoord Coord,
+        DebrisType Before,
+        DebrisType After);
+
     public sealed record TuningChangedEvent(
         string LevelId,
         long TimestampMs,
@@ -434,6 +486,8 @@ namespace Rescue.Telemetry
                 "dock_occupancy" => JsonSerializer.Deserialize<DockOccupancyEvent>(rawJson, InnerOptions),
                 "water_forecast" => JsonSerializer.Deserialize<WaterForecastEvent>(rawJson, InnerOptions),
                 "water_rise" => JsonSerializer.Deserialize<WaterRiseEvent>(rawJson, InnerOptions),
+                "gravity_settle_applied" => JsonSerializer.Deserialize<GravitySettleAppliedEvent>(rawJson, InnerOptions),
+                "gravity_diagonal_settle_applied" => JsonSerializer.Deserialize<GravityDiagonalSettleAppliedEvent>(rawJson, InnerOptions),
                 "vine_growth" => JsonSerializer.Deserialize<VineGrowthEvent>(rawJson, InnerOptions),
                 "vine_preview" => JsonSerializer.Deserialize<VinePreviewEvent>(rawJson, InnerOptions),
                 "undo_used" => JsonSerializer.Deserialize<UndoUsedEvent>(rawJson, InnerOptions),
@@ -448,6 +502,8 @@ namespace Rescue.Telemetry
                 "assisted_spawn" => JsonSerializer.Deserialize<AssistedSpawnEvent>(rawJson, InnerOptions),
                 "assisted_spawn_follow_up" => JsonSerializer.Deserialize<AssistedSpawnFollowUpEvent>(rawJson, InnerOptions),
                 "deadboard_like_state" => JsonSerializer.Deserialize<DeadboardLikeStateEvent>(rawJson, InnerOptions),
+                "hard_no_move_detected" => JsonSerializer.Deserialize<HardNoMoveDetectedEvent>(rawJson, InnerOptions),
+                "deadboard_minimal_repair_applied" => JsonSerializer.Deserialize<DeadboardMinimalRepairAppliedEvent>(rawJson, InnerOptions),
                 "invalid_tap" => JsonSerializer.Deserialize<InvalidTapEvent>(rawJson, InnerOptions),
                 "idle_time" => JsonSerializer.Deserialize<IdleTimeEvent>(rawJson, InnerOptions),
                 "time_to_first_action" => JsonSerializer.Deserialize<TimeToFirstActionEvent>(rawJson, InnerOptions),

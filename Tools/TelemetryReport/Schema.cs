@@ -96,6 +96,39 @@ namespace TelemetryReport
         public int NewFloodedRows { get; set; }
     }
 
+    internal sealed class GravityDiagonalSettleAppliedEvent : ITelemetryEvent
+    {
+        public string EventType { get; set; } = "gravity_diagonal_settle_applied";
+        public int SchemaVersion { get; set; }
+        public string LevelId { get; set; } = string.Empty;
+        public long TimestampMs { get; set; }
+        public int ActionIndex { get; set; }
+        public TileCoordMoveTelemetry[] Moves { get; set; } = Array.Empty<TileCoordMoveTelemetry>();
+    }
+
+    internal sealed class GravitySettleAppliedEvent : ITelemetryEvent
+    {
+        public string EventType { get; set; } = "gravity_settle_applied";
+        public int SchemaVersion { get; set; }
+        public string LevelId { get; set; } = string.Empty;
+        public long TimestampMs { get; set; }
+        public int ActionIndex { get; set; }
+        public string Mode { get; set; } = string.Empty;
+        public TileCoordMoveTelemetry[] Moves { get; set; } = Array.Empty<TileCoordMoveTelemetry>();
+    }
+
+    internal sealed class TileCoordMoveTelemetry
+    {
+        public TileCoordTelemetry From { get; set; } = new TileCoordTelemetry();
+        public TileCoordTelemetry To { get; set; } = new TileCoordTelemetry();
+    }
+
+    internal sealed class TileCoordTelemetry
+    {
+        public int Row { get; set; }
+        public int Col { get; set; }
+    }
+
     internal sealed class WaterForecastEvent : ITelemetryEvent
     {
         public string EventType { get; set; } = "water_forecast";
@@ -241,6 +274,35 @@ namespace TelemetryReport
         public string? TargetId { get; set; }
     }
 
+    internal sealed class HardNoMoveDetectedEvent : ITelemetryEvent
+    {
+        public string EventType { get; set; } = "hard_no_move_detected";
+        public int SchemaVersion { get; set; }
+        public string LevelId { get; set; } = string.Empty;
+        public long TimestampMs { get; set; }
+        public int ActionIndex { get; set; }
+        public string Reason { get; set; } = string.Empty;
+    }
+
+    internal sealed class DeadboardMinimalRepairAppliedEvent : ITelemetryEvent
+    {
+        public string EventType { get; set; } = "deadboard_minimal_repair_applied";
+        public int SchemaVersion { get; set; }
+        public string LevelId { get; set; } = string.Empty;
+        public long TimestampMs { get; set; }
+        public int ActionIndex { get; set; }
+        public string Reason { get; set; } = string.Empty;
+        public int ChangeCount { get; set; }
+        public DeadboardRepairChangeTelemetry[] Changes { get; set; } = Array.Empty<DeadboardRepairChangeTelemetry>();
+    }
+
+    internal sealed class DeadboardRepairChangeTelemetry
+    {
+        public TileCoordTelemetry Coord { get; set; } = new TileCoordTelemetry();
+        public string Before { get; set; } = string.Empty;
+        public string After { get; set; } = string.Empty;
+    }
+
     internal sealed class UndoUsedEvent : ITelemetryEvent
     {
         public string EventType { get; set; } = "undo_used";
@@ -300,6 +362,8 @@ namespace TelemetryReport
                 "dock_occupancy" => JsonSerializer.Deserialize<DockOccupancyEvent>(rawJson, InnerOptions),
                 "water_forecast" => JsonSerializer.Deserialize<WaterForecastEvent>(rawJson, InnerOptions),
                 "water_rise" => JsonSerializer.Deserialize<WaterRiseEvent>(rawJson, InnerOptions),
+                "gravity_settle_applied" => JsonSerializer.Deserialize<GravitySettleAppliedEvent>(rawJson, InnerOptions),
+                "gravity_diagonal_settle_applied" => JsonSerializer.Deserialize<GravityDiagonalSettleAppliedEvent>(rawJson, InnerOptions),
                 "vine_growth" => JsonSerializer.Deserialize<VineGrowthEvent>(rawJson, InnerOptions),
                 "vine_preview" => JsonSerializer.Deserialize<VinePreviewEvent>(rawJson, InnerOptions),
                 "target_state_transition" => JsonSerializer.Deserialize<TargetStateTransitionEvent>(rawJson, InnerOptions),
@@ -310,6 +374,8 @@ namespace TelemetryReport
                 "assisted_spawn" => JsonSerializer.Deserialize<AssistedSpawnEvent>(rawJson, InnerOptions),
                 "assisted_spawn_follow_up" => JsonSerializer.Deserialize<AssistedSpawnFollowUpEvent>(rawJson, InnerOptions),
                 "deadboard_like_state" => JsonSerializer.Deserialize<DeadboardLikeStateEvent>(rawJson, InnerOptions),
+                "hard_no_move_detected" => JsonSerializer.Deserialize<HardNoMoveDetectedEvent>(rawJson, InnerOptions),
+                "deadboard_minimal_repair_applied" => JsonSerializer.Deserialize<DeadboardMinimalRepairAppliedEvent>(rawJson, InnerOptions),
                 "undo_used" => JsonSerializer.Deserialize<UndoUsedEvent>(rawJson, InnerOptions),
                 _ => JsonSerializer.Deserialize<RawEvent>(rawJson, InnerOptions),
             };

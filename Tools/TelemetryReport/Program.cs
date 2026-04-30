@@ -147,6 +147,9 @@ namespace TelemetryReport
                 sb.AppendLine($"| Water forecast timings | {FormatReasons(lvl.WaterForecastTimings)} |");
                 sb.AppendLine($"| Last pre-action flood row | {FormatNullableInt(lvl.LastPreActionNextFloodRow)} |");
                 sb.AppendLine($"| Last post-action flood row | {FormatNullableInt(lvl.LastPostActionNextFloodRow)} |");
+                sb.AppendLine($"| Gravity settling events | {lvl.GravitySettlingCount} ({lvl.GravitySettlingMoves} moves) |");
+                sb.AppendLine($"| Gravity settling modes | {FormatReasons(lvl.GravitySettlingModes)} |");
+                sb.AppendLine($"| Diagonal settling events | {lvl.DiagonalSettlingCount} ({lvl.DiagonalSettlingMoves} moves) |");
                 sb.AppendLine($"| Vine growth events | {lvl.VineGrowthCount} |");
                 sb.AppendLine($"| Vine preview events | {lvl.VinePreviewCount} |");
                 sb.AppendLine($"| Target transitions | {FormatReasons(lvl.TargetTransitions)} |");
@@ -163,6 +166,9 @@ namespace TelemetryReport
                 sb.AppendLine($"| Peak dock occupancy | {FormatNullableInt(lvl.PeakDockOccupancy)} |");
                 sb.AppendLine($"| Deadboard-like states | {lvl.DeadboardLikeCount} |");
                 sb.AppendLine($"| Deadboard reasons | {FormatReasons(lvl.DeadboardReasons)} |");
+                sb.AppendLine($"| Hard no-move detections | {lvl.HardNoMoveDetectedCount} |");
+                sb.AppendLine($"| Minimal repairs applied | {lvl.MinimalRepairAppliedCount} ({lvl.MinimalRepairChangeCount} changes) |");
+                sb.AppendLine($"| Minimal repair reasons | {FormatReasons(lvl.MinimalRepairReasons)} |");
 
                 if (lvl.IdleTimes.Count > 0)
                 {
@@ -266,6 +272,20 @@ namespace TelemetryReport
                         lvl.WaterRiseCount++;
                         break;
 
+                    case GravitySettleAppliedEvent gravity:
+                        lvl.GravitySettlingCount++;
+                        lvl.GravitySettlingMoves += gravity.Moves?.Length ?? 0;
+                        if (!string.IsNullOrEmpty(gravity.Mode))
+                        {
+                            Increment(lvl.GravitySettlingModes, gravity.Mode);
+                        }
+                        break;
+
+                    case GravityDiagonalSettleAppliedEvent diagonal:
+                        lvl.DiagonalSettlingCount++;
+                        lvl.DiagonalSettlingMoves += diagonal.Moves?.Length ?? 0;
+                        break;
+
                     case VineGrowthEvent:
                         lvl.VineGrowthCount++;
                         break;
@@ -332,6 +352,16 @@ namespace TelemetryReport
                     case DeadboardLikeStateEvent:
                         lvl.DeadboardLikeCount++;
                         Increment(lvl.DeadboardReasons, ((DeadboardLikeStateEvent)ev).Reason);
+                        break;
+
+                    case HardNoMoveDetectedEvent:
+                        lvl.HardNoMoveDetectedCount++;
+                        break;
+
+                    case DeadboardMinimalRepairAppliedEvent repair:
+                        lvl.MinimalRepairAppliedCount++;
+                        lvl.MinimalRepairChangeCount += repair.ChangeCount;
+                        Increment(lvl.MinimalRepairReasons, repair.Reason);
                         break;
                 }
             }
@@ -422,6 +452,10 @@ namespace TelemetryReport
         public int TotalActions;
         public int InvalidTapCount;
         public int WaterRiseCount;
+        public int GravitySettlingCount;
+        public int GravitySettlingMoves;
+        public int DiagonalSettlingCount;
+        public int DiagonalSettlingMoves;
         public int VineGrowthCount;
         public int VinePreviewCount;
         public int FinalRescueDockOverrideCount;
@@ -430,6 +464,9 @@ namespace TelemetryReport
         public int AssistedSpawnPieces;
         public int AssistedSpawnFollowUpCount;
         public int DeadboardLikeCount;
+        public int HardNoMoveDetectedCount;
+        public int MinimalRepairAppliedCount;
+        public int MinimalRepairChangeCount;
         public int? LastNextFloodRow;
         public int? LastPreActionNextFloodRow;
         public int? LastPostActionNextFloodRow;
@@ -442,11 +479,13 @@ namespace TelemetryReport
         public Dictionary<string, int> LossReasons { get; } = new Dictionary<string, int>();
         public Dictionary<string, int> WaterModes { get; } = new Dictionary<string, int>();
         public Dictionary<string, int> WaterForecastTimings { get; } = new Dictionary<string, int>();
+        public Dictionary<string, int> GravitySettlingModes { get; } = new Dictionary<string, int>();
         public Dictionary<string, int> TargetTransitions { get; } = new Dictionary<string, int>();
         public Dictionary<string, int> GraceOutcomes { get; } = new Dictionary<string, int>();
         public Dictionary<string, int> AssistedSpawnReasons { get; } = new Dictionary<string, int>();
         public Dictionary<string, int> DockWarningStates { get; } = new Dictionary<string, int>();
         public Dictionary<string, int> DeadboardReasons { get; } = new Dictionary<string, int>();
+        public Dictionary<string, int> MinimalRepairReasons { get; } = new Dictionary<string, int>();
         public Dictionary<string, int> OneClearAwayActionByTarget { get; } = new Dictionary<string, int>();
         public Dictionary<string, int> ExtractionLatchActionByTarget { get; } = new Dictionary<string, int>();
     }

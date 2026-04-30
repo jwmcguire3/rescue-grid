@@ -117,6 +117,10 @@ namespace TelemetryReport.Tests
             WriteLine(sb, new AssistedSpawnFollowUpEvent { LevelId = "L9", TimestampMs = 19, OriginalActionIndex = 1, FollowUpActionIndex = 2, UsedType = "A", SchemaVersion = 1 });
             WriteLine(sb, new VinePreviewEvent { LevelId = "L9", TimestampMs = 20, ActionIndex = 1, SchemaVersion = 1 });
             WriteLine(sb, new DeadboardLikeStateEvent { LevelId = "L9", TimestampMs = 21, ActionIndex = 3, Reason = "no_valid_groups", SchemaVersion = 1 });
+            WriteLine(sb, new GravitySettleAppliedEvent { LevelId = "L9", TimestampMs = 22, ActionIndex = 3, Mode = "diagonal", Moves = new[] { new TileCoordMoveTelemetry() }, SchemaVersion = 1 });
+            WriteLine(sb, new GravityDiagonalSettleAppliedEvent { LevelId = "L9", TimestampMs = 22, ActionIndex = 3, Moves = new[] { new TileCoordMoveTelemetry() }, SchemaVersion = 1 });
+            WriteLine(sb, new HardNoMoveDetectedEvent { LevelId = "L9", TimestampMs = 23, ActionIndex = 3, Reason = "hard_no_valid_groups", SchemaVersion = 1 });
+            WriteLine(sb, new DeadboardMinimalRepairAppliedEvent { LevelId = "L9", TimestampMs = 24, ActionIndex = 3, Reason = "hard_no_valid_groups", ChangeCount = 1, SchemaVersion = 1 });
             File.WriteAllText(path, sb.ToString());
 
             int exitCode = RunReport("report", path, out string output);
@@ -129,6 +133,10 @@ namespace TelemetryReport.Tests
             Assert.That(output, Does.Contain("Assisted spawn reasons"));
             Assert.That(output, Does.Contain("Grace outcomes"));
             Assert.That(output, Does.Contain("Deadboard-like states"));
+            Assert.That(output, Does.Contain("Gravity settling modes"));
+            Assert.That(output, Does.Contain("Diagonal settling events"));
+            Assert.That(output, Does.Contain("Hard no-move detections"));
+            Assert.That(output, Does.Contain("Minimal repairs applied"));
         }
 
         // ── fixture helpers ───────────────────────────────────────────────────
@@ -369,9 +377,29 @@ namespace TelemetryReport.Tests
                 {
                     s.VinePreviews++;
                 }
+                else if (ev is GravitySettleAppliedEvent gravity)
+                {
+                    s.GravitySettling++;
+                    s.GravityMoves += gravity.Moves?.Length ?? 0;
+                    if (!string.IsNullOrEmpty(gravity.Mode)) Increment(s.GravityModes, gravity.Mode);
+                }
+                else if (ev is GravityDiagonalSettleAppliedEvent diagonal)
+                {
+                    s.DiagonalSettling++;
+                    s.DiagonalMoves += diagonal.Moves?.Length ?? 0;
+                }
                 else if (ev is DeadboardLikeStateEvent)
                 {
                     s.Deadboards++;
+                }
+                else if (ev is HardNoMoveDetectedEvent)
+                {
+                    s.HardNoMoves++;
+                }
+                else if (ev is DeadboardMinimalRepairAppliedEvent repair)
+                {
+                    s.MinimalRepairs++;
+                    s.MinimalRepairChanges += repair.ChangeCount;
                 }
             }
 
@@ -424,6 +452,11 @@ namespace TelemetryReport.Tests
                 sb.AppendLine($"- Grace outcomes: {FormatCounts(s.GraceOutcomes)}");
                 sb.AppendLine($"- Vine preview events: {s.VinePreviews}");
                 sb.AppendLine($"- Deadboard-like states: {s.Deadboards}");
+                sb.AppendLine($"- Gravity settling events: {s.GravitySettling} ({s.GravityMoves} moves)");
+                sb.AppendLine($"- Gravity settling modes: {FormatCounts(s.GravityModes)}");
+                sb.AppendLine($"- Diagonal settling events: {s.DiagonalSettling} ({s.DiagonalMoves} moves)");
+                sb.AppendLine($"- Hard no-move detections: {s.HardNoMoves}");
+                sb.AppendLine($"- Minimal repairs applied: {s.MinimalRepairs} ({s.MinimalRepairChanges} changes)");
 
                 if (lossReasons.Count > 0)
                 {
@@ -455,6 +488,13 @@ namespace TelemetryReport.Tests
             public int AssistedFollowUps;
             public int VinePreviews;
             public int Deadboards;
+            public int GravitySettling;
+            public int GravityMoves;
+            public int DiagonalSettling;
+            public int DiagonalMoves;
+            public int HardNoMoves;
+            public int MinimalRepairs;
+            public int MinimalRepairChanges;
             public int? LastNextFloodRow;
             public int? PeakDockOccupancy;
             public System.Collections.Generic.List<string> LossReasons { get; } = new System.Collections.Generic.List<string>();
@@ -466,6 +506,7 @@ namespace TelemetryReport.Tests
             public System.Collections.Generic.Dictionary<string, int> TargetTransitions { get; } = new System.Collections.Generic.Dictionary<string, int>();
             public System.Collections.Generic.Dictionary<string, int> AssistedReasons { get; } = new System.Collections.Generic.Dictionary<string, int>();
             public System.Collections.Generic.Dictionary<string, int> GraceOutcomes { get; } = new System.Collections.Generic.Dictionary<string, int>();
+            public System.Collections.Generic.Dictionary<string, int> GravityModes { get; } = new System.Collections.Generic.Dictionary<string, int>();
             public System.Collections.Generic.Dictionary<string, int> OneClearAway { get; } = new System.Collections.Generic.Dictionary<string, int>();
             public System.Collections.Generic.Dictionary<string, int> Latches { get; } = new System.Collections.Generic.Dictionary<string, int>();
         }

@@ -133,7 +133,9 @@ namespace Rescue.Core.Pipeline.Steps
                         updatedLineage = updatedLineage.Remove(sourceCoord).SetItem(destination, lineage);
                     }
 
-                    events.Add(new GravitySettled(ImmutableArray.Create((sourceCoord, destination))));
+                    ImmutableArray<(TileCoord From, TileCoord To)> move = ImmutableArray.Create((sourceCoord, destination));
+                    events.Add(new GravitySettled(move));
+                    events.Add(new DiagonalSettlingApplied(move));
                     moved = true;
                 }
             }

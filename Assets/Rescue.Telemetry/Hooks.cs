@@ -198,6 +198,23 @@ namespace Rescue.Telemetry
                             NewFloodedRows: result.State.Water.FloodedRows));
                         break;
 
+                    case GravitySettled gravity:
+                        logger.Append(new GravitySettleAppliedEvent(
+                            LevelId: levelId,
+                            TimestampMs: timestampMs,
+                            ActionIndex: actionIndex,
+                            Mode: ContainsDiagonalMove(result.Events, gravity.Moves) ? "diagonal" : "vertical",
+                            Moves: ConvertMoves(gravity.Moves)));
+                        break;
+
+                    case DiagonalSettlingApplied diagonal:
+                        logger.Append(new GravityDiagonalSettleAppliedEvent(
+                            LevelId: levelId,
+                            TimestampMs: timestampMs,
+                            ActionIndex: actionIndex,
+                            Moves: ConvertMoves(diagonal.Moves)));
+                        break;
+
                     case VinePreviewChanged preview:
                         logger.Append(new VinePreviewEvent(
                             LevelId: levelId,
@@ -313,6 +330,29 @@ namespace Rescue.Telemetry
                             ActionIndex: actionIndex,
                             Reason: FormatDeadboardReason(diagnostic.Reason),
                             TargetId: diagnostic.TargetId));
+                        break;
+
+                    case DeadboardMinimalShuffleApplied repair:
+                        if (repair.Reason == "hard_no_valid_groups")
+                        {
+                            logger.Append(new HardNoMoveDetectedEvent(
+                                LevelId: levelId,
+                                TimestampMs: timestampMs,
+                                ActionIndex: actionIndex,
+                                Reason: repair.Reason));
+                        }
+
+                        if (repair.Succeeded)
+                        {
+                            logger.Append(new DeadboardMinimalRepairAppliedEvent(
+                                LevelId: levelId,
+                                TimestampMs: timestampMs,
+                                ActionIndex: actionIndex,
+                                Reason: repair.Reason,
+                                ChangeCount: repair.Changes.Length,
+                                Changes: ConvertRepairChanges(repair.Changes)));
+                        }
+
                         break;
                 }
             }
@@ -793,6 +833,67 @@ namespace Rescue.Telemetry
             for (int i = 0; i < coords.Length; i++)
             {
                 values[i] = coords[i];
+            }
+
+            return values;
+        }
+
+        private static TileCoordMoveTelemetry[] ConvertMoves(ImmutableArray<(TileCoord From, TileCoord To)> moves)
+        {
+            TileCoordMoveTelemetry[] values = new TileCoordMoveTelemetry[moves.Length];
+            for (int i = 0; i < moves.Length; i++)
+            {
+                values[i] = new TileCoordMoveTelemetry(moves[i].From, moves[i].To);
+            }
+
+            return values;
+        }
+
+        private static bool ContainsDiagonalMove(
+            ImmutableArray<ActionEvent> events,
+            ImmutableArray<(TileCoord From, TileCoord To)> moves)
+        {
+            for (int i = 0; i < events.Length; i++)
+            {
+                if (events[i] is DiagonalSettlingApplied diagonal
+                    && MovesEqual(diagonal.Moves, moves))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool MovesEqual(
+            ImmutableArray<(TileCoord From, TileCoord To)> left,
+            ImmutableArray<(TileCoord From, TileCoord To)> right)
+        {
+            if (left.Length != right.Length)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < left.Length; i++)
+            {
+                if (left[i].From != right[i].From || left[i].To != right[i].To)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static DeadboardRepairChangeTelemetry[] ConvertRepairChanges(ImmutableArray<DebrisTypeChange> changes)
+        {
+            DeadboardRepairChangeTelemetry[] values = new DeadboardRepairChangeTelemetry[changes.Length];
+            for (int i = 0; i < changes.Length; i++)
+            {
+                values[i] = new DeadboardRepairChangeTelemetry(
+                    changes[i].Coord,
+                    changes[i].Before,
+                    changes[i].After);
             }
 
             return values;

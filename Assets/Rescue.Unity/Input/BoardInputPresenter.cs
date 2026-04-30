@@ -263,7 +263,10 @@ namespace Rescue.Unity.Input
                 DockInserted inserted => $"DockInserted pieces={FormatDebris(inserted.Pieces)} occupancyAfterInsert={inserted.OccupancyAfterInsert} overflow={inserted.OverflowCount}",
                 DockCleared cleared => $"DockCleared type={cleared.Type} sets={cleared.SetsCleared} occupancyAfterClear={cleared.OccupancyAfterClear}",
                 GravitySettled gravity => $"GravitySettled moves={gravity.Moves.Length}",
+                DiagonalSettlingApplied diagonal => $"DiagonalSettlingApplied moves={diagonal.Moves.Length}",
                 Spawned spawned => $"Spawned pieces={FormatSpawned(spawned)}",
+                DeadboardDiagnosticDetected diagnostic => $"DeadboardDiagnosticDetected reason={diagnostic.Reason} target={diagnostic.TargetId ?? "none"}",
+                DeadboardMinimalShuffleApplied repair => $"DeadboardMinimalShuffleApplied reason={repair.Reason} succeeded={repair.Succeeded} changes={repair.Changes.Length} skipped={repair.SkippedReason ?? "none"}",
                 _ => actionEvent.GetType().Name,
             };
         }

@@ -6,6 +6,7 @@ using System.Text.Json;
 using NUnit.Framework;
 using Rescue.Core.Pipeline;
 using Rescue.Core.Rng;
+using Rescue.Core.Rules;
 using Rescue.Core.State;
 using Rescue.Telemetry;
 
@@ -238,6 +239,78 @@ namespace Rescue.Telemetry.Tests
             Assert.That(followUp!.OriginalActionIndex, Is.EqualTo(1));
             Assert.That(followUp.FollowUpActionIndex, Is.EqualTo(2));
             Assert.That(followUp.SpawnLineageId, Is.EqualTo(12));
+        }
+
+        [Test]
+        public void OnAction_DiagonalSettling_EmitsSpecificTelemetry()
+        {
+            GameState state = CreateWinState();
+            string path = TempPath();
+            ActionResult result = new ActionResult(
+                state with { ActionCount = 1 },
+                ImmutableArray.Create<ActionEvent>(
+                    new GravitySettled(ImmutableArray.Create(
+                        (new TileCoord(1, 1), new TileCoord(2, 0)))),
+                    new DiagonalSettlingApplied(ImmutableArray.Create(
+                        (new TileCoord(1, 1), new TileCoord(2, 0))))),
+                ActionOutcome.Ok,
+                Snapshot: null);
+
+            using (TelemetryLogger logger = new TelemetryLogger(path, TelemetryConfig.DevDefaults))
+            {
+                TelemetrySessionState session = new TelemetrySessionState { LevelStartMs = 0 };
+                TelemetryHooks.OnAction("L1", state, new ActionInput(new TileCoord(0, 0)), result, 1UL, 0, 100, session, logger);
+            }
+
+            List<ITelemetryEvent> events = ReadEvents(path);
+            GravitySettleAppliedEvent? gravity = FindEvent<GravitySettleAppliedEvent>(events);
+            GravityDiagonalSettleAppliedEvent? diagonal = FindEvent<GravityDiagonalSettleAppliedEvent>(events);
+
+            Assert.That(gravity, Is.Not.Null);
+            Assert.That(gravity!.Mode, Is.EqualTo("diagonal"));
+            Assert.That(diagonal, Is.Not.Null);
+            Assert.That(diagonal!.ActionIndex, Is.EqualTo(1));
+            Assert.That(diagonal.Moves.Length, Is.EqualTo(1));
+            Assert.That(diagonal.Moves[0].From, Is.EqualTo(new TileCoord(1, 1)));
+            Assert.That(diagonal.Moves[0].To, Is.EqualTo(new TileCoord(2, 0)));
+        }
+
+        [Test]
+        public void OnAction_HardNoMoveRepair_EmitsDetectionAndRepairTelemetry()
+        {
+            GameState state = CreateWinState();
+            string path = TempPath();
+            ActionResult result = new ActionResult(
+                state with { ActionCount = 1 },
+                ImmutableArray.Create<ActionEvent>(
+                    new DeadboardMinimalShuffleApplied(
+                        "hard_no_valid_groups",
+                        Succeeded: true,
+                        ImmutableArray.Create(new DebrisTypeChange(
+                            new TileCoord(0, 0),
+                            DebrisType.A,
+                            DebrisType.B)),
+                        SkippedReason: null)),
+                ActionOutcome.Ok,
+                Snapshot: null);
+
+            using (TelemetryLogger logger = new TelemetryLogger(path, TelemetryConfig.DevDefaults))
+            {
+                TelemetrySessionState session = new TelemetrySessionState { LevelStartMs = 0 };
+                TelemetryHooks.OnAction("L1", state, new ActionInput(new TileCoord(0, 0)), result, 1UL, 0, 100, session, logger);
+            }
+
+            List<ITelemetryEvent> events = ReadEvents(path);
+            HardNoMoveDetectedEvent? detected = FindEvent<HardNoMoveDetectedEvent>(events);
+            DeadboardMinimalRepairAppliedEvent? repair = FindEvent<DeadboardMinimalRepairAppliedEvent>(events);
+
+            Assert.That(detected, Is.Not.Null);
+            Assert.That(detected!.Reason, Is.EqualTo("hard_no_valid_groups"));
+            Assert.That(repair, Is.Not.Null);
+            Assert.That(repair!.ChangeCount, Is.EqualTo(1));
+            Assert.That(repair.Changes[0].Coord, Is.EqualTo(new TileCoord(0, 0)));
+            Assert.That(repair.Changes[0].Before, Is.EqualTo(DebrisType.A));
+            Assert.That(repair.Changes[0].After, Is.EqualTo(DebrisType.B));
         }
 
         [Test]

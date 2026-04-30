@@ -151,6 +151,9 @@ namespace Rescue.Core.Tests.Rules
             AssertGravityEventsEqual(
                 result.Events,
                 (new TileCoord(1, 1), new TileCoord(2, 0)));
+            AssertDiagonalSettlingEventsEqual(
+                result.Events,
+                (new TileCoord(1, 1), new TileCoord(2, 0)));
         }
 
         [Test]
@@ -353,15 +356,45 @@ namespace Rescue.Core.Tests.Rules
             ImmutableArray<ActionEvent> actual,
             params (TileCoord From, TileCoord To)[] expectedMoves)
         {
-            Assert.That(actual.Length, Is.EqualTo(expectedMoves.Length));
+            ImmutableArray<GravitySettled> gravityEvents = CollectEvents<GravitySettled>(actual);
+            Assert.That(gravityEvents.Length, Is.EqualTo(expectedMoves.Length));
             for (int i = 0; i < expectedMoves.Length; i++)
             {
-                Assert.That(actual[i], Is.TypeOf<GravitySettled>());
-                GravitySettled settled = (GravitySettled)actual[i];
+                GravitySettled settled = gravityEvents[i];
                 Assert.That(settled.Moves.Length, Is.EqualTo(1));
                 Assert.That(settled.Moves[0].From, Is.EqualTo(expectedMoves[i].From));
                 Assert.That(settled.Moves[0].To, Is.EqualTo(expectedMoves[i].To));
             }
+        }
+
+        private static void AssertDiagonalSettlingEventsEqual(
+            ImmutableArray<ActionEvent> actual,
+            params (TileCoord From, TileCoord To)[] expectedMoves)
+        {
+            ImmutableArray<DiagonalSettlingApplied> diagonalEvents = CollectEvents<DiagonalSettlingApplied>(actual);
+            Assert.That(diagonalEvents.Length, Is.EqualTo(expectedMoves.Length));
+            for (int i = 0; i < expectedMoves.Length; i++)
+            {
+                DiagonalSettlingApplied settled = diagonalEvents[i];
+                Assert.That(settled.Moves.Length, Is.EqualTo(1));
+                Assert.That(settled.Moves[0].From, Is.EqualTo(expectedMoves[i].From));
+                Assert.That(settled.Moves[0].To, Is.EqualTo(expectedMoves[i].To));
+            }
+        }
+
+        private static ImmutableArray<T> CollectEvents<T>(ImmutableArray<ActionEvent> actual)
+            where T : ActionEvent
+        {
+            ImmutableArray<T>.Builder events = ImmutableArray.CreateBuilder<T>();
+            for (int i = 0; i < actual.Length; i++)
+            {
+                if (actual[i] is T typed)
+                {
+                    events.Add(typed);
+                }
+            }
+
+            return events.ToImmutable();
         }
 
         private static ImmutableArray<Tile> Row(params Tile[] tiles)

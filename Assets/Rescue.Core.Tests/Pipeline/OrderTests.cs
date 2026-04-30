@@ -352,6 +352,10 @@ namespace Rescue.Core.Tests.Pipeline
                     GravitySettled actualGravitySettled = (GravitySettled)actual;
                     AssertMoveSequenceEqual(expectedGravitySettled.Moves, actualGravitySettled.Moves, $"GravitySettled moves mismatch at index {index}.");
                     return;
+                case DiagonalSettlingApplied expectedDiagonalSettling:
+                    DiagonalSettlingApplied actualDiagonalSettling = (DiagonalSettlingApplied)actual;
+                    AssertMoveSequenceEqual(expectedDiagonalSettling.Moves, actualDiagonalSettling.Moves, $"DiagonalSettlingApplied moves mismatch at index {index}.");
+                    return;
                 case Spawned expectedSpawned:
                     Spawned actualSpawned = (Spawned)actual;
                     AssertSpawnSequenceEqual(expectedSpawned.Pieces, actualSpawned.Pieces, $"Spawned pieces mismatch at index {index}.");

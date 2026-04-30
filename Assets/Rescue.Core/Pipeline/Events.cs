@@ -47,6 +47,8 @@ namespace Rescue.Core.Pipeline
 
     public sealed record GravitySettled(ImmutableArray<(TileCoord From, TileCoord To)> Moves) : ActionEvent;
 
+    public sealed record DiagonalSettlingApplied(ImmutableArray<(TileCoord From, TileCoord To)> Moves) : ActionEvent;
+
     public sealed record Spawned(ImmutableArray<SpawnedPiece> Pieces) : ActionEvent
     {
         public Spawned(ImmutableArray<(TileCoord Coord, DebrisType Type)> pieces)
