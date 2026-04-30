@@ -1105,6 +1105,7 @@ namespace Rescue.Unity.Debugging
             _eventLogList = panel.Q<VisualElement>("event-log-list");
             _panelBody = panel.Q<VisualElement>("debug-panel-body");
             _minimizeButton = panel.Q<Button>("debug-minimize-button");
+            BindFxDebugUi(panel);
 
             if (_minimizeButton is not null)
             {
@@ -1687,6 +1688,7 @@ namespace Rescue.Unity.Debugging
             SyncLevelSelectorChoices(_currentLevelId);
             SyncOverrideFields();
             RefreshTuningUi();
+            RefreshFxDebugUi();
             RefreshPlaybackDebugUi();
             UpdatePlayButtonLabel();
 

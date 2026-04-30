@@ -17,6 +17,19 @@ namespace Rescue.Unity.FX
         [SerializeField] private int sortingOrder = 100;
 
         private Coroutine? playbackCoroutine;
+        private int currentFrameIndex;
+
+        public int FrameCount => frames.Length;
+
+        public int CurrentFrameIndex => currentFrameIndex;
+
+        public bool IsPlaying => playbackCoroutine is not null;
+
+        public bool DestroyAfterPlayback
+        {
+            get => destroyAfterPlayback;
+            set => destroyAfterPlayback = value;
+        }
 
         private void Awake()
         {
@@ -59,7 +72,81 @@ namespace Rescue.Unity.FX
                 StopCoroutine(playbackCoroutine);
             }
 
-            playbackCoroutine = StartCoroutine(PlaySequence());
+            currentFrameIndex = 0;
+            playbackCoroutine = StartCoroutine(PlaySequence(currentFrameIndex));
+        }
+
+        public void PlayFromCurrentFrame()
+        {
+            if (!isActiveAndEnabled)
+            {
+                return;
+            }
+
+            if (playbackCoroutine is not null)
+            {
+                StopCoroutine(playbackCoroutine);
+            }
+
+            playbackCoroutine = StartCoroutine(PlaySequence(currentFrameIndex));
+        }
+
+        public void PausePlayback()
+        {
+            if (playbackCoroutine is null)
+            {
+                return;
+            }
+
+            StopCoroutine(playbackCoroutine);
+            playbackCoroutine = null;
+        }
+
+        public void StopPlayback()
+        {
+            PausePlayback();
+            SetFrameIndex(0);
+        }
+
+        public void RestartPlayback()
+        {
+            SetFrameIndex(0);
+            StartPlayback();
+        }
+
+        public void SetFrameIndex(int frameIndex)
+        {
+            if (frames.Length == 0)
+            {
+                currentFrameIndex = 0;
+                return;
+            }
+
+            ApplyFrame(Mathf.Clamp(frameIndex, 0, frames.Length - 1));
+        }
+
+        public void NextFrame()
+        {
+            PausePlayback();
+            if (frames.Length == 0)
+            {
+                currentFrameIndex = 0;
+                return;
+            }
+
+            ApplyFrame((currentFrameIndex + 1) % frames.Length);
+        }
+
+        public void PreviousFrame()
+        {
+            PausePlayback();
+            if (frames.Length == 0)
+            {
+                currentFrameIndex = 0;
+                return;
+            }
+
+            ApplyFrame((currentFrameIndex - 1 + frames.Length) % frames.Length);
         }
 
         public void EnsureMinimumPlaybackDuration(float minimumDurationSeconds)
@@ -72,7 +159,7 @@ namespace Rescue.Unity.FX
             secondsPerFrame = Mathf.Max(secondsPerFrame, minimumDurationSeconds / frames.Length);
         }
 
-        private IEnumerator PlaySequence()
+        private IEnumerator PlaySequence(int startFrameIndex)
         {
             spriteRenderer ??= GetComponent<SpriteRenderer>();
             ApplyRendererSettings();
@@ -91,7 +178,8 @@ namespace Rescue.Unity.FX
 
             do
             {
-                for (int frameIndex = 0; frameIndex < frames.Length; frameIndex++)
+                int clampedStart = Mathf.Clamp(startFrameIndex, 0, frames.Length - 1);
+                for (int frameIndex = clampedStart; frameIndex < frames.Length; frameIndex++)
                 {
                     ApplyFrame(frameIndex);
 
@@ -102,6 +190,8 @@ namespace Rescue.Unity.FX
 
                     yield return CreateFrameDelay();
                 }
+
+                startFrameIndex = 0;
             }
             while (loop);
 
@@ -128,6 +218,7 @@ namespace Rescue.Unity.FX
             }
 
             int clampedIndex = Mathf.Clamp(frameIndex, 0, frames.Length - 1);
+            currentFrameIndex = clampedIndex;
             spriteRenderer.sprite = frames[clampedIndex];
         }
 

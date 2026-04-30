@@ -244,6 +244,69 @@ namespace Rescue.Unity.FX
             diagnosticPlaybackCoroutine = StartCoroutine(PlayAllRegisteredFxSequence(worldPosition, Mathf.Max(0f, spacingSeconds)));
         }
 
+        public GameObject? SpawnManualDebugFx(GameObject? prefab, string instanceName, FxEventHook hook, Vector3 worldPosition)
+        {
+            GameObject? instance = TrySpawn(prefab, instanceName, hook, worldPosition);
+            if (instance is null)
+            {
+                return null;
+            }
+
+            SpriteSequenceFxPlayer? player = instance.GetComponent<SpriteSequenceFxPlayer>();
+            if (player is not null)
+            {
+                player.DestroyAfterPlayback = false;
+                player.PausePlayback();
+            }
+
+            return instance;
+        }
+
+        public Vector3 ResolveDebugFxWorldPosition(Vector3 worldPosition)
+        {
+            return ResolveFxWorldPosition(worldPosition);
+        }
+
+        public Quaternion ResolveDebugFxWorldRotation()
+        {
+            return ResolveFxWorldRotation();
+        }
+
+        public GameObject? GetActivePrefab(FxEventHook hook)
+        {
+            return hook switch
+            {
+                FxEventHook.GroupClear => fxRegistry?.GroupClearFx,
+                FxEventHook.InvalidTap => fxRegistry?.InvalidTapFx,
+                FxEventHook.CrateBreak => fxRegistry?.CrateBreakFx,
+                FxEventHook.IceReveal => fxRegistry?.IceRevealFx,
+                FxEventHook.VineClear => fxRegistry?.VineClearFx,
+                FxEventHook.VineGrowthPreview => fxRegistry?.VineGrowPreviewFx,
+                FxEventHook.DockInsert => fxRegistry?.DockInsertFx,
+                FxEventHook.DockTripleClear => fxRegistry?.DockTripleClearFx,
+                FxEventHook.WaterRise => fxRegistry?.WaterRiseFx,
+                FxEventHook.NearRescueRelief => fxRegistry?.NearRescueReliefFx,
+                FxEventHook.TargetExtraction => fxRegistry?.TargetExtractionFx,
+                FxEventHook.Win => fxRegistry?.WinFx,
+                FxEventHook.LossDockOverflow => fxRegistry?.LossFx,
+                FxEventHook.LossWaterOnTarget => fxRegistry?.LossFx,
+                FxEventHook.DockWarning => null,
+                _ => null,
+            };
+        }
+
+        public GameObject? GetFallbackPrefab(FxEventHook hook)
+        {
+            return hook switch
+            {
+                FxEventHook.DockWarning => fxRegistry?.DockInsertFx,
+                FxEventHook.LossDockOverflow => fxRegistry?.LossFx,
+                FxEventHook.LossWaterOnTarget => fxRegistry?.LossFx,
+                FxEventHook.VineGrowthPreview => fxRegistry?.VineGrowPreviewFx,
+                _ => null,
+            };
+        }
+
         protected virtual void PlayGroupClear()
         {
             PlayGroupClear(GetSafeFallbackPosition());

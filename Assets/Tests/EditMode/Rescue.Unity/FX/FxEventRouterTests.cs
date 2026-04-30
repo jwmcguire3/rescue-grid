@@ -9,6 +9,7 @@ using Rescue.Unity.Art.Registries;
 using Rescue.Unity.Presentation;
 using Rescue.Unity.UI;
 using UnityEngine;
+using UnityEditor;
 using UnityEngine.TestTools;
 
 namespace Rescue.Unity.FX.Tests
@@ -398,9 +399,10 @@ namespace Rescue.Unity.FX.Tests
                 + (grid.transform.up * 0.28f);
 
             Assert.That(spawned, Is.Not.Null);
+            Transform spawnedTransform = spawned ?? throw new AssertionException("Expected routed FX to spawn.");
             Quaternion expectedRotation = grid.transform.rotation * Quaternion.Euler(90f, 0f, 0f);
-            Assert.That(Quaternion.Angle(expectedRotation, spawned!.rotation), Is.LessThanOrEqualTo(0.001f));
-            AssertVector3Equal(expectedPosition, spawned.position);
+            Assert.That(Quaternion.Angle(expectedRotation, spawnedTransform.rotation), Is.LessThanOrEqualTo(0.001f));
+            AssertVector3Equal(expectedPosition, spawnedTransform.position);
         }
 
         [Test]
@@ -427,6 +429,103 @@ namespace Rescue.Unity.FX.Tests
                 CreatePlaybackStep(ActionPlaybackStepType.RemoveGroup, new GroupRemoved(
                     DebrisType.A,
                     ImmutableArray.Create(new TileCoord(9, 9)))));
+        }
+
+        [Test]
+        public void SpriteSequenceFxPlayer_FrameSteppingClampsAndWrapsInEditMode()
+        {
+            GameObject gameObject = CreateGameObject("SpriteSequenceFx");
+            SpriteRenderer renderer = gameObject.AddComponent<SpriteRenderer>();
+            SpriteSequenceFxPlayer player = gameObject.AddComponent<SpriteSequenceFxPlayer>();
+            Sprite[] frames =
+            {
+                CreateSprite(Color.red),
+                CreateSprite(Color.green),
+                CreateSprite(Color.blue),
+            };
+            SetPrivateField(player, "frames", frames);
+
+            player.SetFrameIndex(99);
+            Assert.That(player.CurrentFrameIndex, Is.EqualTo(2));
+            Assert.That(renderer.sprite, Is.SameAs(frames[2]));
+
+            player.NextFrame();
+            Assert.That(player.CurrentFrameIndex, Is.EqualTo(0));
+            Assert.That(renderer.sprite, Is.SameAs(frames[0]));
+
+            player.PreviousFrame();
+            Assert.That(player.CurrentFrameIndex, Is.EqualTo(2));
+            Assert.That(renderer.sprite, Is.SameAs(frames[2]));
+
+            player.SetFrameIndex(-5);
+            Assert.That(player.CurrentFrameIndex, Is.EqualTo(0));
+            Assert.That(renderer.sprite, Is.SameAs(frames[0]));
+
+            player.NextFrame();
+            player.StopPlayback();
+            Assert.That(player.CurrentFrameIndex, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void FxDebugCatalog_IncludesActiveFallbackAndUnhookedPrefabs()
+        {
+            FxVisualRegistry? loadedRegistry = AssetDatabase.LoadAssetAtPath<FxVisualRegistry>(
+                "Assets/Rescue.Unity/Art/Registries/Phase1FxVisualRegistry.asset");
+            Assert.That(loadedRegistry, Is.Not.Null);
+            FxVisualRegistry registry = loadedRegistry ?? throw new AssertionException("Expected Phase 1 FX registry.");
+
+            FxEventRouter router = CreateGameObject("FxRouter").AddComponent<FxEventRouter>();
+            router.FxRegistry = registry;
+
+            List<FxDebugCandidate> groupCandidates = FxDebugCatalog.GetCandidates(router, FxEventHook.GroupClear);
+            Assert.That(groupCandidates.Exists(candidate =>
+                ReferenceEquals(candidate.Prefab, registry.GroupClearFx) &&
+                candidate.IsActive &&
+                candidate.Label.Contains("[active]")), Is.True);
+
+            List<FxDebugCandidate> dockWarningCandidates = FxDebugCatalog.GetCandidates(router, FxEventHook.DockWarning);
+            Assert.That(dockWarningCandidates.Exists(candidate =>
+                ReferenceEquals(candidate.Prefab, registry.DockInsertFx) &&
+                candidate.IsFallback &&
+                candidate.Label.Contains("[fallback]")), Is.True);
+
+            List<FxDebugCandidate> unhookedCandidates = FxDebugCatalog.GetCandidates(router, null);
+            Assert.That(unhookedCandidates.Exists(candidate =>
+                candidate.IsUnhooked &&
+                candidate.Label.Contains("[unhooked]") &&
+                AssetDatabase.GetAssetPath(candidate.Prefab).StartsWith("Assets/Rescue.Unity/Art/Prefabs/", System.StringComparison.Ordinal)), Is.True);
+        }
+
+        [Test]
+        public void FxEventRouter_ManualSpawnAppliesPresentationPlaneRotationAndSurfaceOffset()
+        {
+            GameState state = CreateState();
+            BoardGridViewPresenter grid = CreateGrid(state);
+            grid.transform.rotation = Quaternion.Euler(20f, 5f, 0f);
+            GameObject fxRoot = CreateGameObject("FxRoot");
+            GameObject prefab = CreateSpriteFxPrefab("ManualFx");
+
+            FxEventRouter router = CreateGameObject("FxRouter").AddComponent<FxEventRouter>();
+            router.BoardGrid = grid;
+            router.FxRoot = fxRoot.transform;
+            router.SpawnedFxPlaneEulerOffset = new Vector3(80f, 0f, 10f);
+            router.SpawnedFxSurfaceOffset = 0.5f;
+
+            Vector3 boardCenter = grid.GetCellWorldPosition(new TileCoord(1, 1));
+            GameObject? spawned = router.SpawnManualDebugFx(prefab, "ManualFxInstance", FxEventHook.GroupClear, boardCenter);
+
+            Assert.That(spawned, Is.Not.Null);
+            Vector3 expectedPosition = boardCenter + (grid.transform.up * 0.5f);
+            Quaternion expectedRotation = grid.transform.rotation * Quaternion.Euler(80f, 0f, 10f);
+            GameObject spawnedInstance = spawned ?? throw new AssertionException("Expected manual FX to spawn.");
+            AssertVector3Equal(expectedPosition, spawnedInstance.transform.position);
+            Assert.That(Quaternion.Angle(expectedRotation, spawnedInstance.transform.rotation), Is.LessThanOrEqualTo(0.001f));
+
+            SpriteSequenceFxPlayer? player = spawnedInstance.GetComponent<SpriteSequenceFxPlayer>();
+            Assert.That(player, Is.Not.Null);
+            SpriteSequenceFxPlayer playerComponent = player ?? throw new AssertionException("Expected manual FX player.");
+            Assert.That(playerComponent.DestroyAfterPlayback, Is.False);
+            Assert.That(playerComponent.IsPlaying, Is.False);
         }
 
         [UnityTest]
@@ -548,6 +647,18 @@ namespace Rescue.Unity.FX.Tests
             prefab.AddComponent<SpriteRenderer>();
             prefab.AddComponent<SpriteSequenceFxPlayer>();
             return prefab;
+        }
+
+        private Sprite CreateSprite(Color color)
+        {
+            Texture2D texture = new Texture2D(1, 1);
+            createdObjects.Add(texture);
+            texture.SetPixel(0, 0, color);
+            texture.Apply();
+
+            Sprite sprite = Sprite.Create(texture, new Rect(0f, 0f, 1f, 1f), new Vector2(0.5f, 0.5f));
+            createdObjects.Add(sprite);
+            return sprite;
         }
 
         private static ActionResult CreateResult(params ActionEvent[] events)

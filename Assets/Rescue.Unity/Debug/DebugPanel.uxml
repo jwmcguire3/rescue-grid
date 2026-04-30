@@ -10,6 +10,7 @@
             <ui:VisualElement class="debug-tab-row">
                 <ui:Button name="tab-play-button" text="Play" class="debug-tab-button debug-tab-button-active" />
                 <ui:Button name="tab-tune-button" text="Tune" class="debug-tab-button" />
+                <ui:Button name="tab-fx-button" text="FX" class="debug-tab-button" />
             </ui:VisualElement>
 
             <ui:ScrollView name="play-tab-content">
@@ -108,6 +109,28 @@
                     <ui:Button name="tune-load-preset-button" text="Load Preset" />
                 </ui:VisualElement>
                 <ui:Label name="tune-summary-value" class="debug-value" text="Tune overrides active: none" />
+            </ui:ScrollView>
+
+            <ui:ScrollView name="fx-tab-content">
+                <ui:Label text="FX" class="debug-section" />
+                <ui:DropdownField name="fx-hook-selector" label="Action/Hook" />
+                <ui:DropdownField name="fx-prefab-selector" label="FX Prefab" />
+                <ui:Label name="fx-frame-label" text="Frame 0 / 0" class="debug-value" />
+                <ui:VisualElement class="button-row">
+                    <ui:Button name="fx-play-button" text="Play" />
+                    <ui:Button name="fx-stop-button" text="Stop" />
+                </ui:VisualElement>
+                <ui:VisualElement class="button-row">
+                    <ui:Button name="fx-previous-frame-button" text="Previous Frame" />
+                    <ui:Button name="fx-next-frame-button" text="Next Frame" />
+                </ui:VisualElement>
+                <ui:VisualElement class="button-row">
+                    <ui:Button name="fx-restart-button" text="Restart" />
+                    <ui:Button name="fx-spawn-selected-button" text="Spawn Selected" />
+                </ui:VisualElement>
+                <ui:Toggle name="fx-debug-diagnostics-toggle" text="Diagnostics Enabled" />
+                <ui:FloatField name="fx-surface-offset-field" label="Surface Offset" />
+                <ui:Vector3Field name="fx-plane-rotation-offset-field" label="Plane Rotation Offset" />
             </ui:ScrollView>
         </ui:VisualElement>
     </ui:VisualElement>

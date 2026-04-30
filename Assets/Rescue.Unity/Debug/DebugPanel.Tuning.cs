@@ -18,11 +18,14 @@ namespace Rescue.Unity.Debugging
         private const string TunePresetDirectory = "Assets/Editor/TuningPresets";
         private const string PlayTabId = "play";
         private const string TuneTabId = "tune";
+        private const string FxTabId = "fx";
 
         private Button? _playTabButton;
         private Button? _tuneTabButton;
+        private Button? _fxTabButton;
         private VisualElement? _playTabContent;
         private VisualElement? _tuneTabContent;
+        private VisualElement? _fxTabContent;
         private IntegerField? _tuneWaterRiseIntervalField;
         private IntegerField? _tuneInitialFloodedRowsField;
         private FloatField? _tuneAssistanceChanceField;
@@ -73,8 +76,10 @@ namespace Rescue.Unity.Debugging
         {
             _playTabButton = panel.Q<Button>("tab-play-button");
             _tuneTabButton = panel.Q<Button>("tab-tune-button");
+            _fxTabButton = panel.Q<Button>("tab-fx-button");
             _playTabContent = panel.Q<VisualElement>("play-tab-content");
             _tuneTabContent = panel.Q<VisualElement>("tune-tab-content");
+            _fxTabContent = panel.Q<VisualElement>("fx-tab-content");
             _tuneWaterRiseIntervalField = panel.Q<IntegerField>("tune-water-rise-interval-field");
             _tuneInitialFloodedRowsField = panel.Q<IntegerField>("tune-initial-flooded-rows-field");
             _tuneAssistanceChanceField = panel.Q<FloatField>("tune-assistance-chance-field");
@@ -100,6 +105,11 @@ namespace Rescue.Unity.Debugging
             if (_tuneTabButton is not null)
             {
                 _tuneTabButton.clicked += () => SetActiveTab(TuneTabId);
+            }
+
+            if (_fxTabButton is not null)
+            {
+                _fxTabButton.clicked += () => SetActiveTab(FxTabId);
             }
 
             ConfigureDelayedTuneField(_tuneWaterRiseIntervalField);
@@ -382,7 +392,12 @@ namespace Rescue.Unity.Debugging
 
         private void SetActiveTab(string tabId)
         {
-            _activeTab = tabId == TuneTabId ? TuneTabId : PlayTabId;
+            _activeTab = tabId switch
+            {
+                TuneTabId => TuneTabId,
+                FxTabId => FxTabId,
+                _ => PlayTabId,
+            };
 
             if (_playTabContent is not null)
             {
@@ -394,8 +409,14 @@ namespace Rescue.Unity.Debugging
                 _tuneTabContent.style.display = _activeTab == TuneTabId ? DisplayStyle.Flex : DisplayStyle.None;
             }
 
+            if (_fxTabContent is not null)
+            {
+                _fxTabContent.style.display = _activeTab == FxTabId ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+
             SetTabButtonState(_playTabButton, _activeTab == PlayTabId);
             SetTabButtonState(_tuneTabButton, _activeTab == TuneTabId);
+            SetTabButtonState(_fxTabButton, _activeTab == FxTabId);
         }
 
         private static void SetTabButtonState(Button? button, bool isActive)
@@ -446,6 +467,7 @@ namespace Rescue.Unity.Debugging
             tabRow.AddToClassList("debug-tab-row");
             tabRow.Add(MakeButton("Play", "tab-play-button", out _playTabButton));
             tabRow.Add(MakeButton("Tune", "tab-tune-button", out _tuneTabButton));
+            tabRow.Add(MakeButton("FX", "tab-fx-button", out _fxTabButton));
             body.Add(tabRow);
 
             ScrollView playScroll = new ScrollView(ScrollViewMode.Vertical) { name = "play-tab-content" };
@@ -459,6 +481,12 @@ namespace Rescue.Unity.Debugging
             _tuneTabContent = tuneScroll;
             body.Add(tuneScroll);
             BuildTuneFallbackContent(tuneScroll);
+
+            ScrollView fxScroll = new ScrollView(ScrollViewMode.Vertical) { name = "fx-tab-content" };
+            fxScroll.style.flexGrow = 1.0f;
+            _fxTabContent = fxScroll;
+            body.Add(fxScroll);
+            BuildFxFallbackContent(fxScroll);
 
             return root;
         }
