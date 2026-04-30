@@ -93,7 +93,24 @@ namespace Rescue.Core.Pipeline
             Append(events, waterResult.Events);
             if (waterResult.Outcome == ActionOutcome.Ok)
             {
-                Append(events, DetectDeadboardDiagnostics(waterResult.State));
+                DeadboardRepairResult repair = DeadboardRepairOps.RepairHardNoValidGroups(
+                    waterResult.State.Board,
+                    waterResult.State.Water);
+                GameState returnControlState = repair.Succeeded
+                    ? waterResult.State with { Board = repair.Board }
+                    : waterResult.State;
+
+                if (repair.Succeeded || repair.SkippedReason != DeadboardRepairSkippedReason.ExistingValidGroup)
+                {
+                    events.Add(new DeadboardMinimalShuffleApplied(
+                        "hard_no_valid_groups",
+                        repair.Succeeded,
+                        repair.Changes,
+                        repair.Succeeded ? null : ToSkippedReason(repair.SkippedReason)));
+                }
+
+                Append(events, DetectDeadboardDiagnostics(returnControlState));
+                waterResult = waterResult with { State = returnControlState };
             }
 
             return new ActionResult(IncrementActionCount(waterResult.State), events.ToImmutable(), waterResult.Outcome, snapshot);
@@ -147,6 +164,18 @@ namespace Rescue.Core.Pipeline
         private static GameState IncrementActionCount(GameState state)
         {
             return state with { ActionCount = state.ActionCount + 1 };
+        }
+
+        private static string ToSkippedReason(DeadboardRepairSkippedReason reason)
+        {
+            return reason switch
+            {
+                DeadboardRepairSkippedReason.InsufficientEligibleCells => "insufficient_eligible_cells",
+                DeadboardRepairSkippedReason.NoAdjacentEligiblePair => "no_adjacent_eligible_pair",
+                DeadboardRepairSkippedReason.NoValidMinimalRepair => "no_valid_minimal_repair",
+                DeadboardRepairSkippedReason.ExistingValidGroup => "existing_valid_group",
+                _ => "none",
+            };
         }
 
         private static ImmutableArray<ActionEvent> DetectDeadboardDiagnostics(GameState state)

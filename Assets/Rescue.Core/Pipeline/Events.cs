@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Rescue.Core.Rules;
 using Rescue.Core.State;
 
 namespace Rescue.Core.Pipeline
@@ -89,6 +90,48 @@ namespace Rescue.Core.Pipeline
     public sealed record DeadboardDiagnosticDetected(
         DeadboardDiagnosticReason Reason,
         string? TargetId) : ActionEvent;
+
+    public sealed record DeadboardMinimalShuffleApplied(
+        string Reason,
+        bool Succeeded,
+        ImmutableArray<DebrisTypeChange> Changes,
+        string? SkippedReason) : ActionEvent
+    {
+        public bool Equals(DeadboardMinimalShuffleApplied? other)
+        {
+            if (other is null
+                || Reason != other.Reason
+                || Succeeded != other.Succeeded
+                || SkippedReason != other.SkippedReason
+                || Changes.Length != other.Changes.Length)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < Changes.Length; i++)
+            {
+                if (Changes[i] != other.Changes[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public override int GetHashCode()
+        {
+            int hash = Reason.GetHashCode();
+            hash = (hash * 397) ^ Succeeded.GetHashCode();
+            hash = (hash * 397) ^ (SkippedReason?.GetHashCode() ?? 0);
+            for (int i = 0; i < Changes.Length; i++)
+            {
+                hash = (hash * 397) ^ Changes[i].GetHashCode();
+            }
+
+            return hash;
+        }
+    }
 
     public sealed record TargetProgressed(string TargetId, TileCoord Coord) : ActionEvent;
 
