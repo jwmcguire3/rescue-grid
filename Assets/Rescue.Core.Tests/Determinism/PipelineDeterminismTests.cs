@@ -45,6 +45,29 @@ namespace Rescue.Core.Tests.Determinism
             }
         }
 
+        [Test]
+        public void AssistedSpawnAfterDiagonalSettlingIsDeterministic()
+        {
+            GameState state = CreateDiagonalAssistedSpawnState(0xBADC0DEu);
+            ActionInput input = new ActionInput(new TileCoord(0, 2));
+
+            ActionResult first = Rescue.Core.Pipeline.Pipeline.RunAction(state, input);
+            ActionResult second = Rescue.Core.Pipeline.Pipeline.RunAction(state, input);
+
+            Assert.That(first.Events, Has.Some.TypeOf<GravitySettled>());
+            Assert.That(first.Events, Has.Some.TypeOf<Spawned>());
+            AssertRunStatesEqual(
+                new PipelineRunState(first.State, first.Events),
+                new PipelineRunState(second.State, second.Events),
+                "assisted spawn after diagonal settling");
+
+            Spawned firstSpawn = GetSingleSpawnedEvent(first.Events);
+            Spawned secondSpawn = GetSingleSpawnedEvent(second.Events);
+            Assert.That(firstSpawn.Pieces[0].Reasons, Is.Not.Empty);
+            AssertSpawnAssistReasonsEqual(firstSpawn.Pieces[0].Reasons, secondSpawn.Pieces[0].Reasons);
+            AssertStringSequenceEqual(firstSpawn.Pieces[0].TriggerContext, secondSpawn.Pieces[0].TriggerContext);
+        }
+
         private static PipelineRunState CreateInitialRunState(uint seed)
         {
             GameState state = PipelineTestFixtures.CreateState(
@@ -60,6 +83,22 @@ namespace Rescue.Core.Tests.Determinism
             };
 
             return new PipelineRunState(state, ImmutableArray<ActionEvent>.Empty);
+        }
+
+        private static GameState CreateDiagonalAssistedSpawnState(uint seed)
+        {
+            GameState state = PipelineTestFixtures.CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    PipelineTestFixtures.Row(new EmptyTile(), new EmptyTile(), new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A)),
+                    PipelineTestFixtures.Row(new BlockerTile(BlockerType.Crate, 1, null), new DebrisTile(DebrisType.B), new EmptyTile(), new EmptyTile()),
+                    PipelineTestFixtures.Row(new EmptyTile(), new BlockerTile(BlockerType.Crate, 1, null), new EmptyTile(), new EmptyTile()),
+                    PipelineTestFixtures.Row(new BlockerTile(BlockerType.Crate, 1, null), new BlockerTile(BlockerType.Crate, 1, null), new EmptyTile(), new EmptyTile())));
+
+            return state with
+            {
+                LevelConfig = PipelineTestFixtures.CreateLevelConfig(1.0d),
+                RngState = new Rescue.Core.Rng.RngState(seed, seed ^ 0xA5A5A5A5u),
+            };
         }
 
         private static IReadOnlyList<ActionInput> CreateInputSequence()
@@ -280,6 +319,44 @@ namespace Rescue.Core.Tests.Determinism
             {
                 Assert.That(actual[i].Coord, Is.EqualTo(expected[i].Coord), $"{messagePrefix} coord {i}.");
                 Assert.That(actual[i].Type, Is.EqualTo(expected[i].Type), $"{messagePrefix} type {i}.");
+            }
+        }
+
+        private static Spawned GetSingleSpawnedEvent(ImmutableArray<ActionEvent> events)
+        {
+            Spawned? spawned = null;
+            for (int i = 0; i < events.Length; i++)
+            {
+                if (events[i] is Spawned candidate)
+                {
+                    Assert.That(spawned, Is.Null, "Expected exactly one Spawned event.");
+                    spawned = candidate;
+                }
+            }
+
+            Assert.That(spawned, Is.Not.Null, "Expected a Spawned event.");
+            return spawned!;
+        }
+
+        private static void AssertSpawnAssistReasonsEqual(
+            ImmutableArray<SpawnAssistReason> expected,
+            ImmutableArray<SpawnAssistReason> actual)
+        {
+            Assert.That(actual.Length, Is.EqualTo(expected.Length), "Spawn assist reason count mismatch.");
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.That(actual[i], Is.EqualTo(expected[i]), $"Spawn assist reason mismatch at index {i}.");
+            }
+        }
+
+        private static void AssertStringSequenceEqual(
+            ImmutableArray<string> expected,
+            ImmutableArray<string> actual)
+        {
+            Assert.That(actual.Length, Is.EqualTo(expected.Length), "Trigger context count mismatch.");
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.That(actual[i], Is.EqualTo(expected[i]), $"Trigger context mismatch at index {i}.");
             }
         }
     }

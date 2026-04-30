@@ -31,6 +31,61 @@ namespace Rescue.Core.Tests.Pipeline
         }
 
         [Test]
+        public void FullPipelineSettlesDiagonallyBeforeSpawnFillsRemainingReachableCells()
+        {
+            GameState state = PipelineTestFixtures.CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    PipelineTestFixtures.Row(new EmptyTile(), new EmptyTile(), new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A)),
+                    PipelineTestFixtures.Row(new BlockerTile(BlockerType.Crate, 1, null), new DebrisTile(DebrisType.B), new EmptyTile(), new EmptyTile()),
+                    PipelineTestFixtures.Row(new EmptyTile(), new BlockerTile(BlockerType.Crate, 1, null), new EmptyTile(), new EmptyTile()),
+                    PipelineTestFixtures.Row(new BlockerTile(BlockerType.Crate, 1, null), new BlockerTile(BlockerType.Crate, 1, null), new EmptyTile(), new EmptyTile())));
+
+            StepTrace? gravity = null;
+            StepTrace? spawn = null;
+
+            ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(
+                state,
+                new ActionInput(new TileCoord(0, 2)),
+                options: null,
+                observer: step =>
+                {
+                    if (step.StepName == "Step11_Gravity")
+                    {
+                        gravity = step;
+                    }
+                    else if (step.StepName == "Step12_Spawn")
+                    {
+                        spawn = step;
+                    }
+                });
+
+            Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.Ok));
+            Assert.That(gravity.HasValue, Is.True);
+            Assert.That(spawn.HasValue, Is.True);
+            Assert.That(BoardHelpers.GetTile(gravity!.Value.State.Board, new TileCoord(1, 1)), Is.TypeOf<EmptyTile>());
+            Assert.That(BoardHelpers.GetTile(gravity.Value.State.Board, new TileCoord(2, 0)), Is.EqualTo(new DebrisTile(DebrisType.B)));
+            Assert.That(BoardHelpers.GetTile(spawn!.Value.State.Board, new TileCoord(2, 0)), Is.EqualTo(new DebrisTile(DebrisType.B)));
+
+            Spawned spawned = GetSingleSpawnedEvent(spawn.Value.Events);
+            Assert.That(spawned.Pieces.Length, Is.EqualTo(11));
+            AssertSpawnDoesNotInclude(spawned.Pieces, new TileCoord(2, 0));
+            AssertSpawnCoordsEqual(spawned.Pieces, new[]
+            {
+                new TileCoord(0, 0),
+                new TileCoord(0, 1),
+                new TileCoord(1, 1),
+                new TileCoord(0, 2),
+                new TileCoord(1, 2),
+                new TileCoord(2, 2),
+                new TileCoord(3, 2),
+                new TileCoord(0, 3),
+                new TileCoord(1, 3),
+                new TileCoord(2, 3),
+                new TileCoord(3, 3),
+            });
+        }
+
+        [Test]
         public void RemoveGroupLeavesTilesEmptyAfterStep02AndBeforeStep03()
         {
             GameState state = PipelineTestFixtures.CreateState(
@@ -310,6 +365,32 @@ namespace Rescue.Core.Tests.Pipeline
                 default:
                     Assert.That(actual, Is.EqualTo(expected), $"Event mismatch at index {index}.");
                     return;
+            }
+        }
+
+        private static Spawned GetSingleSpawnedEvent(ImmutableArray<ActionEvent> events)
+        {
+            Assert.That(events.Length, Is.EqualTo(1));
+            Assert.That(events[0], Is.TypeOf<Spawned>());
+            return (Spawned)events[0];
+        }
+
+        private static void AssertSpawnCoordsEqual(
+            ImmutableArray<SpawnedPiece> actual,
+            TileCoord[] expected)
+        {
+            Assert.That(actual.Length, Is.EqualTo(expected.Length));
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.That(actual[i].Coord, Is.EqualTo(expected[i]), $"Spawn coord mismatch at index {i}.");
+            }
+        }
+
+        private static void AssertSpawnDoesNotInclude(ImmutableArray<SpawnedPiece> actual, TileCoord unexpected)
+        {
+            for (int i = 0; i < actual.Length; i++)
+            {
+                Assert.That(actual[i].Coord, Is.Not.EqualTo(unexpected), $"Unexpected spawn coord at index {i}.");
             }
         }
 

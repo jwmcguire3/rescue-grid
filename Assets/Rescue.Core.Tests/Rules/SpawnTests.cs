@@ -262,6 +262,32 @@ namespace Rescue.Core.Tests.Rules
         }
 
         [Test]
+        public void Step08SpawnDoesNotFillFloodedRows()
+        {
+            GameState state = CreateSpawnState(
+                PipelineTestFixtures.CreateBoard(
+                    Row(new EmptyTile(), new EmptyTile()),
+                    Row(new EmptyTile(), new EmptyTile()),
+                    Row(new FloodedTile(), new FloodedTile())),
+                assistanceChance: 0.0d) with
+                {
+                    Water = new WaterState(FloodedRows: 1, ActionsUntilRise: 3, RiseInterval: 3),
+                };
+
+            StepResult result = Step08_Spawn.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
+
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(2, 0)), Is.TypeOf<FloodedTile>());
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(2, 1)), Is.TypeOf<FloodedTile>());
+            Assert.That(result.Events, Has.Exactly(1).TypeOf<Spawned>());
+            Spawned spawned = (Spawned)result.Events[0];
+            Assert.That(spawned.Pieces.Length, Is.EqualTo(4));
+            for (int i = 0; i < spawned.Pieces.Length; i++)
+            {
+                Assert.That(spawned.Pieces[i].Coord.Row, Is.Not.EqualTo(2));
+            }
+        }
+
+        [Test]
         public void SpawnIntegrity_AllowsGroupsOfFourAndFive()
         {
             Board fourBoard = PipelineTestFixtures.CreateBoard(
