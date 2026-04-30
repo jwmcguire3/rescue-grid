@@ -230,6 +230,49 @@ namespace Rescue.Unity.UI.Tests
         }
 
         [Test]
+        public void DockViewPresenter_AppliesRegistryDockPoseToPieceObjects()
+        {
+            GameObject presenterObject = CreateTrackedObject("DockPresenter");
+            DockViewPresenter presenter = presenterObject.AddComponent<DockViewPresenter>();
+            Transform pieceContainer = new GameObject("DockPieces").transform;
+            pieceContainer.SetParent(presenterObject.transform, false);
+            Track(pieceContainer.gameObject);
+
+            for (int i = 0; i < 7; i++)
+            {
+                Transform anchor = CreateTrackedAnchor(presenterObject.transform, i);
+                anchor.localRotation = Quaternion.Euler(0f, 35f, 0f);
+            }
+
+            GameObject debrisBPrefab = CreateTrackedObject("DebrisBPrefab");
+            debrisBPrefab.transform.localScale = new Vector3(2f, 3f, 4f);
+
+            PieceVisualRegistry registry = ScriptableObject.CreateInstance<PieceVisualRegistry>();
+            registry.DebrisBPrefab = debrisBPrefab;
+            registry.DebrisBDockEulerOffset = new Vector3(0f, 0f, 180f);
+            registry.DebrisBDockScaleMultiplier = 0.5f;
+
+            try
+            {
+                SetPrivateField(presenter, "pieceContainer", pieceContainer);
+                SetPrivateField(presenter, "pieceRegistry", registry);
+
+                presenter.Rebuild(CreateState(DebrisType.B, null, null, null, null, null, null));
+
+                GameObject? dockPiece = presenter.GetTrackedSlotObject(0);
+                Assert.That(dockPiece, Is.Not.Null);
+                Assert.That(dockPiece!.transform.localScale, Is.EqualTo(new Vector3(1f, 1.5f, 2f)));
+                AssertQuaternionNear(
+                    Quaternion.Euler(0f, 35f, 0f) * Quaternion.Euler(0f, 0f, 180f),
+                    dockPiece.transform.rotation);
+            }
+            finally
+            {
+                Object.DestroyImmediate(registry);
+            }
+        }
+
+        [Test]
         public void DockViewPresenter_RebuildTracksSlotTypesAndObjectsByIndex()
         {
             GameObject presenterObject = CreateTrackedObject("DockPresenter");
@@ -536,6 +579,11 @@ namespace Rescue.Unity.UI.Tests
             }
 
             field.SetValue(target, value);
+        }
+
+        private static void AssertQuaternionNear(Quaternion expected, Quaternion actual)
+        {
+            Assert.That(Quaternion.Angle(expected, actual), Is.LessThan(0.01f));
         }
 
         private static GameState CreateState(

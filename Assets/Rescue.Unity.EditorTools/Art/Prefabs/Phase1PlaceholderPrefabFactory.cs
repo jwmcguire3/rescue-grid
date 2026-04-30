@@ -329,7 +329,9 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 CombinePath(prefabsPath, PiecesFolderName, "Debris_B_Phase1.prefab"),
                 CombinePath(artRootPath, "Models", "Pieces", "Meshy_AI_Blue_Speckled_Paw_Bow_0424154905_texture.fbx"),
                 debrisBMaterial,
-                DebrisSizingProfile);
+                DebrisSizingProfile,
+                visualRotationOffsetEuler: new Vector3(0f, 0f, 180f),
+                visualScaleMultiplier: 0.9f);
             GameObject? debrisCPrefab = CreateMeshWrapperPrefab(
                 CombinePath(prefabsPath, PiecesFolderName, "Debris_C_Phase1.prefab"),
                 CombinePath(artRootPath, "Models", "Pieces", "Meshy_AI_Multicolored_Rope_Kno_0428040509_texture.fbx"),
@@ -339,7 +341,9 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 CombinePath(prefabsPath, PiecesFolderName, "Debris_D_Phase1.prefab"),
                 CombinePath(artRootPath, "Models", "Pieces", "Meshy_AI_Heart_Shaped_Massager_0424155210_texture.fbx"),
                 debrisDMaterial,
-                DebrisSizingProfile);
+                DebrisSizingProfile,
+                visualRotationOffsetEuler: new Vector3(0f, 0f, 180f),
+                visualScaleMultiplier: 0.9f);
             GameObject? debrisEPrefab = CreateMeshWrapperPrefab(
                 CombinePath(prefabsPath, PiecesFolderName, "Debris_E_Phase1.prefab"),
                 CombinePath(artRootPath, "Models", "Pieces", "Meshy_AI_Beige_terry_towel_wit_0424155142_texture.fbx"),
@@ -642,7 +646,9 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             string sourceModelPath,
             Material? material,
             AssetSizingProfile sizingProfile,
-            Vector3? visualEulerAngles = null)
+            Vector3? visualEulerAngles = null,
+            Vector3? visualRotationOffsetEuler = null,
+            float visualScaleMultiplier = 1f)
         {
             GameObject? sourceModel = AssetDatabase.LoadAssetAtPath<GameObject>(sourceModelPath);
             if (sourceModel is null || material is null)
@@ -657,9 +663,15 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 art.name = "Visual";
                 art.transform.SetParent(root.transform, false);
                 NormalizeChildToFootprint(art, sizingProfile);
+                art.transform.localScale *= Mathf.Max(0.0001f, visualScaleMultiplier);
                 if (visualEulerAngles.HasValue)
                 {
                     art.transform.localRotation = Quaternion.Euler(visualEulerAngles.Value);
+                }
+
+                if (visualRotationOffsetEuler.HasValue)
+                {
+                    art.transform.localRotation *= Quaternion.Euler(visualRotationOffsetEuler.Value);
                 }
 
                 AssignMaterialRecursively(art, material);

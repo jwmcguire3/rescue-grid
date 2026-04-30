@@ -1209,7 +1209,7 @@ namespace Rescue.Unity.UI
             }
 
             GameObject pieceObject = Instantiate(piecePrefab, ResolvePieceContainer());
-            pieceObject.transform.localScale = piecePrefab.transform.localScale;
+            ApplyDockPieceScale(pieceObject.transform, piecePrefab, debrisType);
             return pieceObject;
         }
 
@@ -1254,7 +1254,40 @@ namespace Rescue.Unity.UI
 
             Transform pieceTransform = trackedObject.transform;
             pieceTransform.position = anchor.position;
-            pieceTransform.rotation = anchor.rotation;
+            DebrisType? debrisType = _trackedSlotTypes[slotIndex];
+            pieceTransform.rotation = debrisType.HasValue
+                ? anchor.rotation * ResolveDockRotationOffset(debrisType.Value)
+                : anchor.rotation;
+
+            if (debrisType.HasValue)
+            {
+                GameObject? piecePrefab = ResolvePiecePrefab(debrisType.Value);
+                if (piecePrefab != null)
+                {
+                    ApplyDockPieceScale(pieceTransform, piecePrefab, debrisType.Value);
+                }
+            }
+        }
+
+        private void ApplyDockPieceScale(Transform pieceTransform, GameObject piecePrefab, DebrisType debrisType)
+        {
+            pieceTransform.localScale = Vector3.Scale(
+                piecePrefab.transform.localScale,
+                Vector3.one * ResolveDockScaleMultiplier(debrisType));
+        }
+
+        private Quaternion ResolveDockRotationOffset(DebrisType debrisType)
+        {
+            return pieceRegistry is not null
+                ? pieceRegistry.GetDockRotationOffset(debrisType)
+                : Quaternion.identity;
+        }
+
+        private float ResolveDockScaleMultiplier(DebrisType debrisType)
+        {
+            return pieceRegistry is not null
+                ? pieceRegistry.GetDockScaleMultiplier(debrisType)
+                : 1f;
         }
 
         private void RenameTrackedSlotObject(int slotIndex, DebrisType debrisType)
