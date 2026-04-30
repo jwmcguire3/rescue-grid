@@ -93,20 +93,26 @@ namespace Rescue.Core.Pipeline
             Append(events, waterResult.Events);
             if (waterResult.Outcome == ActionOutcome.Ok)
             {
-                DeadboardRepairResult repair = DeadboardRepairOps.RepairHardNoValidGroups(
-                    waterResult.State.Board,
-                    waterResult.State.Water);
-                GameState returnControlState = repair.Succeeded
-                    ? waterResult.State with { Board = repair.Board }
-                    : waterResult.State;
+                string? impossibleTargetId = FindRescueImpossibleTarget(waterResult.State);
+                GameState returnControlState = waterResult.State;
 
-                if (repair.Succeeded || repair.SkippedReason != DeadboardRepairSkippedReason.ExistingValidGroup)
+                if (impossibleTargetId is null)
                 {
-                    events.Add(new DeadboardMinimalShuffleApplied(
-                        "hard_no_valid_groups",
-                        repair.Succeeded,
-                        repair.Changes,
-                        repair.Succeeded ? null : ToSkippedReason(repair.SkippedReason)));
+                    DeadboardRepairResult repair = DeadboardRepairOps.RepairHardNoValidGroups(
+                        waterResult.State.Board,
+                        waterResult.State.Water);
+                    returnControlState = repair.Succeeded
+                        ? waterResult.State with { Board = repair.Board }
+                        : waterResult.State;
+
+                    if (repair.Succeeded || repair.SkippedReason != DeadboardRepairSkippedReason.ExistingValidGroup)
+                    {
+                        events.Add(new DeadboardMinimalShuffleApplied(
+                            "hard_no_valid_groups",
+                            repair.Succeeded,
+                            repair.Changes,
+                            repair.Succeeded ? null : ToSkippedReason(repair.SkippedReason)));
+                    }
                 }
 
                 Append(events, DetectDeadboardDiagnostics(returnControlState));

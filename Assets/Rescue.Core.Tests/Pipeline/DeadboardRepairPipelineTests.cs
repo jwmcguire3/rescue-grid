@@ -76,6 +76,44 @@ namespace Rescue.Core.Tests.Pipeline
         }
 
         [Test]
+        public void RescueImpossibleHardNoMoveStateIsDiagnosticOnly()
+        {
+            GameState state = PipelineTestFixtures.CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    PipelineTestFixtures.DebrisRow(DebrisType.A, DebrisType.B, DebrisType.C, DebrisType.E),
+                    PipelineTestFixtures.Row(
+                        new BlockerTile(BlockerType.Crate, 2, null),
+                        new BlockerTile(BlockerType.Crate, 2, null),
+                        new BlockerTile(BlockerType.Crate, 2, null),
+                        new BlockerTile(BlockerType.Crate, 2, null)),
+                    PipelineTestFixtures.Row(
+                        new DebrisTile(DebrisType.D),
+                        new DebrisTile(DebrisType.D),
+                        new TargetTile("target", Extracted: false),
+                        new FloodedTile())),
+                targets: ImmutableArray.Create(
+                    new TargetState("target", new TileCoord(2, 2), TargetReadiness.Trapped)));
+
+            ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(
+                state,
+                new ActionInput(new TileCoord(2, 0)));
+
+            Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.Ok));
+            Assert.That(result.Events, Has.None.TypeOf<DeadboardMinimalShuffleApplied>());
+            Assert.That(result.Events, Has.Some.EqualTo(new DeadboardDiagnosticDetected(
+                DeadboardDiagnosticReason.RescueImpossibleStatic,
+                "target")));
+            Assert.That(result.Events, Has.Some.EqualTo(new DeadboardDiagnosticDetected(
+                DeadboardDiagnosticReason.HardNoValidGroups,
+                TargetId: null)));
+            Assert.That(GroupOps.HasValidGroup(result.State.Board, result.State.Water), Is.False);
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(2, 0)), Is.TypeOf<EmptyTile>());
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(2, 1)), Is.TypeOf<RescuePathTile>());
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(2, 2)), Is.EqualTo(new TargetTile("target", Extracted: false)));
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(2, 3)), Is.TypeOf<FloodedTile>());
+        }
+
+        [Test]
         public void UndoAfterRepairedActionRestoresExactPreActionState()
         {
             GameState original = CreatePipelineHardNoMoveState();
