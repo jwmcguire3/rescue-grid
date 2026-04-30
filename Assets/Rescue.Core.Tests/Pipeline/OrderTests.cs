@@ -265,6 +265,50 @@ namespace Rescue.Core.Tests.Pipeline
         }
 
         [Test]
+        public void FinalRescueShortCircuitsBeforeGravitySpawnRepairHazardsAndWaterConsequence()
+        {
+            GameState state = PipelineTestFixtures.CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    PipelineTestFixtures.Row(new EmptyTile(), new EmptyTile(), new DebrisTile(DebrisType.B)),
+                    PipelineTestFixtures.Row(new EmptyTile(), new DebrisTile(DebrisType.C), new DebrisTile(DebrisType.D)),
+                    PipelineTestFixtures.DebrisRow(DebrisType.A, DebrisType.A, DebrisType.A)),
+                targets: ImmutableArray.Create(new TargetState("target-1", new TileCoord(0, 0), Extracted: true, OneClearAway: false)))
+                with
+                {
+                    ExtractedTargetOrder = ImmutableArray.Create("target-1"),
+                    Water = new WaterState(FloodedRows: 0, ActionsUntilRise: 1, RiseInterval: 1),
+                    Vine = new VineState(
+                        ActionsSinceLastClear: 2,
+                        GrowthThreshold: 3,
+                        GrowthPriorityList: ImmutableArray.Create(new TileCoord(1, 1)),
+                        PriorityCursor: 0,
+                        PendingGrowthTile: new TileCoord(1, 1)),
+                };
+
+            List<string> trace = new List<string>();
+            ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(
+                state,
+                new ActionInput(new TileCoord(2, 0)),
+                options: null,
+                observer: step => trace.Add(step.StepName));
+
+            Assert.That(result.Outcome, Is.EqualTo(ActionOutcome.Win));
+            Assert.That(trace, Does.Not.Contain("Step10_CheckLoss"));
+            Assert.That(trace, Does.Not.Contain("Step11_Gravity"));
+            Assert.That(trace, Does.Not.Contain("Step12_Spawn"));
+            Assert.That(trace, Does.Not.Contain("Step13_TickHazards"));
+            Assert.That(trace, Does.Not.Contain("Step14_ResolveHazards"));
+            Assert.That(trace, Does.Not.Contain("Step15_CheckWaterConsequence"));
+            Assert.That(result.Events, Has.None.TypeOf<GravitySettled>());
+            Assert.That(result.Events, Has.None.TypeOf<DiagonalSettlingApplied>());
+            Assert.That(result.Events, Has.None.TypeOf<Spawned>());
+            Assert.That(result.Events, Has.None.TypeOf<DeadboardMinimalShuffleApplied>());
+            Assert.That(result.Events, Has.None.TypeOf<WaterRose>());
+            Assert.That(result.Events, Has.None.TypeOf<TargetDistressedEntered>());
+            Assert.That(result.Events, Has.None.TypeOf<TargetDistressedExpired>());
+        }
+
+        [Test]
         public void ClearingFinalNeighborLatchesExtractionBeforeDockInsertion()
         {
             GameState state = PipelineTestFixtures.CreateState(
@@ -341,6 +385,7 @@ namespace Rescue.Core.Tests.Pipeline
                     GroupRemoved actualGroupRemoved = (GroupRemoved)actual;
                     Assert.That(actualGroupRemoved.Type, Is.EqualTo(expectedGroupRemoved.Type), $"GroupRemoved type mismatch at index {index}.");
                     Assert.That(actualGroupRemoved.Coords, Is.EqualTo(expectedGroupRemoved.Coords).AsCollection, $"GroupRemoved coords mismatch at index {index}.");
+                    Assert.That(actualGroupRemoved.SpawnLineageIds, Is.EqualTo(expectedGroupRemoved.SpawnLineageIds).AsCollection, $"GroupRemoved lineage mismatch at index {index}.");
                     return;
                 case DockInserted expectedDockInserted:
                     DockInserted actualDockInserted = (DockInserted)actual;
@@ -433,6 +478,17 @@ namespace Rescue.Core.Tests.Pipeline
             {
                 Assert.That(actual[i].Coord, Is.EqualTo(expected[i].Coord), $"{messagePrefix} coord {i}.");
                 Assert.That(actual[i].Type, Is.EqualTo(expected[i].Type), $"{messagePrefix} type {i}.");
+                Assert.That(actual[i].LineageId, Is.EqualTo(expected[i].LineageId), $"{messagePrefix} lineage {i}.");
+                Assert.That(actual[i].Reasons, Is.EqualTo(expected[i].Reasons).AsCollection, $"{messagePrefix} reasons {i}.");
+                Assert.That(actual[i].TriggerContext, Is.EqualTo(expected[i].TriggerContext).AsCollection, $"{messagePrefix} trigger context {i}.");
+                Assert.That(actual[i].UrgentTargetId, Is.EqualTo(expected[i].UrgentTargetId), $"{messagePrefix} urgent target {i}.");
+                Assert.That(actual[i].UrgentTargetCoord, Is.EqualTo(expected[i].UrgentTargetCoord), $"{messagePrefix} urgent target coord {i}.");
+                Assert.That(actual[i].WaterRisesRemaining, Is.EqualTo(expected[i].WaterRisesRemaining), $"{messagePrefix} water rises remaining {i}.");
+                Assert.That(actual[i].DockOccupancy, Is.EqualTo(expected[i].DockOccupancy), $"{messagePrefix} dock occupancy {i}.");
+                Assert.That(actual[i].RecoveryCounterBefore, Is.EqualTo(expected[i].RecoveryCounterBefore), $"{messagePrefix} recovery counter {i}.");
+                Assert.That(actual[i].EmergencyRequested, Is.EqualTo(expected[i].EmergencyRequested), $"{messagePrefix} emergency requested {i}.");
+                Assert.That(actual[i].EmergencyApplied, Is.EqualTo(expected[i].EmergencyApplied), $"{messagePrefix} emergency applied {i}.");
+                Assert.That(actual[i].EffectiveAssistanceChance, Is.EqualTo(expected[i].EffectiveAssistanceChance), $"{messagePrefix} assistance chance {i}.");
             }
         }
     }

@@ -246,6 +246,39 @@ namespace Rescue.Core.Tests.Undo
         }
 
         [Test]
+        public void UndoAfterDiagonalSettlingRestoresExactPreActionState()
+        {
+            GameState original = CreateDiagonalSettlingPipelineState();
+
+            ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(
+                original,
+                new ActionInput(new TileCoord(0, 2)));
+            GameState restored = UndoGuard.PerformUndo(result.State, result.Snapshot!);
+
+            Assert.That(result.Snapshot, Is.Not.Null);
+            Assert.That(result.Events, Has.Some.TypeOf<DiagonalSettlingApplied>());
+            Assert.That(result.State.SpawnLineageByCoord.ContainsKey(new TileCoord(2, 0)), Is.True);
+            AssertGameStatesEqual(original with { UndoAvailable = false }, restored);
+        }
+
+        [Test]
+        public void UndoAfterHardNoMoveRepairRestoresExactPreActionStateAndRng()
+        {
+            GameState original = CreateHardNoMoveRepairPipelineState();
+
+            ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(
+                original,
+                new ActionInput(new TileCoord(2, 0)));
+            GameState restored = UndoGuard.PerformUndo(result.State, result.Snapshot!);
+
+            Assert.That(result.Snapshot, Is.Not.Null);
+            Assert.That(result.Events, Has.Some.TypeOf<DeadboardMinimalShuffleApplied>());
+            Assert.That(result.Events, Has.None.TypeOf<Spawned>());
+            Assert.That(result.State.RngState, Is.EqualTo(original.RngState));
+            AssertGameStatesEqual(original with { UndoAvailable = false }, restored);
+        }
+
+        [Test]
         public void UndoRestoresVineStateExactly()
         {
             ImmutableArray<TileCoord> growthPriority = ImmutableArray.Create(
@@ -321,6 +354,40 @@ namespace Rescue.Core.Tests.Undo
             Assert.That(restored.Frozen, Is.False);
         }
 
+        private static GameState CreateDiagonalSettlingPipelineState()
+        {
+            return PipelineTestFixtures.CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    PipelineTestFixtures.Row(new EmptyTile(), new EmptyTile(), new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A)),
+                    PipelineTestFixtures.Row(new BlockerTile(BlockerType.Crate, 1, null), new DebrisTile(DebrisType.B), new EmptyTile(), new EmptyTile()),
+                    PipelineTestFixtures.Row(new EmptyTile(), new BlockerTile(BlockerType.Crate, 1, null), new EmptyTile(), new EmptyTile()),
+                    PipelineTestFixtures.Row(new BlockerTile(BlockerType.Crate, 1, null), new BlockerTile(BlockerType.Crate, 1, null), new EmptyTile(), new EmptyTile())))
+                with
+                {
+                    RngState = new RngState(0x12345678u, 0x9ABCDEF0u),
+                    SpawnLineageByCoord = ImmutableDictionary<TileCoord, SpawnLineage>.Empty
+                        .Add(new TileCoord(1, 1), new SpawnLineage(12, DebrisType.B, new TileCoord(1, 1))),
+                    NextSpawnLineageId = 20,
+                };
+        }
+
+        private static GameState CreateHardNoMoveRepairPipelineState()
+        {
+            return PipelineTestFixtures.CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    PipelineTestFixtures.DebrisRow(DebrisType.A, DebrisType.B, DebrisType.C),
+                    PipelineTestFixtures.Row(
+                        new BlockerTile(BlockerType.Crate, 2, null),
+                        new BlockerTile(BlockerType.Crate, 2, null),
+                        new BlockerTile(BlockerType.Crate, 2, null)),
+                    PipelineTestFixtures.DebrisRow(DebrisType.D, DebrisType.D, DebrisType.E)))
+                with
+                {
+                    RngState = new RngState(0xCAFEBABEu, 0xFACEFEEDu),
+                    Water = new WaterState(FloodedRows: 0, ActionsUntilRise: 1, RiseInterval: 3),
+                };
+        }
+
         private static void AssertGameStatesEqual(GameState expected, GameState actual)
         {
             AssertBoardEqual(expected.Board, actual.Board);
@@ -344,6 +411,9 @@ namespace Rescue.Core.Tests.Undo
             Assert.That(actual.SpawnRecoveryCounter, Is.EqualTo(expected.SpawnRecoveryCounter));
             Assert.That(actual.DockJamEnabled, Is.EqualTo(expected.DockJamEnabled));
             Assert.That(actual.DockJamActive, Is.EqualTo(expected.DockJamActive));
+            Assert.That(actual.DebugSpawnOverride, Is.EqualTo(expected.DebugSpawnOverride));
+            AssertSpawnLineageEqual(expected.SpawnLineageByCoord, actual.SpawnLineageByCoord);
+            Assert.That(actual.NextSpawnLineageId, Is.EqualTo(expected.NextSpawnLineageId));
         }
 
         private static void AssertBoardEqual(Board expected, Board actual)
@@ -383,6 +453,7 @@ namespace Rescue.Core.Tests.Undo
                     GroupRemoved actualGroupRemoved = (GroupRemoved)actual;
                     Assert.That(actualGroupRemoved.Type, Is.EqualTo(expectedGroupRemoved.Type), $"GroupRemoved type mismatch at index {index}.");
                     AssertTileCoordSequenceEqual(expectedGroupRemoved.Coords, actualGroupRemoved.Coords, $"GroupRemoved coords mismatch at index {index}.");
+                    AssertIntSequenceEqual(expectedGroupRemoved.SpawnLineageIds, actualGroupRemoved.SpawnLineageIds, $"GroupRemoved lineage mismatch at index {index}.");
                     return;
                 case DockInserted expectedDockInserted:
                     DockInserted actualDockInserted = (DockInserted)actual;
@@ -498,6 +569,65 @@ namespace Rescue.Core.Tests.Undo
             {
                 Assert.That(actual[i].Coord, Is.EqualTo(expected[i].Coord), $"{messagePrefix} coord {i}.");
                 Assert.That(actual[i].Type, Is.EqualTo(expected[i].Type), $"{messagePrefix} type {i}.");
+                Assert.That(actual[i].LineageId, Is.EqualTo(expected[i].LineageId), $"{messagePrefix} lineage {i}.");
+                AssertSpawnAssistReasonSequenceEqual(expected[i].Reasons, actual[i].Reasons, $"{messagePrefix} reasons {i}.");
+                AssertStringSequenceEqual(expected[i].TriggerContext, actual[i].TriggerContext, $"{messagePrefix} trigger context {i}.");
+                Assert.That(actual[i].UrgentTargetId, Is.EqualTo(expected[i].UrgentTargetId), $"{messagePrefix} urgent target {i}.");
+                Assert.That(actual[i].UrgentTargetCoord, Is.EqualTo(expected[i].UrgentTargetCoord), $"{messagePrefix} urgent target coord {i}.");
+                Assert.That(actual[i].WaterRisesRemaining, Is.EqualTo(expected[i].WaterRisesRemaining), $"{messagePrefix} water rises remaining {i}.");
+                Assert.That(actual[i].DockOccupancy, Is.EqualTo(expected[i].DockOccupancy), $"{messagePrefix} dock occupancy {i}.");
+                Assert.That(actual[i].RecoveryCounterBefore, Is.EqualTo(expected[i].RecoveryCounterBefore), $"{messagePrefix} recovery counter {i}.");
+                Assert.That(actual[i].EmergencyRequested, Is.EqualTo(expected[i].EmergencyRequested), $"{messagePrefix} emergency requested {i}.");
+                Assert.That(actual[i].EmergencyApplied, Is.EqualTo(expected[i].EmergencyApplied), $"{messagePrefix} emergency applied {i}.");
+                Assert.That(actual[i].EffectiveAssistanceChance, Is.EqualTo(expected[i].EffectiveAssistanceChance), $"{messagePrefix} assistance chance {i}.");
+            }
+        }
+
+        private static void AssertSpawnAssistReasonSequenceEqual(
+            ImmutableArray<SpawnAssistReason> expected,
+            ImmutableArray<SpawnAssistReason> actual,
+            string messagePrefix)
+        {
+            Assert.That(actual.Length, Is.EqualTo(expected.Length), $"{messagePrefix} length.");
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.That(actual[i], Is.EqualTo(expected[i]), $"{messagePrefix} item {i}.");
+            }
+        }
+
+        private static void AssertStringSequenceEqual(
+            ImmutableArray<string> expected,
+            ImmutableArray<string> actual,
+            string messagePrefix)
+        {
+            Assert.That(actual.Length, Is.EqualTo(expected.Length), $"{messagePrefix} length.");
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.That(actual[i], Is.EqualTo(expected[i]), $"{messagePrefix} item {i}.");
+            }
+        }
+
+        private static void AssertIntSequenceEqual(
+            ImmutableArray<int> expected,
+            ImmutableArray<int> actual,
+            string messagePrefix)
+        {
+            Assert.That(actual.Length, Is.EqualTo(expected.Length), $"{messagePrefix} length.");
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.That(actual[i], Is.EqualTo(expected[i]), $"{messagePrefix} item {i}.");
+            }
+        }
+
+        private static void AssertSpawnLineageEqual(
+            ImmutableDictionary<TileCoord, SpawnLineage> expected,
+            ImmutableDictionary<TileCoord, SpawnLineage> actual)
+        {
+            Assert.That(actual.Count, Is.EqualTo(expected.Count), "Spawn lineage count mismatch.");
+            foreach ((TileCoord coord, SpawnLineage lineage) in expected)
+            {
+                Assert.That(actual.TryGetValue(coord, out SpawnLineage actualLineage), Is.True, $"Missing spawn lineage at {coord}.");
+                Assert.That(actualLineage, Is.EqualTo(lineage), $"Spawn lineage mismatch at {coord}.");
             }
         }
     }

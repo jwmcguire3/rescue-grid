@@ -68,6 +68,36 @@ namespace Rescue.Core.Tests.Determinism
             AssertStringSequenceEqual(firstSpawn.Pieces[0].TriggerContext, secondSpawn.Pieces[0].TriggerContext);
         }
 
+        [Test]
+        public void RepeatedDiagonalSettlingRunsFromSameSeedProduceIdenticalBoardsAndEvents()
+        {
+            GameState state = CreateDiagonalAssistedSpawnState(0xBADC0DEu);
+            ActionInput input = new ActionInput(new TileCoord(0, 2));
+
+            ActionResult first = Rescue.Core.Pipeline.Pipeline.RunAction(state, input);
+            ActionResult second = Rescue.Core.Pipeline.Pipeline.RunAction(state, input);
+
+            Assert.That(first.Events, Has.Some.TypeOf<DiagonalSettlingApplied>());
+            AssertBoardEqual(first.State.Board, second.State.Board, "diagonal final board");
+            AssertActionEventSequenceEqual(first.Events, second.Events, "diagonal event stream");
+        }
+
+        [Test]
+        public void HardNoMoveRepairDoesNotConsumeRngAndIsDeterministic()
+        {
+            GameState state = CreateHardNoMoveRepairPipelineState(0xFEED1234u);
+            ActionInput input = new ActionInput(new TileCoord(2, 0));
+
+            ActionResult first = Rescue.Core.Pipeline.Pipeline.RunAction(state, input);
+            ActionResult second = Rescue.Core.Pipeline.Pipeline.RunAction(state, input);
+
+            Assert.That(first.Events, Has.Some.TypeOf<DeadboardMinimalShuffleApplied>());
+            Assert.That(first.Events, Has.None.TypeOf<Spawned>());
+            Assert.That(first.State.RngState, Is.EqualTo(state.RngState));
+            AssertBoardEqual(first.State.Board, second.State.Board, "hard no-move repair final board");
+            AssertActionEventSequenceEqual(first.Events, second.Events, "hard no-move repair event stream");
+        }
+
         private static PipelineRunState CreateInitialRunState(uint seed)
         {
             GameState state = PipelineTestFixtures.CreateState(
@@ -99,6 +129,23 @@ namespace Rescue.Core.Tests.Determinism
                 LevelConfig = PipelineTestFixtures.CreateLevelConfig(1.0d),
                 RngState = new Rescue.Core.Rng.RngState(seed, seed ^ 0xA5A5A5A5u),
             };
+        }
+
+        private static GameState CreateHardNoMoveRepairPipelineState(uint seed)
+        {
+            return PipelineTestFixtures.CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    PipelineTestFixtures.DebrisRow(DebrisType.A, DebrisType.B, DebrisType.C),
+                    PipelineTestFixtures.Row(
+                        new BlockerTile(BlockerType.Crate, 2, null),
+                        new BlockerTile(BlockerType.Crate, 2, null),
+                        new BlockerTile(BlockerType.Crate, 2, null)),
+                    PipelineTestFixtures.DebrisRow(DebrisType.D, DebrisType.D, DebrisType.E)))
+                with
+                {
+                    Water = new WaterState(FloodedRows: 0, ActionsUntilRise: 1, RiseInterval: 3),
+                    RngState = new Rescue.Core.Rng.RngState(seed, seed ^ 0xA5A5A5A5u),
+                };
         }
 
         private static IReadOnlyList<ActionInput> CreateInputSequence()
@@ -167,6 +214,9 @@ namespace Rescue.Core.Tests.Determinism
             Assert.That(actual.SpawnRecoveryCounter, Is.EqualTo(expected.SpawnRecoveryCounter), $"SpawnRecoveryCounter mismatch at {label}.");
             Assert.That(actual.DockJamEnabled, Is.EqualTo(expected.DockJamEnabled), $"DockJamEnabled mismatch at {label}.");
             Assert.That(actual.DockJamActive, Is.EqualTo(expected.DockJamActive), $"DockJamActive mismatch at {label}.");
+            Assert.That(actual.DebugSpawnOverride, Is.EqualTo(expected.DebugSpawnOverride), $"DebugSpawnOverride mismatch at {label}.");
+            AssertSpawnLineageEqual(expected.SpawnLineageByCoord, actual.SpawnLineageByCoord, label);
+            Assert.That(actual.NextSpawnLineageId, Is.EqualTo(expected.NextSpawnLineageId), $"NextSpawnLineageId mismatch at {label}.");
         }
 
         private static void AssertBoardEqual(Board expected, Board actual, string label)
@@ -207,6 +257,7 @@ namespace Rescue.Core.Tests.Determinism
                     GroupRemoved actualGroupRemoved = (GroupRemoved)actual;
                     Assert.That(actualGroupRemoved.Type, Is.EqualTo(expectedGroupRemoved.Type), $"GroupRemoved type mismatch at {label}, index {index}.");
                     AssertTileCoordSequenceEqual(expectedGroupRemoved.Coords, actualGroupRemoved.Coords, $"GroupRemoved coords mismatch at {label}, index {index}.");
+                    AssertIntSequenceEqual(expectedGroupRemoved.SpawnLineageIds, actualGroupRemoved.SpawnLineageIds, $"GroupRemoved lineage mismatch at {label}, index {index}.");
                     return;
                 case DockInserted expectedDockInserted:
                     DockInserted actualDockInserted = (DockInserted)actual;
@@ -323,6 +374,42 @@ namespace Rescue.Core.Tests.Determinism
             {
                 Assert.That(actual[i].Coord, Is.EqualTo(expected[i].Coord), $"{messagePrefix} coord {i}.");
                 Assert.That(actual[i].Type, Is.EqualTo(expected[i].Type), $"{messagePrefix} type {i}.");
+                Assert.That(actual[i].LineageId, Is.EqualTo(expected[i].LineageId), $"{messagePrefix} lineage {i}.");
+                AssertSpawnAssistReasonsEqual(expected[i].Reasons, actual[i].Reasons, $"{messagePrefix} reasons {i}.");
+                AssertStringSequenceEqual(expected[i].TriggerContext, actual[i].TriggerContext, $"{messagePrefix} trigger context {i}.");
+                Assert.That(actual[i].UrgentTargetId, Is.EqualTo(expected[i].UrgentTargetId), $"{messagePrefix} urgent target {i}.");
+                Assert.That(actual[i].UrgentTargetCoord, Is.EqualTo(expected[i].UrgentTargetCoord), $"{messagePrefix} urgent target coord {i}.");
+                Assert.That(actual[i].WaterRisesRemaining, Is.EqualTo(expected[i].WaterRisesRemaining), $"{messagePrefix} water rises remaining {i}.");
+                Assert.That(actual[i].DockOccupancy, Is.EqualTo(expected[i].DockOccupancy), $"{messagePrefix} dock occupancy {i}.");
+                Assert.That(actual[i].RecoveryCounterBefore, Is.EqualTo(expected[i].RecoveryCounterBefore), $"{messagePrefix} recovery counter {i}.");
+                Assert.That(actual[i].EmergencyRequested, Is.EqualTo(expected[i].EmergencyRequested), $"{messagePrefix} emergency requested {i}.");
+                Assert.That(actual[i].EmergencyApplied, Is.EqualTo(expected[i].EmergencyApplied), $"{messagePrefix} emergency applied {i}.");
+                Assert.That(actual[i].EffectiveAssistanceChance, Is.EqualTo(expected[i].EffectiveAssistanceChance), $"{messagePrefix} assistance chance {i}.");
+            }
+        }
+
+        private static void AssertIntSequenceEqual(
+            ImmutableArray<int> expected,
+            ImmutableArray<int> actual,
+            string messagePrefix)
+        {
+            Assert.That(actual.Length, Is.EqualTo(expected.Length), $"{messagePrefix} length.");
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.That(actual[i], Is.EqualTo(expected[i]), $"{messagePrefix} item {i}.");
+            }
+        }
+
+        private static void AssertSpawnLineageEqual(
+            ImmutableDictionary<TileCoord, SpawnLineage> expected,
+            ImmutableDictionary<TileCoord, SpawnLineage> actual,
+            string label)
+        {
+            Assert.That(actual.Count, Is.EqualTo(expected.Count), $"Spawn lineage count mismatch at {label}.");
+            foreach ((TileCoord coord, SpawnLineage lineage) in expected)
+            {
+                Assert.That(actual.TryGetValue(coord, out SpawnLineage actualLineage), Is.True, $"Missing spawn lineage at {label}, coord {coord}.");
+                Assert.That(actualLineage, Is.EqualTo(lineage), $"Spawn lineage mismatch at {label}, coord {coord}.");
             }
         }
 
@@ -344,23 +431,25 @@ namespace Rescue.Core.Tests.Determinism
 
         private static void AssertSpawnAssistReasonsEqual(
             ImmutableArray<SpawnAssistReason> expected,
-            ImmutableArray<SpawnAssistReason> actual)
+            ImmutableArray<SpawnAssistReason> actual,
+            string messagePrefix = "Spawn assist reason mismatch")
         {
-            Assert.That(actual.Length, Is.EqualTo(expected.Length), "Spawn assist reason count mismatch.");
+            Assert.That(actual.Length, Is.EqualTo(expected.Length), $"{messagePrefix} count.");
             for (int i = 0; i < expected.Length; i++)
             {
-                Assert.That(actual[i], Is.EqualTo(expected[i]), $"Spawn assist reason mismatch at index {i}.");
+                Assert.That(actual[i], Is.EqualTo(expected[i]), $"{messagePrefix} at index {i}.");
             }
         }
 
         private static void AssertStringSequenceEqual(
             ImmutableArray<string> expected,
-            ImmutableArray<string> actual)
+            ImmutableArray<string> actual,
+            string messagePrefix = "Trigger context mismatch")
         {
-            Assert.That(actual.Length, Is.EqualTo(expected.Length), "Trigger context count mismatch.");
+            Assert.That(actual.Length, Is.EqualTo(expected.Length), $"{messagePrefix} count.");
             for (int i = 0; i < expected.Length; i++)
             {
-                Assert.That(actual[i], Is.EqualTo(expected[i]), $"Trigger context mismatch at index {i}.");
+                Assert.That(actual[i], Is.EqualTo(expected[i]), $"{messagePrefix} at index {i}.");
             }
         }
     }
