@@ -213,15 +213,15 @@ namespace Rescue.Core.Tests.Integration
             GameState state = IntegrationTestFixtures.CreateGraceRecoveryState();
 
             ActionResult firstAction = Rescue.Core.Pipeline.Pipeline.RunAction(state, new ActionInput(new TileCoord(0, 0)));
-            ActionResult secondAction = Rescue.Core.Pipeline.Pipeline.RunAction(firstAction.State, new ActionInput(new TileCoord(0, 2)));
+            ActionResult secondAction = Rescue.Core.Pipeline.Pipeline.RunAction(firstAction.State, new ActionInput(new TileCoord(2, 0)));
 
             Assert.That(firstAction.Outcome, Is.EqualTo(ActionOutcome.Ok));
             Assert.That(firstAction.State.Targets[0].Readiness, Is.EqualTo(TargetReadiness.Distressed));
-            Assert.That(firstAction.Events, Has.Some.EqualTo(new TargetDistressedEntered("pup", new TileCoord(2, 2))));
+            Assert.That(firstAction.Events, Has.Some.EqualTo(new TargetDistressedEntered("pup", new TileCoord(4, 0))));
 
             Assert.That(secondAction.Outcome, Is.EqualTo(ActionOutcome.Win));
-            Assert.That(secondAction.Events, Has.Some.EqualTo(new TargetDistressedRecovered("pup", new TileCoord(2, 2))));
-            Assert.That(secondAction.Events, Has.Some.EqualTo(new TargetExtracted("pup", new TileCoord(2, 2))));
+            Assert.That(secondAction.Events, Has.Some.EqualTo(new TargetDistressedRecovered("pup", new TileCoord(4, 0))));
+            Assert.That(secondAction.Events, Has.Some.EqualTo(new TargetExtracted("pup", new TileCoord(4, 0))));
             Assert.That(secondAction.Events, Has.None.TypeOf<TargetDistressedExpired>());
             Assert.That(secondAction.Events, Has.None.TypeOf<Lost>());
         }
@@ -396,10 +396,12 @@ namespace Rescue.Core.Tests.Integration
         {
             return PipelineTestFixtures.CreateState(
                 PipelineTestFixtures.CreateBoard(
-                    PipelineTestFixtures.Row(new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.B)),
-                    PipelineTestFixtures.Row(new EmptyTile(), new EmptyTile(), new DebrisTile(DebrisType.B)),
-                    PipelineTestFixtures.Row(new EmptyTile(), new EmptyTile(), new TargetTile("pup", Extracted: false))),
-                targets: ImmutableArray.Create(new TargetState("pup", new TileCoord(2, 2), Extracted: false, OneClearAway: false)))
+                    PipelineTestFixtures.Row(new DebrisTile(DebrisType.A)),
+                    PipelineTestFixtures.Row(new DebrisTile(DebrisType.A)),
+                    PipelineTestFixtures.Row(new DebrisTile(DebrisType.B)),
+                    PipelineTestFixtures.Row(new DebrisTile(DebrisType.B)),
+                    PipelineTestFixtures.Row(new TargetTile("pup", Extracted: false))),
+                targets: ImmutableArray.Create(new TargetState("pup", new TileCoord(4, 0), Extracted: false, OneClearAway: false)))
                 with
                 {
                     Water = new WaterState(FloodedRows: 0, ActionsUntilRise: 1, RiseInterval: 1),

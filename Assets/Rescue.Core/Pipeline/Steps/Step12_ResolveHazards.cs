@@ -129,7 +129,22 @@ namespace Rescue.Core.Pipeline.Steps
             Tile tileBeforeFlood,
             ImmutableArray<FloodedRescuePath>.Builder floodedRescuePaths)
         {
-            if (tileBeforeFlood is EmptyTile or RescuePathTile or TargetTile)
+            if (tileBeforeFlood is TargetTile)
+            {
+                return;
+            }
+
+            if (tileBeforeFlood is RescuePathTile rescuePath)
+            {
+                AddFloodedRescuePathTargets(
+                    state,
+                    coord,
+                    rescuePath,
+                    floodedRescuePaths);
+                return;
+            }
+
+            if (tileBeforeFlood is EmptyTile)
             {
                 return;
             }
@@ -148,6 +163,34 @@ namespace Rescue.Core.Pipeline.Steps
                         target.TargetId,
                         target.Coord,
                         coord));
+                }
+            }
+        }
+
+        private static void AddFloodedRescuePathTargets(
+            GameState state,
+            TileCoord coord,
+            RescuePathTile rescuePath,
+            ImmutableArray<FloodedRescuePath>.Builder floodedRescuePaths)
+        {
+            for (int i = 0; i < rescuePath.TargetIds.Length; i++)
+            {
+                string targetId = rescuePath.TargetIds[i];
+                for (int j = 0; j < state.Targets.Length; j++)
+                {
+                    TargetState target = state.Targets[j];
+                    if (target.TargetId != targetId
+                        || target.Extracted
+                        || target.ExtractableLatched)
+                    {
+                        continue;
+                    }
+
+                    floodedRescuePaths.Add(new FloodedRescuePath(
+                        target.TargetId,
+                        target.Coord,
+                        coord));
+                    break;
                 }
             }
         }

@@ -68,7 +68,7 @@ namespace Rescue.Replay.Tests
                 : new[]
                 {
                     new ActionInput(new TileCoord(0, 0)),
-                    new ActionInput(new TileCoord(1, 0)),
+                    new ActionInput(new TileCoord(2, 0)),
                 };
 
             string sessionPath = Path.Combine(_testDir, $"water-mode-{waterContactMode}.jsonl");
@@ -91,7 +91,7 @@ namespace Rescue.Replay.Tests
             ActionInput[] script =
             {
                 new ActionInput(new TileCoord(0, 0)),
-                new ActionInput(new TileCoord(1, 0)),
+                new ActionInput(new TileCoord(2, 0)),
             };
 
             string sessionPath = Path.Combine(_testDir, "grace-distressed-expired.jsonl");
@@ -104,7 +104,7 @@ namespace Rescue.Replay.Tests
             Assert.That(replay.Verified, Is.True);
             Assert.That(replay.Frames[1].State.Targets[0].Readiness, Is.EqualTo(TargetReadiness.Distressed));
             Assert.That(replay.FinalFrame.Outcome, Is.EqualTo(ActionOutcome.LossDistressedExpired));
-            Assert.That(replay.FinalFrame.Events, Has.Some.EqualTo(new TargetDistressedExpired("0", new TileCoord(2, 2))));
+            Assert.That(replay.FinalFrame.Events, Has.Some.EqualTo(new TargetDistressedExpired("0", new TileCoord(5, 0))));
             Assert.That(replay.FinalFrame.Events, Has.Some.EqualTo(new Lost(ActionOutcome.LossDistressedExpired)));
         }
 
@@ -219,17 +219,20 @@ namespace Rescue.Replay.Tests
                 Name = "Water Mode Replay",
                 Board = new BoardJson
                 {
-                    Width = 3,
-                    Height = 3,
+                    Width = 1,
+                    Height = 6,
                     Tiles = new[]
                     {
-                        new[] { "A", "A", "." },
-                        new[] { "C", "C", "B" },
-                        new[] { ".", ".", "T0" },
+                        new[] { "A" },
+                        new[] { "A" },
+                        new[] { "C" },
+                        new[] { "C" },
+                        new[] { "B" },
+                        new[] { "T0" },
                     },
                 },
                 DebrisTypePool = new[] { DebrisType.A, DebrisType.B, DebrisType.C, DebrisType.D, DebrisType.E },
-                Targets = new[] { new TargetJson { Id = "0", Row = 2, Col = 2 } },
+                Targets = new[] { new TargetJson { Id = "0", Row = 5, Col = 0 } },
                 InitialFloodedRows = 0,
                 Water = new WaterJson
                 {
