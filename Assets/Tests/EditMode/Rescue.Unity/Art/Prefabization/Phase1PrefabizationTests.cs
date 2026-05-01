@@ -201,6 +201,26 @@ namespace Rescue.Unity.Art.Tests
         }
 
         [Test]
+        public void Phase1FxRegistry_AssignsFourFrameTransientIceRevealFx()
+        {
+            FxVisualRegistry fxRegistry = LoadAsset<FxVisualRegistry>(FxRegistryPath);
+            GameObject iceReveal = LoadAsset<GameObject>(Phase1IceRevealFxPrefabPath);
+
+            Assert.That(fxRegistry.IceRevealFx, Is.SameAs(iceReveal));
+            Assert.That(iceReveal.GetComponent<MeshRenderer>(), Is.Null, "Ice reveal FX should not be a tile-like mesh.");
+            Assert.That(iceReveal.GetComponent<Collider>(), Is.Null, "Ice reveal FX should not be tappable board content.");
+            SpriteRenderer? renderer = iceReveal.GetComponent<SpriteRenderer>();
+            SpriteSequenceFxPlayer? player = iceReveal.GetComponent<SpriteSequenceFxPlayer>();
+
+            Assert.That(renderer, Is.Not.Null);
+            Assert.That(renderer.sprite, Is.Not.Null);
+            Assert.That(player, Is.Not.Null);
+            Assert.That(player.FrameCount, Is.EqualTo(4));
+            Assert.That(player.DestroyAfterPlayback, Is.True);
+            Assert.That(GetSerializedBool(player, "loop"), Is.False);
+        }
+
+        [Test]
         public void Phase1FxRegistry_HasAllRuntimeFxAssigned()
         {
             FxVisualRegistry fxRegistry = LoadAsset<FxVisualRegistry>(FxRegistryPath);
@@ -303,6 +323,14 @@ namespace Rescue.Unity.Art.Tests
             Assert.That(material.mainTextureScale.y, Is.EqualTo(0.543f).Within(0.001f));
             Assert.That(material.mainTextureOffset.x, Is.EqualTo(0.021f).Within(0.001f));
             Assert.That(material.mainTextureOffset.y, Is.EqualTo(0.224f).Within(0.001f));
+        }
+
+        private static bool GetSerializedBool(Object target, string propertyName)
+        {
+            SerializedObject serializedObject = new SerializedObject(target);
+            SerializedProperty property = serializedObject.FindProperty(propertyName);
+            Assert.That(property, Is.Not.Null, $"Expected serialized property '{propertyName}'.");
+            return property.boolValue;
         }
 
         private static void AssertFxPrefab(GameObject? prefab, string registrySlotName)

@@ -42,7 +42,7 @@ MonoBehaviour:
   - eventId: 3
     clips:
     - {fileID: 8300000, guid: 761b25cb9f18d294e8f6a92af7fca4d0, type: 3}
-    volume: 0.75
+    volume: 0.5
     pitchVariance: 0.03
     maxPlaysPerRoute: 1
   - eventId: 4
@@ -90,7 +90,7 @@ MonoBehaviour:
     - {fileID: 8300000, guid: d154c3d2e580f3d4b9fa8bb01b74d536, type: 3}
     - {fileID: 8300000, guid: e806479479544e04ea28b36bf8f150b2, type: 3}
     - {fileID: 8300000, guid: 550cce4703adc41489c351f8799c514a, type: 3}
-    volume: 0.85
+    volume: 0.7
     pitchVariance: 0
     maxPlaysPerRoute: 1
   - eventId: 10
@@ -98,7 +98,7 @@ MonoBehaviour:
     - {fileID: 8300000, guid: 6b30fd0182430c84aa5516ad041a90b0, type: 3}
     - {fileID: 8300000, guid: 21cc2b9a3b8223846a5297a311a92c00, type: 3}
     - {fileID: 8300000, guid: 3de23a82167a7ec4399b2469a4c0eb7a, type: 3}
-    volume: 0.85
+    volume: 0.7
     pitchVariance: 0
     maxPlaysPerRoute: 1
   - eventId: 11

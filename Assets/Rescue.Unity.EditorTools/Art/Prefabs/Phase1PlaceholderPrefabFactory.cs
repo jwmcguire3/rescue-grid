@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rescue.Unity.Art.Registries;
+using Rescue.Unity.FX;
 using UnityEditor;
 using UnityEngine;
 
@@ -60,8 +61,6 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
         private static readonly AssetSizingProfile VineSizingProfile = new AssetSizingProfile(0.92f);
         private static readonly AssetSizingProfile TargetSizingProfile = new AssetSizingProfile(0.90f);
         private static readonly AssetSizingProfile RowOverlaySizingProfile = new AssetSizingProfile(1.0f);
-        private static readonly AssetSizingProfile FxSizingProfile = new AssetSizingProfile(1.0f);
-
         [MenuItem("Rescue Grid/Art/Create Phase 1 Placeholder Prefabs")]
         public static void CreateDefaultPhase1Placeholders()
         {
@@ -285,7 +284,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 EditorUtility.SetDirty(floodedRowMaterial);
             }
 
-            Material? iceRevealFxMaterial = CreateOrUpdateTexturedMaterial(
+            CreateOrUpdateTexturedMaterial(
                 CombinePath(materialsPath, "IceRevealFx_Phase1.mat"),
                 shader,
                 CombinePath(artRootPath, "Textures", "FX", "Meshy_AI_Cracked_Ice_Tile_0425081737_texture.png"),
@@ -398,11 +397,16 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 CombinePath(artRootPath, "Models", "Water", "Meshy_AI_Blue_Puddle_0425081657_texture.fbx"),
                 floodedRowMaterial,
                 RowOverlaySizingProfile);
-            GameObject? iceRevealFxPrefab = CreateMeshWrapperPrefab(
+            GameObject? iceRevealFxPrefab = CreateSpriteSequenceFxPrefab(
                 CombinePath(prefabsPath, FxFolderName, "IceRevealFx_Phase1.prefab"),
-                CombinePath(artRootPath, "Models", "FX", "Meshy_AI_Cracked_Ice_Tile_0425081737_texture.fbx"),
-                iceRevealFxMaterial,
-                FxSizingProfile,
+                "IceRevealFx",
+                new[]
+                {
+                    CombinePath(artRootPath, "Sprites", "IceRevealFx_01.png"),
+                    CombinePath(artRootPath, "Sprites", "IceRevealFx_02.png"),
+                    CombinePath(artRootPath, "Sprites", "IceRevealFx_03.png"),
+                    CombinePath(artRootPath, "Sprites", "IceRevealFx_04.png"),
+                },
                 rootEulerAngles: new Vector3(180f, 0f, 0f),
                 rootPosition: new Vector3(0f, 0f, -0.5f));
 
@@ -713,6 +717,61 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
 
                 AssignMaterialRecursively(art, material);
                 RemoveCollidersRecursively(art);
+                return root;
+            });
+        }
+
+        private static GameObject? CreateSpriteSequenceFxPrefab(
+            string assetPath,
+            string name,
+            string[] framePaths,
+            Vector3? rootEulerAngles = null,
+            Vector3? rootPosition = null)
+        {
+            Sprite[] frames = new Sprite[framePaths.Length];
+            for (int frameIndex = 0; frameIndex < framePaths.Length; frameIndex++)
+            {
+                Sprite? frame = AssetDatabase.LoadAssetAtPath<Sprite>(framePaths[frameIndex]);
+                if (frame is null)
+                {
+                    return null;
+                }
+
+                frames[frameIndex] = frame;
+            }
+
+            return CreateOrUpdatePrefab(assetPath, () =>
+            {
+                GameObject root = new GameObject(name);
+                if (rootEulerAngles.HasValue)
+                {
+                    root.transform.localRotation = Quaternion.Euler(rootEulerAngles.Value);
+                }
+
+                if (rootPosition.HasValue)
+                {
+                    root.transform.localPosition = rootPosition.Value;
+                }
+
+                SpriteRenderer renderer = root.AddComponent<SpriteRenderer>();
+                renderer.sprite = frames[0];
+                SpriteSequenceFxPlayer player = root.AddComponent<SpriteSequenceFxPlayer>();
+                SerializedObject serializedPlayer = new SerializedObject(player);
+                serializedPlayer.FindProperty("spriteRenderer").objectReferenceValue = renderer;
+                SerializedProperty serializedFrames = serializedPlayer.FindProperty("frames");
+                serializedFrames.arraySize = frames.Length;
+                for (int frameIndex = 0; frameIndex < frames.Length; frameIndex++)
+                {
+                    serializedFrames.GetArrayElementAtIndex(frameIndex).objectReferenceValue = frames[frameIndex];
+                }
+
+                serializedPlayer.FindProperty("secondsPerFrame").floatValue = 0.06f;
+                serializedPlayer.FindProperty("playOnEnable").boolValue = true;
+                serializedPlayer.FindProperty("destroyAfterPlayback").boolValue = true;
+                serializedPlayer.FindProperty("loop").boolValue = false;
+                serializedPlayer.FindProperty("faceMainCamera").boolValue = false;
+                serializedPlayer.FindProperty("sortingOrder").intValue = 100;
+                serializedPlayer.ApplyModifiedPropertiesWithoutUndo();
                 return root;
             });
         }

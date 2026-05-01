@@ -307,6 +307,23 @@ namespace Rescue.Unity.FX
             };
         }
 
+        public void ClearSpawnedFx()
+        {
+            Transform parent = fxRoot != null ? fxRoot : transform;
+            for (int childIndex = parent.childCount - 1; childIndex >= 0; childIndex--)
+            {
+                GameObject child = parent.GetChild(childIndex).gameObject;
+                if (Application.isPlaying)
+                {
+                    Destroy(child);
+                }
+                else
+                {
+                    DestroyImmediate(child);
+                }
+            }
+        }
+
         protected virtual void PlayGroupClear()
         {
             PlayGroupClear(GetSafeFallbackPosition());

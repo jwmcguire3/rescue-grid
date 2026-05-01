@@ -2,6 +2,7 @@ using Rescue.Core.Pipeline;
 using Rescue.Core.State;
 using Rescue.Unity.BoardPresentation;
 using Rescue.Unity.Feedback;
+using Rescue.Unity.FX;
 using Rescue.Unity.UI;
 using UnityEngine;
 
@@ -15,6 +16,7 @@ namespace Rescue.Unity.Presentation
         [SerializeField] private DockViewPresenter? dockView;
         [SerializeField] private TargetFeedbackPresenter? targetFeedback;
         [SerializeField] private ActionPlaybackController? playbackController;
+        [SerializeField] private FxEventRouter? fxEventRouter;
         [SerializeField] private AudioEventRouter? audioEventRouter;
         [SerializeField] private VictoryScreenPresenter? victoryScreen;
         [SerializeField] private LossScreenPresenter? lossScreen;
@@ -71,6 +73,7 @@ namespace Rescue.Unity.Presentation
 
             victoryScreen?.Hide();
             lossScreen?.Hide();
+            ResolveFxEventRouter()?.ClearSpawnedFx();
             ForceSyncToState(state, "rebuild", cancelActivePlayback: true, clearPlaybackPlan: true);
         }
 
@@ -111,6 +114,7 @@ namespace Rescue.Unity.Presentation
             CurrentPlaybackPlan = ActionPlaybackPlan.Empty;
             victoryScreen?.Hide();
             lossScreen?.Hide();
+            ResolveFxEventRouter()?.ClearSpawnedFx();
 
             if (boardGrid is null)
             {
@@ -274,6 +278,17 @@ namespace Rescue.Unity.Presentation
 
             audioEventRouter = GetComponent<AudioEventRouter>();
             return audioEventRouter;
+        }
+
+        private FxEventRouter? ResolveFxEventRouter()
+        {
+            if (fxEventRouter is not null)
+            {
+                return fxEventRouter;
+            }
+
+            fxEventRouter = GetComponent<FxEventRouter>();
+            return fxEventRouter;
         }
 
         private void TryRouteResultAudio(GameState previousState, ActionInput input, ActionResult result)

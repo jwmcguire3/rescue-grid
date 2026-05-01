@@ -45,4 +45,4 @@ MonoBehaviour:
   loopPlaylist: 1
   fadeInDurationSeconds: 0.5
   fadeOutDurationSeconds: 0.5
-  defaultVolume: 0.3
+  defaultVolume: 0.4

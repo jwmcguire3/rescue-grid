@@ -182,7 +182,7 @@ namespace Rescue.Unity.FX
 
                 if (destroyAfterPlayback && !loop)
                 {
-                    Destroy(gameObject);
+                    DestroyOwner();
                 }
 
                 yield break;
@@ -211,7 +211,19 @@ namespace Rescue.Unity.FX
 
             if (destroyAfterPlayback)
             {
+                DestroyOwner();
+            }
+        }
+
+        private void DestroyOwner()
+        {
+            if (Application.isPlaying)
+            {
                 Destroy(gameObject);
+            }
+            else
+            {
+                DestroyImmediate(gameObject);
             }
         }
 

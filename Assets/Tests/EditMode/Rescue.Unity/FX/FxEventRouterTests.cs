@@ -408,6 +408,53 @@ namespace Rescue.Unity.FX.Tests
         }
 
         [Test]
+        public void FxEventRouter_IceRevealedSpawnsTransientSpriteSequenceUnderFxRoot()
+        {
+            GameObject fxRoot = CreateGameObject("FxRoot");
+            GameObject icePrefab = CreateSpriteFxPrefab("IceClearFx", frameCount: 4);
+            FxVisualRegistry registry = ScriptableObject.CreateInstance<FxVisualRegistry>();
+            createdObjects.Add(registry);
+            registry.IceRevealFx = icePrefab;
+            FxEventRouter router = CreateGameObject("FxRouter").AddComponent<FxEventRouter>();
+            router.FxRoot = fxRoot.transform;
+            router.FxRegistry = registry;
+            GameState state = CreateState();
+
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.BreakBlockerOrReveal, new IceRevealed(new TileCoord(1, 1), DebrisType.B)));
+
+            Transform spawned = fxRoot.transform.Find(nameof(FxVisualRegistry.IceRevealFx))
+                ?? throw new AssertionException("Expected IceRevealed to spawn the registered ice reveal FX under FXRoot.");
+            SpriteSequenceFxPlayer player = spawned.GetComponent<SpriteSequenceFxPlayer>()
+                ?? throw new AssertionException("Expected runtime ice FX to use SpriteSequenceFxPlayer.");
+
+            Assert.That(player.FrameCount, Is.EqualTo(4));
+            Assert.That(player.DestroyAfterPlayback, Is.True);
+            Assert.That(GetSerializedBool(player, "loop"), Is.False);
+            Assert.That(spawned.GetComponent<SpriteRenderer>(), Is.Not.Null);
+            Assert.That(spawned.GetComponent<BoardCellView>(), Is.Null, "Ice FX must not masquerade as board content.");
+            Assert.That(spawned.GetComponent<Collider>(), Is.Null, "Ice FX must not be tappable board content.");
+            Assert.That(spawned.GetComponentInChildren<MeshRenderer>(includeInactive: true), Is.Null, "Ice FX should be a sprite sequence, not a tile-like mesh.");
+        }
+
+        [Test]
+        public void FxEventRouter_ClearSpawnedFxRemovesStaleChildrenFromFxRoot()
+        {
+            GameObject fxRoot = CreateGameObject("FxRoot");
+            GameObject staleIceFx = CreateGameObject("IceRevealFx");
+            staleIceFx.transform.SetParent(fxRoot.transform, false);
+            FxEventRouter router = CreateGameObject("FxRouter").AddComponent<FxEventRouter>();
+            router.FxRoot = fxRoot.transform;
+
+            router.ClearSpawnedFx();
+
+            Assert.That(fxRoot.transform.childCount, Is.EqualTo(0));
+        }
+
+        [Test]
         public void FxEventRouter_DiagnosticsLogPrefabAssignmentAndPosition()
         {
             GameObject fxRoot = CreateGameObject("FxRoot");
@@ -466,6 +513,24 @@ namespace Rescue.Unity.FX.Tests
             player.NextFrame();
             player.StopPlayback();
             Assert.That(player.CurrentFrameIndex, Is.EqualTo(0));
+        }
+
+        [UnityTest]
+        public System.Collections.IEnumerator SpriteSequenceFxPlayer_NonLoopingDestroyAfterPlaybackDestroysSelf()
+        {
+            GameObject gameObject = CreateGameObject("IceClearFx");
+            gameObject.AddComponent<SpriteRenderer>();
+            SpriteSequenceFxPlayer player = gameObject.AddComponent<SpriteSequenceFxPlayer>();
+            SetPrivateField(player, "frames", new[] { CreateSprite(Color.white) });
+            SetPrivateField(player, "secondsPerFrame", 0f);
+            SetPrivateField(player, "loop", false);
+            player.DestroyAfterPlayback = true;
+
+            player.StartPlayback();
+            yield return null;
+            yield return null;
+
+            Assert.That(gameObject == null, Is.True, "A non-looping ice clear FX should destroy its GameObject after the final frame.");
         }
 
         [Test]
@@ -774,12 +839,26 @@ namespace Rescue.Unity.FX.Tests
             return gameObject;
         }
 
-        private GameObject CreateSpriteFxPrefab(string name)
+        private GameObject CreateSpriteFxPrefab(string name, int frameCount = 0)
         {
             GameObject prefab = CreateGameObject(name);
             prefab.SetActive(false);
-            prefab.AddComponent<SpriteRenderer>();
-            prefab.AddComponent<SpriteSequenceFxPlayer>();
+            SpriteRenderer renderer = prefab.AddComponent<SpriteRenderer>();
+            SpriteSequenceFxPlayer player = prefab.AddComponent<SpriteSequenceFxPlayer>();
+            if (frameCount > 0)
+            {
+                Sprite[] frames = new Sprite[frameCount];
+                for (int frameIndex = 0; frameIndex < frameCount; frameIndex++)
+                {
+                    frames[frameIndex] = CreateSprite(Color.Lerp(Color.white, Color.cyan, frameIndex / Mathf.Max(1f, frameCount - 1f)));
+                }
+
+                renderer.sprite = frames[0];
+                SetPrivateField(player, "frames", frames);
+                SetPrivateField(player, "loop", false);
+                player.DestroyAfterPlayback = true;
+            }
+
             return prefab;
         }
 
@@ -924,6 +1003,14 @@ namespace Rescue.Unity.FX.Tests
 
             Assert.That(field, Is.Not.Null, $"Expected private field '{fieldName}'.");
             field?.SetValue(target, value);
+        }
+
+        private static bool GetSerializedBool(Object target, string propertyName)
+        {
+            SerializedObject serializedObject = new SerializedObject(target);
+            SerializedProperty property = serializedObject.FindProperty(propertyName);
+            Assert.That(property, Is.Not.Null, $"Expected serialized property '{propertyName}'.");
+            return property.boolValue;
         }
 
         private static void AssertVector3Equal(Vector3 expected, Vector3 actual, float tolerance = 0.0001f)

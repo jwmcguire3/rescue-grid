@@ -7,6 +7,7 @@ using Rescue.Core.Rng;
 using Rescue.Core.State;
 using Rescue.Unity.BoardPresentation;
 using Rescue.Unity.Feedback;
+using Rescue.Unity.FX;
 using Rescue.Unity.Presentation;
 using Rescue.Unity.UI;
 using UnityEngine;
@@ -89,6 +90,22 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(harness.WaterRoot.childCount, Is.EqualTo(0));
             Assert.That(harness.DockPieceContainer.childCount, Is.EqualTo(0));
             Assert.That(harness.VictoryScreen.IsVisible, Is.False);
+        }
+
+        [Test]
+        public void GameStateViewPresenter_RebuildClearsStaleFxRootInstances()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameObject fxRoot = CreateTrackedGameObject("FXRoot");
+            GameObject staleIceFx = CreateTrackedGameObject("IceRevealFx");
+            staleIceFx.transform.SetParent(fxRoot.transform, false);
+            FxEventRouter fxEventRouter = harness.Presenter.gameObject.AddComponent<FxEventRouter>();
+            fxEventRouter.FxRoot = fxRoot.transform;
+            SetPrivateField(harness.Presenter, "fxEventRouter", fxEventRouter);
+
+            harness.Presenter.Rebuild(CreateState());
+
+            Assert.That(fxRoot.transform.childCount, Is.EqualTo(0), "Level rebuild/reset should not retain stale ice FX instances under FXRoot.");
         }
 
         [Test]
