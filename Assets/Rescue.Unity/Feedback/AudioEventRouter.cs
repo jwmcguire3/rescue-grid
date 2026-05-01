@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using Rescue.Core.Pipeline;
 using Rescue.Core.State;
+using Rescue.Unity.Audio;
 using Rescue.Unity.BoardPresentation;
 using Rescue.Unity.Presentation;
 using UnityEngine;
@@ -14,6 +15,7 @@ namespace Rescue.Unity.Feedback
         [SerializeField] private AudioFeedbackRegistry? registry;
         [SerializeField] private AudioSource? audioSource;
         [SerializeField] private BoardGridViewPresenter? boardGrid;
+        [SerializeField] private AudioSettingsController? settingsController;
 
         public AudioFeedbackRegistry? Registry
         {
@@ -31,6 +33,12 @@ namespace Rescue.Unity.Feedback
         {
             get => boardGrid;
             set => boardGrid = value;
+        }
+
+        public AudioSettingsController? SettingsController
+        {
+            get => settingsController;
+            set => settingsController = value;
         }
 
         public void Route(FeedbackEvent feedbackEvent)
@@ -102,7 +110,7 @@ namespace Rescue.Unity.Feedback
 
             float previousPitch = resolvedSource.pitch;
             resolvedSource.pitch = ResolvePitch(entry);
-            resolvedSource.PlayOneShot(clip, entry.Volume);
+            resolvedSource.PlayOneShot(clip, ResolveEffectiveVolume(entry));
             resolvedSource.pitch = previousPitch;
         }
 
@@ -154,6 +162,22 @@ namespace Rescue.Unity.Feedback
             }
 
             return null;
+        }
+
+        protected float ResolveEffectiveVolume(AudioFeedbackEntry entry)
+        {
+            return Mathf.Clamp01(entry.Volume * (ResolveSettingsController()?.FxVolume ?? 1.0f));
+        }
+
+        private AudioSettingsController? ResolveSettingsController()
+        {
+            if (settingsController is not null)
+            {
+                return settingsController;
+            }
+
+            settingsController = FindAnyObjectByType<AudioSettingsController>();
+            return settingsController;
         }
 
         private float ResolvePitch(AudioFeedbackEntry entry)

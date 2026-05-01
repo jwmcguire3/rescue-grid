@@ -8,12 +8,14 @@ namespace Rescue.Unity.Audio
     {
         [SerializeField] private MusicPlaylist? playlist;
         [SerializeField] private AudioSource? audioSource;
+        [SerializeField] private AudioSettingsController? settingsController;
         [SerializeField] private bool autoplay = true;
 
         private Coroutine? fadeRoutine;
         private int previousTrackIndex = -1;
         private int sequentialIndex;
         private bool stopping;
+        private float currentTrackVolume = 1.0f;
 
         public MusicPlaylist? Playlist
         {
@@ -27,6 +29,18 @@ namespace Rescue.Unity.Audio
             set => audioSource = value;
         }
 
+        public AudioSettingsController? SettingsController
+        {
+            get => settingsController;
+            set
+            {
+                UnsubscribeSettings();
+                settingsController = value;
+                SubscribeSettings();
+                ApplySettingsVolume();
+            }
+        }
+
         public bool Autoplay
         {
             get => autoplay;
@@ -35,10 +49,22 @@ namespace Rescue.Unity.Audio
 
         private void Start()
         {
+            ResolveSettingsController();
             if (autoplay)
             {
                 PlayNext();
             }
+        }
+
+        private void OnEnable()
+        {
+            SubscribeSettings();
+            ApplySettingsVolume();
+        }
+
+        private void OnDisable()
+        {
+            UnsubscribeSettings();
         }
 
         private void Update()
@@ -115,7 +141,8 @@ namespace Rescue.Unity.Audio
             resolvedSource.loop = false;
             resolvedSource.clip = selection.Clip;
 
-            float targetVolume = selection.Volume;
+            currentTrackVolume = selection.Volume;
+            float targetVolume = ResolveEffectiveVolume();
             float fadeInDuration = playlist is not null ? playlist.FadeInDurationSeconds : 0f;
             if (fadeInDuration <= 0f)
             {
@@ -151,6 +178,56 @@ namespace Rescue.Unity.Audio
             audioSource.playOnAwake = false;
             audioSource.loop = false;
             return audioSource;
+        }
+
+        private AudioSettingsController? ResolveSettingsController()
+        {
+            if (settingsController is not null)
+            {
+                return settingsController;
+            }
+
+            settingsController = FindAnyObjectByType<AudioSettingsController>();
+            if (settingsController is not null)
+            {
+                SubscribeSettings();
+            }
+
+            return settingsController;
+        }
+
+        private void SubscribeSettings()
+        {
+            if (settingsController is null)
+            {
+                return;
+            }
+
+            settingsController.SettingsChanged -= ApplySettingsVolume;
+            settingsController.SettingsChanged += ApplySettingsVolume;
+        }
+
+        private void UnsubscribeSettings()
+        {
+            if (settingsController is not null)
+            {
+                settingsController.SettingsChanged -= ApplySettingsVolume;
+            }
+        }
+
+        private void ApplySettingsVolume()
+        {
+            AudioSource? resolvedSource = ResolveAudioSource(createIfMissing: false);
+            if (resolvedSource is not null)
+            {
+                StopFadeRoutine();
+                resolvedSource.volume = ResolveEffectiveVolume();
+            }
+        }
+
+        private float ResolveEffectiveVolume()
+        {
+            return Mathf.Clamp01(currentTrackVolume * (ResolveSettingsController()?.MusicVolume ?? 1.0f));
         }
 
         private void StopFadeRoutine()

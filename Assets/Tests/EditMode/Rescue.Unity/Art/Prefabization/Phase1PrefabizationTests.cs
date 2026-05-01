@@ -24,6 +24,8 @@ namespace Rescue.Unity.Art.Tests
         private const string Phase1VinePrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Blockers/Vine_Phase1.prefab";
         private const string Phase1FloodedRowPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Water/FloodedRowOverlay_Phase1.prefab";
         private const string Phase1IceRevealFxPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/FX/IceRevealFx_Phase1.prefab";
+        private const string Phase1VineGrowPreviewFxPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/FX/VineGrowPreviewFx.prefab";
+        private const string Phase1DockInsertFxPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/FX/DockInsertFx.prefab";
         private const string WaterRiseFourthFramePath = "Assets/Rescue.Unity/Art/Sprites/WaterRiseFx_04.png";
         private const string WaterFloodedMaterialPath = "Assets/Rescue.Unity/Art/Materials/Water_Flooded.mat";
         private const string WaterForecastMaterialPath = "Assets/Rescue.Unity/Art/Materials/Water_Forecast.mat";
@@ -161,11 +163,17 @@ namespace Rescue.Unity.Art.Tests
             GameObject debrisC = LoadAsset<GameObject>(Phase1DebrisCPrefabPath);
             GameObject debrisD = LoadAsset<GameObject>(Phase1DebrisDPrefabPath);
             GameObject iceReveal = LoadAsset<GameObject>(Phase1IceRevealFxPrefabPath);
+            GameObject vineGrowPreview = LoadAsset<GameObject>(Phase1VineGrowPreviewFxPrefabPath);
+            GameObject dockInsert = LoadAsset<GameObject>(Phase1DockInsertFxPrefabPath);
 
             Assert.That(Quaternion.Angle(debrisC.transform.localRotation, Quaternion.Euler(0f, 90f, 0f)), Is.LessThan(0.001f));
             Assert.That(Quaternion.Angle(debrisD.transform.localRotation, Quaternion.Euler(0f, 220f, 0f)), Is.LessThan(0.001f));
             Assert.That(Quaternion.Angle(iceReveal.transform.localRotation, Quaternion.Euler(180f, 0f, 0f)), Is.LessThan(0.001f));
             Assert.That(iceReveal.transform.localPosition.z, Is.EqualTo(-0.5f).Within(0.001f));
+            Assert.That(iceReveal.transform.localScale, Is.EqualTo(Vector3.one * 0.5f));
+            Assert.That(vineGrowPreview.transform.localScale, Is.EqualTo(Vector3.one * 0.3f));
+            Assert.That(dockInsert.transform.localScale, Is.EqualTo(Vector3.one * 0.4f));
+            Assert.That(Quaternion.Angle(dockInsert.transform.localRotation, Quaternion.Euler(0f, 0f, 90f)), Is.LessThan(0.001f));
         }
 
         [Test]

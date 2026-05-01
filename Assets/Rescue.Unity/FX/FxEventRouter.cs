@@ -29,6 +29,7 @@ namespace Rescue.Unity.FX
 
         private Coroutine? diagnosticPlaybackCoroutine;
         private string? currentDiagnosticSourceEvent;
+        private float? pendingWaterRiseWidth;
 
         public FxVisualRegistry? FxRegistry
         {
@@ -122,12 +123,6 @@ namespace Rescue.Unity.FX
                     case FxEventHook.VineGrowthPreview:
                         PlayVineGrowthPreview();
                         break;
-                    case FxEventHook.DockInsert:
-                        PlayDockInsert();
-                        break;
-                    case FxEventHook.DockTripleClear:
-                        PlayDockTripleClear();
-                        break;
                     case FxEventHook.DockWarning:
                         PlayDockWarning();
                         break;
@@ -188,12 +183,6 @@ namespace Rescue.Unity.FX
                     case IceRevealed revealed:
                         PlayIceReveal(ResolveCellWorldPosition(revealed.Coord));
                         break;
-                    case DockCleared cleared:
-                        PlayDockTripleClear(ResolveDockClearWorldPosition(cleared));
-                        break;
-                    case DockInserted inserted:
-                        PlayDockInsert(ResolveDockInsertWorldPosition(inserted));
-                        break;
                     case DockWarningChanged warningChanged when warningChanged.After != DockWarningLevel.Safe:
                         PlayDockWarning();
                         break;
@@ -217,10 +206,10 @@ namespace Rescue.Unity.FX
                         PlayTargetExtraction(ResolveCellWorldPosition(extracted.Coord));
                         break;
                     case WaterWarning warning:
-                        PlayWaterRise(ResolveRowWorldPosition(warning.NextFloodRow));
+                        PlayWaterRiseForRow(warning.NextFloodRow);
                         break;
                     case WaterRose rose:
-                        PlayWaterRise(ResolveRowWorldPosition(rose.FloodedRow));
+                        PlayWaterRiseForRow(rose.FloodedRow);
                         break;
                     case VinePreviewChanged previewChanged when previewChanged.PendingTile.HasValue:
                         PlayVineGrowthPreview(ResolveCellWorldPosition(previewChanged.PendingTile.Value));
@@ -437,7 +426,8 @@ namespace Rescue.Unity.FX
 
         protected virtual void PlayWaterRise(Vector3 worldPosition)
         {
-            TrySpawn(fxRegistry?.WaterRiseFx, nameof(FxVisualRegistry.WaterRiseFx), FxEventHook.WaterRise, worldPosition);
+            GameObject? instance = TrySpawn(fxRegistry?.WaterRiseFx, nameof(FxVisualRegistry.WaterRiseFx), FxEventHook.WaterRise, worldPosition);
+            ApplyWaterRiseWidthScale(instance, pendingWaterRiseWidth);
         }
 
         protected virtual void PlayNearRescueRelief()
@@ -573,14 +563,35 @@ namespace Rescue.Unity.FX
 
         private Vector3 ResolveRowWorldPosition(int row)
         {
+            return ResolveRowWorldPosition(row, out _);
+        }
+
+        private Vector3 ResolveRowWorldPosition(int row, out float? rowWidth)
+        {
             BoardGridViewPresenter? resolvedBoardGrid = ResolveBoardGrid();
             if (resolvedBoardGrid is not null &&
                 resolvedBoardGrid.TryGetRowWorldBounds(row, out BoardGridViewPresenter.RowWorldBounds bounds))
             {
+                rowWidth = bounds.Width;
                 return bounds.Center;
             }
 
+            rowWidth = null;
             return GetSafeFallbackPosition();
+        }
+
+        private void PlayWaterRiseForRow(int row)
+        {
+            Vector3 position = ResolveRowWorldPosition(row, out float? rowWidth);
+            pendingWaterRiseWidth = rowWidth;
+            try
+            {
+                PlayWaterRise(position);
+            }
+            finally
+            {
+                pendingWaterRiseWidth = null;
+            }
         }
 
         private Vector3 ResolveDockInsertWorldPosition(DockInserted inserted)
@@ -737,6 +748,25 @@ namespace Rescue.Unity.FX
                     player.RestartPlayback();
                 }
             }
+        }
+
+        private static void ApplyWaterRiseWidthScale(GameObject? instance, float? rowWidth)
+        {
+            if (instance is null || !rowWidth.HasValue || rowWidth.Value <= 0f)
+            {
+                return;
+            }
+
+            SpriteRenderer? renderer = instance.GetComponentInChildren<SpriteRenderer>(includeInactive: true);
+            Sprite? sprite = renderer?.sprite;
+            float spriteWidth = sprite is null ? 0f : sprite.bounds.size.x;
+            if (spriteWidth <= 0.0001f)
+            {
+                return;
+            }
+
+            Vector3 localScale = instance.transform.localScale;
+            instance.transform.localScale = new Vector3(rowWidth.Value / spriteWidth, localScale.y, localScale.z);
         }
 
         private Vector3 ResolveFxWorldPosition(Vector3 worldPosition, FxEventHook hook)

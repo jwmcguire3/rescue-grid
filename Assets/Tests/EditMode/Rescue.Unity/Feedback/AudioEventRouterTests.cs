@@ -4,6 +4,7 @@ using NUnit.Framework;
 using Rescue.Core.Pipeline;
 using Rescue.Core.Rng;
 using Rescue.Core.State;
+using Rescue.Unity.Audio;
 using Rescue.Unity.Presentation;
 using UnityEngine;
 
@@ -25,6 +26,9 @@ namespace Rescue.Unity.Feedback.Tests
             }
 
             createdObjects.Clear();
+            PlayerPrefs.DeleteKey(AudioSettingsController.MusicVolumePrefsKey);
+            PlayerPrefs.DeleteKey(AudioSettingsController.FxVolumePrefsKey);
+            PlayerPrefs.Save();
         }
 
         [Test]
@@ -193,6 +197,25 @@ namespace Rescue.Unity.Feedback.Tests
         }
 
         [Test]
+        public void AudioEventRouter_AppliesFxVolumeMultiplier()
+        {
+            GameObject settingsObject = CreateGameObject("AudioSettings");
+            AudioSettingsController settings = settingsObject.AddComponent<AudioSettingsController>();
+            settings.SetFxVolume(0.5f);
+
+            SpyAudioEventRouter router = CreateSpyRouter();
+            router.SettingsController = settings;
+            router.Registry = CreateRegistry(Entry(FeedbackEventId.GroupClear));
+
+            router.Route(new GroupRemoved(
+                DebrisType.A,
+                ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1))));
+
+            Assert.That(router.PlayedIds, Is.EqualTo(new[] { FeedbackEventId.GroupClear }));
+            Assert.That(router.LastEffectiveVolume, Is.EqualTo(0.35f).Within(0.001f));
+        }
+
+        [Test]
         public void AudioFeedbackRegistry_UsesFirstMatchingEntry()
         {
             AudioFeedbackRegistry registry = CreateRegistry(Entry(FeedbackEventId.Win));
@@ -300,11 +323,14 @@ namespace Rescue.Unity.Feedback.Tests
 
             public IReadOnlyList<FeedbackEventId> PlayedIds => playedIds;
 
+            public float LastEffectiveVolume { get; private set; }
+
             protected override void PlayClip(AudioClip clip, AudioFeedbackEntry entry, Vector3 worldPosition)
             {
                 _ = clip;
                 _ = worldPosition;
                 playedIds.Add(entry.EventId);
+                LastEffectiveVolume = ResolveEffectiveVolume(entry);
             }
         }
     }

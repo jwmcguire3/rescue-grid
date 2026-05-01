@@ -18,40 +18,63 @@ namespace Rescue.Core.Rules
                 throw new InvalidOperationException("Dock slots cannot be smaller than the fixed dock size.");
             }
 
-            if (pieces.IsDefaultOrEmpty)
+            ImmutableArray<DebrisType> insertablePieces = CalculateInsertablePieces(pieces);
+            if (insertablePieces.IsDefaultOrEmpty)
             {
                 return new DockInsertResult(dock, ImmutableArray<DebrisType>.Empty, OverflowCount: 0);
             }
 
-            ImmutableArray<DebrisType?>.Builder slots = ImmutableArray.CreateBuilder<DebrisType?>(dock.Slots.Length + pieces.Length);
+            ImmutableArray<DebrisType?>.Builder slots = ImmutableArray.CreateBuilder<DebrisType?>(dock.Slots.Length + insertablePieces.Length);
             for (int i = 0; i < dock.Slots.Length; i++)
             {
                 slots.Add(dock.Slots[i]);
             }
 
-            ImmutableArray<DebrisType>.Builder inserted = ImmutableArray.CreateBuilder<DebrisType>(pieces.Length);
+            ImmutableArray<DebrisType>.Builder inserted = ImmutableArray.CreateBuilder<DebrisType>(insertablePieces.Length);
             int searchStart = 0;
             int overflowCount = 0;
 
-            for (int i = 0; i < pieces.Length; i++)
+            for (int i = 0; i < insertablePieces.Length; i++)
             {
                 int slotIndex = FindFirstAvailable(slots, searchStart);
                 if (slotIndex < 0)
                 {
-                    slots.Add(pieces[i]);
-                    inserted.Add(pieces[i]);
+                    slots.Add(insertablePieces[i]);
+                    inserted.Add(insertablePieces[i]);
                     overflowCount = System.Math.Max(overflowCount, slots.Count - dock.Size);
                     continue;
                 }
 
-                slots[slotIndex] = pieces[i];
-                inserted.Add(pieces[i]);
+                slots[slotIndex] = insertablePieces[i];
+                inserted.Add(insertablePieces[i]);
                 searchStart = slotIndex + 1;
                 overflowCount = System.Math.Max(overflowCount, DockOccupancy(slots) - dock.Size);
             }
 
             Dock updatedDock = dock with { Slots = slots.ToImmutable() };
             return new DockInsertResult(updatedDock, inserted.ToImmutable(), overflowCount);
+        }
+
+        public static ImmutableArray<DebrisType> CalculateInsertablePieces(ImmutableArray<DebrisType> removedPieces)
+        {
+            if (removedPieces.IsDefaultOrEmpty)
+            {
+                return ImmutableArray<DebrisType>.Empty;
+            }
+
+            int remainder = removedPieces.Length % 3;
+            if (remainder == 0)
+            {
+                return ImmutableArray<DebrisType>.Empty;
+            }
+
+            ImmutableArray<DebrisType>.Builder insertable = ImmutableArray.CreateBuilder<DebrisType>(remainder);
+            for (int i = 0; i < remainder; i++)
+            {
+                insertable.Add(removedPieces[i]);
+            }
+
+            return insertable.ToImmutable();
         }
 
         private static int FindFirstAvailable(ImmutableArray<DebrisType?>.Builder slots, int searchStart)

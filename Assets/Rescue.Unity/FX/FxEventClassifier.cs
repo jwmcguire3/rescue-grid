@@ -38,12 +38,6 @@ namespace Rescue.Unity.FX
                     case IceRevealed:
                         hooks.Add(FxEventHook.IceReveal);
                         break;
-                    case DockInserted:
-                        hooks.Add(FxEventHook.DockInsert);
-                        break;
-                    case DockCleared:
-                        hooks.Add(FxEventHook.DockTripleClear);
-                        break;
                     case DockWarningChanged dockWarningChanged when dockWarningChanged.After != DockWarningLevel.Safe:
                         hooks.Add(FxEventHook.DockWarning);
                         break;

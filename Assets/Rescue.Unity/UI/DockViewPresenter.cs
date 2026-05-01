@@ -5,6 +5,7 @@ using Rescue.Core.State;
 using Rescue.Unity.Art.Registries;
 using Rescue.Unity.Presentation;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Rescue.Unity.UI
 {
@@ -471,6 +472,8 @@ namespace Rescue.Unity.UI
         private const string SharedDockInstanceName = "SharedDockVisualInstance";
         private const string OverflowAnchorPrefix = "OverflowSlot_";
         private const float DockPieceLocalRightOffset = 0.15f;
+        private const float DockPieceLiftHeight = 0.48f;
+        private const float DockPieceRaisedScaleMultiplier = 1.08f;
 
         [Header("Shared Dock")]
         [SerializeField] private DockVisualConfig? dockVisualConfig;
@@ -492,6 +495,8 @@ namespace Rescue.Unity.UI
         private readonly DebrisType?[] _trackedSlotTypes = new DebrisType?[MaxTrackedDockSlots];
         private readonly GameObject?[] _trackedSlotObjects = new GameObject?[MaxTrackedDockSlots];
         private GameObject? _sharedDockInstance;
+        private float dockInsertDurationSeconds = ActionPlaybackSettings.DefaultDockInsertFeedbackDurationSeconds;
+        private float dockClearDurationSeconds = ActionPlaybackSettings.DefaultDockClearFeedbackDurationSeconds;
 
         public void Rebuild(GameState state)
         {
@@ -500,6 +505,13 @@ namespace Rescue.Unity.UI
 
         public void ApplyPlaybackSettings(ActionPlaybackSettings settings)
         {
+            if (settings is null)
+            {
+                return;
+            }
+
+            dockInsertDurationSeconds = settings.DockInsertFeedbackDurationSeconds;
+            dockClearDurationSeconds = settings.DockClearFeedbackDurationSeconds;
             ResolveFeedbackPresenter().ApplyPlaybackSettings(settings);
         }
 
@@ -1077,6 +1089,7 @@ namespace Rescue.Unity.UI
                 }
 
                 AssignTrackedSlot(slotIndex, dockInserted.Pieces[pieceIndex], anchors[slotIndex]);
+                AnimateInsertedSlotLower(slotIndex);
             }
         }
 
@@ -1089,6 +1102,7 @@ namespace Rescue.Unity.UI
             }
 
             int piecesToClear = Mathf.Max(0, dockCleared.SetsCleared * 3);
+            List<GameObject> clearedObjects = new List<GameObject>(piecesToClear);
             for (int slotIndex = 0; slotIndex < _trackedSlotTypes.Length && piecesToClear > 0; slotIndex++)
             {
                 if (_trackedSlotTypes[slotIndex] != dockCleared.Type)
@@ -1096,11 +1110,19 @@ namespace Rescue.Unity.UI
                     continue;
                 }
 
-                ClearTrackedSlot(slotIndex);
+                GameObject? clearedObject = _trackedSlotObjects[slotIndex];
+                if (clearedObject is not null)
+                {
+                    clearedObjects.Add(clearedObject);
+                }
+
+                _trackedSlotTypes[slotIndex] = null;
+                _trackedSlotObjects[slotIndex] = null;
                 piecesToClear--;
             }
 
             CompactTrackedSlots(anchors);
+            AnimateClearedDockPieces(clearedObjects);
         }
 
         private void RepairTrackedSlots(Dock dock, Transform[] anchors)
@@ -1267,6 +1289,158 @@ namespace Rescue.Unity.UI
                 {
                     ApplyDockPieceScale(pieceTransform, piecePrefab, debrisType.Value);
                 }
+            }
+        }
+
+        private void AnimateInsertedSlotLower(int slotIndex)
+        {
+            GameObject? trackedObject = _trackedSlotObjects[slotIndex];
+            if (trackedObject is null)
+            {
+                return;
+            }
+
+            Transform pieceTransform = trackedObject.transform;
+            Vector3 finalPosition = pieceTransform.position;
+            Quaternion finalRotation = pieceTransform.rotation;
+            Vector3 finalScale = pieceTransform.localScale;
+
+            if (!Application.isPlaying || !isActiveAndEnabled || dockInsertDurationSeconds <= 0f)
+            {
+                SetVisualAlpha(trackedObject, 1f);
+                return;
+            }
+
+            Vector3 startPosition = finalPosition + (transform.up * DockPieceLiftHeight);
+            pieceTransform.position = startPosition;
+            pieceTransform.rotation = finalRotation;
+            pieceTransform.localScale = finalScale * DockPieceRaisedScaleMultiplier;
+            SetVisualAlpha(trackedObject, 0f);
+            StartCoroutine(AnimateDockPieceLowerRoutine(
+                trackedObject,
+                startPosition,
+                finalPosition,
+                finalRotation,
+                finalScale,
+                dockInsertDurationSeconds));
+        }
+
+        private void AnimateClearedDockPieces(List<GameObject> clearedObjects)
+        {
+            for (int i = 0; i < clearedObjects.Count; i++)
+            {
+                GameObject clearedObject = clearedObjects[i];
+                if (clearedObject is null)
+                {
+                    continue;
+                }
+
+                if (!Application.isPlaying || !isActiveAndEnabled || dockClearDurationSeconds <= 0f)
+                {
+                    DestroyTrackedObject(clearedObject);
+                    continue;
+                }
+
+                StartCoroutine(AnimateDockPieceLiftClearRoutine(clearedObject, dockClearDurationSeconds));
+            }
+        }
+
+        private System.Collections.IEnumerator AnimateDockPieceLowerRoutine(
+            GameObject pieceObject,
+            Vector3 startPosition,
+            Vector3 finalPosition,
+            Quaternion finalRotation,
+            Vector3 finalScale,
+            float durationSeconds)
+        {
+            float clampedDuration = Mathf.Max(0.01f, durationSeconds);
+            float elapsed = 0f;
+
+            while (elapsed < clampedDuration)
+            {
+                if (pieceObject is null)
+                {
+                    yield break;
+                }
+
+                elapsed += Time.deltaTime;
+                float normalized = Mathf.Clamp01(elapsed / clampedDuration);
+                float eased = Mathf.SmoothStep(0f, 1f, normalized);
+                Transform pieceTransform = pieceObject.transform;
+                pieceTransform.position = Vector3.LerpUnclamped(startPosition, finalPosition, eased);
+                pieceTransform.rotation = finalRotation;
+                pieceTransform.localScale = Vector3.LerpUnclamped(finalScale * DockPieceRaisedScaleMultiplier, finalScale, eased);
+                SetVisualAlpha(pieceObject, normalized);
+                yield return null;
+            }
+
+            if (pieceObject is not null)
+            {
+                Transform pieceTransform = pieceObject.transform;
+                pieceTransform.position = finalPosition;
+                pieceTransform.rotation = finalRotation;
+                pieceTransform.localScale = finalScale;
+                SetVisualAlpha(pieceObject, 1f);
+            }
+        }
+
+        private System.Collections.IEnumerator AnimateDockPieceLiftClearRoutine(GameObject pieceObject, float durationSeconds)
+        {
+            if (pieceObject is null)
+            {
+                yield break;
+            }
+
+            Transform pieceTransform = pieceObject.transform;
+            Vector3 basePosition = pieceTransform.position;
+            Vector3 liftedPosition = basePosition + (transform.up * DockPieceLiftHeight);
+            Vector3 baseScale = pieceTransform.localScale;
+            Vector3 raisedScale = baseScale * DockPieceRaisedScaleMultiplier;
+            float clampedDuration = Mathf.Max(0.01f, durationSeconds);
+            float elapsed = 0f;
+
+            while (elapsed < clampedDuration)
+            {
+                if (pieceObject is null)
+                {
+                    yield break;
+                }
+
+                elapsed += Time.deltaTime;
+                float normalized = Mathf.Clamp01(elapsed / clampedDuration);
+                float eased = 1f - Mathf.Pow(1f - normalized, 3f);
+                pieceTransform.position = Vector3.LerpUnclamped(basePosition, liftedPosition, eased);
+                pieceTransform.localScale = Vector3.LerpUnclamped(baseScale, raisedScale, eased);
+                SetVisualAlpha(pieceObject, 1f - normalized);
+                yield return null;
+            }
+
+            if (pieceObject is not null)
+            {
+                DestroyTrackedObject(pieceObject);
+            }
+        }
+
+        private static void SetVisualAlpha(GameObject contentObject, float alpha)
+        {
+            float clampedAlpha = Mathf.Clamp01(alpha);
+
+            SpriteRenderer[] spriteRenderers = contentObject.GetComponentsInChildren<SpriteRenderer>(includeInactive: true);
+            for (int i = 0; i < spriteRenderers.Length; i++)
+            {
+                SpriteRenderer spriteRenderer = spriteRenderers[i];
+                Color color = spriteRenderer.color;
+                color.a = clampedAlpha;
+                spriteRenderer.color = color;
+            }
+
+            Graphic[] graphics = contentObject.GetComponentsInChildren<Graphic>(includeInactive: true);
+            for (int i = 0; i < graphics.Length; i++)
+            {
+                Graphic graphic = graphics[i];
+                Color color = graphic.color;
+                color.a = clampedAlpha;
+                graphic.color = color;
             }
         }
 

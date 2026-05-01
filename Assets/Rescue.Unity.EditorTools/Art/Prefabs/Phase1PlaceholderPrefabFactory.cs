@@ -175,7 +175,13 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             GameObject iceRevealFxPrefab = CreateOrUpdatePrefab(CombinePath(prefabsPath, FxFolderName, "IceRevealFx.prefab"), () => CreateEmptyPlaceholder("IceRevealFx"));
             GameObject vineClearFxPrefab = CreateOrUpdatePrefab(CombinePath(prefabsPath, FxFolderName, "VineClearFx.prefab"), () => CreateEmptyPlaceholder("VineClearFx"));
             GameObject vineGrowPreviewFxPrefab = CreateOrUpdatePrefab(CombinePath(prefabsPath, FxFolderName, "VineGrowPreviewFx.prefab"), () => CreateEmptyPlaceholder("VineGrowPreviewFx"));
-            GameObject dockInsertFxPrefab = CreateOrUpdatePrefab(CombinePath(prefabsPath, FxFolderName, "DockInsertFx.prefab"), () => CreateEmptyPlaceholder("DockInsertFx"));
+            GameObject dockInsertFxPrefab = CreateOrUpdatePrefab(CombinePath(prefabsPath, FxFolderName, "DockInsertFx.prefab"), () =>
+            {
+                GameObject prefab = CreateEmptyPlaceholder("DockInsertFx");
+                prefab.transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+                prefab.transform.localScale = Vector3.one * 0.4f;
+                return prefab;
+            });
             GameObject dockTripleClearFxPrefab = CreateOrUpdatePrefab(CombinePath(prefabsPath, FxFolderName, "DockTripleClearFx.prefab"), () => CreateEmptyPlaceholder("DockTripleClearFx"));
             GameObject waterRiseFxPrefab = CreateOrUpdatePrefab(CombinePath(prefabsPath, FxFolderName, "WaterRiseFx.prefab"), () => CreateEmptyPlaceholder("WaterRiseFx"));
             GameObject targetExtractionFxPrefab = CreateOrUpdatePrefab(CombinePath(prefabsPath, FxFolderName, "TargetExtractionFx.prefab"), () => CreateEmptyPlaceholder("TargetExtractionFx"));
@@ -408,7 +414,42 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                     CombinePath(artRootPath, "Sprites", "IceRevealFx_04.png"),
                 },
                 rootEulerAngles: new Vector3(180f, 0f, 0f),
-                rootPosition: new Vector3(0f, 0f, -0.5f));
+                rootPosition: new Vector3(0f, 0f, -0.5f),
+                rootScale: Vector3.one * 0.5f);
+
+            CreateSpriteSequenceFxPrefab(
+                CombinePath(prefabsPath, FxFolderName, "VineGrowPreviewFx.prefab"),
+                "VineGrowPreviewFx",
+                new[]
+                {
+                    CombinePath(artRootPath, "Sprites", "VineGrowPreviewFx_01.png"),
+                    CombinePath(artRootPath, "Sprites", "VineGrowPreviewFx_02.png"),
+                    CombinePath(artRootPath, "Sprites", "VineGrowPreviewFx_03.png"),
+                    CombinePath(artRootPath, "Sprites", "VineGrowPreviewFx_04.png"),
+                },
+                rootScale: Vector3.one * 0.3f);
+            CreateSpriteSequenceFxPrefab(
+                CombinePath(prefabsPath, FxFolderName, "DockInsertFx.prefab"),
+                "DockInsertFx",
+                new[]
+                {
+                    CombinePath(artRootPath, "Sprites", "DockInsertFx_01.png"),
+                    CombinePath(artRootPath, "Sprites", "DockInsertFx_02.png"),
+                    CombinePath(artRootPath, "Sprites", "DockInsertFx_03.png"),
+                    CombinePath(artRootPath, "Sprites", "DockInsertFx_04.png"),
+                },
+                rootEulerAngles: new Vector3(0f, 0f, 90f),
+                rootScale: Vector3.one * 0.4f);
+            CreateSpriteSequenceFxPrefab(
+                CombinePath(prefabsPath, FxFolderName, "WaterRiseFx.prefab"),
+                "WaterRiseFx",
+                new[]
+                {
+                    CombinePath(artRootPath, "Sprites", "WaterRiseFx_01.png"),
+                    CombinePath(artRootPath, "Sprites", "WaterRiseFx_02.png"),
+                    CombinePath(artRootPath, "Sprites", "WaterRiseFx_03.png"),
+                    CombinePath(artRootPath, "Sprites", "WaterRiseFx_04.png"),
+                });
 
             string sharedDockModelPath = CombinePath(artRootPath, "Models", "Dock", "Meshy_AI_Dock_Safe_0424154642_texture_fbx.fbx");
             GameObject? sharedDockPrefab = CreateDockPrefab(
@@ -726,7 +767,8 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             string name,
             string[] framePaths,
             Vector3? rootEulerAngles = null,
-            Vector3? rootPosition = null)
+            Vector3? rootPosition = null,
+            Vector3? rootScale = null)
         {
             Sprite[] frames = new Sprite[framePaths.Length];
             for (int frameIndex = 0; frameIndex < framePaths.Length; frameIndex++)
@@ -751,6 +793,11 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 if (rootPosition.HasValue)
                 {
                     root.transform.localPosition = rootPosition.Value;
+                }
+
+                if (rootScale.HasValue)
+                {
+                    root.transform.localScale = rootScale.Value;
                 }
 
                 SpriteRenderer renderer = root.AddComponent<SpriteRenderer>();

@@ -8,7 +8,7 @@ namespace Rescue.Unity.Presentation
     {
         public const float DefaultRemoveDurationSeconds = 0.10f;
         public const float DefaultBreakBlockerOrRevealDurationSeconds = 0.10f;
-        public const float DefaultBlockerBreakCascadeStaggerSeconds = 0.06f;
+        public const float DefaultBlockerBreakCascadeStaggerSeconds = 0.08f;
         public const float DefaultDockFeedbackDurationSeconds = 0.10f;
         public const float DefaultDockInsertFeedbackDurationSeconds = 0.08f;
         public const float DefaultDockClearFeedbackDurationSeconds = 0.08f;

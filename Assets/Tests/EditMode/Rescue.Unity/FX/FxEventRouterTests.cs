@@ -63,7 +63,7 @@ namespace Rescue.Unity.FX.Tests
         }
 
         [Test]
-        public void FxEventRouter_DockInsertedRoutesDockInsert()
+        public void FxEventRouter_DockInsertedDoesNotRouteDockInsert()
         {
             SpyFxEventRouter router = CreateRouter();
             GameState state = CreateState();
@@ -75,7 +75,7 @@ namespace Rescue.Unity.FX.Tests
 
             router.Route(state, input, result);
 
-            Assert.That(router.DockInsertCount, Is.EqualTo(1));
+            Assert.That(router.DockInsertCount, Is.EqualTo(0));
         }
 
         [Test]
@@ -221,8 +221,8 @@ namespace Rescue.Unity.FX.Tests
             Assert.That(router.CrateBreakCount, Is.EqualTo(1));
             Assert.That(router.IceRevealCount, Is.EqualTo(1));
             Assert.That(router.VineClearCount, Is.EqualTo(1));
-            Assert.That(router.DockInsertCount, Is.EqualTo(1));
-            Assert.That(router.DockTripleClearCount, Is.EqualTo(1));
+            Assert.That(router.DockInsertCount, Is.EqualTo(0));
+            Assert.That(router.DockTripleClearCount, Is.EqualTo(0));
             Assert.That(router.DockWarningCount, Is.EqualTo(2));
             Assert.That(router.NearRescueReliefCount, Is.EqualTo(1));
             Assert.That(router.TargetExtractionCount, Is.EqualTo(1));
@@ -270,10 +270,6 @@ namespace Rescue.Unity.FX.Tests
             Vector3 expectedGroupPosition =
                 (grid.GetCellWorldPosition(new TileCoord(0, 0)) + grid.GetCellWorldPosition(new TileCoord(0, 1))) * 0.5f;
             Vector3 expectedTargetPosition = grid.GetCellWorldPosition(new TileCoord(2, 1));
-            Vector3 expectedDockInsertPosition =
-                (GetDockSlotPosition(dock, 2) + GetDockSlotPosition(dock, 3)) * 0.5f;
-            Vector3 expectedDockClearPosition =
-                (GetDockSlotPosition(dock, 0) + GetDockSlotPosition(dock, 1) + GetDockSlotPosition(dock, 2)) / 3f;
             bool foundRow = grid.TryGetRowWorldBounds(2, out BoardGridViewPresenter.RowWorldBounds rowBounds);
 
             Assert.That(foundRow, Is.True);
@@ -312,9 +308,66 @@ namespace Rescue.Unity.FX.Tests
 
             AssertVector3Equal(expectedGroupPosition, router.LastGroupClearPosition);
             AssertVector3Equal(expectedTargetPosition, router.LastTargetExtractionPosition);
-            AssertVector3Equal(expectedDockInsertPosition, router.LastDockInsertPosition);
-            AssertVector3Equal(expectedDockClearPosition, router.LastDockTripleClearPosition);
+            Assert.That(router.DockInsertCount, Is.EqualTo(0));
+            Assert.That(router.DockTripleClearCount, Is.EqualTo(0));
             AssertVector3Equal(rowBounds.Center, router.LastWaterRisePosition);
+        }
+
+        [Test]
+        public void FxEventRouter_WaterRiseScalesSpawnedFxToRowWidth()
+        {
+            GameState sixWideState = CreateEmptyState(width: 6, height: 3);
+            BoardGridViewPresenter sixWideGrid = CreateGrid(sixWideState);
+            Transform sixWideFxRoot = CreateGameObject("SixWideFxRoot").transform;
+            FxEventRouter sixWideRouter = CreateWaterRiseRouter(sixWideGrid, sixWideFxRoot, "SixWideWaterRiseFx");
+
+            sixWideRouter.RoutePlaybackBeat(
+                sixWideState,
+                new ActionInput(new TileCoord(0, 0)),
+                sixWideState,
+                CreatePlaybackStep(ActionPlaybackStepType.WaterRise, new WaterRose(FloodedRow: 1)));
+
+            Transform sixWideSpawned = sixWideFxRoot.Find(nameof(FxVisualRegistry.WaterRiseFx))
+                ?? throw new AssertionException("Expected six-wide water rise FX to spawn.");
+            Assert.That(sixWideSpawned.localScale.x, Is.EqualTo(6f).Within(0.001f));
+            Assert.That(sixWideSpawned.localScale.y, Is.EqualTo(1f).Within(0.001f));
+            Assert.That(sixWideSpawned.localScale.z, Is.EqualTo(1f).Within(0.001f));
+
+            GameState eightWideState = CreateEmptyState(width: 8, height: 3);
+            BoardGridViewPresenter eightWideGrid = CreateGrid(eightWideState);
+            Transform eightWideFxRoot = CreateGameObject("EightWideFxRoot").transform;
+            FxEventRouter eightWideRouter = CreateWaterRiseRouter(eightWideGrid, eightWideFxRoot, "EightWideWaterRiseFx");
+
+            eightWideRouter.RoutePlaybackBeat(
+                eightWideState,
+                new ActionInput(new TileCoord(0, 0)),
+                eightWideState,
+                CreatePlaybackStep(ActionPlaybackStepType.WaterRise, new WaterWarning(NextFloodRow: 1, ActionsUntilRise: 0)));
+
+            Transform eightWideSpawned = eightWideFxRoot.Find(nameof(FxVisualRegistry.WaterRiseFx))
+                ?? throw new AssertionException("Expected eight-wide water rise FX to spawn.");
+            Assert.That(eightWideSpawned.localScale.x, Is.EqualTo(8f).Within(0.001f));
+            Assert.That(eightWideSpawned.localScale.y, Is.EqualTo(1f).Within(0.001f));
+            Assert.That(eightWideSpawned.localScale.z, Is.EqualTo(1f).Within(0.001f));
+        }
+
+        [Test]
+        public void FxEventRouter_WaterRiseWithMissingRowBoundsKeepsAuthoredScale()
+        {
+            GameState state = CreateEmptyState(width: 3, height: 3);
+            BoardGridViewPresenter grid = CreateGrid(state);
+            Transform fxRoot = CreateGameObject("FxRoot").transform;
+            FxEventRouter router = CreateWaterRiseRouter(grid, fxRoot, "WaterRiseFx");
+
+            Assert.DoesNotThrow(() => router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.WaterRise, new WaterRose(FloodedRow: 99))));
+
+            Transform spawned = fxRoot.Find(nameof(FxVisualRegistry.WaterRiseFx))
+                ?? throw new AssertionException("Expected fallback water rise FX to spawn.");
+            Assert.That(spawned.localScale, Is.EqualTo(Vector3.one));
         }
 
         [Test]
@@ -936,7 +989,6 @@ namespace Rescue.Unity.FX.Tests
                 new IceRevealed(new TileCoord(0, 1), DebrisType.B),
                 new BlockerBroken(new TileCoord(0, 2), BlockerType.Vine),
                 new VinePreviewChanged(new TileCoord(1, 1)),
-                new DockCleared(DebrisType.C, SetsCleared: 1, OccupancyAfterClear: 3),
                 new DockWarningChanged(DockWarningLevel.Safe, DockWarningLevel.Caution),
                 new WaterRose(FloodedRow: 4),
                 new TargetOneClearAway("pup-1", new TileCoord(2, 2)),
@@ -954,7 +1006,6 @@ namespace Rescue.Unity.FX.Tests
                 FxEventHook.IceReveal,
                 FxEventHook.VineClear,
                 FxEventHook.VineGrowthPreview,
-                FxEventHook.DockTripleClear,
                 FxEventHook.DockWarning,
                 FxEventHook.WaterRise,
                 FxEventHook.NearRescueRelief,
@@ -1012,12 +1063,23 @@ namespace Rescue.Unity.FX.Tests
 
         private Sprite CreateSprite(Color color)
         {
-            Texture2D texture = new Texture2D(1, 1);
+            return CreateSprite(color, width: 1, height: 1);
+        }
+
+        private Sprite CreateSprite(Color color, int width, int height, float pixelsPerUnit = 100f)
+        {
+            Texture2D texture = new Texture2D(width, height);
             createdObjects.Add(texture);
-            texture.SetPixel(0, 0, color);
+            Color[] pixels = new Color[width * height];
+            for (int pixelIndex = 0; pixelIndex < pixels.Length; pixelIndex++)
+            {
+                pixels[pixelIndex] = color;
+            }
+
+            texture.SetPixels(pixels);
             texture.Apply();
 
-            Sprite sprite = Sprite.Create(texture, new Rect(0f, 0f, 1f, 1f), new Vector2(0.5f, 0.5f));
+            Sprite sprite = Sprite.Create(texture, new Rect(0f, 0f, width, height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
             createdObjects.Add(sprite);
             return sprite;
         }
@@ -1074,6 +1136,27 @@ namespace Rescue.Unity.FX.Tests
                 SpawnRecoveryCounter: 0);
         }
 
+        private static GameState CreateEmptyState(int width, int height)
+        {
+            ImmutableArray<ImmutableArray<Tile>>.Builder rows = ImmutableArray.CreateBuilder<ImmutableArray<Tile>>(height);
+            for (int row = 0; row < height; row++)
+            {
+                ImmutableArray<Tile>.Builder tiles = ImmutableArray.CreateBuilder<Tile>(width);
+                for (int col = 0; col < width; col++)
+                {
+                    tiles.Add(new EmptyTile());
+                }
+
+                rows.Add(tiles.ToImmutable());
+            }
+
+            return CreateState() with
+            {
+                Board = new Board(width, height, rows.ToImmutable()),
+                Targets = ImmutableArray<TargetState>.Empty,
+            };
+        }
+
         private BoardGridViewPresenter CreateGrid(GameState state)
         {
             GameObject gridObject = CreateGameObject("Grid");
@@ -1087,6 +1170,21 @@ namespace Rescue.Unity.FX.Tests
             SetPrivateField(gridPresenter, "fallbackTilePrefab", tilePrefab);
             gridPresenter.RebuildGrid(state);
             return gridPresenter;
+        }
+
+        private FxEventRouter CreateWaterRiseRouter(BoardGridViewPresenter grid, Transform fxRoot, string prefabName)
+        {
+            Sprite sprite = CreateSprite(Color.cyan, width: 100, height: 20);
+            GameObject prefab = CreateSpriteOnlyFxPrefab(prefabName, sprite);
+            FxVisualRegistry registry = ScriptableObject.CreateInstance<FxVisualRegistry>();
+            createdObjects.Add(registry);
+            registry.WaterRiseFx = prefab;
+
+            FxEventRouter router = CreateGameObject($"{prefabName}Router").AddComponent<FxEventRouter>();
+            router.BoardGrid = grid;
+            router.FxRoot = fxRoot;
+            router.FxRegistry = registry;
+            return router;
         }
 
         private DockViewPresenter CreateDockView(GameState state)

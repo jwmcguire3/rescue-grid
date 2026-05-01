@@ -3,8 +3,10 @@ using System.Reflection;
 using NUnit.Framework;
 using Rescue.Core.State;
 using Rescue.Unity.Art.Registries;
+using Rescue.Unity.Audio;
 using Rescue.Unity.BoardPresentation;
 using Rescue.Unity.Debugging;
+using Rescue.Unity.Feedback;
 using Rescue.Unity.FX;
 using Rescue.Unity.Presentation;
 using Rescue.Unity.UI;
@@ -23,6 +25,10 @@ namespace Rescue.PlayMode.Tests.Smoke
         [UnitySetUp]
         public System.Collections.IEnumerator SetUp()
         {
+            PlayerPrefs.DeleteKey(AudioSettingsController.MusicVolumePrefsKey);
+            PlayerPrefs.DeleteKey(AudioSettingsController.FxVolumePrefsKey);
+            PlayerPrefs.Save();
+
             if (DebugPanel.Instance is not null)
             {
                 UnityObject.DestroyImmediate(DebugPanel.Instance.gameObject);
@@ -36,12 +42,75 @@ namespace Rescue.PlayMode.Tests.Smoke
         [UnityTearDown]
         public System.Collections.IEnumerator TearDown()
         {
+            PlayerPrefs.DeleteKey(AudioSettingsController.MusicVolumePrefsKey);
+            PlayerPrefs.DeleteKey(AudioSettingsController.FxVolumePrefsKey);
+            PlayerPrefs.Save();
+
             if (DebugPanel.Instance is not null)
             {
                 UnityObject.DestroyImmediate(DebugPanel.Instance.gameObject);
             }
 
             yield return null;
+        }
+
+        [UnityTest]
+        public System.Collections.IEnumerator GameScene_SettingsMenuRestartAndLevelSelectDrivePlayerFlow()
+        {
+            PlayableLevelSession session = FindRequired<PlayableLevelSession>();
+            SettingsMenuPresenter settings = FindRequired<SettingsMenuPresenter>();
+
+            Assert.That(settings.IsOpen, Is.False);
+            settings.Toggle();
+            Assert.That(settings.IsOpen, Is.True);
+            Assert.That(settings.LevelChoices, Has.Count.EqualTo(PlayableLevelSession.LevelIds.Count));
+            for (int i = 0; i < PlayableLevelSession.LevelIds.Count; i++)
+            {
+                Assert.That(settings.LevelChoices[i], Does.StartWith(PlayableLevelSession.LevelIds[i]));
+            }
+
+            Assert.That(session.TryRunAction(new TileCoord(4, 0)), Is.True);
+            yield return WaitForPlayback();
+            GameState currentState = session.CurrentState ?? throw new AssertionException("Action did not leave a state.");
+            Assert.That(currentState.ActionCount, Is.GreaterThan(0));
+
+            settings.RequestRestart();
+            yield return null;
+            currentState = session.CurrentState ?? throw new AssertionException("Restart did not reload a state.");
+            Assert.That(session.CurrentLevelId, Is.EqualTo("L00"));
+            Assert.That(currentState.ActionCount, Is.EqualTo(0));
+
+            settings.SelectLevel(settings.LevelChoices[3]);
+            yield return null;
+            currentState = session.CurrentState ?? throw new AssertionException("Level select did not load a state.");
+            Assert.That(session.CurrentLevelId, Is.EqualTo("L03"));
+            Assert.That(currentState.ActionCount, Is.EqualTo(0));
+        }
+
+        [UnityTest]
+        public System.Collections.IEnumerator GameScene_SettingsAudioPersistsAndKeepsMusicAndFxSeparate()
+        {
+            SettingsMenuPresenter settings = FindRequired<SettingsMenuPresenter>();
+            AudioSettingsController audioSettings = FindRequired<AudioSettingsController>();
+            AudioEventRouter audioRouter = FindRequired<AudioEventRouter>();
+            MusicPlayer musicPlayer = FindRequired<MusicPlayer>();
+
+            settings.SetOpen(true);
+            audioSettings.SetMusicVolume(0.25f);
+            audioSettings.SetFxVolume(0.6f);
+            Assert.That(PlayerPrefs.GetFloat(AudioSettingsController.MusicVolumePrefsKey), Is.EqualTo(0.25f).Within(0.001f));
+            Assert.That(PlayerPrefs.GetFloat(AudioSettingsController.FxVolumePrefsKey), Is.EqualTo(0.6f).Within(0.001f));
+            Assert.That(audioRouter.AudioSource, Is.Not.Null, "Game.unity should provide an AudioSource for routed feedback.");
+            Assert.That(musicPlayer.AudioSource, Is.Not.Null, "Game.unity should provide a dedicated AudioSource for music.");
+            Assert.That(musicPlayer.AudioSource, Is.Not.SameAs(audioRouter.AudioSource));
+
+            yield return SceneManager.LoadSceneAsync("Game", LoadSceneMode.Single);
+            yield return null;
+            yield return null;
+
+            AudioSettingsController reloadedSettings = FindRequired<AudioSettingsController>();
+            Assert.That(reloadedSettings.MusicVolume, Is.EqualTo(0.25f).Within(0.001f));
+            Assert.That(reloadedSettings.FxVolume, Is.EqualTo(0.6f).Within(0.001f));
         }
 
         [UnityTest]

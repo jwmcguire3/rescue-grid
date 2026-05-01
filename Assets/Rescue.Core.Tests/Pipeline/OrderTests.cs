@@ -348,7 +348,8 @@ namespace Rescue.Core.Tests.Pipeline
             Assert.That(updateTargets.Value.Context.LatchedTargetIdsThisAction, Is.EqualTo(new[] { "pup" }).AsCollection);
             Assert.That(DockHelpers.Occupancy(updateTargets.Value.State.Dock), Is.EqualTo(0));
             Assert.That(insertDock!.Value.State.Targets[0].ExtractableLatched, Is.True);
-            Assert.That(DockHelpers.Occupancy(insertDock.Value.State.Dock), Is.EqualTo(3));
+            Assert.That(DockHelpers.Occupancy(insertDock.Value.State.Dock), Is.EqualTo(0));
+            Assert.That(insertDock.Value.Events, Has.None.TypeOf<DockInserted>());
         }
 
         private static void AssertInvalidInputEvent(

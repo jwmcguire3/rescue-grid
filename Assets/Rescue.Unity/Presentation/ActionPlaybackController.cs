@@ -217,8 +217,9 @@ namespace Rescue.Unity.Presentation
                 ActionEvent sourceEvent = sourceEvents[i];
                 ActionPlaybackStep routedStep = new ActionPlaybackStep(step.StepType, sourceEvent.GetType().Name, sourceEvent);
                 TryRoutePlaybackFx(routedStep, previousState, input, resultState);
-                TryRoutePlaybackAudio(routedStep, previousState, input, resultState);
             }
+
+            TryRoutePlaybackAudio(step, previousState, input, resultState);
         }
 
         private void PlaySingleEvent(ActionEvent sourceEvent, GameState previousState, GameState resultState)
@@ -520,7 +521,8 @@ namespace Rescue.Unity.Presentation
 
         private void TryRoutePlaybackAudio(ActionPlaybackStep step, GameState previousState, ActionInput input, GameState resultState)
         {
-            if (!IsAudioPlaybackBeat(step.SourceEvent))
+            ImmutableArray<ActionEvent> sourceEvents = step.Events;
+            if (sourceEvents.IsDefaultOrEmpty)
             {
                 return;
             }
@@ -533,16 +535,118 @@ namespace Rescue.Unity.Presentation
 
             router.BoardGrid ??= ResolveBoardGrid();
 
+            if (IsMultiBreakBlockerBatch(step, sourceEvents))
+            {
+                RouteBlockerBatchAudio(router, previousState, input, resultState, sourceEvents);
+                return;
+            }
+
+            for (int i = 0; i < sourceEvents.Length; i++)
+            {
+                ActionEvent sourceEvent = sourceEvents[i];
+                if (!IsAudioPlaybackBeat(sourceEvent))
+                {
+                    continue;
+                }
+
+                ActionPlaybackStep routedStep = new ActionPlaybackStep(step.StepType, sourceEvent.GetType().Name, sourceEvent);
+                try
+                {
+                    router.RoutePlaybackBeat(previousState, input, resultState, routedStep);
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogWarning(
+                        $"{nameof(ActionPlaybackController)} skipped audio for playback step '{routedStep.SourceEventName ?? routedStep.StepType.ToString()}' after an exception: {exception.Message}",
+                        this);
+                }
+            }
+        }
+
+        private void RouteBlockerBatchAudio(
+            AudioEventRouter router,
+            GameState previousState,
+            ActionInput input,
+            GameState resultState,
+            ImmutableArray<ActionEvent> sourceEvents)
+        {
+            int breakIndex = 0;
+            for (int i = 0; i < sourceEvents.Length; i++)
+            {
+                ActionEvent sourceEvent = sourceEvents[i];
+                if (!IsAudioPlaybackBeat(sourceEvent))
+                {
+                    continue;
+                }
+
+                ActionPlaybackStep routedStep = new ActionPlaybackStep(
+                    ActionPlaybackStepType.BreakBlockerOrReveal,
+                    sourceEvent.GetType().Name,
+                    sourceEvent);
+
+                if (sourceEvent is BlockerBroken)
+                {
+                    float delaySeconds = breakIndex * settings.BlockerBreakCascadeStaggerSeconds;
+                    breakIndex++;
+                    if (Application.isPlaying && isActiveAndEnabled && delaySeconds > 0f)
+                    {
+                        StartCoroutine(RoutePlaybackAudioAfterDelay(router, previousState, input, resultState, routedStep, delaySeconds));
+                        continue;
+                    }
+                }
+
+                TryRoutePlaybackAudioNow(router, previousState, input, resultState, routedStep);
+            }
+        }
+
+        private IEnumerator RoutePlaybackAudioAfterDelay(
+            AudioEventRouter router,
+            GameState previousState,
+            ActionInput input,
+            GameState resultState,
+            ActionPlaybackStep routedStep,
+            float delaySeconds)
+        {
+            yield return new WaitForSeconds(delaySeconds);
+            TryRoutePlaybackAudioNow(router, previousState, input, resultState, routedStep);
+        }
+
+        private void TryRoutePlaybackAudioNow(
+            AudioEventRouter router,
+            GameState previousState,
+            ActionInput input,
+            GameState resultState,
+            ActionPlaybackStep routedStep)
+        {
             try
             {
-                router.RoutePlaybackBeat(previousState, input, resultState, step);
+                router.RoutePlaybackBeat(previousState, input, resultState, routedStep);
             }
             catch (Exception exception)
             {
                 Debug.LogWarning(
-                    $"{nameof(ActionPlaybackController)} skipped audio for playback step '{step.SourceEventName ?? step.StepType.ToString()}' after an exception: {exception.Message}",
+                    $"{nameof(ActionPlaybackController)} skipped audio for playback step '{routedStep.SourceEventName ?? routedStep.StepType.ToString()}' after an exception: {exception.Message}",
                     this);
             }
+        }
+
+        private static bool IsMultiBreakBlockerBatch(ActionPlaybackStep step, ImmutableArray<ActionEvent> sourceEvents)
+        {
+            if (step.StepType != ActionPlaybackStepType.BreakBlockerOrReveal || sourceEvents.Length <= 1)
+            {
+                return false;
+            }
+
+            int brokenCount = 0;
+            for (int i = 0; i < sourceEvents.Length; i++)
+            {
+                if (sourceEvents[i] is BlockerBroken)
+                {
+                    brokenCount++;
+                }
+            }
+
+            return brokenCount > 1;
         }
 
         private static bool IsAudioPlaybackBeat(ActionEvent? actionEvent)

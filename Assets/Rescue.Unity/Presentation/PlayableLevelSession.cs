@@ -36,6 +36,8 @@ namespace Rescue.Unity.Presentation
             "L15",
         };
 
+        public static IReadOnlyList<string> LevelIds { get; } = Array.AsReadOnly(PacketLevelIds);
+
         [SerializeField] private GameStateViewPresenter? gameStateView;
         [SerializeField] private BoardInputPresenter? boardInput;
         [SerializeField] private VictoryScreenPresenter? victoryScreen;

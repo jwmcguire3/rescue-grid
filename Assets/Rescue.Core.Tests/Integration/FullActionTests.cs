@@ -39,10 +39,6 @@ namespace Rescue.Core.Tests.Integration
                 nameof(BlockerDamaged),
                 nameof(TargetRescuePathLocked),
                 nameof(TargetExtractionLatched),
-                nameof(DockInserted),
-                nameof(DockInserted),
-                nameof(DockInserted),
-                nameof(DockCleared),
                 nameof(TargetExtracted),
                 nameof(Won));
         }

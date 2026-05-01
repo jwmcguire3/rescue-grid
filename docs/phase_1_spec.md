@@ -198,9 +198,10 @@ This order is a locked rules contract. If action order is fuzzy, fairness become
    - A latched target cannot become un-extractable because pieces later fall or spawn around it.
 
 6. **Dock insertion**
-   - Removed group enters dock left-to-right.
-   - Group size equals slot usage.
-   - The dock receives the full cost of the action even if the action also opened a target.
+   - Removed group is precalculated before dock insertion.
+   - Complete triples within the removed group are consumed immediately and do not enter the dock.
+   - Only the removed group remainder enters dock left-to-right (`group size % 3`).
+   - The dock receives this precalculated remainder even if the action also opened a target.
 
 7. **Dock clear check**
    - Dock scans by type.
@@ -286,7 +287,9 @@ Fixed at 7.
 
 ### Insertion
 
-- Groups occupy slots equal to group size.
+- Complete triples within the removed group are consumed before dock insertion.
+- Groups occupy slots equal to their remainder after complete removed-group triples are consumed.
+- A group of 3 or 6 occupies 0 dock slots; a group of 4 occupies 1 slot; a group of 5 occupies 2 slots.
 - Pieces enter in group order.
 - Dock compacts only after clears.
 

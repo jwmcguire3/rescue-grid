@@ -10,32 +10,45 @@ namespace Rescue.Core.Tests.Rules
     public sealed class DockTests
     {
         [Test]
-        public void InsertThreeMatchingPiecesIntoEmptyDockClearsImmediately()
+        public void InsertThreeMatchingPiecesIntoEmptyDockConsumesGroupTripleBeforeDock()
         {
             GameState state = CreateStateWithDock();
             StepResult cleared = RunDockSteps(state, ImmutableArray.Create(DebrisType.A, DebrisType.A, DebrisType.A));
 
             AssertSlotsEqual(CreateSlots(), cleared.State.Dock.Slots);
-            Assert.That(cleared.Context.ClearedDockTriplesThisAction, Is.EqualTo(1));
-            Assert.That(cleared.Events, Is.EqualTo(new ActionEvent[]
-            {
-                new DockCleared(DebrisType.A, 1, 0),
-            }).AsCollection);
+            Assert.That(cleared.Context.ClearedDockTriplesThisAction, Is.EqualTo(0));
+            Assert.That(cleared.Events, Is.Empty);
         }
 
         [Test]
-        public void InsertFourMatchingPiecesClearsThreeAndLeavesOne()
+        public void InsertFourMatchingPiecesConsumesTripleAndInsertsOne()
         {
             GameState state = CreateStateWithDock();
             StepResult inserted = Step05_InsertDock.Run(state, CreateDockContext(state, ImmutableArray.Create(DebrisType.B, DebrisType.B, DebrisType.B, DebrisType.B)));
             StepResult cleared = Step06_ClearDock.Run(inserted.State, inserted.Context);
 
             AssertSlotsEqual(CreateSlots(DebrisType.B), cleared.State.Dock.Slots);
-            Assert.That(cleared.Context.ClearedDockTriplesThisAction, Is.EqualTo(1));
+            Assert.That(cleared.Context.ClearedDockTriplesThisAction, Is.EqualTo(0));
         }
 
         [Test]
-        public void InsertSixMatchingPiecesClearsTwoTriples()
+        public void InsertFiveMatchingPiecesConsumesTripleAndInsertsTwo()
+        {
+            GameState state = CreateStateWithDock();
+            StepResult inserted = Step05_InsertDock.Run(state, CreateDockContext(state, ImmutableArray.Create(
+                DebrisType.C,
+                DebrisType.C,
+                DebrisType.C,
+                DebrisType.C,
+                DebrisType.C)));
+            StepResult cleared = Step06_ClearDock.Run(inserted.State, inserted.Context);
+
+            AssertSlotsEqual(CreateSlots(DebrisType.C, DebrisType.C), cleared.State.Dock.Slots);
+            Assert.That(cleared.Context.ClearedDockTriplesThisAction, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void InsertSixMatchingPiecesConsumesBothTriplesBeforeDock()
         {
             GameState state = CreateStateWithDock();
             StepResult cleared = RunDockSteps(state, ImmutableArray.Create(
@@ -47,29 +60,68 @@ namespace Rescue.Core.Tests.Rules
                 DebrisType.C));
 
             AssertSlotsEqual(CreateSlots(), cleared.State.Dock.Slots);
-            Assert.That(cleared.Context.ClearedDockTriplesThisAction, Is.EqualTo(2));
+            Assert.That(cleared.Context.ClearedDockTriplesThisAction, Is.EqualTo(0));
+            Assert.That(cleared.Events, Is.Empty);
+        }
+
+        [Test]
+        public void InsertSevenMatchingPiecesConsumesSixAndInsertsOne()
+        {
+            GameState state = CreateStateWithDock();
+            StepResult inserted = Step05_InsertDock.Run(state, CreateDockContext(state, ImmutableArray.Create(
+                DebrisType.D,
+                DebrisType.D,
+                DebrisType.D,
+                DebrisType.D,
+                DebrisType.D,
+                DebrisType.D,
+                DebrisType.D)));
+            StepResult cleared = Step06_ClearDock.Run(inserted.State, inserted.Context);
+
+            AssertSlotsEqual(CreateSlots(DebrisType.D), cleared.State.Dock.Slots);
+            Assert.That(cleared.Context.ClearedDockTriplesThisAction, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void RemovedGroupTripleDoesNotClearAgainstExistingDockContents()
+        {
+            GameState state = CreateStateWithDock(DebrisType.A);
+            StepResult cleared = RunDockSteps(state, ImmutableArray.Create(DebrisType.A, DebrisType.A, DebrisType.A));
+
+            AssertSlotsEqual(CreateSlots(DebrisType.A), cleared.State.Dock.Slots);
+            Assert.That(cleared.Context.ClearedDockTriplesThisAction, Is.EqualTo(0));
+            Assert.That(cleared.Events, Is.Empty);
+        }
+
+        [Test]
+        public void TwoPieceRemainderStillClearsAgainstExistingDockContents()
+        {
+            GameState state = CreateStateWithDock(DebrisType.A);
+            StepResult cleared = RunDockSteps(state, ImmutableArray.Create(DebrisType.A, DebrisType.A));
+
+            AssertSlotsEqual(CreateSlots(), cleared.State.Dock.Slots);
+            Assert.That(cleared.Context.ClearedDockTriplesThisAction, Is.EqualTo(1));
             Assert.That(cleared.Events, Is.EqualTo(new ActionEvent[]
             {
-                new DockCleared(DebrisType.C, 1, 0),
-                new DockCleared(DebrisType.C, 1, 0),
+                new DockCleared(DebrisType.A, 1, 0),
             }).AsCollection);
         }
 
         [Test]
         public void InsertThatTemporarilyExceedsCapacityKeepsOverflowPiecesForClearStep()
         {
-            GameState state = CreateStateWithDock(DebrisType.A, DebrisType.B, DebrisType.C, DebrisType.D, DebrisType.E);
+            GameState state = CreateStateWithDock(DebrisType.B, DebrisType.C, DebrisType.D, DebrisType.E, DebrisType.B, DebrisType.C);
             StepResult inserted = Step05_InsertDock.Run(
                 state,
-                CreateDockContext(state, ImmutableArray.Create(DebrisType.A, DebrisType.A, DebrisType.A)));
+                CreateDockContext(state, ImmutableArray.Create(DebrisType.A, DebrisType.A)));
 
             AssertSlotsEqual(CreateSlots(
-                DebrisType.A,
                 DebrisType.B,
                 DebrisType.C,
                 DebrisType.D,
                 DebrisType.E,
-                DebrisType.A,
+                DebrisType.B,
+                DebrisType.C,
                 DebrisType.A,
                 DebrisType.A), inserted.State.Dock.Slots);
             Assert.That(inserted.Context.PendingDockOverflowCount, Is.EqualTo(0));

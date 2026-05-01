@@ -13,6 +13,8 @@ namespace Rescue.Unity.BoardPresentation
     {
         private const string DefaultContentRootName = "BoardContent";
         private const float HiddenDebrisYOffsetRatio = 0.5f;
+        private const float DefaultDebrisClearLiftDistance = 0.42f;
+        private const float DefaultDebrisClearShrinkScale = 0.88f;
         private const float DefaultTargetExtractLiftDistance = 0.18f;
         private const float DefaultTargetExtractPulseScale = 1.12f;
         private const float DefaultBlockerDamagePulseScale = 1.06f;
@@ -59,6 +61,7 @@ namespace Rescue.Unity.BoardPresentation
         private readonly List<GameObject> targetObstacleMarkers = new List<GameObject>();
         private GameObject? vinePreviewObject;
         private TileCoord? vinePreviewCoord;
+        private float removeDurationSeconds = Presentation.ActionPlaybackSettings.DefaultRemoveDurationSeconds;
         private float gravityDurationSeconds = Presentation.ActionPlaybackSettings.DefaultGravityDurationSeconds;
         private float blockerDamageDurationSeconds = Presentation.ActionPlaybackSettings.DefaultBreakBlockerOrRevealDurationSeconds;
         private float blockerBreakDurationSeconds = Presentation.ActionPlaybackSettings.DefaultBreakBlockerOrRevealDurationSeconds;
@@ -77,6 +80,7 @@ namespace Rescue.Unity.BoardPresentation
                 return;
             }
 
+            removeDurationSeconds = settings.RemoveDurationSeconds;
             gravityDurationSeconds = settings.GravityDurationSeconds;
             blockerDamageDurationSeconds = settings.BreakBlockerOrRevealDurationSeconds;
             blockerBreakDurationSeconds = settings.BreakBlockerOrRevealDurationSeconds;
@@ -316,16 +320,28 @@ namespace Rescue.Unity.BoardPresentation
 
         public void RemoveDebrisGroup(GroupRemoved removal)
         {
+            float effectiveDurationSeconds = removeDurationSeconds;
+            CleanupDestroyedVisualReferences();
+
             for (int i = 0; i < removal.Coords.Length; i++)
             {
-                if (!visualRegistry.Debris.TryGet(removal.Coords[i], out BoardPieceView? debrisView) ||
+                if (!RemoveLivePieceView(visualRegistry.Debris, removal.Coords[i], out BoardPieceView? debrisView) ||
                     debrisView is null ||
                     debrisView.Object == null)
                 {
                     continue;
                 }
 
-                RemoveAndDestroyPiece(visualRegistry.Debris, removal.Coords[i]);
+                GameObject debrisObject = debrisView.Object;
+                RemoveSpawnedContentReference(debrisObject);
+
+                if (!Application.isPlaying || !isActiveAndEnabled || effectiveDurationSeconds <= 0f)
+                {
+                    DestroyContentObject(debrisObject);
+                    continue;
+                }
+
+                StartCoroutine(AnimateDebrisClearLiftRoutine(debrisObject, effectiveDurationSeconds));
             }
         }
 
@@ -647,6 +663,43 @@ namespace Rescue.Unity.BoardPresentation
             if (targetObject is not null)
             {
                 UnregisterAndDestroyTarget(targetId, targetObject);
+            }
+        }
+
+        private System.Collections.IEnumerator AnimateDebrisClearLiftRoutine(GameObject debrisObject, float durationSeconds)
+        {
+            if (debrisObject is null)
+            {
+                yield break;
+            }
+
+            Transform debrisTransform = debrisObject.transform;
+            Vector3 baseLocalPosition = debrisTransform.localPosition;
+            Vector3 baseLocalScale = debrisTransform.localScale;
+            Vector3 liftedLocalPosition = baseLocalPosition + new Vector3(0f, DefaultDebrisClearLiftDistance, 0f);
+            Vector3 clearedLocalScale = baseLocalScale * DefaultDebrisClearShrinkScale;
+            float clampedDuration = Mathf.Max(0.01f, durationSeconds);
+            float elapsed = 0f;
+
+            while (elapsed < clampedDuration)
+            {
+                if (debrisObject is null)
+                {
+                    yield break;
+                }
+
+                elapsed += Time.deltaTime;
+                float normalized = Mathf.Clamp01(elapsed / clampedDuration);
+                float eased = 1f - Mathf.Pow(1f - normalized, 3f);
+                debrisTransform.localPosition = Vector3.LerpUnclamped(baseLocalPosition, liftedLocalPosition, eased);
+                debrisTransform.localScale = Vector3.LerpUnclamped(baseLocalScale, clearedLocalScale, eased);
+                SetVisualAlpha(debrisObject, 1f - normalized);
+                yield return null;
+            }
+
+            if (debrisObject is not null)
+            {
+                DestroyContentObject(debrisObject);
             }
         }
 
