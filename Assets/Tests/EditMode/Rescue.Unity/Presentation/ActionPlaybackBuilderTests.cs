@@ -84,6 +84,66 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
+        public void Build_LethalCrateDamageIsFoldedIntoMatchingBreak()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(
+                    new BlockerDamaged(new TileCoord(0, 1), BlockerType.Crate, RemainingHp: 0),
+                    new BlockerBroken(new TileCoord(0, 1), BlockerType.Crate)));
+
+            Assert.That(plan.Take(plan.Count - 1).Select(step => step.SourceEventName), Is.EqualTo(new[]
+            {
+                nameof(BlockerBroken),
+            }));
+            Assert.That(plan[0].Events.Select(actionEvent => actionEvent.GetType().Name), Is.EqualTo(new[]
+            {
+                nameof(BlockerBroken),
+            }));
+        }
+
+        [Test]
+        public void Build_MultipleCrateBreaksUseSingleResolutionBatch()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(
+                    new BlockerDamaged(new TileCoord(0, 1), BlockerType.Crate, RemainingHp: 0),
+                    new BlockerDamaged(new TileCoord(1, 0), BlockerType.Crate, RemainingHp: 0),
+                    new BlockerBroken(new TileCoord(0, 1), BlockerType.Crate),
+                    new BlockerBroken(new TileCoord(1, 0), BlockerType.Crate)));
+
+            Assert.That(plan.Take(plan.Count - 1).Select(step => step.SourceEventName), Is.EqualTo(new[]
+            {
+                "BlockerResolutionBatch",
+            }));
+            Assert.That(plan[0].Events.Select(actionEvent => actionEvent.GetType().Name), Is.EqualTo(new[]
+            {
+                nameof(BlockerBroken),
+                nameof(BlockerBroken),
+            }));
+        }
+
+        [Test]
+        public void Build_NonlethalCrateDamageRemainsDamageBeat()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(
+                    new BlockerDamaged(new TileCoord(0, 1), BlockerType.Crate, RemainingHp: 1),
+                    new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 1, OverflowCount: 0)));
+
+            Assert.That(plan.Take(plan.Count - 1).Select(step => step.SourceEventName), Is.EqualTo(new[]
+            {
+                nameof(BlockerDamaged),
+                nameof(DockInserted),
+            }));
+        }
+
+        [Test]
         public void Build_DockInsertedMapsToDockFeedback()
         {
             ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
@@ -254,7 +314,6 @@ namespace Rescue.Unity.Presentation.Tests
             {
                 ActionPlaybackStepType.DockFeedback,
                 ActionPlaybackStepType.BreakBlockerOrReveal,
-                ActionPlaybackStepType.BreakBlockerOrReveal,
                 ActionPlaybackStepType.RemoveGroup,
                 ActionPlaybackStepType.Gravity,
                 ActionPlaybackStepType.FinalSync,
@@ -274,15 +333,16 @@ namespace Rescue.Unity.Presentation.Tests
 
             Assert.That(plan.Take(plan.Count - 1).Select(step => step.SourceEventName), Is.EqualTo(new[]
             {
-                nameof(BlockerDamaged),
-                nameof(BlockerBroken),
-                nameof(IceRevealed),
+                "BlockerResolutionBatch",
             }));
             Assert.That(plan.Take(plan.Count - 1).Select(step => step.StepType), Is.EqualTo(new[]
             {
                 ActionPlaybackStepType.BreakBlockerOrReveal,
-                ActionPlaybackStepType.BreakBlockerOrReveal,
-                ActionPlaybackStepType.BreakBlockerOrReveal,
+            }));
+            Assert.That(plan[0].Events.Select(actionEvent => actionEvent.GetType().Name), Is.EqualTo(new[]
+            {
+                nameof(BlockerBroken),
+                nameof(IceRevealed),
             }));
         }
 
@@ -452,9 +512,7 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(plan.Take(plan.Count - 1).Select(step => (step.SourceEventName, step.StepType)), Is.EqualTo(new[]
             {
                 ("GroupRemoved", ActionPlaybackStepType.RemoveGroup),
-                ("BlockerDamaged", ActionPlaybackStepType.BreakBlockerOrReveal),
-                ("BlockerBroken", ActionPlaybackStepType.BreakBlockerOrReveal),
-                ("IceRevealed", ActionPlaybackStepType.BreakBlockerOrReveal),
+                ("BlockerResolutionBatch", ActionPlaybackStepType.BreakBlockerOrReveal),
                 ("TargetProgressed", ActionPlaybackStepType.TargetReaction),
                 ("TargetRescuePathLocked", ActionPlaybackStepType.TargetReaction),
                 ("TargetOneClearAway", ActionPlaybackStepType.TargetReaction),

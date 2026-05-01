@@ -11,6 +11,7 @@ namespace Rescue.Unity.Presentation.Tests
 
             Assert.That(settings.RemoveDurationSeconds, Is.GreaterThan(0f));
             Assert.That(settings.BreakBlockerOrRevealDurationSeconds, Is.GreaterThan(0f));
+            Assert.That(settings.BlockerBreakCascadeStaggerSeconds, Is.GreaterThan(0f));
             Assert.That(settings.DockFeedbackDurationSeconds, Is.GreaterThan(0f));
             Assert.That(settings.DockInsertFeedbackDurationSeconds, Is.GreaterThan(0f));
             Assert.That(settings.DockClearFeedbackDurationSeconds, Is.GreaterThan(0f));
@@ -45,6 +46,7 @@ namespace Rescue.Unity.Presentation.Tests
 
             Assert.That(settings.RemoveDurationSeconds, Is.EqualTo(ScaleDefaultGameplay(ActionPlaybackSettings.DefaultRemoveDurationSeconds)));
             Assert.That(settings.BreakBlockerOrRevealDurationSeconds, Is.EqualTo(ScaleDefaultGameplay(ActionPlaybackSettings.DefaultBreakBlockerOrRevealDurationSeconds)));
+            Assert.That(settings.BlockerBreakCascadeStaggerSeconds, Is.EqualTo(ScaleDefaultGameplay(ActionPlaybackSettings.DefaultBlockerBreakCascadeStaggerSeconds)));
             Assert.That(settings.DockInsertFeedbackDurationSeconds, Is.EqualTo(ScaleDefaultGameplay(ActionPlaybackSettings.DefaultDockInsertFeedbackDurationSeconds)));
             Assert.That(settings.DockClearFeedbackDurationSeconds, Is.EqualTo(ScaleDefaultGameplay(ActionPlaybackSettings.DefaultDockClearFeedbackDurationSeconds)));
             Assert.That(settings.DockWarningCautionDurationSeconds, Is.EqualTo(ScaleDefaultGameplay(ActionPlaybackSettings.DefaultDockWarningCautionDurationSeconds)));
@@ -84,6 +86,7 @@ namespace Rescue.Unity.Presentation.Tests
 
             Assert.That(settings.PlaybackSpeedMultiplier, Is.EqualTo(2.0f));
             Assert.That(settings.RemoveDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultRemoveDurationSeconds / 2.0f));
+            Assert.That(settings.BlockerBreakCascadeStaggerSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultBlockerBreakCascadeStaggerSeconds / 2.0f));
             Assert.That(settings.GravityDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultGravityDurationSeconds));
             Assert.That(settings.SpawnDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultSpawnDurationSeconds));
             Assert.That(settings.LossFxDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultLossFxDurationSeconds / 2.0f));
@@ -105,6 +108,7 @@ namespace Rescue.Unity.Presentation.Tests
 
             Assert.That(settings.RemoveDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultRemoveDurationSeconds / 2.0f));
             Assert.That(settings.BreakBlockerOrRevealDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultBreakBlockerOrRevealDurationSeconds / 2.0f));
+            Assert.That(settings.BlockerBreakCascadeStaggerSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultBlockerBreakCascadeStaggerSeconds / 2.0f));
             Assert.That(settings.DockInsertFeedbackDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultDockInsertFeedbackDurationSeconds / 4.0f));
             Assert.That(settings.DockWarningAcuteDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultDockWarningAcuteDurationSeconds / 4.0f));
             Assert.That(settings.TargetReactionDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultTargetReactionDurationSeconds / 0.5f));

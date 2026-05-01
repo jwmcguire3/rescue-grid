@@ -24,12 +24,19 @@ namespace Rescue.Unity.Presentation
             _ = input;
 
             List<ActionPlaybackStep> mappedSteps = new List<ActionPlaybackStep>(result.Events.Length);
-            foreach (ActionEvent actionEvent in result.Events)
+            for (int i = 0; i < result.Events.Length; i++)
             {
+                ActionEvent actionEvent = result.Events[i];
                 if (actionEvent is Won or Lost)
                 {
                     mappedSteps.Add(CreateStep(ActionPlaybackStepType.TerminalOutcome, actionEvent));
                     break;
+                }
+
+                if (IsBlockerPlaybackEvent(actionEvent))
+                {
+                    i = MapBlockerSteps(result.Events, i, mappedSteps);
+                    continue;
                 }
 
                 MapSteps(actionEvent, mappedSteps);
@@ -115,6 +122,81 @@ namespace Rescue.Unity.Presentation
                     // FinalSync still applies the authoritative result state at the end.
                     return;
             }
+        }
+
+        private static int MapBlockerSteps(
+            ImmutableArray<ActionEvent> sourceEvents,
+            int startIndex,
+            List<ActionPlaybackStep> mappedSteps)
+        {
+            int endIndex = startIndex;
+            while (endIndex < sourceEvents.Length && IsBlockerPlaybackEvent(sourceEvents[endIndex]))
+            {
+                endIndex++;
+            }
+
+            ImmutableArray<ActionEvent>.Builder damageEvents = ImmutableArray.CreateBuilder<ActionEvent>();
+            ImmutableArray<ActionEvent>.Builder breakEvents = ImmutableArray.CreateBuilder<ActionEvent>();
+            HashSet<TileCoord> brokenCoords = new HashSet<TileCoord>();
+
+            for (int i = startIndex; i < endIndex; i++)
+            {
+                if (sourceEvents[i] is BlockerBroken broken)
+                {
+                    brokenCoords.Add(broken.Coord);
+                }
+            }
+
+            for (int i = startIndex; i < endIndex; i++)
+            {
+                ActionEvent actionEvent = sourceEvents[i];
+                switch (actionEvent)
+                {
+                    case BlockerDamaged damaged:
+                        if (damaged.RemainingHp > 0 || !brokenCoords.Contains(damaged.Coord))
+                        {
+                            damageEvents.Add(damaged);
+                        }
+
+                        break;
+                    case BlockerBroken:
+                    case IceRevealed:
+                        breakEvents.Add(actionEvent);
+                        break;
+                }
+            }
+
+            AddBlockerBatch(mappedSteps, "BlockerDamageBatch", damageEvents.ToImmutable());
+            AddBlockerBatch(mappedSteps, "BlockerResolutionBatch", breakEvents.ToImmutable());
+            return endIndex - 1;
+        }
+
+        private static void AddBlockerBatch(
+            List<ActionPlaybackStep> mappedSteps,
+            string sourceEventName,
+            ImmutableArray<ActionEvent> events)
+        {
+            if (events.IsDefaultOrEmpty)
+            {
+                return;
+            }
+
+            if (events.Length == 1)
+            {
+                mappedSteps.Add(CreateStep(ActionPlaybackStepType.BreakBlockerOrReveal, events[0]));
+                return;
+            }
+
+            mappedSteps.Add(new ActionPlaybackStep(
+                ActionPlaybackStepType.BreakBlockerOrReveal,
+                sourceEventName,
+                events[0],
+                events));
+        }
+
+        private static bool IsBlockerPlaybackEvent(ActionEvent actionEvent)
+        {
+            return actionEvent is BlockerDamaged or BlockerBroken or IceRevealed;
         }
 
         private static ActionPlaybackStep CreateStep(ActionPlaybackStepType stepType, ActionEvent actionEvent)

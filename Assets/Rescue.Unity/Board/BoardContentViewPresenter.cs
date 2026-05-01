@@ -62,6 +62,7 @@ namespace Rescue.Unity.BoardPresentation
         private float gravityDurationSeconds = Presentation.ActionPlaybackSettings.DefaultGravityDurationSeconds;
         private float blockerDamageDurationSeconds = Presentation.ActionPlaybackSettings.DefaultBreakBlockerOrRevealDurationSeconds;
         private float blockerBreakDurationSeconds = Presentation.ActionPlaybackSettings.DefaultBreakBlockerOrRevealDurationSeconds;
+        private float blockerBreakCascadeStaggerSeconds = Presentation.ActionPlaybackSettings.DefaultBlockerBreakCascadeStaggerSeconds;
         private float iceRevealDurationSeconds = Presentation.ActionPlaybackSettings.DefaultBreakBlockerOrRevealDurationSeconds;
         private float spawnDurationSeconds = Presentation.ActionPlaybackSettings.DefaultSpawnDurationSeconds;
         private float targetExtractDurationSeconds = Presentation.ActionPlaybackSettings.DefaultTargetExtractDurationSeconds;
@@ -79,6 +80,7 @@ namespace Rescue.Unity.BoardPresentation
             gravityDurationSeconds = settings.GravityDurationSeconds;
             blockerDamageDurationSeconds = settings.BreakBlockerOrRevealDurationSeconds;
             blockerBreakDurationSeconds = settings.BreakBlockerOrRevealDurationSeconds;
+            blockerBreakCascadeStaggerSeconds = settings.BlockerBreakCascadeStaggerSeconds;
             iceRevealDurationSeconds = settings.BreakBlockerOrRevealDurationSeconds;
             spawnDurationSeconds = settings.SpawnDurationSeconds;
             targetExtractDurationSeconds = settings.TargetExtractDurationSeconds;
@@ -414,6 +416,50 @@ namespace Rescue.Unity.BoardPresentation
             StartCoroutine(AnimateBlockerBreakRoutine(blockerView.Object, effectiveDurationSeconds));
         }
 
+        public void AnimateBlockerBreakCascade(
+            ImmutableArray<BlockerBroken> brokenBlockers,
+            float? durationSeconds = null,
+            float? staggerSeconds = null)
+        {
+            if (brokenBlockers.IsDefaultOrEmpty)
+            {
+                return;
+            }
+
+            float effectiveDurationSeconds = durationSeconds ?? blockerBreakDurationSeconds;
+            float effectiveStaggerSeconds = Mathf.Max(0f, staggerSeconds ?? blockerBreakCascadeStaggerSeconds);
+            CleanupDestroyedVisualReferences();
+
+            ImmutableArray<GameObject>.Builder blockerObjects = ImmutableArray.CreateBuilder<GameObject>(brokenBlockers.Length);
+            for (int i = 0; i < brokenBlockers.Length; i++)
+            {
+                if (RemoveLivePieceView(visualRegistry.Blockers, brokenBlockers[i].Coord, out BoardPieceView? blockerView) &&
+                    blockerView is not null)
+                {
+                    blockerObjects.Add(blockerView.Object);
+                }
+            }
+
+            if (blockerObjects.Count == 0)
+            {
+                return;
+            }
+
+            ImmutableArray<GameObject> objects = blockerObjects.ToImmutable();
+            if (!Application.isPlaying || !isActiveAndEnabled || effectiveDurationSeconds <= 0f)
+            {
+                for (int i = 0; i < objects.Length; i++)
+                {
+                    RemoveSpawnedContentReference(objects[i]);
+                    DestroyContentObject(objects[i]);
+                }
+
+                return;
+            }
+
+            StartCoroutine(AnimateBlockerBreakCascadeRoutine(objects, effectiveDurationSeconds, effectiveStaggerSeconds));
+        }
+
         public void AnimateIceReveal(IceRevealed revealed, float? durationSeconds = null)
         {
             float effectiveDurationSeconds = durationSeconds ?? iceRevealDurationSeconds;
@@ -667,6 +713,26 @@ namespace Rescue.Unity.BoardPresentation
             if (blockerObject is not null)
             {
                 DestroyContentObject(blockerObject);
+            }
+        }
+
+        private System.Collections.IEnumerator AnimateBlockerBreakCascadeRoutine(
+            ImmutableArray<GameObject> blockerObjects,
+            float durationSeconds,
+            float staggerSeconds)
+        {
+            for (int i = 0; i < blockerObjects.Length; i++)
+            {
+                GameObject blockerObject = blockerObjects[i];
+                if (blockerObject is not null)
+                {
+                    StartCoroutine(AnimateBlockerBreakRoutine(blockerObject, durationSeconds));
+                }
+
+                if (i < blockerObjects.Length - 1 && staggerSeconds > 0f)
+                {
+                    yield return new WaitForSeconds(staggerSeconds);
+                }
             }
         }
 

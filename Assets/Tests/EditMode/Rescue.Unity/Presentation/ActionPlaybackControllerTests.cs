@@ -115,6 +115,7 @@ namespace Rescue.Unity.Presentation.Tests
             ActionPlaybackSettings settings = CreateSettings(playbackEnabled: true, yieldBetweenSteps: false);
             SetPrivateField(settings, "removeDurationSeconds", 0.11f);
             SetPrivateField(settings, "breakBlockerOrRevealDurationSeconds", 0.09f);
+            SetPrivateField(settings, "blockerBreakCascadeStaggerSeconds", 0.03f);
             SetPrivateField(settings, "dockFeedbackDurationSeconds", 0.10f);
             SetPrivateField(settings, "dockInsertFeedbackDurationSeconds", 0.08f);
             SetPrivateField(settings, "dockClearFeedbackDurationSeconds", 0.07f);
@@ -133,6 +134,15 @@ namespace Rescue.Unity.Presentation.Tests
 
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.RemoveGroup), Is.EqualTo(0.22f));
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.BreakBlockerOrReveal), Is.EqualTo(0.18f));
+            Assert.That(GetStepDuration(controller, new ActionPlaybackStep(
+                ActionPlaybackStepType.BreakBlockerOrReveal,
+                "BlockerResolutionBatch",
+                new BlockerBroken(new TileCoord(0, 0), BlockerType.Crate),
+                ImmutableArray.Create<ActionEvent>(
+                    new BlockerBroken(new TileCoord(0, 0), BlockerType.Crate),
+                    new BlockerBroken(new TileCoord(0, 1), BlockerType.Crate),
+                    new BlockerBroken(new TileCoord(0, 2), BlockerType.Crate)))),
+                Is.EqualTo(0.30f));
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.DockFeedback), Is.EqualTo(0.20f));
             Assert.That(GetStepDuration(controller, new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 1, OverflowCount: 0)), Is.EqualTo(0.16f));
             Assert.That(GetStepDuration(controller, new DockCleared(DebrisType.A, SetsCleared: 1, OccupancyAfterClear: 0)), Is.EqualTo(0.14f));
@@ -690,9 +700,8 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(handled, Is.True);
             Assert.That(finalSyncCalls, Is.EqualTo(1));
             Assert.That(harness.Controller.CurrentPlan[0].StepType, Is.EqualTo(ActionPlaybackStepType.BreakBlockerOrReveal));
-            Assert.That(harness.Controller.CurrentPlan[1].StepType, Is.EqualTo(ActionPlaybackStepType.BreakBlockerOrReveal));
-            Assert.That(harness.Controller.CurrentPlan[2].StepType, Is.EqualTo(ActionPlaybackStepType.BreakBlockerOrReveal));
-            Assert.That(harness.Controller.CurrentPlan[3].StepType, Is.EqualTo(ActionPlaybackStepType.Gravity));
+            Assert.That(harness.Controller.CurrentPlan[0].SourceEventName, Is.EqualTo("BlockerResolutionBatch"));
+            Assert.That(harness.Controller.CurrentPlan[1].StepType, Is.EqualTo(ActionPlaybackStepType.Gravity));
             Assert.That(FindChildByName(harness.ContentRoot, "Blocker_Ice"), Is.Null);
             Assert.That(FindChildByName(harness.ContentRoot, "Debris_B"), Is.Not.Null);
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));

@@ -29,6 +29,37 @@ namespace Rescue.Core.Tests.Rules
         }
 
         [Test]
+        public void MultipleOneHpCratesAdjacentToSameClearBreakInSameAction()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                ImmutableArray.Create<Tile>(
+                    new EmptyTile(),
+                    new BlockerTile(BlockerType.Crate, 1, Hidden: null),
+                    new EmptyTile()),
+                ImmutableArray.Create<Tile>(
+                    new BlockerTile(BlockerType.Crate, 1, Hidden: null),
+                    new DebrisTile(DebrisType.A),
+                    new DebrisTile(DebrisType.A)),
+                PipelineTestFixtures.DebrisRow(DebrisType.B, DebrisType.C, DebrisType.D));
+            GameState state = PipelineTestFixtures.CreateState(board);
+
+            (StepResult damage, StepResult resolve) = RunBlockerSteps(state, new TileCoord(1, 1));
+
+            Assert.That(damage.Events, Is.EqualTo(new ActionEvent[]
+            {
+                new BlockerDamaged(new TileCoord(0, 1), BlockerType.Crate, 0),
+                new BlockerDamaged(new TileCoord(1, 0), BlockerType.Crate, 0),
+            }).AsCollection);
+            Assert.That(resolve.Events, Is.EqualTo(new ActionEvent[]
+            {
+                new BlockerBroken(new TileCoord(0, 1), BlockerType.Crate),
+                new BlockerBroken(new TileCoord(1, 0), BlockerType.Crate),
+            }).AsCollection);
+            Assert.That(BoardHelpers.GetTile(resolve.State.Board, new TileCoord(0, 1)), Is.TypeOf<EmptyTile>());
+            Assert.That(BoardHelpers.GetTile(resolve.State.Board, new TileCoord(1, 0)), Is.TypeOf<EmptyTile>());
+        }
+
+        [Test]
         public void CrateWithThreeAdjacentClearsInOneActionTakesOneHitNotThree()
         {
             Board board = PipelineTestFixtures.CreateBoard(
@@ -52,6 +83,33 @@ namespace Rescue.Core.Tests.Rules
                 new BlockerDamaged(new TileCoord(1, 1), BlockerType.Crate, 1),
             }).AsCollection);
             Assert.That(resolve.Events, Is.Empty);
+        }
+
+        [Test]
+        public void ReinforcedCrateHitOnLaterActionBreaksOnThatAction()
+        {
+            Board board = PipelineTestFixtures.CreateBoard(
+                ImmutableArray.Create<Tile>(
+                    new DebrisTile(DebrisType.A),
+                    new DebrisTile(DebrisType.A),
+                    new EmptyTile()),
+                ImmutableArray.Create<Tile>(
+                    new EmptyTile(),
+                    new BlockerTile(BlockerType.Crate, 2, Hidden: null),
+                    new EmptyTile()),
+                ImmutableArray.Create<Tile>(
+                    new EmptyTile(),
+                    new DebrisTile(DebrisType.B),
+                    new DebrisTile(DebrisType.B)));
+            GameState state = PipelineTestFixtures.CreateState(board);
+
+            ActionResult firstAction = Pipeline.RunAction(state, new ActionInput(new TileCoord(0, 0)));
+            ActionResult secondAction = Pipeline.RunAction(firstAction.State, new ActionInput(new TileCoord(2, 1)));
+
+            Assert.That(firstAction.Events, Has.Some.EqualTo(new BlockerDamaged(new TileCoord(1, 1), BlockerType.Crate, 1)));
+            Assert.That(firstAction.Events, Has.None.TypeOf<BlockerBroken>());
+            Assert.That(secondAction.Events, Has.Some.EqualTo(new BlockerDamaged(new TileCoord(1, 1), BlockerType.Crate, 0)));
+            Assert.That(secondAction.Events, Has.Some.EqualTo(new BlockerBroken(new TileCoord(1, 1), BlockerType.Crate)));
         }
 
         [Test]

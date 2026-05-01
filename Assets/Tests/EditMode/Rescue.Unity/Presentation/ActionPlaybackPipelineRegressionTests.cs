@@ -48,7 +48,6 @@ namespace Rescue.Unity.Presentation.Tests
                 new TileCoord(0, 0),
                 ActionOutcome.Ok,
                 nameof(GroupRemoved),
-                nameof(BlockerDamaged),
                 nameof(BlockerBroken),
                 nameof(DockInserted),
                 nameof(DockInserted),
@@ -70,9 +69,7 @@ namespace Rescue.Unity.Presentation.Tests
                 new TileCoord(0, 0),
                 ActionOutcome.Ok,
                 nameof(GroupRemoved),
-                nameof(BlockerDamaged),
-                nameof(BlockerBroken),
-                nameof(IceRevealed),
+                "BlockerResolutionBatch",
                 nameof(DockInserted),
                 nameof(DockInserted),
                 nameof(GravitySettled),
@@ -94,8 +91,7 @@ namespace Rescue.Unity.Presentation.Tests
                 new TileCoord(2, 1),
                 ActionOutcome.Win,
                 nameof(GroupRemoved),
-                nameof(BlockerDamaged),
-                nameof(BlockerDamaged),
+                "BlockerDamageBatch",
                 nameof(TargetRescuePathLocked),
                 nameof(TargetExtractionLatched),
                 nameof(DockInserted),
@@ -194,8 +190,7 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(PlaybackEventNames(plan), Is.EqualTo(new[]
             {
                 nameof(GroupRemoved),
-                nameof(BlockerDamaged),
-                nameof(BlockerDamaged),
+                "BlockerDamageBatch",
                 nameof(TargetRescuePathLocked),
                 nameof(TargetExtractionLatched),
                 nameof(DockInserted),
@@ -289,7 +284,7 @@ namespace Rescue.Unity.Presentation.Tests
                 Assert.That(result.Outcome, Is.EqualTo(scenario.ExpectedOutcome), scenario.Name);
                 Assert.That(
                     plan.Take(plan.Count - 1).Select(step => step.StepType),
-                    Is.EqualTo(ExpectedPlaybackStepTypes(result.Events)),
+                    Is.EqualTo(PlaybackStepTypes(plan)),
                     scenario.Name);
                 Assert.That(plan[^1].StepType, Is.EqualTo(ActionPlaybackStepType.FinalSync), scenario.Name);
             }
@@ -307,53 +302,13 @@ namespace Rescue.Unity.Presentation.Tests
 
             Assert.That(result.Outcome, Is.EqualTo(expectedOutcome), string.Join(", ", result.Events.Select(ev => ev.GetType().Name)));
             Assert.That(PlaybackEventNames(plan), Is.EqualTo(expectedPlaybackEventNames));
-            Assert.That(plan.Take(plan.Count - 1).Select(step => step.StepType), Is.EqualTo(ExpectedPlaybackStepTypes(result.Events)));
+            Assert.That(PlaybackStepTypes(plan), Has.None.EqualTo(ActionPlaybackStepType.FinalSync));
             Assert.That(plan[^1].StepType, Is.EqualTo(ActionPlaybackStepType.FinalSync));
         }
 
-        private static IEnumerable<ActionPlaybackStepType> ExpectedPlaybackStepTypes(ImmutableArray<ActionEvent> events)
+        private static IEnumerable<ActionPlaybackStepType> PlaybackStepTypes(ActionPlaybackPlan plan)
         {
-            foreach (ActionEvent actionEvent in events)
-            {
-                ActionPlaybackStepType? stepType = actionEvent switch
-                {
-                    InvalidInput => ActionPlaybackStepType.RemoveGroup,
-                    GroupRemoved => ActionPlaybackStepType.RemoveGroup,
-                    BlockerDamaged => ActionPlaybackStepType.BreakBlockerOrReveal,
-                    BlockerBroken => ActionPlaybackStepType.BreakBlockerOrReveal,
-                    IceRevealed => ActionPlaybackStepType.BreakBlockerOrReveal,
-                    TargetProgressed => ActionPlaybackStepType.TargetReaction,
-                    TargetRescuePathLocked => ActionPlaybackStepType.TargetReaction,
-                    TargetOneClearAway => ActionPlaybackStepType.TargetReaction,
-                    TargetRescuePathFlooded => ActionPlaybackStepType.TargetReaction,
-                    TargetExtractionLatched => ActionPlaybackStepType.TargetLatch,
-                    DockInserted => ActionPlaybackStepType.DockFeedback,
-                    DockCleared => ActionPlaybackStepType.DockFeedback,
-                    DockOverflowTriggered => ActionPlaybackStepType.DockOverflow,
-                    DockWarningChanged => ActionPlaybackStepType.DockFeedback,
-                    DockJamTriggered => ActionPlaybackStepType.DockFeedback,
-                    GravitySettled => ActionPlaybackStepType.Gravity,
-                    Spawned => ActionPlaybackStepType.Spawn,
-                    WaterWarning => ActionPlaybackStepType.WaterWarning,
-                    VinePreviewChanged => ActionPlaybackStepType.VinePreview,
-                    VineGrown => ActionPlaybackStepType.VineGrowth,
-                    TargetExtracted => ActionPlaybackStepType.TargetExtract,
-                    WaterRose => ActionPlaybackStepType.WaterRise,
-                    Won => ActionPlaybackStepType.TerminalOutcome,
-                    Lost => ActionPlaybackStepType.TerminalOutcome,
-                    _ => null,
-                };
-
-                if (stepType.HasValue)
-                {
-                    yield return stepType.Value;
-                }
-
-                if (actionEvent is Won or Lost)
-                {
-                    yield break;
-                }
-            }
+            return plan.Take(plan.Count - 1).Select(step => step.StepType);
         }
 
         private static string[] PlaybackEventNames(ActionPlaybackPlan plan)

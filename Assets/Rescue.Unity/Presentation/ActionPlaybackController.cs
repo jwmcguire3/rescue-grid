@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Immutable;
 using Rescue.Core.Pipeline;
 using Rescue.Core.State;
 using Rescue.Unity.BoardPresentation;
@@ -193,12 +194,36 @@ namespace Rescue.Unity.Presentation
 
         private void PlayStep(ActionPlaybackStep step, GameState previousState, ActionInput input, GameState resultState)
         {
-            if (step.SourceEvent is null)
+            ImmutableArray<ActionEvent> sourceEvents = step.Events;
+            if (sourceEvents.IsDefaultOrEmpty)
             {
                 return;
             }
 
-            switch (step.SourceEvent)
+            if (step.StepType == ActionPlaybackStepType.BreakBlockerOrReveal && sourceEvents.Length > 1)
+            {
+                PlayBlockerBatch(sourceEvents);
+            }
+            else
+            {
+                for (int i = 0; i < sourceEvents.Length; i++)
+                {
+                    PlaySingleEvent(sourceEvents[i], previousState, resultState);
+                }
+            }
+
+            for (int i = 0; i < sourceEvents.Length; i++)
+            {
+                ActionEvent sourceEvent = sourceEvents[i];
+                ActionPlaybackStep routedStep = new ActionPlaybackStep(step.StepType, sourceEvent.GetType().Name, sourceEvent);
+                TryRoutePlaybackFx(routedStep, previousState, input, resultState);
+                TryRoutePlaybackAudio(routedStep, previousState, input, resultState);
+            }
+        }
+
+        private void PlaySingleEvent(ActionEvent sourceEvent, GameState previousState, GameState resultState)
+        {
+            switch (sourceEvent)
             {
                 case GroupRemoved removed:
                     boardContent?.RemoveDebrisGroup(removed);
@@ -251,9 +276,40 @@ namespace Rescue.Unity.Presentation
                         rose.FloodedRow);
                     break;
             }
+        }
 
-            TryRoutePlaybackFx(step, previousState, input, resultState);
-            TryRoutePlaybackAudio(step, previousState, input, resultState);
+        private void PlayBlockerBatch(ImmutableArray<ActionEvent> sourceEvents)
+        {
+            ImmutableArray<BlockerBroken>.Builder brokenBlockers = ImmutableArray.CreateBuilder<BlockerBroken>();
+            ImmutableArray<IceRevealed>.Builder iceReveals = ImmutableArray.CreateBuilder<IceRevealed>();
+            for (int i = 0; i < sourceEvents.Length; i++)
+            {
+                switch (sourceEvents[i])
+                {
+                    case BlockerDamaged damaged:
+                        boardContent?.AnimateBlockerDamage(damaged);
+                        break;
+                    case BlockerBroken broken:
+                        brokenBlockers.Add(broken);
+                        break;
+                    case IceRevealed revealed:
+                        iceReveals.Add(revealed);
+                        break;
+                }
+            }
+
+            if (brokenBlockers.Count > 0)
+            {
+                boardContent?.AnimateBlockerBreakCascade(
+                    brokenBlockers.ToImmutable(),
+                    settings.BreakBlockerOrRevealDurationSeconds,
+                    settings.BlockerBreakCascadeStaggerSeconds);
+            }
+
+            for (int i = 0; i < iceReveals.Count; i++)
+            {
+                boardContent?.AnimateIceReveal(iceReveals[i]);
+            }
         }
 
         private object? CreateStepYield(ActionPlaybackStep step)
@@ -304,7 +360,7 @@ namespace Rescue.Unity.Presentation
                 case ActionPlaybackStepType.RemoveGroup:
                     return settings.RemoveDurationSeconds;
                 case ActionPlaybackStepType.BreakBlockerOrReveal:
-                    return settings.BreakBlockerOrRevealDurationSeconds;
+                    return settings.BreakBlockerOrRevealDurationSeconds + GetBlockerCascadeExtraDurationSeconds(step);
                 case ActionPlaybackStepType.TargetReaction:
                 case ActionPlaybackStepType.TargetLatch:
                     return settings.TargetReactionDurationSeconds;
@@ -329,6 +385,28 @@ namespace Rescue.Unity.Presentation
                 default:
                     return 0f;
             }
+        }
+
+        private float GetBlockerCascadeExtraDurationSeconds(ActionPlaybackStep step)
+        {
+            ImmutableArray<ActionEvent> events = step.Events;
+            if (events.Length <= 1)
+            {
+                return 0f;
+            }
+
+            int brokenCount = 0;
+            for (int i = 0; i < events.Length; i++)
+            {
+                if (events[i] is BlockerBroken)
+                {
+                    brokenCount++;
+                }
+            }
+
+            return brokenCount > 1
+                ? (brokenCount - 1) * settings.BlockerBreakCascadeStaggerSeconds
+                : 0f;
         }
 
         private void CompletePlayback(int sessionId, ActionResult result, Action<ActionResult> finalSync)
