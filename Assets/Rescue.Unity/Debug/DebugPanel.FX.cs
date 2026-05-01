@@ -293,10 +293,23 @@ namespace Rescue.Unity.Debugging
             Vector3 position = ResolveFxDiagnosticPosition(router);
             FxEventHook hook = selected.Value.Hook ?? ParseSelectedFxHook() ?? FxEventHook.GroupClear;
             _manualFxInstance = router.SpawnManualDebugFx(selected.Value.Prefab, selected.Value.Prefab.name + "_Manual", hook, position);
-            _manualFxPlayer = _manualFxInstance is null ? null : _manualFxInstance.GetComponent<SpriteSequenceFxPlayer>();
-            SetStatus(_manualFxPlayer is null
-                ? $"Spawned {selected.Value.Prefab.name}; no frame player."
-                : $"Spawned {selected.Value.Prefab.name} at frame {_manualFxPlayer.CurrentFrameIndex + 1}/{_manualFxPlayer.FrameCount}.");
+            _manualFxPlayer = _manualFxInstance is null
+                ? null
+                : _manualFxInstance.GetComponentInChildren<SpriteSequenceFxPlayer>(includeInactive: true);
+            if (_manualFxPlayer is null)
+            {
+                SetStatus(selected.Value.HasInspectableRenderer
+                    ? $"Spawned {selected.Value.Prefab.name}; no frame player could be attached."
+                    : $"Spawned {selected.Value.Prefab.name}; no SpriteRenderer found for frame inspection.");
+            }
+            else
+            {
+                string source = selected.Value.HasFramePlayer ? "prefab frame player" : "debug inspection player";
+                SetStatus(_manualFxPlayer.FrameCount == 0
+                    ? $"Spawned {selected.Value.Prefab.name} with {source}; no sprite frames found."
+                    : $"Spawned {selected.Value.Prefab.name} with {source} at frame {_manualFxPlayer.CurrentFrameIndex + 1}/{_manualFxPlayer.FrameCount}.");
+            }
+
             UpdateFxFrameLabel();
         }
 
@@ -397,7 +410,10 @@ namespace Rescue.Unity.Debugging
                 return true;
             }
 
-            SetStatus("Selected FX has no frame player.");
+            FxDebugCandidate? selected = GetSelectedFxCandidate();
+            SetStatus(selected.HasValue && !selected.Value.HasInspectableRenderer
+                ? "Selected FX has no SpriteRenderer for frame inspection."
+                : "Selected FX has no frame player.");
             UpdateFxFrameLabel();
             return false;
         }
@@ -412,9 +428,15 @@ namespace Rescue.Unity.Debugging
             if (_manualFxPlayer is null)
             {
                 FxDebugCandidate? selected = GetSelectedFxCandidate();
-                _fxFrameLabel.text = selected.HasValue && !selected.Value.HasFramePlayer
-                    ? "Frame 0 / 0 (no frame player)"
-                    : "Frame 0 / 0";
+                if (selected.HasValue && !selected.Value.HasFramePlayer)
+                {
+                    _fxFrameLabel.text = selected.Value.HasInspectableRenderer
+                        ? "Frame 0 / 0 (no frame player; spawn to attach debug player)"
+                        : "Frame 0 / 0 (no SpriteRenderer to inspect)";
+                    return;
+                }
+
+                _fxFrameLabel.text = "Frame 0 / 0";
                 return;
             }
 

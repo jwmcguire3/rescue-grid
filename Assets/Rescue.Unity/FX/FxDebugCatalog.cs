@@ -21,6 +21,7 @@ namespace Rescue.Unity.FX
         bool IsFallback,
         bool IsUnhooked,
         bool HasFramePlayer,
+        bool HasInspectableRenderer,
         string Label);
 
     public static class FxDebugCatalog
@@ -182,7 +183,8 @@ namespace Rescue.Unity.FX
                 return;
             }
 
-            bool hasFramePlayer = prefab.GetComponent<SpriteSequenceFxPlayer>() is not null;
+            bool hasFramePlayer = FxDebugFramePlayer.HasFramePlayer(prefab);
+            bool hasInspectableRenderer = FxDebugFramePlayer.HasInspectableRenderer(prefab);
             candidates.Add(new FxDebugCandidate(
                 hook,
                 prefab,
@@ -190,6 +192,7 @@ namespace Rescue.Unity.FX
                 isFallback,
                 isUnhooked,
                 hasFramePlayer,
+                hasInspectableRenderer,
                 BuildLabel(prefab, isActive, isFallback, isUnhooked)));
         }
 
@@ -211,9 +214,14 @@ namespace Rescue.Unity.FX
                 tags.Add("[unhooked]");
             }
 
-            if (prefab.GetComponent<SpriteSequenceFxPlayer>() is null)
+            if (!FxDebugFramePlayer.HasFramePlayer(prefab))
             {
                 tags.Add("[no frame player]");
+            }
+
+            if (!FxDebugFramePlayer.HasInspectableRenderer(prefab))
+            {
+                tags.Add("[no sprite renderer]");
             }
 
             return tags.Count == 0 ? prefab.name : $"{prefab.name} {string.Join(" ", tags)}";

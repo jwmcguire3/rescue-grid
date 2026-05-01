@@ -61,7 +61,7 @@ namespace Rescue.Unity.Presentation.Tests
 
             Assert.That(CountGeneratedTiles(harness.BoardRoot), Is.EqualTo(6));
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(3));
-            Assert.That(harness.WaterRoot.childCount, Is.EqualTo(3));
+            Assert.That(harness.WaterRoot.childCount, Is.EqualTo(2));
             Assert.That(harness.DockPieceContainer.childCount, Is.EqualTo(3));
         }
 
@@ -270,7 +270,7 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(harness.Presenter.IsPlaybackActive, Is.False);
             Assert.That(harness.Presenter.CurrentState, Is.EqualTo(resultState));
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
-            Assert.That(harness.WaterRoot.childCount, Is.EqualTo(3));
+            Assert.That(harness.WaterRoot.childCount, Is.EqualTo(2));
             Assert.That(harness.DockPieceContainer.childCount, Is.EqualTo(4));
 
             yield return null;

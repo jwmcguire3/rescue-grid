@@ -384,48 +384,17 @@ namespace Rescue.Unity.BoardPresentation
 
         private void SyncWaterline(GameState state, WaterRowResolution resolution)
         {
-            if (state.Water.FloodedRows <= 0)
-            {
-                if (waterlineInstance is not null)
-                {
-                    DestroySpawnedObject(waterlineInstance);
-                    waterlineInstance = null;
-                    waterlineRowIndex = null;
-                }
+            _ = state;
+            _ = resolution;
 
-                return;
+            if (waterlineInstance is not null)
+            {
+                DestroySpawnedObject(waterlineInstance);
+                waterlineInstance = null;
+                waterlineRowIndex = null;
             }
 
-            GameObject? prefab = ResolveOverlayPrefab(waterlinePrefab);
-            if (prefab is null || resolution.FloodedRowIndices.Length <= 0)
-            {
-                return;
-            }
-
-            int topFloodedRow = resolution.FloodedRowIndices[0];
-            if (waterlineInstance is null)
-            {
-                waterlineInstance = SpawnWaterline(resolution, state.Board.Width);
-                waterlineRowIndex = waterlineInstance is null ? null : topFloodedRow;
-                return;
-            }
-
-            if (waterlineRowIndex == topFloodedRow)
-            {
-                return;
-            }
-
-            if (!TryGetRowBounds(topFloodedRow, out BoardGridViewPresenter.RowWorldBounds rowBounds))
-            {
-                return;
-            }
-
-            ConfigureWaterline(
-                waterlineInstance,
-                prefab.transform.localScale,
-                rowBounds,
-                $"Waterline_{topFloodedRow:00}");
-            waterlineRowIndex = topFloodedRow;
+            return;
         }
 
         private GameObject? SpawnRowOverlay(

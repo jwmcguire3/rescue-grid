@@ -41,7 +41,7 @@ namespace Rescue.Unity.FX
 
         private void OnEnable()
         {
-            if (!playOnEnable)
+            if (!playOnEnable || frames.Length == 0)
             {
                 return;
             }
@@ -157,6 +157,18 @@ namespace Rescue.Unity.FX
             }
 
             secondsPerFrame = Mathf.Max(secondsPerFrame, minimumDurationSeconds / frames.Length);
+        }
+
+        public void ConfigureForDebugInspection(SpriteRenderer renderer, Sprite[] debugFrames)
+        {
+            spriteRenderer = renderer;
+            frames = debugFrames;
+            playOnEnable = false;
+            destroyAfterPlayback = false;
+            loop = false;
+            PausePlayback();
+            ApplyRendererSettings();
+            ApplyFrame(0);
         }
 
         private IEnumerator PlaySequence(int startFrameIndex)

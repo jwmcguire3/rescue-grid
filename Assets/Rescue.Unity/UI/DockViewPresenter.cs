@@ -470,6 +470,7 @@ namespace Rescue.Unity.UI
         private const string DefaultPieceContainerName = "DockPieces";
         private const string SharedDockInstanceName = "SharedDockVisualInstance";
         private const string OverflowAnchorPrefix = "OverflowSlot_";
+        private const float DockPieceLocalRightOffset = 0.15f;
 
         [Header("Shared Dock")]
         [SerializeField] private DockVisualConfig? dockVisualConfig;
@@ -1253,7 +1254,7 @@ namespace Rescue.Unity.UI
             }
 
             Transform pieceTransform = trackedObject.transform;
-            pieceTransform.position = anchor.position;
+            pieceTransform.position = anchor.position + (anchor.rotation * new Vector3(DockPieceLocalRightOffset, 0f, 0f));
             DebrisType? debrisType = _trackedSlotTypes[slotIndex];
             pieceTransform.rotation = debrisType.HasValue
                 ? anchor.rotation * ResolveDockRotationOffset(debrisType.Value)

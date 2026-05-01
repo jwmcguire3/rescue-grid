@@ -12,6 +12,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 using UnityObject = UnityEngine.Object;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Rescue.PlayMode.Tests.Smoke
 {
@@ -61,6 +64,7 @@ namespace Rescue.PlayMode.Tests.Smoke
             Assert.That(waterRoot.childCount, Is.GreaterThan(0));
             AssertCameraUsesFrontTableOrthographicView();
             AssertBoardStageLayout(boardRoot, boardContentRoot, waterRoot, dockRoot);
+            AssertDirectionalLightMatchesStaging();
 
             yield return null;
         }
@@ -289,8 +293,43 @@ namespace Rescue.PlayMode.Tests.Smoke
             Assert.That(boardContentRoot.parent, Is.SameAs(stageRoot), "Board content should share the board stage transform.");
             Assert.That(waterRoot.parent, Is.SameAs(stageRoot), "Water overlays should share the board stage transform.");
             Assert.That(dockRoot.parent, Is.Not.SameAs(stageRoot), "DockRoot should stay separate so its staging can be tuned independently.");
-            Assert.That(Mathf.Abs(stageRoot.localEulerAngles.x), Is.GreaterThan(1f), "Board stage should carry the table-view tilt.");
+            Assert.That(Vector3.Distance(stageRoot.localPosition, new Vector3(0f, -0.28f, -2.4f)), Is.LessThan(0.001f));
+            Assert.That(Quaternion.Angle(stageRoot.localRotation, Quaternion.identity), Is.LessThan(0.1f), "BoardStageRoot should match the screenshot rotation.");
+            Assert.That(Vector3.Distance(stageRoot.localScale, new Vector3(1.4f, 1.4f, 1.4f)), Is.LessThan(0.001f));
+            Assert.That(Vector3.Distance(dockRoot.localPosition, new Vector3(0f, -0.5f, -10.5f)), Is.LessThan(0.001f));
             Assert.That(Quaternion.Angle(dockRoot.localRotation, Quaternion.Euler(15f, 0f, 0f)), Is.LessThan(0.1f), "DockRoot should match the staged dock tilt.");
+            Assert.That(Vector3.Distance(dockRoot.localScale, new Vector3(1.8f, 1.8f, 1.8f)), Is.LessThan(0.001f));
+        }
+
+        private static void AssertDirectionalLightMatchesStaging()
+        {
+            Light[] lights = UnityObject.FindObjectsByType<Light>(FindObjectsSortMode.None);
+            Light? light = System.Array.Find(lights, candidate => candidate.name == "Directional Light");
+            Assert.That(light, Is.Not.Null, "Game.unity should include the staged Directional Light.");
+            if (light is null)
+            {
+                throw new AssertionException("Game.unity should include the staged Directional Light.");
+            }
+
+            Assert.That(light.type, Is.EqualTo(LightType.Directional));
+            Assert.That(Vector3.Distance(light.transform.localPosition, new Vector3(0f, 3f, 0f)), Is.LessThan(0.001f));
+            Assert.That(Quaternion.Angle(light.transform.localRotation, Quaternion.Euler(50f, 120f, 0f)), Is.LessThan(0.1f));
+            Assert.That(Vector3.Distance(light.transform.localScale, Vector3.one), Is.LessThan(0.001f));
+            Assert.That(light.color.r, Is.EqualTo(101f / 255f).Within(0.001f));
+            Assert.That(light.color.g, Is.EqualTo(54f / 255f).Within(0.001f));
+            Assert.That(light.color.b, Is.EqualTo(0f).Within(0.001f));
+            Assert.That(light.intensity, Is.EqualTo(1f).Within(0.001f));
+            Assert.That(light.bounceIntensity, Is.EqualTo(1f).Within(0.001f));
+            Assert.That(light.shadows, Is.EqualTo(LightShadows.Hard));
+            Assert.That(light.cookie, Is.Null);
+            Assert.That(light.flare, Is.Null);
+            Assert.That(light.renderMode, Is.EqualTo(LightRenderMode.Auto));
+            Assert.That(light.cullingMask, Is.EqualTo(-1));
+            Assert.That(light.lightmapBakeType, Is.EqualTo(LightmapBakeType.Baked));
+#if UNITY_EDITOR
+            SerializedObject serializedLight = new SerializedObject(light);
+            Assert.That(serializedLight.FindProperty("m_DrawHalo").boolValue, Is.False);
+#endif
         }
     }
 }

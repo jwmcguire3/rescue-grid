@@ -49,6 +49,41 @@ namespace Rescue.Unity.BoardPresentation.Tests
         }
 
         [Test]
+        public void BoardContentViewPresenter_SyncImmediatePreservesDebrisPrefabRotation()
+        {
+            PresenterHarness harness = CreateHarness();
+            PieceVisualRegistry pieceRegistry = CreateRegistry<PieceVisualRegistry>();
+            GameObject debrisCPrefab = CreateTrackedGameObject("DebrisCPrefab");
+            GameObject debrisDPrefab = CreateTrackedGameObject("DebrisDPrefab");
+            debrisCPrefab.transform.localRotation = Quaternion.Euler(0f, 90f, 0f);
+            debrisDPrefab.transform.localRotation = Quaternion.Euler(0f, 220f, 0f);
+            pieceRegistry.DebrisCPrefab = debrisCPrefab;
+            pieceRegistry.DebrisDPrefab = debrisDPrefab;
+            SetPrivateField(harness.ContentPresenter, "pieceRegistry", pieceRegistry);
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new DebrisTile(DebrisType.C),
+                    new DebrisTile(DebrisType.D))));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            GameObject? debrisC = GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 0));
+            GameObject? debrisD = GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 1));
+            Assert.That(debrisC, Is.Not.Null);
+            Assert.That(debrisD, Is.Not.Null);
+            Assert.That(Quaternion.Angle(Quaternion.Euler(0f, 90f, 0f), debrisC!.transform.localRotation), Is.LessThan(0.001f));
+            Assert.That(Quaternion.Angle(Quaternion.Euler(0f, 220f, 0f), debrisD!.transform.localRotation), Is.LessThan(0.001f));
+
+            debrisC.transform.localRotation = Quaternion.identity;
+            debrisD.transform.localRotation = Quaternion.identity;
+            harness.ContentPresenter.ForceSyncToState(state);
+
+            Assert.That(Quaternion.Angle(Quaternion.Euler(0f, 90f, 0f), debrisC.transform.localRotation), Is.LessThan(0.001f));
+            Assert.That(Quaternion.Angle(Quaternion.Euler(0f, 220f, 0f), debrisD.transform.localRotation), Is.LessThan(0.001f));
+        }
+
+        [Test]
         public void BoardContentViewPresenter_SyncImmediatePopulatesDebrisRegistryCorrectly()
         {
             PresenterHarness harness = CreateHarness();
@@ -235,6 +270,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
         public void BoardContentViewPresenter_AppliesTargetReadinessMarker()
         {
             PresenterHarness harness = CreateHarness();
+            harness.FallbackPrefab.AddComponent<MeshRenderer>();
             TargetVisualRegistry targetRegistry = CreateRegistry<TargetVisualRegistry>();
             targetRegistry.FallbackTargetPrefab = harness.FallbackPrefab;
             SetPrivateField(harness.ContentPresenter, "targetRegistry", targetRegistry);
@@ -250,7 +286,22 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-1", out GameObject? targetObject), Is.True);
             Assert.That(targetObject, Is.Not.Null);
             Assert.That(targetObject!.transform.localScale.x, Is.GreaterThan(1f));
-            Assert.That(targetObject.transform.Find("TargetReadabilityMarker_OneClearAway"), Is.Not.Null);
+            AssertTargetHasNoReadinessTint(targetObject);
+            Transform? marker = targetObject.transform.Find("TargetReadabilityMarker_OneClearAway");
+            Assert.That(marker, Is.Not.Null);
+            AssertNeutralCircleMarker(marker!.gameObject, maxDiameter: 0.75f);
+
+            GameState trappedState = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new TargetTile("puppy-1", Extracted: false))),
+                ImmutableArray.Create(new TargetState("puppy-1", new TileCoord(0, 0), TargetReadiness.Trapped)));
+
+            harness.ContentPresenter.SyncImmediate(trappedState);
+
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-1", out GameObject? updatedTargetObject), Is.True);
+            Assert.That(updatedTargetObject, Is.Not.Null);
+            Assert.That(updatedTargetObject!.transform.Find("TargetReadabilityMarker_OneClearAway"), Is.Null);
+            Assert.That(updatedTargetObject.transform.Find("TargetReadabilityMarker"), Is.Null);
         }
 
         [Test]
@@ -439,7 +490,24 @@ namespace Rescue.Unity.BoardPresentation.Tests
 
             GameObject? debrisObject = GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 0));
             Assert.That(debrisObject, Is.Not.Null);
-            Assert.That(FindChildByName(debrisObject!.transform, "TargetLastObstacle"), Is.Not.Null);
+            Transform? marker = FindChildByName(debrisObject!.transform, "TargetLastObstacle");
+            Assert.That(marker, Is.Not.Null);
+            AssertNeutralCircleMarker(marker!.gameObject, maxDiameter: 0.65f);
+
+            GameState progressedState = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(
+                        new DebrisTile(DebrisType.A),
+                        new TargetTile("puppy-1", Extracted: false),
+                        new RescuePathTile(ImmutableArray.Create("puppy-1")))),
+                ImmutableArray.Create(new TargetState(
+                    "puppy-1",
+                    new TileCoord(0, 1),
+                    TargetReadiness.Progressing)));
+
+            harness.ContentPresenter.SyncImmediate(progressedState);
+
+            Assert.That(FindChildByName(debrisObject.transform, "TargetLastObstacle"), Is.Null);
         }
 
         [Test]
@@ -1253,6 +1321,62 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Assert.That(secondChevron.Find("RightArm"), Is.Not.Null);
             Assert.That(pathObject.GetComponentsInChildren<Collider>(includeInactive: true), Is.Empty);
             Assert.That(pathObject.GetComponentsInChildren<Renderer>(includeInactive: true), Has.Length.EqualTo(5));
+        }
+
+        private static void AssertUsesDefaultParticleSystemMaterial(GameObject markerObject)
+        {
+            Renderer? renderer = markerObject.GetComponent<Renderer>();
+            Assert.That(renderer, Is.Not.Null);
+            Assert.That(renderer!.sharedMaterial, Is.Not.Null);
+            Assert.That(renderer.sharedMaterial!.name, Does.Contain("Default-ParticleSystem"));
+        }
+
+        private static void AssertNeutralCircleMarker(GameObject markerObject, float maxDiameter)
+        {
+            AssertUsesDefaultParticleSystemMaterial(markerObject);
+            Assert.That(markerObject.transform.localScale.x, Is.LessThanOrEqualTo(maxDiameter));
+            Assert.That(markerObject.transform.localScale.z, Is.LessThanOrEqualTo(maxDiameter));
+            Assert.That(markerObject.GetComponentsInChildren<Collider>(includeInactive: true), Is.Empty);
+
+            MeshFilter? meshFilter = markerObject.GetComponent<MeshFilter>();
+            Assert.That(meshFilter, Is.Not.Null);
+            Assert.That(meshFilter!.sharedMesh, Is.Not.Null);
+            Assert.That(meshFilter.sharedMesh!.name, Does.Contain("TargetMarkerCircleMesh"));
+            Assert.That(meshFilter.sharedMesh.vertexCount, Is.GreaterThan(18));
+
+            Vector3[] vertices = meshFilter.sharedMesh.vertices;
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                Assert.That(vertices[i].y, Is.EqualTo(0f).Within(0.001f));
+            }
+
+            Renderer? renderer = markerObject.GetComponent<Renderer>();
+            Assert.That(renderer, Is.Not.Null);
+            MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
+            renderer!.GetPropertyBlock(propertyBlock);
+            Color markerColor = propertyBlock.GetColor("_Color");
+            Assert.That(markerColor.a, Is.EqualTo(0.5f).Within(0.001f));
+            Assert.That(markerColor.b, Is.GreaterThan(0.7f));
+        }
+
+        private static void AssertTargetHasNoReadinessTint(GameObject targetObject)
+        {
+            Renderer[] renderers = targetObject.GetComponentsInChildren<Renderer>(includeInactive: true);
+            int targetRendererCount = 0;
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                if (renderers[i].name.StartsWith("TargetReadabilityMarker", System.StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                targetRendererCount++;
+                MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
+                renderers[i].GetPropertyBlock(propertyBlock);
+                Assert.That(propertyBlock.GetColor("_Color").a, Is.EqualTo(0f));
+            }
+
+            Assert.That(targetRendererCount, Is.GreaterThan(0));
         }
 
         private static void AssertRescuePathDirection(GameObject pathObject, Vector3 expectedDirection)

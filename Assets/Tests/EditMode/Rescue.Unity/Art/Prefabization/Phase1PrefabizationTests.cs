@@ -18,10 +18,16 @@ namespace Rescue.Unity.Art.Tests
         private const string Phase1DockPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Dock/Dock_Shared_7Slot_Phase1.prefab";
         private const string DirectDryTilePrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Board/DryTile_Phase1.prefab";
         private const string Phase1DebrisAPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Pieces/Debris_A_Phase1.prefab";
+        private const string Phase1DebrisCPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Pieces/Debris_C_Phase1.prefab";
+        private const string Phase1DebrisDPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Pieces/Debris_D_Phase1.prefab";
         private const string Phase1IceBlockPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Blockers/Ice_Block_Phase1.prefab";
         private const string Phase1VinePrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Blockers/Vine_Phase1.prefab";
         private const string Phase1FloodedRowPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Water/FloodedRowOverlay_Phase1.prefab";
         private const string Phase1IceRevealFxPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/FX/IceRevealFx_Phase1.prefab";
+        private const string WaterRiseFourthFramePath = "Assets/Rescue.Unity/Art/Sprites/WaterRiseFx_04.png";
+        private const string WaterFloodedMaterialPath = "Assets/Rescue.Unity/Art/Materials/Water_Flooded.mat";
+        private const string WaterForecastMaterialPath = "Assets/Rescue.Unity/Art/Materials/Water_Forecast.mat";
+        private const string Phase1FloodedRowMaterialPath = "Assets/Rescue.Unity/Art/Materials/Phase1/Water_Flooded_Row_Phase1.mat";
         private const string TileRegistryPath = "Assets/Rescue.Unity/Art/Registries/Phase1TileVisualRegistry.asset";
         private const string PieceRegistryPath = "Assets/Rescue.Unity/Art/Registries/Phase1PieceVisualRegistry.asset";
         private const string BlockerRegistryPath = "Assets/Rescue.Unity/Art/Registries/Phase1BlockerVisualRegistry.asset";
@@ -75,6 +81,7 @@ namespace Rescue.Unity.Art.Tests
             TargetVisualRegistry targetRegistry = LoadAsset<TargetVisualRegistry>(TargetRegistryPath);
 
             Assert.That(tileRegistry.FallbackTilePrefab, Is.Not.Null);
+            Assert.That(tileRegistry.WaterlinePrefab, Is.Null);
             Assert.That(pieceRegistry.FallbackPrefab, Is.Not.Null);
             Assert.That(blockerRegistry.FallbackBlockerPrefab, Is.Not.Null);
             Assert.That(targetRegistry.FallbackTargetPrefab, Is.Not.Null);
@@ -131,6 +138,44 @@ namespace Rescue.Unity.Art.Tests
             Assert.That(registry.GetPrefab(DebrisType.C), Is.Not.Null);
             Assert.That(registry.GetPrefab(DebrisType.D), Is.Not.Null);
             Assert.That(registry.GetPrefab(DebrisType.E), Is.Not.Null);
+        }
+
+        [Test]
+        public void Phase1PieceRegistry_UsesRequestedDockPoseOverrides()
+        {
+            PieceVisualRegistry registry = LoadAsset<PieceVisualRegistry>(PieceRegistryPath);
+
+            Assert.That(registry.GetDockScaleMultiplier(DebrisType.A), Is.EqualTo(0.8f));
+            Assert.That(registry.GetDockScaleMultiplier(DebrisType.B), Is.EqualTo(0.8f));
+            Assert.That(registry.GetDockScaleMultiplier(DebrisType.C), Is.EqualTo(0.8f));
+            Assert.That(registry.GetDockScaleMultiplier(DebrisType.D), Is.EqualTo(0.8f));
+            Assert.That(registry.GetDockScaleMultiplier(DebrisType.E), Is.EqualTo(0.8f));
+            Assert.That(registry.GetDockScaleMultiplier(DebrisType.F), Is.EqualTo(0.8f));
+            Assert.That(registry.GetDockEulerOffset(DebrisType.D), Is.EqualTo(new Vector3(0f, 180f, 0f)));
+            Assert.That(registry.GetDockEulerOffset(DebrisType.F), Is.EqualTo(new Vector3(0f, 90f, 0f)));
+        }
+
+        [Test]
+        public void Phase1VisualPrefabs_UseRequestedRootPoses()
+        {
+            GameObject debrisC = LoadAsset<GameObject>(Phase1DebrisCPrefabPath);
+            GameObject debrisD = LoadAsset<GameObject>(Phase1DebrisDPrefabPath);
+            GameObject iceReveal = LoadAsset<GameObject>(Phase1IceRevealFxPrefabPath);
+
+            Assert.That(Quaternion.Angle(debrisC.transform.localRotation, Quaternion.Euler(0f, 90f, 0f)), Is.LessThan(0.001f));
+            Assert.That(Quaternion.Angle(debrisD.transform.localRotation, Quaternion.Euler(0f, 220f, 0f)), Is.LessThan(0.001f));
+            Assert.That(Quaternion.Angle(iceReveal.transform.localRotation, Quaternion.Euler(180f, 0f, 0f)), Is.LessThan(0.001f));
+            Assert.That(iceReveal.transform.localPosition.z, Is.EqualTo(-0.5f).Within(0.001f));
+        }
+
+        [Test]
+        public void WaterRowMaterials_UseFourthWaterRiseFrameTexture()
+        {
+            Texture2D waterRiseFrame = LoadAsset<Texture2D>(WaterRiseFourthFramePath);
+
+            AssertWaterRiseCrop(LoadAsset<Material>(WaterFloodedMaterialPath), waterRiseFrame);
+            AssertWaterRiseCrop(LoadAsset<Material>(WaterForecastMaterialPath), waterRiseFrame);
+            AssertWaterRiseCrop(LoadAsset<Material>(Phase1FloodedRowMaterialPath), waterRiseFrame);
         }
 
         [Test]
@@ -249,6 +294,15 @@ namespace Rescue.Unity.Art.Tests
             T? asset = AssetDatabase.LoadAssetAtPath<T>(assetPath);
             Assert.That(asset, Is.Not.Null, $"Expected asset at '{assetPath}'.");
             return asset ?? throw new AssertionException($"Expected asset at '{assetPath}'.");
+        }
+
+        private static void AssertWaterRiseCrop(Material material, Texture2D waterRiseFrame)
+        {
+            Assert.That(material.mainTexture, Is.SameAs(waterRiseFrame));
+            Assert.That(material.mainTextureScale.x, Is.EqualTo(0.954f).Within(0.001f));
+            Assert.That(material.mainTextureScale.y, Is.EqualTo(0.543f).Within(0.001f));
+            Assert.That(material.mainTextureOffset.x, Is.EqualTo(0.021f).Within(0.001f));
+            Assert.That(material.mainTextureOffset.y, Is.EqualTo(0.224f).Within(0.001f));
         }
 
         private static void AssertFxPrefab(GameObject? prefab, string registrySlotName)

@@ -81,7 +81,7 @@ namespace Rescue.Unity.Water.Tests
 
             presenter.RebuildWater(state);
 
-            Assert.That(GetWaterRoot(presenter).childCount, Is.EqualTo(4));
+            Assert.That(GetWaterRoot(presenter).childCount, Is.EqualTo(3));
         }
 
         [Test]
@@ -207,7 +207,7 @@ namespace Rescue.Unity.Water.Tests
             presenter.SyncImmediate(previousState);
 
             Assert.DoesNotThrow(() => presenter.AnimateWaterRise(previousState, currentState, preferredFloodedRow: 5, durationSeconds: 0.15f));
-            Assert.That(GetWaterRoot(presenter).childCount, Is.EqualTo(4));
+            Assert.That(GetWaterRoot(presenter).childCount, Is.EqualTo(3));
         }
 
         [Test]
@@ -243,7 +243,7 @@ namespace Rescue.Unity.Water.Tests
 
             presenter.AnimateRiseToRow(previousState, currentState, rowIndex: 5, durationSeconds: 0.15f, forecastTransitionDurationSeconds: 0.05f);
 
-            Assert.That(waterRoot.childCount, Is.EqualTo(4));
+            Assert.That(waterRoot.childCount, Is.EqualTo(3));
             Assert.That(GetNamedChild(waterRoot, "FloodedRow_05"), Is.SameAs(forecastBeforeRise));
             Assert.That(GetNamedChild(waterRoot, "ForecastRow_04"), Is.Not.Null);
         }
@@ -277,12 +277,13 @@ namespace Rescue.Unity.Water.Tests
             Assert.DoesNotThrow(() => presenter.AnimateWaterRise(previousState, currentState, preferredFloodedRow: 99, durationSeconds: 0.15f));
 
             Transform waterRoot = GetWaterRoot(presenter);
-            Object.DestroyImmediate(GetNamedChild(waterRoot, "Waterline_05").gameObject);
+            Object.DestroyImmediate(GetNamedChild(waterRoot, "FloodedRow_06").gameObject);
 
             presenter.ForceSyncToState(currentState);
 
-            Assert.That(waterRoot.childCount, Is.EqualTo(4));
-            Assert.That(GetNamedChild(waterRoot, "Waterline_05"), Is.Not.Null);
+            Assert.That(waterRoot.childCount, Is.EqualTo(3));
+            Assert.That(GetNamedChild(waterRoot, "FloodedRow_06"), Is.Not.Null);
+            Assert.That(FindChildByName(waterRoot, "Waterline_05"), Is.Null);
         }
 
         [Test]
@@ -302,7 +303,7 @@ namespace Rescue.Unity.Water.Tests
 
             presenter.ForceSyncToState(currentState);
 
-            Assert.That(waterRoot.childCount, Is.EqualTo(4));
+            Assert.That(waterRoot.childCount, Is.EqualTo(3));
         }
 
         [Test]
@@ -423,7 +424,7 @@ namespace Rescue.Unity.Water.Tests
         }
 
         [Test]
-        public void WaterViewPresenter_RebuildWater_PositionsWaterlineFromSharedRowGeometry()
+        public void WaterViewPresenter_RebuildWater_DoesNotSpawnWaterline()
         {
             BoardGridViewPresenter gridPresenter = CreateGridPresenter(out _);
             GameState state = CreateState(width: 6, height: 7, floodedRows: 2);
@@ -432,13 +433,7 @@ namespace Rescue.Unity.Water.Tests
             WaterViewPresenter presenter = CreateWaterPresenter(gridPresenter, useFallbackOverlay: true);
             presenter.RebuildWater(state);
 
-            Assert.That(gridPresenter.TryGetRowWorldBounds(5, out BoardGridViewPresenter.RowWorldBounds rowBounds), Is.True);
-
-            Transform waterline = GetNamedChild(GetWaterRoot(presenter), "Waterline_05");
-            Vector3 expectedPosition = rowBounds.Center + new Vector3(0f, 0.1f, rowBounds.Depth * 0.5f);
-
-            Assert.That(waterline.position, Is.EqualTo(expectedPosition));
-            Assert.That(waterline.localScale.x, Is.EqualTo(rowBounds.Width).Within(0.001f));
+            Assert.That(FindChildByName(GetWaterRoot(presenter), "Waterline_05"), Is.Null);
         }
 
         private BoardGridViewPresenter CreateGridPresenter(out Transform boardRoot)
@@ -506,6 +501,20 @@ namespace Rescue.Unity.Water.Tests
             }
 
             throw new AssertionException($"Expected child '{childName}'.");
+        }
+
+        private static Transform? FindChildByName(Transform parent, string childName)
+        {
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                Transform child = parent.GetChild(i);
+                if (child.name == childName)
+                {
+                    return child;
+                }
+            }
+
+            return null;
         }
 
         private GameObject CreateTrackedObject(string name)

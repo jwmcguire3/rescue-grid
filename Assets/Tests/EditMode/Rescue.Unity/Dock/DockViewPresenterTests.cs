@@ -273,6 +273,77 @@ namespace Rescue.Unity.UI.Tests
         }
 
         [Test]
+        public void DockViewPresenter_OffsetsDockPiecesToLocalRight()
+        {
+            GameObject presenterObject = CreateTrackedObject("DockPresenter");
+            DockViewPresenter presenter = presenterObject.AddComponent<DockViewPresenter>();
+            Transform pieceContainer = new GameObject("DockPieces").transform;
+            pieceContainer.SetParent(presenterObject.transform, false);
+            Track(pieceContainer.gameObject);
+
+            Transform anchor = CreateTrackedAnchor(presenterObject.transform, 0);
+            anchor.SetPositionAndRotation(new Vector3(3f, 1f, -2f), Quaternion.Euler(0f, 90f, 0f));
+            for (int i = 1; i < 7; i++)
+            {
+                CreateTrackedAnchor(presenterObject.transform, i);
+            }
+
+            GameObject fallbackPrefab = CreateTrackedObject("FallbackPiecePrefab");
+            SetPrivateField(presenter, "pieceContainer", pieceContainer);
+            SetPrivateField(presenter, "fallbackPiecePrefab", fallbackPrefab);
+
+            presenter.Rebuild(CreateState(DebrisType.A, null, null, null, null, null, null));
+
+            GameObject? dockPiece = presenter.GetTrackedSlotObject(0);
+            Assert.That(dockPiece, Is.Not.Null);
+            Vector3 expectedPosition = anchor.position + (anchor.rotation * new Vector3(0.15f, 0f, 0f));
+            Assert.That(dockPiece!.transform.position, Is.EqualTo(expectedPosition));
+        }
+
+        [Test]
+        public void DockViewPresenter_UsesTopFacingDebrisDDockPose()
+        {
+            GameObject presenterObject = CreateTrackedObject("DockPresenter");
+            DockViewPresenter presenter = presenterObject.AddComponent<DockViewPresenter>();
+            Transform pieceContainer = new GameObject("DockPieces").transform;
+            pieceContainer.SetParent(presenterObject.transform, false);
+            Track(pieceContainer.gameObject);
+
+            Transform anchor = CreateTrackedAnchor(presenterObject.transform, 0);
+            anchor.SetPositionAndRotation(new Vector3(1f, 2f, 3f), Quaternion.Euler(15f, 35f, 0f));
+            for (int i = 1; i < 7; i++)
+            {
+                CreateTrackedAnchor(presenterObject.transform, i);
+            }
+
+            GameObject debrisDPrefab = CreateTrackedObject("DebrisDPrefab");
+            debrisDPrefab.transform.localScale = new Vector3(2f, 3f, 4f);
+
+            PieceVisualRegistry registry = ScriptableObject.CreateInstance<PieceVisualRegistry>();
+            registry.DebrisDPrefab = debrisDPrefab;
+            registry.DebrisDDockEulerOffset = new Vector3(0f, 180f, 0f);
+            registry.DebrisDDockScaleMultiplier = 0.8f;
+
+            try
+            {
+                SetPrivateField(presenter, "pieceContainer", pieceContainer);
+                SetPrivateField(presenter, "pieceRegistry", registry);
+
+                presenter.Rebuild(CreateState(DebrisType.D, null, null, null, null, null, null));
+
+                GameObject? dockPiece = presenter.GetTrackedSlotObject(0);
+                Assert.That(dockPiece, Is.Not.Null);
+                Assert.That(dockPiece!.transform.position, Is.EqualTo(anchor.position + (anchor.rotation * new Vector3(0.15f, 0f, 0f))));
+                Assert.That(dockPiece.transform.localScale, Is.EqualTo(new Vector3(1.6f, 2.4f, 3.2f)));
+                AssertQuaternionNear(anchor.rotation * Quaternion.Euler(0f, 180f, 0f), dockPiece.transform.rotation);
+            }
+            finally
+            {
+                Object.DestroyImmediate(registry);
+            }
+        }
+
+        [Test]
         public void DockViewPresenter_RebuildTracksSlotTypesAndObjectsByIndex()
         {
             GameObject presenterObject = CreateTrackedObject("DockPresenter");
@@ -512,7 +583,9 @@ namespace Rescue.Unity.UI.Tests
             Assert.That(sharedDockInstance.localScale, Is.EqualTo(Vector3.one));
             Assert.That(instantiatedRenderer!.sharedMaterial, Is.SameAs(safeMaterial));
             Assert.That(pieceContainer.childCount, Is.EqualTo(1));
-            Assert.That(pieceContainer.GetChild(0).position, Is.EqualTo(instantiatedAnchor!.position));
+            Assert.That(
+                pieceContainer.GetChild(0).position,
+                Is.EqualTo(instantiatedAnchor!.position + (instantiatedAnchor.rotation * new Vector3(0.15f, 0f, 0f))));
 
             Object.DestroyImmediate(safeMaterial);
             Object.DestroyImmediate(config);

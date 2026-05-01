@@ -901,8 +901,8 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(handled, Is.True);
             Assert.That(finalSyncCalls, Is.EqualTo(1));
             Assert.That(harness.Controller.CurrentPlan[0].StepType, Is.EqualTo(ActionPlaybackStepType.WaterRise));
-            Assert.That(waterChildCountAtFinalSync, Is.EqualTo(4));
-            Assert.That(harness.WaterRoot.childCount, Is.EqualTo(4));
+            Assert.That(waterChildCountAtFinalSync, Is.EqualTo(3));
+            Assert.That(harness.WaterRoot.childCount, Is.EqualTo(3));
         }
 
         [Test]
@@ -946,8 +946,8 @@ namespace Rescue.Unity.Presentation.Tests
             });
 
             Assert.That(finalSyncCalls, Is.EqualTo(1));
-            Assert.That(harness.WaterRoot.childCount, Is.EqualTo(4));
-            Assert.That(FindChildByName(harness.WaterRoot, "Waterline_02"), Is.Not.Null);
+            Assert.That(harness.WaterRoot.childCount, Is.EqualTo(3));
+            Assert.That(FindChildByName(harness.WaterRoot, "Waterline_02"), Is.Null);
         }
 
         [Test]
@@ -1173,7 +1173,7 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(finalSyncCalls, Is.EqualTo(1));
             Assert.That(FindChildByName(harness.ContentRoot, "Content_00_00_Debris_C"), Is.Not.Null);
             Assert.That(harness.DockPieceContainer.childCount, Is.EqualTo(3));
-            Assert.That(harness.WaterRoot.childCount, Is.EqualTo(3));
+            Assert.That(harness.WaterRoot.childCount, Is.EqualTo(2));
 
             yield return null;
 

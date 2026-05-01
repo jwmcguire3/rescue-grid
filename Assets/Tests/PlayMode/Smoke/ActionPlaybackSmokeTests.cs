@@ -383,10 +383,6 @@ namespace Rescue.PlayMode.Tests.Smoke
         private static int ExpectedWaterVisualCount(GameState state)
         {
             int count = state.Water.FloodedRows;
-            if (state.Water.FloodedRows > 0)
-            {
-                count++;
-            }
 
             if (state.Water.FloodedRows < state.Board.Height)
             {

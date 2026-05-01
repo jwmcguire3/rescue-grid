@@ -252,7 +252,7 @@ namespace Rescue.Unity.FX
                 return null;
             }
 
-            SpriteSequenceFxPlayer? player = instance.GetComponent<SpriteSequenceFxPlayer>();
+            SpriteSequenceFxPlayer? player = FxDebugFramePlayer.EnsureInspectionPlayer(instance);
             if (player is not null)
             {
                 player.DestroyAfterPlayback = false;
@@ -668,8 +668,10 @@ namespace Rescue.Unity.FX
             Transform parent = fxRoot != null ? fxRoot : transform;
             GameObject instance = Instantiate(prefab, parent);
             instance.name = instanceName;
-            instance.transform.position = ResolveFxWorldPosition(worldPosition);
-            instance.transform.rotation = ResolveFxWorldRotation();
+            Quaternion presentationRotation = ResolveFxWorldRotation();
+            instance.transform.SetPositionAndRotation(
+                ResolveFxWorldPosition(worldPosition) + (presentationRotation * prefab.transform.localPosition),
+                presentationRotation * prefab.transform.localRotation);
             ApplyDiagnosticVisibility(instance, hook);
             return instance;
         }

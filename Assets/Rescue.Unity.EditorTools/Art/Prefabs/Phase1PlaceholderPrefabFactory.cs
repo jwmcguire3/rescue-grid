@@ -113,8 +113,9 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             Material dockCautionMaterial = CreateOrUpdateMaterial(CombinePath(materialsPath, "Dock_Caution.mat"), shader, new Color(0.95f, 0.75f, 0.29f));
             Material dockAcuteMaterial = CreateOrUpdateMaterial(CombinePath(materialsPath, "Dock_Acute.mat"), shader, new Color(0.93f, 0.42f, 0.28f));
             Material dockFailedMaterial = CreateOrUpdateMaterial(CombinePath(materialsPath, "Dock_Failed.mat"), shader, new Color(0.44f, 0.15f, 0.15f));
-            Material waterFloodedMaterial = CreateOrUpdateMaterial(CombinePath(materialsPath, "Water_Flooded.mat"), shader, new Color(0.12f, 0.43f, 0.79f, 0.78f), transparent: true);
-            Material waterForecastMaterial = CreateOrUpdateMaterial(CombinePath(materialsPath, "Water_Forecast.mat"), shader, new Color(0.35f, 0.76f, 0.96f, 0.50f), transparent: true);
+            Texture2D? waterRiseFrameTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(CombinePath(artRootPath, "Sprites", "WaterRiseFx_04.png"));
+            Material waterFloodedMaterial = CreateOrUpdateMaterial(CombinePath(materialsPath, "Water_Flooded.mat"), shader, new Color(0.12f, 0.43f, 0.79f, 0.78f), transparent: true, mainTexture: waterRiseFrameTexture);
+            Material waterForecastMaterial = CreateOrUpdateMaterial(CombinePath(materialsPath, "Water_Forecast.mat"), shader, new Color(0.35f, 0.76f, 0.96f, 0.50f), transparent: true, mainTexture: waterRiseFrameTexture);
             Material waterlineMaterial = CreateOrUpdateMaterial(CombinePath(materialsPath, "Waterline.mat"), shader, new Color(0.05f, 0.27f, 0.58f, 0.92f), transparent: true);
 
             string prefabsPath = CombinePath(artRootPath, PrefabsFolderName);
@@ -277,6 +278,13 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 shader,
                 CombinePath(artRootPath, "Textures", "Water", "Meshy_AI_Blue_Puddle_0425081657_texture.png"),
                 CombinePath(artRootPath, "Textures", "Water", "Meshy_AI_Blue_Puddle_0425081657_texture_normal.png"));
+            Texture2D? waterRiseFrameTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(CombinePath(artRootPath, "Sprites", "WaterRiseFx_04.png"));
+            if (floodedRowMaterial is not null && waterRiseFrameTexture is not null)
+            {
+                floodedRowMaterial.mainTexture = waterRiseFrameTexture;
+                EditorUtility.SetDirty(floodedRowMaterial);
+            }
+
             Material? iceRevealFxMaterial = CreateOrUpdateTexturedMaterial(
                 CombinePath(materialsPath, "IceRevealFx_Phase1.mat"),
                 shader,
@@ -336,12 +344,14 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 CombinePath(prefabsPath, PiecesFolderName, "Debris_C_Phase1.prefab"),
                 CombinePath(artRootPath, "Models", "Pieces", "Meshy_AI_Multicolored_Rope_Kno_0428040509_texture.fbx"),
                 debrisCMaterial,
-                DebrisSizingProfile);
+                DebrisSizingProfile,
+                rootEulerAngles: new Vector3(0f, 90f, 0f));
             GameObject? debrisDPrefab = CreateMeshWrapperPrefab(
                 CombinePath(prefabsPath, PiecesFolderName, "Debris_D_Phase1.prefab"),
                 CombinePath(artRootPath, "Models", "Pieces", "Meshy_AI_Heart_Shaped_Massager_0424155210_texture.fbx"),
                 debrisDMaterial,
                 DebrisSizingProfile,
+                rootEulerAngles: new Vector3(0f, 220f, 0f),
                 visualRotationOffsetEuler: new Vector3(0f, 0f, 180f),
                 visualScaleMultiplier: 0.9f);
             GameObject? debrisEPrefab = CreateMeshWrapperPrefab(
@@ -392,7 +402,9 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 CombinePath(prefabsPath, FxFolderName, "IceRevealFx_Phase1.prefab"),
                 CombinePath(artRootPath, "Models", "FX", "Meshy_AI_Cracked_Ice_Tile_0425081737_texture.fbx"),
                 iceRevealFxMaterial,
-                FxSizingProfile);
+                FxSizingProfile,
+                rootEulerAngles: new Vector3(180f, 0f, 0f),
+                rootPosition: new Vector3(0f, 0f, -0.5f));
 
             string sharedDockModelPath = CombinePath(artRootPath, "Models", "Dock", "Meshy_AI_Dock_Safe_0424154642_texture_fbx.fbx");
             GameObject? sharedDockPrefab = CreateDockPrefab(
@@ -441,7 +453,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             tileRegistry.DryTilePrefab = canonicalDryTilePrefab;
             tileRegistry.FloodedRowOverlayPrefab = productionAssets.FloodedRowOverlayPrefab ?? placeholderAssets.FloodedRowOverlayPrefab;
             tileRegistry.ForecastRowOverlayPrefab = placeholderAssets.ForecastRowOverlayPrefab;
-            tileRegistry.WaterlinePrefab = placeholderAssets.WaterlinePrefab;
+            tileRegistry.WaterlinePrefab = null;
             tileRegistry.FallbackTilePrefab = canonicalDryTilePrefab;
             EditorUtility.SetDirty(tileRegistry);
 
@@ -453,6 +465,14 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             pieceRegistry.DebrisEPrefab = productionAssets.DebrisEPrefab ?? placeholderAssets.DebrisEPrefab;
             pieceRegistry.DebrisFPrefab = productionAssets.DebrisFPrefab ?? placeholderAssets.DebrisFPrefab;
             pieceRegistry.FallbackPrefab = productionAssets.DebrisAPrefab ?? placeholderAssets.DebrisAPrefab;
+            pieceRegistry.DebrisADockScaleMultiplier = 0.8f;
+            pieceRegistry.DebrisBDockScaleMultiplier = 0.8f;
+            pieceRegistry.DebrisCDockScaleMultiplier = 0.8f;
+            pieceRegistry.DebrisDDockScaleMultiplier = 0.8f;
+            pieceRegistry.DebrisEDockScaleMultiplier = 0.8f;
+            pieceRegistry.DebrisFDockScaleMultiplier = 0.8f;
+            pieceRegistry.DebrisDDockEulerOffset = new Vector3(0f, 180f, 0f);
+            pieceRegistry.DebrisFDockEulerOffset = new Vector3(0f, 90f, 0f);
             EditorUtility.SetDirty(pieceRegistry);
 
             BlockerVisualRegistry blockerRegistry = CreateOrLoadAsset<BlockerVisualRegistry>(CombinePath(registriesPath, "Phase1BlockerVisualRegistry.asset"));
@@ -552,7 +572,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             return normalTexture;
         }
 
-        private static Material CreateOrUpdateMaterial(string assetPath, Shader shader, Color color, bool transparent = false)
+        private static Material CreateOrUpdateMaterial(string assetPath, Shader shader, Color color, bool transparent = false, Texture2D? mainTexture = null)
         {
             Material? material = AssetDatabase.LoadAssetAtPath<Material>(assetPath);
             if (material is null)
@@ -566,6 +586,11 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
 
             material.shader = shader;
             material.color = color;
+            if (mainTexture is not null)
+            {
+                material.mainTexture = mainTexture;
+            }
+
             ConfigureMaterial(material, transparent);
             EditorUtility.SetDirty(material);
             return material;
@@ -648,7 +673,9 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             AssetSizingProfile sizingProfile,
             Vector3? visualEulerAngles = null,
             Vector3? visualRotationOffsetEuler = null,
-            float visualScaleMultiplier = 1f)
+            float visualScaleMultiplier = 1f,
+            Vector3? rootEulerAngles = null,
+            Vector3? rootPosition = null)
         {
             GameObject? sourceModel = AssetDatabase.LoadAssetAtPath<GameObject>(sourceModelPath);
             if (sourceModel is null || material is null)
@@ -659,6 +686,16 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             return CreateOrUpdatePrefab(assetPath, () =>
             {
                 GameObject root = new GameObject(System.IO.Path.GetFileNameWithoutExtension(assetPath));
+                if (rootEulerAngles.HasValue)
+                {
+                    root.transform.localRotation = Quaternion.Euler(rootEulerAngles.Value);
+                }
+
+                if (rootPosition.HasValue)
+                {
+                    root.transform.localPosition = rootPosition.Value;
+                }
+
                 GameObject art = (GameObject)PrefabUtility.InstantiatePrefab(sourceModel);
                 art.name = "Visual";
                 art.transform.SetParent(root.transform, false);

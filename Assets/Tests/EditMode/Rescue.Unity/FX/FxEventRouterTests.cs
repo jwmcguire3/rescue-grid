@@ -17,6 +17,7 @@ namespace Rescue.Unity.FX.Tests
     public sealed class FxEventRouterTests
     {
         private readonly List<Object> createdObjects = new List<Object>();
+        private const string TempFxPrefabPath = "Assets/Tests/EditMode/Rescue.Unity/FX/TempDebugInspectionFx.prefab";
 
         [TearDown]
         public void TearDown()
@@ -30,6 +31,7 @@ namespace Rescue.Unity.FX.Tests
             }
 
             createdObjects.Clear();
+            AssetDatabase.DeleteAsset(TempFxPrefabPath);
         }
 
         [Test]
@@ -497,6 +499,15 @@ namespace Rescue.Unity.FX.Tests
         }
 
         [Test]
+        public void FxDebugCatalog_LabelsEmptyPrefabAsNoSpriteRenderer()
+        {
+            GameObject emptyPrefab = CreateGameObject("EmptyFxShell");
+
+            Assert.That(FxDebugFramePlayer.HasInspectableRenderer(emptyPrefab), Is.False);
+            Assert.That(FxDebugFramePlayer.HasFramePlayer(emptyPrefab), Is.False);
+        }
+
+        [Test]
         public void FxEventRouter_ManualSpawnAppliesPresentationPlaneRotationAndSurfaceOffset()
         {
             GameState state = CreateState();
@@ -526,6 +537,129 @@ namespace Rescue.Unity.FX.Tests
             SpriteSequenceFxPlayer playerComponent = player ?? throw new AssertionException("Expected manual FX player.");
             Assert.That(playerComponent.DestroyAfterPlayback, Is.False);
             Assert.That(playerComponent.IsPlaying, Is.False);
+        }
+
+        [Test]
+        public void FxEventRouter_ManualSpawnComposesPrefabPose()
+        {
+            GameState state = CreateState();
+            BoardGridViewPresenter grid = CreateGrid(state);
+            grid.transform.rotation = Quaternion.Euler(0f, 25f, 0f);
+            GameObject fxRoot = CreateGameObject("FxRoot");
+            GameObject prefab = CreateSpriteFxPrefab("ManualFx");
+            prefab.transform.localPosition = new Vector3(0f, 0f, -0.5f);
+            prefab.transform.localRotation = Quaternion.Euler(180f, 0f, 0f);
+
+            FxEventRouter router = CreateGameObject("FxRouter").AddComponent<FxEventRouter>();
+            router.BoardGrid = grid;
+            router.FxRoot = fxRoot.transform;
+            router.SpawnedFxPlaneEulerOffset = new Vector3(90f, 0f, 0f);
+            router.SpawnedFxSurfaceOffset = 0f;
+
+            Vector3 boardCenter = grid.GetCellWorldPosition(new TileCoord(1, 1));
+            GameObject? spawned = router.SpawnManualDebugFx(prefab, "ManualFxInstance", FxEventHook.IceReveal, boardCenter);
+
+            Assert.That(spawned, Is.Not.Null);
+            Quaternion presentationRotation = grid.transform.rotation * Quaternion.Euler(90f, 0f, 0f);
+            Vector3 expectedPosition = boardCenter + (presentationRotation * prefab.transform.localPosition);
+            Quaternion expectedRotation = presentationRotation * prefab.transform.localRotation;
+            GameObject spawnedInstance = spawned ?? throw new AssertionException("Expected manual FX to spawn.");
+            AssertVector3Equal(expectedPosition, spawnedInstance.transform.position);
+            Assert.That(Quaternion.Angle(expectedRotation, spawnedInstance.transform.rotation), Is.LessThanOrEqualTo(0.001f));
+        }
+
+        [Test]
+        public void FxEventRouter_ManualSpawnAddsDebugPlayerWhenPrefabHasSpriteRendererOnly()
+        {
+            GameObject fxRoot = CreateGameObject("FxRoot");
+            GameObject prefab = CreateSpriteOnlyFxPrefab("UnhookedFx", CreateSprite(Color.red));
+
+            FxEventRouter router = CreateGameObject("FxRouter").AddComponent<FxEventRouter>();
+            router.FxRoot = fxRoot.transform;
+
+            GameObject? spawned = router.SpawnManualDebugFx(prefab, "ManualUnhookedFx", FxEventHook.GroupClear, Vector3.zero);
+
+            GameObject instance = spawned ?? throw new AssertionException("Expected manual FX to spawn.");
+            Assert.That(prefab.GetComponent<SpriteSequenceFxPlayer>(), Is.Null, "Manual inspection should not add a player to the source prefab.");
+            SpriteSequenceFxPlayer? player = instance.GetComponentInChildren<SpriteSequenceFxPlayer>(includeInactive: true);
+            Assert.That(player, Is.Not.Null, "Manual inspection should add a debug player to the spawned instance.");
+            Assert.That(player?.FrameCount, Is.EqualTo(1));
+            Assert.That(player?.DestroyAfterPlayback, Is.False);
+            Assert.That(player?.IsPlaying, Is.False);
+        }
+
+        [Test]
+        public void FxDebugFramePlayer_DebugPlayerStepsThroughDeterministicChildRendererFrames()
+        {
+            Sprite firstFrame = CreateSprite(Color.red);
+            Sprite secondFrame = CreateSprite(Color.green);
+            GameObject prefab = CreateSpriteOnlyFxPrefab("UnhookedFx", firstFrame);
+            GameObject child = CreateGameObject("ChildRenderer");
+            child.transform.SetParent(prefab.transform, false);
+            child.AddComponent<SpriteRenderer>().sprite = secondFrame;
+
+            FxEventRouter router = CreateGameObject("FxRouter").AddComponent<FxEventRouter>();
+
+            GameObject? spawned = router.SpawnManualDebugFx(prefab, "ManualUnhookedFx", FxEventHook.GroupClear, Vector3.zero);
+
+            GameObject instance = spawned ?? throw new AssertionException("Expected manual FX to spawn.");
+            SpriteSequenceFxPlayer player = instance.GetComponentInChildren<SpriteSequenceFxPlayer>(includeInactive: true)
+                ?? throw new AssertionException("Expected debug player.");
+            SpriteRenderer renderer = player.GetComponent<SpriteRenderer>();
+
+            Assert.That(player.FrameCount, Is.EqualTo(2));
+            Assert.That(player.CurrentFrameIndex, Is.EqualTo(0));
+            Assert.That(renderer.sprite, Is.SameAs(firstFrame));
+
+            player.NextFrame();
+
+            Assert.That(player.CurrentFrameIndex, Is.EqualTo(1));
+            Assert.That(renderer.sprite, Is.SameAs(secondFrame));
+        }
+
+        [Test]
+        public void FxEventRouter_RuntimeRouteDoesNotAttachDebugPlayerToHookedPrefab()
+        {
+            GameObject fxRoot = CreateGameObject("FxRoot");
+            GameObject hookedPrefab = CreateSpriteOnlyFxPrefab("HookedFxWithoutPlayer", CreateSprite(Color.red));
+            FxVisualRegistry registry = ScriptableObject.CreateInstance<FxVisualRegistry>();
+            createdObjects.Add(registry);
+            registry.GroupClearFx = hookedPrefab;
+            FxEventRouter router = CreateGameObject("FxRouter").AddComponent<FxEventRouter>();
+            router.FxRoot = fxRoot.transform;
+            router.FxRegistry = registry;
+
+            router.Route(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1)))));
+
+            Transform spawned = fxRoot.transform.Find(nameof(FxVisualRegistry.GroupClearFx))
+                ?? throw new AssertionException("Expected hooked runtime FX to spawn.");
+            Assert.That(spawned.GetComponentInChildren<SpriteSequenceFxPlayer>(includeInactive: true), Is.Null);
+            Assert.That(hookedPrefab.GetComponentInChildren<SpriteSequenceFxPlayer>(includeInactive: true), Is.Null);
+        }
+
+        [Test]
+        public void FxEventRouter_ManualInspectionDoesNotModifyPrefabAssetByDefault()
+        {
+            GameObject prefabSource = CreateSpriteOnlyFxPrefab("TempDebugInspectionFx", CreateSprite(Color.red));
+            GameObject? savedPrefab = PrefabUtility.SaveAsPrefabAsset(prefabSource, TempFxPrefabPath);
+            Assert.That(savedPrefab, Is.Not.Null);
+            AssetDatabase.ImportAsset(TempFxPrefabPath);
+            GameObject prefabAsset = AssetDatabase.LoadAssetAtPath<GameObject>(TempFxPrefabPath)
+                ?? throw new AssertionException("Expected temp prefab asset.");
+            Assert.That(prefabAsset.GetComponentInChildren<SpriteSequenceFxPlayer>(includeInactive: true), Is.Null);
+
+            FxEventRouter router = CreateGameObject("FxRouter").AddComponent<FxEventRouter>();
+
+            GameObject? spawned = router.SpawnManualDebugFx(prefabAsset, "ManualAssetFx", FxEventHook.GroupClear, Vector3.zero);
+
+            Assert.That(spawned, Is.Not.Null);
+            Assert.That(spawned?.GetComponentInChildren<SpriteSequenceFxPlayer>(includeInactive: true), Is.Not.Null);
+            GameObject reloadedPrefabAsset = AssetDatabase.LoadAssetAtPath<GameObject>(TempFxPrefabPath)
+                ?? throw new AssertionException("Expected temp prefab asset after manual inspection.");
+            Assert.That(reloadedPrefabAsset.GetComponentInChildren<SpriteSequenceFxPlayer>(includeInactive: true), Is.Null);
         }
 
         [UnityTest]
@@ -646,6 +780,14 @@ namespace Rescue.Unity.FX.Tests
             prefab.SetActive(false);
             prefab.AddComponent<SpriteRenderer>();
             prefab.AddComponent<SpriteSequenceFxPlayer>();
+            return prefab;
+        }
+
+        private GameObject CreateSpriteOnlyFxPrefab(string name, Sprite sprite)
+        {
+            GameObject prefab = CreateGameObject(name);
+            SpriteRenderer renderer = prefab.AddComponent<SpriteRenderer>();
+            renderer.sprite = sprite;
             return prefab;
         }
 

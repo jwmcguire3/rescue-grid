@@ -25,17 +25,19 @@ namespace Rescue.Unity.BoardPresentation
         private const string RescuePathWashName = "RescuePathWash";
         private const string RescuePathChevronPrefix = "RescuePathChevron_";
         private const float MinimumRescuePathYOffset = 0.18f;
+        private const int TargetMarkerCircleSegments = 32;
+        private static readonly Vector3 TargetReadabilityMarkerLocalPosition = new Vector3(0f, 0.025f, 0f);
+        private static readonly Vector3 TargetReadabilityMarkerLocalScale = new Vector3(0.7f, 1f, 0.7f);
+        private static readonly Vector3 TargetLastObstacleMarkerLocalPosition = new Vector3(0f, 0.035f, 0f);
+        private static readonly Vector3 TargetLastObstacleMarkerLocalScale = new Vector3(0.6f, 1f, 0.6f);
         private static readonly Vector3 HiddenDebrisScale = new Vector3(0.75f, 0.75f, 0.75f);
-        private static readonly Color TargetTrappedColor = new Color(0.62f, 0.72f, 0.92f, 0.82f);
-        private static readonly Color TargetProgressingColor = new Color(0.86f, 0.95f, 0.76f, 1f);
-        private static readonly Color TargetOneClearAwayColor = new Color(1f, 0.88f, 0.36f, 1f);
-        private static readonly Color TargetExtractableColor = new Color(1f, 0.64f, 0.24f, 1f);
-        private static readonly Color TargetDistressedColor = new Color(0.35f, 0.72f, 1f, 1f);
         private static readonly Color VinePreviewColor = new Color(0.52f, 0.95f, 0.48f, 0.72f);
         private static readonly Color RescuePathWashColor = new Color(0.435f, 0.141f, 0.122f, 0.22f);
         private static readonly Color RescuePathChevronColor = new Color(0.435f, 0.141f, 0.122f, 0.82f);
+        private static readonly Color TargetMarkerNeutralColor = new Color(0.9f, 0.9f, 0.84f, 0.5f);
         private static Material? rescuePathWashMaterial;
         private static Material? rescuePathChevronMaterial;
+        private static Material? targetMarkerMaterial;
         private static readonly Vector3 TargetTrappedScale = new Vector3(0.92f, 0.92f, 0.92f);
         private static readonly Vector3 TargetProgressingScale = new Vector3(1f, 1f, 1f);
         private static readonly Vector3 TargetOneClearAwayScale = new Vector3(1.08f, 1.08f, 1.08f);
@@ -367,6 +369,7 @@ namespace Rescue.Unity.BoardPresentation
                     contentYOffset,
                     effectiveDurationSeconds,
                     debrisView.BaseLocalScale,
+                    debrisView.BaseLocalRotation,
                     applyLandingFeedback: true);
             }
         }
@@ -434,7 +437,7 @@ namespace Rescue.Unity.BoardPresentation
             hiddenDebrisView.BaseLocalScale = Vector3.one;
             visualRegistry.Debris.Set(revealed.Coord, hiddenDebrisView);
 
-            MoveContentObjectToAnchor(hiddenDebrisView.Object, anchor, revealed.Coord, hiddenDebrisView.ContentLabel, contentYOffset);
+            MoveContentObjectToAnchor(hiddenDebrisView.Object, anchor, revealed.Coord, hiddenDebrisView.ContentLabel, contentYOffset, hiddenDebrisView.BaseLocalRotation);
             hiddenDebrisView.Object.transform.localScale = Vector3.one;
 
             if (!Application.isPlaying || !isActiveAndEnabled || effectiveDurationSeconds <= 0f)
@@ -477,11 +480,11 @@ namespace Rescue.Unity.BoardPresentation
                     continue;
                 }
 
-                BoardPieceView debrisView = new BoardPieceView(coord, contentLabel, debrisObject, debrisObject.transform.localScale);
+                BoardPieceView debrisView = new BoardPieceView(coord, contentLabel, debrisObject, debrisObject.transform.localScale, debrisObject.transform.localRotation);
                 visualRegistry.Debris.Set(coord, debrisView);
 
                 Vector3 entryPosition = GetSpawnEntryWorldPosition(coord);
-                PositionContentObjectAtWorldPose(debrisObject, anchor, entryPosition, anchor.rotation);
+                PositionContentObjectAtWorldPose(debrisObject, anchor, entryPosition, anchor.rotation * debrisView.BaseLocalRotation);
                 MovePieceToCoord(
                     debrisObject,
                     anchor,
@@ -490,6 +493,7 @@ namespace Rescue.Unity.BoardPresentation
                     contentYOffset,
                     effectiveDurationSeconds,
                     debrisView.BaseLocalScale,
+                    debrisView.BaseLocalRotation,
                     applyLandingFeedback: true);
             }
         }
@@ -841,7 +845,7 @@ namespace Rescue.Unity.BoardPresentation
                 else
                 {
                     existingView.Coord = coord;
-                    MoveContentObjectToAnchor(existingView.Object, anchor, coord, RescuePathLabel, yOffset);
+                    MoveContentObjectToAnchor(existingView.Object, anchor, coord, RescuePathLabel, yOffset, existingView.BaseLocalRotation);
                     existingView.Object.transform.localScale = existingView.BaseLocalScale;
                     ConfigureRescuePathMarker(existingView.Object, outwardDirection);
                     return;
@@ -851,7 +855,7 @@ namespace Rescue.Unity.BoardPresentation
             GameObject markerObject = SpawnRescuePathMarkerAtAnchor(coord, anchor, yOffset, outwardDirection);
             visualRegistry.RescuePath.Set(
                 coord,
-                new BoardPieceView(coord, RescuePathLabel, markerObject, markerObject.transform.localScale));
+                new BoardPieceView(coord, RescuePathLabel, markerObject, markerObject.transform.localScale, markerObject.transform.localRotation));
         }
 
         private static Vector3 ResolveRescuePathOutwardDirection(
@@ -1006,7 +1010,7 @@ namespace Rescue.Unity.BoardPresentation
                 else
                 {
                     existingView.Coord = coord;
-                    MoveContentObjectToAnchor(existingView.Object, anchor, coord, contentLabel, yOffset);
+                    MoveContentObjectToAnchor(existingView.Object, anchor, coord, contentLabel, yOffset, existingView.BaseLocalRotation);
                     existingView.Object.transform.localScale = existingView.BaseLocalScale;
                     return;
                 }
@@ -1020,7 +1024,7 @@ namespace Rescue.Unity.BoardPresentation
                 return;
             }
 
-            registry.Set(coord, new BoardPieceView(coord, contentLabel, spawnedObject, spawnedObject.transform.localScale));
+            registry.Set(coord, new BoardPieceView(coord, contentLabel, spawnedObject, spawnedObject.transform.localScale, spawnedObject.transform.localRotation));
         }
 
         private void EnsurePieceVisual(
@@ -1043,7 +1047,7 @@ namespace Rescue.Unity.BoardPresentation
                 else
                 {
                     existingView.Coord = coord;
-                    MoveContentObjectToAnchor(existingView.Object, anchor, coord, contentLabel, yOffset);
+                    MoveContentObjectToAnchor(existingView.Object, anchor, coord, contentLabel, yOffset, existingView.BaseLocalRotation);
                     existingView.Object.transform.localScale = existingView.BaseLocalScale;
                     return;
                 }
@@ -1055,7 +1059,7 @@ namespace Rescue.Unity.BoardPresentation
                 return;
             }
 
-            registry.Set(coord, new BoardPieceView(coord, contentLabel, spawnedObject, spawnedObject.transform.localScale));
+            registry.Set(coord, new BoardPieceView(coord, contentLabel, spawnedObject, spawnedObject.transform.localScale, spawnedObject.transform.localRotation));
         }
 
         private void EnsureTargetVisual(TileCoord coord, TargetState targetState, Transform anchor)
@@ -1159,13 +1163,13 @@ namespace Rescue.Unity.BoardPresentation
                     continue;
                 }
 
-                GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                GameObject marker = CreateTargetMarkerCircle($"{LastObstacleLabel}_{SanitizeName(target.TargetId)}");
                 marker.name = $"{LastObstacleLabel}_{SanitizeName(target.TargetId)}";
                 marker.transform.SetParent(obstacleObject.transform, false);
-                marker.transform.localPosition = new Vector3(0f, 0.08f, 0f);
-                marker.transform.localScale = new Vector3(1.16f, 0.08f, 1.16f);
-                Object.DestroyImmediate(marker.GetComponent<Collider>());
-                ApplyTint(marker, TargetOneClearAwayColor);
+                marker.transform.localPosition = TargetLastObstacleMarkerLocalPosition;
+                marker.transform.localScale = TargetLastObstacleMarkerLocalScale;
+                AssignDefaultParticleSystemMaterial(marker);
+                ApplyMarkerColor(marker);
                 targetObstacleMarkers.Add(marker);
             }
         }
@@ -1246,14 +1250,6 @@ namespace Rescue.Unity.BoardPresentation
 
         private static void ApplyTargetVisualState(GameObject targetObject, TargetReadiness readiness)
         {
-            Color tint = readiness switch
-            {
-                TargetReadiness.Progressing => TargetProgressingColor,
-                TargetReadiness.OneClearAway => TargetOneClearAwayColor,
-                TargetReadiness.ExtractableLatched => TargetExtractableColor,
-                TargetReadiness.Distressed => TargetDistressedColor,
-                _ => TargetTrappedColor,
-            };
             Vector3 scale = readiness switch
             {
                 TargetReadiness.Progressing => TargetProgressingScale,
@@ -1264,11 +1260,10 @@ namespace Rescue.Unity.BoardPresentation
             };
 
             targetObject.transform.localScale = scale;
-            ApplyTint(targetObject, tint);
-            SyncReadabilityMarker(targetObject, readiness, tint);
+            SyncReadabilityMarker(targetObject, readiness);
         }
 
-        private static void SyncReadabilityMarker(GameObject targetObject, TargetReadiness readiness, Color tint)
+        private static void SyncReadabilityMarker(GameObject targetObject, TargetReadiness readiness)
         {
             const string markerName = "TargetReadabilityMarker";
             Transform? marker = FindChildByNamePrefix(targetObject.transform, markerName);
@@ -1285,17 +1280,121 @@ namespace Rescue.Unity.BoardPresentation
 
             if (marker is null)
             {
-                GameObject markerObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                markerObject.name = markerName;
+                GameObject markerObject = CreateTargetMarkerCircle(markerName);
                 markerObject.transform.SetParent(targetObject.transform, false);
-                markerObject.transform.localPosition = new Vector3(0f, 0.04f, 0f);
-                markerObject.transform.localScale = new Vector3(1.18f, 0.04f, 1.18f);
-                Object.DestroyImmediate(markerObject.GetComponent<Collider>());
+                AssignDefaultParticleSystemMaterial(markerObject);
                 marker = markerObject.transform;
             }
 
             marker.gameObject.name = $"{markerName}_{readiness}";
-            ApplyTint(marker.gameObject, tint);
+            marker.localPosition = TargetReadabilityMarkerLocalPosition;
+            marker.localScale = TargetReadabilityMarkerLocalScale;
+            AssignDefaultParticleSystemMaterial(marker.gameObject);
+            ApplyMarkerColor(marker.gameObject);
+        }
+
+        private static GameObject CreateTargetMarkerCircle(string markerName)
+        {
+            GameObject marker = new GameObject(markerName);
+            MeshFilter meshFilter = marker.AddComponent<MeshFilter>();
+            MeshRenderer renderer = marker.AddComponent<MeshRenderer>();
+            meshFilter.sharedMesh = CreateTargetMarkerCircleMesh();
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+            return marker;
+        }
+
+        private static Mesh CreateTargetMarkerCircleMesh()
+        {
+            Vector3[] vertices = new Vector3[TargetMarkerCircleSegments + 2];
+            Vector3[] normals = new Vector3[vertices.Length];
+            Vector2[] uv = new Vector2[vertices.Length];
+            int[] triangles = new int[TargetMarkerCircleSegments * 3];
+
+            vertices[0] = Vector3.zero;
+            normals[0] = Vector3.up;
+            uv[0] = new Vector2(0.5f, 0.5f);
+
+            for (int i = 0; i <= TargetMarkerCircleSegments; i++)
+            {
+                float angle = (Mathf.PI * 2f * i) / TargetMarkerCircleSegments;
+                float x = Mathf.Cos(angle) * 0.5f;
+                float z = Mathf.Sin(angle) * 0.5f;
+                int vertexIndex = i + 1;
+                vertices[vertexIndex] = new Vector3(x, 0f, z);
+                normals[vertexIndex] = Vector3.up;
+                uv[vertexIndex] = new Vector2(x + 0.5f, z + 0.5f);
+            }
+
+            for (int i = 0; i < TargetMarkerCircleSegments; i++)
+            {
+                int triangleIndex = i * 3;
+                triangles[triangleIndex] = 0;
+                triangles[triangleIndex + 1] = i + 1;
+                triangles[triangleIndex + 2] = i + 2;
+            }
+
+            Mesh mesh = new Mesh
+            {
+                name = "TargetMarkerCircleMesh",
+                vertices = vertices,
+                normals = normals,
+                uv = uv,
+                triangles = triangles,
+            };
+            mesh.RecalculateBounds();
+            return mesh;
+        }
+
+        private static void AssignDefaultParticleSystemMaterial(GameObject markerObject)
+        {
+            Renderer? renderer = markerObject.GetComponent<Renderer>();
+            Material? markerMaterial = GetDefaultParticleSystemMaterial();
+            if (renderer is not null && markerMaterial is not null)
+            {
+                renderer.sharedMaterial = markerMaterial;
+            }
+        }
+
+        private static Material? GetDefaultParticleSystemMaterial()
+        {
+            if (targetMarkerMaterial == null)
+            {
+                GameObject resolver = new GameObject("DefaultParticleSystemMaterialResolver");
+                try
+                {
+                    ParticleSystem particleSystem = resolver.AddComponent<ParticleSystem>();
+                    ParticleSystemRenderer renderer = particleSystem.GetComponent<ParticleSystemRenderer>();
+                    targetMarkerMaterial = renderer.sharedMaterial;
+                }
+                finally
+                {
+                    if (Application.isPlaying)
+                    {
+                        Object.Destroy(resolver);
+                    }
+                    else
+                    {
+                        Object.DestroyImmediate(resolver);
+                    }
+                }
+
+                if (targetMarkerMaterial == null)
+                {
+                    Shader? shader = Shader.Find("Particles/Standard Unlit");
+                    shader ??= Shader.Find("Legacy Shaders/Particles/Alpha Blended");
+                    shader ??= Shader.Find("Standard");
+                    if (shader is not null)
+                    {
+                        targetMarkerMaterial = new Material(shader)
+                        {
+                            name = "Default-ParticleSystem",
+                        };
+                    }
+                }
+            }
+
+            return targetMarkerMaterial;
         }
 
         private static Transform? FindChildByNamePrefix(Transform parent, string namePrefix)
@@ -1346,6 +1445,20 @@ namespace Rescue.Unity.BoardPresentation
                 propertyBlock.SetColor("_Color", tint);
                 renderers[i].SetPropertyBlock(propertyBlock);
             }
+        }
+
+        private static void ApplyMarkerColor(GameObject markerObject)
+        {
+            Renderer? renderer = markerObject.GetComponent<Renderer>();
+            if (renderer is null)
+            {
+                return;
+            }
+
+            MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
+            renderer.GetPropertyBlock(propertyBlock);
+            propertyBlock.SetColor("_Color", TargetMarkerNeutralColor);
+            renderer.SetPropertyBlock(propertyBlock);
         }
 
         private static void AssignGeneratedRescuePathWashMaterial(GameObject contentObject)
@@ -1709,7 +1822,23 @@ namespace Rescue.Unity.BoardPresentation
             return gridView.TryGetCellAnchor(coord, out anchor);
         }
 
-        private void MoveContentObjectToAnchor(GameObject contentObject, Transform anchor, TileCoord coord, string contentLabel, float yOffset)
+        private void MoveContentObjectToAnchor(
+            GameObject contentObject,
+            Transform anchor,
+            TileCoord coord,
+            string contentLabel,
+            float yOffset)
+        {
+            MoveContentObjectToAnchor(contentObject, anchor, coord, contentLabel, yOffset, Quaternion.identity);
+        }
+
+        private void MoveContentObjectToAnchor(
+            GameObject contentObject,
+            Transform anchor,
+            TileCoord coord,
+            string contentLabel,
+            float yOffset,
+            Quaternion baseLocalRotation)
         {
             Transform parent = ResolveContentParent(anchor);
             Transform contentTransform = contentObject.transform;
@@ -1721,13 +1850,13 @@ namespace Rescue.Unity.BoardPresentation
             if (parent == anchor)
             {
                 contentTransform.localPosition = new Vector3(0f, yOffset, 0f);
-                contentTransform.localRotation = Quaternion.identity;
+                contentTransform.localRotation = baseLocalRotation;
             }
             else
             {
                 contentTransform.SetPositionAndRotation(
                     ResolveCellWorldPositionWithYOffset(coord, yOffset),
-                    anchor.rotation);
+                    anchor.rotation * baseLocalRotation);
             }
 
             contentObject.name =
@@ -1743,11 +1872,12 @@ namespace Rescue.Unity.BoardPresentation
             float yOffset,
             float durationSeconds,
             Vector3 baseLocalScale,
+            Quaternion baseLocalRotation,
             bool applyLandingFeedback)
         {
             if (!Application.isPlaying || !isActiveAndEnabled || durationSeconds <= 0f)
             {
-                MoveContentObjectToAnchor(contentObject, anchor, coord, contentLabel, yOffset);
+                MoveContentObjectToAnchor(contentObject, anchor, coord, contentLabel, yOffset, baseLocalRotation);
                 contentObject.transform.localScale = baseLocalScale;
                 return;
             }
@@ -1763,7 +1893,7 @@ namespace Rescue.Unity.BoardPresentation
             }
 
             Vector3 targetWorldPosition = ResolveCellWorldPositionWithYOffset(coord, yOffset);
-            Quaternion targetWorldRotation = anchor.rotation;
+            Quaternion targetWorldRotation = anchor.rotation * baseLocalRotation;
             contentObject.name =
                 $"Content_{coord.Row.ToString("00", CultureInfo.InvariantCulture)}_{coord.Col.ToString("00", CultureInfo.InvariantCulture)}_{contentLabel}";
             AttachOrUpdateBoardCellView(contentObject, coord);
@@ -1827,13 +1957,13 @@ namespace Rescue.Unity.BoardPresentation
             if (parent == anchor)
             {
                 contentTransform.localPosition = new Vector3(0f, yOffset, 0f);
-                contentTransform.localRotation = Quaternion.identity;
+                contentTransform.localRotation = prefab.transform.localRotation;
             }
             else
             {
                 contentTransform.SetPositionAndRotation(
                     ResolveCellWorldPositionWithYOffset(coord, yOffset),
-                    anchor.rotation);
+                    anchor.rotation * prefab.transform.localRotation);
             }
 
             contentTransform.localScale = Vector3.Scale(prefab.transform.localScale, scaleMultiplier);
@@ -2141,12 +2271,18 @@ namespace Rescue.Unity.BoardPresentation
 
         private sealed class BoardPieceView
         {
-            public BoardPieceView(TileCoord coord, string contentLabel, GameObject contentObject, Vector3 baseLocalScale)
+            public BoardPieceView(
+                TileCoord coord,
+                string contentLabel,
+                GameObject contentObject,
+                Vector3 baseLocalScale,
+                Quaternion baseLocalRotation)
             {
                 Coord = coord;
                 ContentLabel = contentLabel;
                 Object = contentObject;
                 BaseLocalScale = baseLocalScale;
+                BaseLocalRotation = baseLocalRotation;
             }
 
             public TileCoord Coord { get; set; }
@@ -2156,6 +2292,8 @@ namespace Rescue.Unity.BoardPresentation
             public GameObject Object { get; }
 
             public Vector3 BaseLocalScale { get; set; }
+
+            public Quaternion BaseLocalRotation { get; set; }
         }
 
         private sealed class TargetVisualView
