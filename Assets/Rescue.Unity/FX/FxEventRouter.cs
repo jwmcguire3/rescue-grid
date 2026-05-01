@@ -264,12 +264,12 @@ namespace Rescue.Unity.FX
 
         public Vector3 ResolveDebugFxWorldPosition(Vector3 worldPosition)
         {
-            return ResolveFxWorldPosition(worldPosition);
+            return ResolveFxWorldPosition(worldPosition, FxEventHook.GroupClear);
         }
 
         public Quaternion ResolveDebugFxWorldRotation()
         {
-            return ResolveFxWorldRotation();
+            return ResolveFxWorldRotation(FxEventHook.GroupClear);
         }
 
         public GameObject? GetActivePrefab(FxEventHook hook)
@@ -386,7 +386,7 @@ namespace Rescue.Unity.FX
 
         protected virtual void PlayDockInsert()
         {
-            TrySpawn(fxRegistry?.DockInsertFx, nameof(FxVisualRegistry.DockInsertFx), FxEventHook.DockInsert);
+            PlayDockInsert(ResolveDockFxWorldPosition());
         }
 
         protected virtual void PlayDockInsert(Vector3 worldPosition)
@@ -396,7 +396,7 @@ namespace Rescue.Unity.FX
 
         protected virtual void PlayDockTripleClear()
         {
-            PlayDockTripleClear(GetSafeFallbackPosition());
+            PlayDockTripleClear(ResolveDockFxWorldPosition());
         }
 
         protected virtual void PlayDockTripleClear(Vector3 worldPosition)
@@ -406,7 +406,11 @@ namespace Rescue.Unity.FX
 
         protected virtual void PlayDockWarning()
         {
-            TrySpawn(fxRegistry?.DockInsertFx, $"{nameof(FxVisualRegistry.DockInsertFx)}_WarningFallback", FxEventHook.DockWarning);
+            TrySpawn(
+                fxRegistry?.DockInsertFx,
+                $"{nameof(FxVisualRegistry.DockInsertFx)}_WarningFallback",
+                FxEventHook.DockWarning,
+                ResolveDockFxWorldPosition());
         }
 
         protected virtual void PlayWaterRise()
@@ -446,7 +450,11 @@ namespace Rescue.Unity.FX
 
         protected virtual void PlayLossDockOverflow()
         {
-            TrySpawn(fxRegistry?.LossFx, $"{nameof(FxVisualRegistry.LossFx)}_DockOverflow", FxEventHook.LossDockOverflow);
+            TrySpawn(
+                fxRegistry?.LossFx,
+                $"{nameof(FxVisualRegistry.LossFx)}_DockOverflow",
+                FxEventHook.LossDockOverflow,
+                ResolveDockFxWorldPosition());
         }
 
         protected virtual void PlayLossWaterOnTarget()
@@ -628,6 +636,11 @@ namespace Rescue.Unity.FX
             return GetSafeFallbackPosition();
         }
 
+        private Vector3 ResolveDockFxWorldPosition()
+        {
+            return ResolveDockCenterWorldPosition();
+        }
+
         private bool TryResolveDockSlotWorldPosition(int slotIndex, out Vector3 worldPosition)
         {
             DockViewPresenter? resolvedDockView = ResolveDockView();
@@ -685,30 +698,39 @@ namespace Rescue.Unity.FX
             Transform parent = fxRoot != null ? fxRoot : transform;
             GameObject instance = Instantiate(prefab, parent);
             instance.name = instanceName;
-            Quaternion presentationRotation = ResolveFxWorldRotation();
+            Quaternion presentationRotation = ResolveFxWorldRotation(hook);
             instance.transform.SetPositionAndRotation(
-                ResolveFxWorldPosition(worldPosition) + (presentationRotation * prefab.transform.localPosition),
+                ResolveFxWorldPosition(worldPosition, hook) + (presentationRotation * prefab.transform.localPosition),
                 presentationRotation * prefab.transform.localRotation);
             ApplyDiagnosticVisibility(instance, hook);
             return instance;
         }
 
-        private Vector3 ResolveFxWorldPosition(Vector3 worldPosition)
+        private Vector3 ResolveFxWorldPosition(Vector3 worldPosition, FxEventHook hook)
         {
             if (!alignSpawnedFxToPresentationPlane || spawnedFxSurfaceOffset <= 0f)
             {
                 return worldPosition;
             }
 
-            return worldPosition + (ResolveFxSurfaceNormal() * spawnedFxSurfaceOffset);
+            return worldPosition + (ResolveFxSurfaceNormal(hook) * spawnedFxSurfaceOffset);
         }
 
-        private Quaternion ResolveFxWorldRotation()
+        private Quaternion ResolveFxWorldRotation(FxEventHook hook)
         {
             if (!alignSpawnedFxToPresentationPlane)
             {
                 Transform parent = fxRoot != null ? fxRoot : transform;
                 return parent.rotation;
+            }
+
+            if (IsDockFxHook(hook))
+            {
+                DockViewPresenter? dockFxView = ResolveDockView();
+                if (dockFxView is not null)
+                {
+                    return dockFxView.transform.rotation * Quaternion.Euler(spawnedFxPlaneEulerOffset);
+                }
             }
 
             BoardGridViewPresenter? resolvedBoardGrid = ResolveBoardGrid();
@@ -727,8 +749,17 @@ namespace Rescue.Unity.FX
             return fallbackParent.rotation;
         }
 
-        private Vector3 ResolveFxSurfaceNormal()
+        private Vector3 ResolveFxSurfaceNormal(FxEventHook hook)
         {
+            if (IsDockFxHook(hook))
+            {
+                DockViewPresenter? dockFxView = ResolveDockView();
+                if (dockFxView is not null)
+                {
+                    return dockFxView.transform.up;
+                }
+            }
+
             BoardGridViewPresenter? resolvedBoardGrid = ResolveBoardGrid();
             if (resolvedBoardGrid is not null)
             {
@@ -743,6 +774,14 @@ namespace Rescue.Unity.FX
 
             Transform fallbackParent = fxRoot != null ? fxRoot : transform;
             return fallbackParent.up;
+        }
+
+        private static bool IsDockFxHook(FxEventHook hook)
+        {
+            return hook is FxEventHook.DockInsert
+                or FxEventHook.DockTripleClear
+                or FxEventHook.DockWarning
+                or FxEventHook.LossDockOverflow;
         }
 
         private void ApplyDiagnosticVisibility(GameObject instance, FxEventHook hook)

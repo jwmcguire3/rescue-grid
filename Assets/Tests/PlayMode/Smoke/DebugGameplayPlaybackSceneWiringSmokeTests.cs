@@ -121,6 +121,10 @@ namespace Rescue.PlayMode.Tests.Smoke
                 Is.SameAs(FindRequired<BoardGridViewPresenter>()),
                 "FxEventRouter should resolve cell and row positions through the scene board grid presenter.");
             Assert.That(
+                fxEventRouter.DockView,
+                Is.SameAs(FindRequired<DockViewPresenter>()),
+                "FxEventRouter should resolve dock-owned FX through the scene dock presenter.");
+            Assert.That(
                 fxEventRouter.FxRoot != null || fxEventRouter.transform != null,
                 Is.True,
                 "FxEventRouter should have an FX root assigned or be able to safely use its own transform as the spawn root.");

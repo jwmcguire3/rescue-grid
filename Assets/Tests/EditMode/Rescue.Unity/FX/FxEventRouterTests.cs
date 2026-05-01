@@ -376,6 +376,8 @@ namespace Rescue.Unity.FX.Tests
             GameState state = CreateState();
             BoardGridViewPresenter grid = CreateGrid(state);
             grid.transform.rotation = Quaternion.Euler(15f, 0f, 0f);
+            DockViewPresenter dock = CreateDockView(CreateDockState(null, null, null, null, null, null, null));
+            dock.transform.rotation = Quaternion.Euler(35f, 0f, 0f);
             GameObject fxRoot = CreateGameObject("FxRoot");
             GameObject prefab = CreateGameObject("GroupClearPrefab");
             FxVisualRegistry registry = ScriptableObject.CreateInstance<FxVisualRegistry>();
@@ -384,6 +386,7 @@ namespace Rescue.Unity.FX.Tests
 
             FxEventRouter router = CreateGameObject("FxRouter").AddComponent<FxEventRouter>();
             router.BoardGrid = grid;
+            router.DockView = dock;
             router.FxRoot = fxRoot.transform;
             router.FxRegistry = registry;
 
@@ -405,6 +408,80 @@ namespace Rescue.Unity.FX.Tests
             Quaternion expectedRotation = grid.transform.rotation * Quaternion.Euler(90f, 0f, 0f);
             Assert.That(Quaternion.Angle(expectedRotation, spawnedTransform.rotation), Is.LessThanOrEqualTo(0.001f));
             AssertVector3Equal(expectedPosition, spawnedTransform.position);
+        }
+
+        [Test]
+        public void FxEventRouter_DockWarningFxAlignsToDockPresentationPlaneWhenBoardAlsoAssigned()
+        {
+            GameState state = CreateState();
+            BoardGridViewPresenter grid = CreateGrid(state);
+            grid.transform.rotation = Quaternion.Euler(10f, 0f, 0f);
+            DockViewPresenter dock = CreateDockView(CreateDockState(null, null, null, null, null, null, null));
+            dock.transform.rotation = Quaternion.Euler(35f, 0f, 0f);
+            GameObject fxRoot = CreateGameObject("FxRoot");
+            GameObject prefab = CreateGameObject("DockInsertPrefab");
+            FxVisualRegistry registry = ScriptableObject.CreateInstance<FxVisualRegistry>();
+            createdObjects.Add(registry);
+            registry.DockInsertFx = prefab;
+
+            FxEventRouter router = CreateGameObject("FxRouter").AddComponent<FxEventRouter>();
+            router.BoardGrid = grid;
+            router.DockView = dock;
+            router.FxRoot = fxRoot.transform;
+            router.FxRegistry = registry;
+            router.SpawnedFxSurfaceOffset = 0.5f;
+
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.DockFeedback, new DockWarningChanged(DockWarningLevel.Safe, DockWarningLevel.Caution)));
+
+            Transform? spawned = fxRoot.transform.Find($"{nameof(FxVisualRegistry.DockInsertFx)}_WarningFallback");
+            Assert.That(spawned, Is.Not.Null);
+
+            bool foundDockCenter = dock.TryGetDockCenterWorldPosition(out Vector3 dockCenter);
+            Assert.That(foundDockCenter, Is.True);
+            Vector3 expectedPosition = dockCenter + (dock.transform.up * 0.5f);
+            Quaternion expectedRotation = dock.transform.rotation * Quaternion.Euler(90f, 0f, 0f);
+            Transform spawnedTransform = spawned ?? throw new AssertionException("Expected dock warning FX to spawn.");
+
+            AssertVector3Equal(expectedPosition, spawnedTransform.position);
+            Assert.That(Quaternion.Angle(expectedRotation, spawnedTransform.rotation), Is.LessThanOrEqualTo(0.001f));
+        }
+
+        [Test]
+        public void FxEventRouter_DockOverflowFxSpawnsAtDockCenter()
+        {
+            GameState state = CreateState();
+            BoardGridViewPresenter grid = CreateGrid(state);
+            DockViewPresenter dock = CreateDockView(CreateDockState(null, null, null, null, null, null, null));
+            GameObject fxRoot = CreateGameObject("FxRoot");
+            GameObject prefab = CreateGameObject("LossPrefab");
+            FxVisualRegistry registry = ScriptableObject.CreateInstance<FxVisualRegistry>();
+            createdObjects.Add(registry);
+            registry.LossFx = prefab;
+
+            FxEventRouter router = CreateGameObject("FxRouter").AddComponent<FxEventRouter>();
+            router.BoardGrid = grid;
+            router.DockView = dock;
+            router.FxRoot = fxRoot.transform;
+            router.FxRegistry = registry;
+            router.SpawnedFxSurfaceOffset = 0.25f;
+
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.DockOverflow, new DockOverflowTriggered(OverflowCount: 1)));
+
+            Transform? spawned = fxRoot.transform.Find($"{nameof(FxVisualRegistry.LossFx)}_DockOverflow");
+            Assert.That(spawned, Is.Not.Null);
+
+            bool foundDockCenter = dock.TryGetDockCenterWorldPosition(out Vector3 dockCenter);
+            Assert.That(foundDockCenter, Is.True);
+            Transform spawnedTransform = spawned ?? throw new AssertionException("Expected dock overflow FX to spawn.");
+            AssertVector3Equal(dockCenter + (dock.transform.up * 0.25f), spawnedTransform.position);
         }
 
         [Test]

@@ -113,6 +113,10 @@ namespace Rescue.PlayMode.Tests.Smoke
             Assert.That(fxRegistry.WinFx, Is.Not.Null, "Game.unity should have terminal win FX assigned.");
             Assert.That(fxRegistry.LossFx, Is.Not.Null, "Game.unity should have terminal loss FX assigned.");
             Assert.That(fxEventRouter.BoardGrid, Is.SameAs(boardGrid), "FxEventRouter should resolve cell and row positions through the scene board grid presenter.");
+            Assert.That(
+                fxEventRouter.DockView,
+                Is.SameAs(FindRequired<DockViewPresenter>()),
+                "FxEventRouter should resolve dock-owned FX through the scene dock presenter.");
             Assert.That(fxEventRouter.FxRoot, Is.Not.Null, "Game.unity should assign an FX root for runtime-spawned FX instances.");
 
             yield return null;

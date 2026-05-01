@@ -314,6 +314,12 @@ MonoBehaviour:
   fxRegistry: {fileID: 11400000, guid: b1429a0b0e5762443944d06aac7a1fbf, type: 2}
   fxRoot: {fileID: 200000051}
   boardGrid: {fileID: 200000012}
+  dockView: {fileID: 200000042}
+  alignSpawnedFxToPresentationPlane: 1
+  spawnedFxPlaneEulerOffset: {x: 90, y: 0, z: 0}
+  spawnedFxSurfaceOffset: 0.28
+  diagnosticsEnabled: 0
+  diagnosticMinimumVisibleSeconds: 0
 --- !u!82 &200000007
 AudioSource:
   m_ObjectHideFlags: 0
