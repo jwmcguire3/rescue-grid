@@ -301,6 +301,7 @@ MonoBehaviour:
   alignSpawnedFxToPresentationPlane: 1
   spawnedFxPlaneEulerOffset: {x: 90, y: 0, z: 0}
   spawnedFxSurfaceOffset: 0.28
+  fxPlaybackSpeedMultiplier: 1
   diagnosticsEnabled: 0
   diagnosticMinimumVisibleSeconds: 0
 --- !u!82 &200000007

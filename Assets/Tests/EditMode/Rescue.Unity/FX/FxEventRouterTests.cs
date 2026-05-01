@@ -518,6 +518,50 @@ namespace Rescue.Unity.FX.Tests
         }
 
         [Test]
+        public void FxEventRouter_AppliesFxPlaybackSpeedToSpawnedSpriteSequences()
+        {
+            GameObject fxRoot = CreateGameObject("FxRoot");
+            GameObject icePrefab = CreateSpriteFxPrefab("IceClearFx", frameCount: 4);
+            SpriteSequenceFxPlayer prefabPlayer = icePrefab.GetComponent<SpriteSequenceFxPlayer>()
+                ?? throw new AssertionException("Expected prefab player.");
+            SetPrivateField(prefabPlayer, "secondsPerFrame", 0.08f);
+            FxVisualRegistry registry = ScriptableObject.CreateInstance<FxVisualRegistry>();
+            createdObjects.Add(registry);
+            registry.IceRevealFx = icePrefab;
+            FxEventRouter router = CreateGameObject("FxRouter").AddComponent<FxEventRouter>();
+            router.FxRoot = fxRoot.transform;
+            router.FxRegistry = registry;
+            router.FxPlaybackSpeedMultiplier = 2.0f;
+            GameState state = CreateState();
+
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.BreakBlockerOrReveal, new IceRevealed(new TileCoord(1, 1), DebrisType.B)));
+
+            Transform spawned = fxRoot.transform.Find(nameof(FxVisualRegistry.IceRevealFx))
+                ?? throw new AssertionException("Expected IceRevealed to spawn the registered ice reveal FX under FXRoot.");
+            SpriteSequenceFxPlayer player = spawned.GetComponent<SpriteSequenceFxPlayer>()
+                ?? throw new AssertionException("Expected runtime ice FX to use SpriteSequenceFxPlayer.");
+
+            Assert.That(player.AuthoredSecondsPerFrame, Is.EqualTo(0.08f));
+            Assert.That(player.SecondsPerFrame, Is.EqualTo(0.04f));
+        }
+
+        [Test]
+        public void FxEventRouter_FxPlaybackSpeedMultiplierIsClamped()
+        {
+            FxEventRouter router = CreateGameObject("FxRouter").AddComponent<FxEventRouter>();
+
+            router.FxPlaybackSpeedMultiplier = 0.01f;
+            Assert.That(router.FxPlaybackSpeedMultiplier, Is.EqualTo(FxEventRouter.MinFxPlaybackSpeedMultiplier));
+
+            router.FxPlaybackSpeedMultiplier = 100.0f;
+            Assert.That(router.FxPlaybackSpeedMultiplier, Is.EqualTo(FxEventRouter.MaxFxPlaybackSpeedMultiplier));
+        }
+
+        [Test]
         public void FxEventRouter_ClearSpawnedFxRemovesStaleChildrenFromFxRoot()
         {
             GameObject fxRoot = CreateGameObject("FxRoot");
@@ -590,6 +634,25 @@ namespace Rescue.Unity.FX.Tests
             player.NextFrame();
             player.StopPlayback();
             Assert.That(player.CurrentFrameIndex, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void SpriteSequenceFxPlayer_FramePlaybackSpeedScalesFromAuthoredDelay()
+        {
+            GameObject gameObject = CreateGameObject("SpriteSequenceFx");
+            gameObject.AddComponent<SpriteRenderer>();
+            SpriteSequenceFxPlayer player = gameObject.AddComponent<SpriteSequenceFxPlayer>();
+            SetPrivateField(player, "secondsPerFrame", 0.08f);
+
+            player.SetFramePlaybackSpeedMultiplier(2.0f);
+
+            Assert.That(player.AuthoredSecondsPerFrame, Is.EqualTo(0.08f));
+            Assert.That(player.SecondsPerFrame, Is.EqualTo(0.04f));
+
+            player.SetFramePlaybackSpeedMultiplier(0.5f);
+
+            Assert.That(player.AuthoredSecondsPerFrame, Is.EqualTo(0.08f));
+            Assert.That(player.SecondsPerFrame, Is.EqualTo(0.16f));
         }
 
         [UnityTest]

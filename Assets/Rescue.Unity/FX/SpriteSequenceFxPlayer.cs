@@ -18,12 +18,25 @@ namespace Rescue.Unity.FX
 
         private Coroutine? playbackCoroutine;
         private int currentFrameIndex;
+        private float authoredSecondsPerFrame;
+        private bool hasAuthoredSecondsPerFrame;
 
         public int FrameCount => frames.Length;
 
         public int CurrentFrameIndex => currentFrameIndex;
 
         public bool IsPlaying => playbackCoroutine is not null;
+
+        public float SecondsPerFrame => secondsPerFrame;
+
+        public float AuthoredSecondsPerFrame
+        {
+            get
+            {
+                CaptureAuthoredSecondsPerFrame();
+                return authoredSecondsPerFrame;
+            }
+        }
 
         public bool DestroyAfterPlayback
         {
@@ -159,6 +172,13 @@ namespace Rescue.Unity.FX
             secondsPerFrame = Mathf.Max(secondsPerFrame, minimumDurationSeconds / frames.Length);
         }
 
+        public void SetFramePlaybackSpeedMultiplier(float multiplier)
+        {
+            CaptureAuthoredSecondsPerFrame();
+            float clampedMultiplier = Mathf.Max(0.0001f, multiplier);
+            secondsPerFrame = authoredSecondsPerFrame / clampedMultiplier;
+        }
+
         public void ConfigureForDebugInspection(SpriteRenderer renderer, Sprite[] debugFrames)
         {
             spriteRenderer = renderer;
@@ -169,6 +189,18 @@ namespace Rescue.Unity.FX
             PausePlayback();
             ApplyRendererSettings();
             ApplyFrame(0);
+            CaptureAuthoredSecondsPerFrame(force: true);
+        }
+
+        private void CaptureAuthoredSecondsPerFrame(bool force = false)
+        {
+            if (hasAuthoredSecondsPerFrame && !force)
+            {
+                return;
+            }
+
+            authoredSecondsPerFrame = secondsPerFrame;
+            hasAuthoredSecondsPerFrame = true;
         }
 
         private IEnumerator PlaySequence(int startFrameIndex)

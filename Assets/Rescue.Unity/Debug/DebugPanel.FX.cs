@@ -149,6 +149,11 @@ namespace Rescue.Unity.Debugging
                 _fxPlaneRotationOffsetField.SetValueWithoutNotify(router.SpawnedFxPlaneEulerOffset);
             }
 
+            if (router is not null)
+            {
+                RefreshSpeedSlider(_fxPlaybackSpeedSlider, _fxPlaybackSpeedValue, router.FxPlaybackSpeedMultiplier);
+            }
+
             UpdateFxFrameLabel();
         }
 

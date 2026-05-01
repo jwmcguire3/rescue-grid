@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using Rescue.Content;
@@ -67,13 +68,22 @@ namespace Rescue.Unity.Debugging
         private DropdownField? _speedSelector;
         private Toggle? _fastForwardToggle;
         private Toggle? _playbackEnabledToggle;
-        private DropdownField? _playbackSpeedSelector;
-        private DropdownField? _playbackBoardActionSpeedSelector;
-        private DropdownField? _playbackDockSpeedSelector;
-        private DropdownField? _playbackTargetSpeedSelector;
-        private DropdownField? _playbackHazardSpeedSelector;
-        private DropdownField? _playbackTerminalSpeedSelector;
-        private DropdownField? _playbackGravitySpawnSpeedSelector;
+        private Slider? _playbackSpeedSlider;
+        private Label? _playbackSpeedValue;
+        private Slider? _playbackBoardActionSpeedSlider;
+        private Label? _playbackBoardActionSpeedValue;
+        private Slider? _playbackDockSpeedSlider;
+        private Label? _playbackDockSpeedValue;
+        private Slider? _playbackTargetSpeedSlider;
+        private Label? _playbackTargetSpeedValue;
+        private Slider? _playbackHazardSpeedSlider;
+        private Label? _playbackHazardSpeedValue;
+        private Slider? _playbackTerminalSpeedSlider;
+        private Label? _playbackTerminalSpeedValue;
+        private Slider? _playbackGravitySpawnSpeedSlider;
+        private Label? _playbackGravitySpawnSpeedValue;
+        private Slider? _fxPlaybackSpeedSlider;
+        private Label? _fxPlaybackSpeedValue;
         private Label? _playbackStepValue;
         private Toggle? _fxDiagnosticsToggle;
         private Button? _playAllFxButton;
@@ -742,13 +752,13 @@ namespace Rescue.Unity.Debugging
             }
 
             bool enabled = _playbackEnabledToggle?.value ?? controller.Settings.PlaybackEnabled;
-            float speed = ParseSpeedMultiplier(_playbackSpeedSelector?.value);
-            float boardActionSpeed = ParseSpeedMultiplier(_playbackBoardActionSpeedSelector?.value);
-            float dockSpeed = ParseSpeedMultiplier(_playbackDockSpeedSelector?.value);
-            float targetSpeed = ParseSpeedMultiplier(_playbackTargetSpeedSelector?.value);
-            float hazardSpeed = ParseSpeedMultiplier(_playbackHazardSpeedSelector?.value);
-            float terminalSpeed = ParseSpeedMultiplier(_playbackTerminalSpeedSelector?.value);
-            float gravitySpawnSpeed = ParseSpeedMultiplier(_playbackGravitySpawnSpeedSelector?.value);
+            float speed = ReadSpeedSlider(_playbackSpeedSlider, controller.Settings.PlaybackSpeedMultiplier);
+            float boardActionSpeed = ReadSpeedSlider(_playbackBoardActionSpeedSlider, controller.Settings.BoardActionSpeedMultiplier);
+            float dockSpeed = ReadSpeedSlider(_playbackDockSpeedSlider, controller.Settings.DockSpeedMultiplier);
+            float targetSpeed = ReadSpeedSlider(_playbackTargetSpeedSlider, controller.Settings.TargetSpeedMultiplier);
+            float hazardSpeed = ReadSpeedSlider(_playbackHazardSpeedSlider, controller.Settings.HazardSpeedMultiplier);
+            float terminalSpeed = ReadSpeedSlider(_playbackTerminalSpeedSlider, controller.Settings.TerminalSpeedMultiplier);
+            float gravitySpawnSpeed = ReadSpeedSlider(_playbackGravitySpawnSpeedSlider, controller.Settings.GravitySpawnSpeedMultiplier);
             controller.ConfigureDebugPlayback(
                 enabled,
                 speed,
@@ -758,6 +768,12 @@ namespace Rescue.Unity.Debugging
                 hazardSpeed,
                 terminalSpeed,
                 gravitySpawnSpeed);
+            FxEventRouter? router = ResolveFxEventRouter();
+            if (router is not null)
+            {
+                router.FxPlaybackSpeedMultiplier = ReadSpeedSlider(_fxPlaybackSpeedSlider, router.FxPlaybackSpeedMultiplier);
+            }
+
             SetStatus($"Action playback {(enabled ? "enabled" : "disabled")} at {FormatSpeed(controller.Settings.PlaybackSpeedMultiplier)}.");
             RefreshPlaybackDebugUi();
         }
@@ -780,22 +796,18 @@ namespace Rescue.Unity.Debugging
                 _playbackEnabledToggle.SetValueWithoutNotify(controller.Settings.PlaybackEnabled);
             }
 
-            if (_playbackSpeedSelector is not null)
+            RefreshSpeedSlider(_playbackSpeedSlider, _playbackSpeedValue, controller.Settings.PlaybackSpeedMultiplier);
+            RefreshSpeedSlider(_playbackBoardActionSpeedSlider, _playbackBoardActionSpeedValue, controller.Settings.BoardActionSpeedMultiplier);
+            RefreshSpeedSlider(_playbackDockSpeedSlider, _playbackDockSpeedValue, controller.Settings.DockSpeedMultiplier);
+            RefreshSpeedSlider(_playbackTargetSpeedSlider, _playbackTargetSpeedValue, controller.Settings.TargetSpeedMultiplier);
+            RefreshSpeedSlider(_playbackHazardSpeedSlider, _playbackHazardSpeedValue, controller.Settings.HazardSpeedMultiplier);
+            RefreshSpeedSlider(_playbackTerminalSpeedSlider, _playbackTerminalSpeedValue, controller.Settings.TerminalSpeedMultiplier);
+            RefreshSpeedSlider(_playbackGravitySpawnSpeedSlider, _playbackGravitySpawnSpeedValue, controller.Settings.GravitySpawnSpeedMultiplier);
+            FxEventRouter? router = ResolveFxEventRouter();
+            if (router is not null)
             {
-                if (_playbackSpeedSelector.choices is null || _playbackSpeedSelector.choices.Count == 0)
-                {
-                    _playbackSpeedSelector.choices = new List<string>(SpeedChoices);
-                }
-
-                _playbackSpeedSelector.SetValueWithoutNotify(FormatSpeed(controller.Settings.PlaybackSpeedMultiplier));
+                RefreshSpeedSlider(_fxPlaybackSpeedSlider, _fxPlaybackSpeedValue, router.FxPlaybackSpeedMultiplier);
             }
-
-            RefreshSpeedSelector(_playbackBoardActionSpeedSelector, controller.Settings.BoardActionSpeedMultiplier);
-            RefreshSpeedSelector(_playbackDockSpeedSelector, controller.Settings.DockSpeedMultiplier);
-            RefreshSpeedSelector(_playbackTargetSpeedSelector, controller.Settings.TargetSpeedMultiplier);
-            RefreshSpeedSelector(_playbackHazardSpeedSelector, controller.Settings.HazardSpeedMultiplier);
-            RefreshSpeedSelector(_playbackTerminalSpeedSelector, controller.Settings.TerminalSpeedMultiplier);
-            RefreshSpeedSelector(_playbackGravitySpawnSpeedSelector, controller.Settings.GravitySpawnSpeedMultiplier);
 
             if (_playbackStepValue is not null)
             {
@@ -803,19 +815,21 @@ namespace Rescue.Unity.Debugging
             }
         }
 
-        private static void RefreshSpeedSelector(DropdownField? selector, float speed)
+        private static float ReadSpeedSlider(Slider? slider, float fallback)
         {
-            if (selector is null)
-            {
-                return;
-            }
+            return slider is null
+                ? fallback
+                : Mathf.Clamp(slider.value, FxEventRouter.MinFxPlaybackSpeedMultiplier, FxEventRouter.MaxFxPlaybackSpeedMultiplier);
+        }
 
-            if (selector.choices is null || selector.choices.Count == 0)
+        private static void RefreshSpeedSlider(Slider? slider, Label? valueLabel, float speed)
+        {
+            float clampedSpeed = Mathf.Clamp(speed, FxEventRouter.MinFxPlaybackSpeedMultiplier, FxEventRouter.MaxFxPlaybackSpeedMultiplier);
+            slider?.SetValueWithoutNotify(clampedSpeed);
+            if (valueLabel is not null)
             {
-                selector.choices = new List<string>(SpeedChoices);
+                valueLabel.text = FormatSpeed(clampedSpeed);
             }
-
-            selector.SetValueWithoutNotify(FormatSpeed(speed));
         }
 
         private void PlayAllFxDiagnostics()
@@ -916,7 +930,7 @@ namespace Rescue.Unity.Debugging
                 return "4x";
             }
 
-            return "1x";
+            return speed.ToString("0.##", CultureInfo.InvariantCulture) + "x";
         }
 
         private void StartTelemetrySession(GameState state, string levelId, int seed)
@@ -1109,13 +1123,22 @@ namespace Rescue.Unity.Debugging
             _speedSelector = panel.Q<DropdownField>("speed-selector");
             _fastForwardToggle = panel.Q<Toggle>("fast-forward-toggle");
             _playbackEnabledToggle = panel.Q<Toggle>("playback-enabled-toggle");
-            _playbackSpeedSelector = panel.Q<DropdownField>("playback-speed-selector");
-            _playbackBoardActionSpeedSelector = panel.Q<DropdownField>("playback-board-action-speed-selector");
-            _playbackDockSpeedSelector = panel.Q<DropdownField>("playback-dock-speed-selector");
-            _playbackTargetSpeedSelector = panel.Q<DropdownField>("playback-target-speed-selector");
-            _playbackHazardSpeedSelector = panel.Q<DropdownField>("playback-hazard-speed-selector");
-            _playbackTerminalSpeedSelector = panel.Q<DropdownField>("playback-terminal-speed-selector");
-            _playbackGravitySpawnSpeedSelector = panel.Q<DropdownField>("playback-gravity-spawn-speed-selector");
+            _playbackSpeedSlider = panel.Q<Slider>("playback-speed-slider");
+            _playbackSpeedValue = panel.Q<Label>("playback-speed-value");
+            _playbackBoardActionSpeedSlider = panel.Q<Slider>("playback-board-action-speed-slider");
+            _playbackBoardActionSpeedValue = panel.Q<Label>("playback-board-action-speed-value");
+            _playbackDockSpeedSlider = panel.Q<Slider>("playback-dock-speed-slider");
+            _playbackDockSpeedValue = panel.Q<Label>("playback-dock-speed-value");
+            _playbackTargetSpeedSlider = panel.Q<Slider>("playback-target-speed-slider");
+            _playbackTargetSpeedValue = panel.Q<Label>("playback-target-speed-value");
+            _playbackHazardSpeedSlider = panel.Q<Slider>("playback-hazard-speed-slider");
+            _playbackHazardSpeedValue = panel.Q<Label>("playback-hazard-speed-value");
+            _playbackTerminalSpeedSlider = panel.Q<Slider>("playback-terminal-speed-slider");
+            _playbackTerminalSpeedValue = panel.Q<Label>("playback-terminal-speed-value");
+            _playbackGravitySpawnSpeedSlider = panel.Q<Slider>("playback-gravity-spawn-speed-slider");
+            _playbackGravitySpawnSpeedValue = panel.Q<Label>("playback-gravity-spawn-speed-value");
+            _fxPlaybackSpeedSlider = panel.Q<Slider>("fx-playback-speed-slider");
+            _fxPlaybackSpeedValue = panel.Q<Label>("fx-playback-speed-value");
             _playbackStepValue = panel.Q<Label>("playback-step-value");
             _fxDiagnosticsToggle = panel.Q<Toggle>("fx-diagnostics-toggle");
             _playAllFxButton = panel.Q<Button>("play-all-fx-button");
@@ -1245,27 +1268,14 @@ namespace Rescue.Unity.Debugging
                 });
             }
 
-            if (_playbackSpeedSelector is not null)
-            {
-                _playbackSpeedSelector.choices = new List<string>(SpeedChoices);
-                _playbackSpeedSelector.SetValueWithoutNotify(FormatSpeed(ActionPlaybackSettings.DefaultPlaybackSpeedMultiplier));
-                _playbackSpeedSelector.RegisterValueChangedCallback(evt =>
-                {
-                    if (!_initialized || string.Equals(evt.previousValue, evt.newValue, StringComparison.Ordinal))
-                    {
-                        return;
-                    }
-
-                    ApplyPlaybackControlsFromUi();
-                });
-            }
-
-            RegisterPlaybackSpeedSelector(_playbackBoardActionSpeedSelector);
-            RegisterPlaybackSpeedSelector(_playbackDockSpeedSelector);
-            RegisterPlaybackSpeedSelector(_playbackTargetSpeedSelector);
-            RegisterPlaybackSpeedSelector(_playbackHazardSpeedSelector);
-            RegisterPlaybackSpeedSelector(_playbackTerminalSpeedSelector);
-            RegisterPlaybackSpeedSelector(_playbackGravitySpawnSpeedSelector);
+            RegisterPlaybackSpeedSlider(_playbackSpeedSlider, _playbackSpeedValue, ActionPlaybackSettings.DefaultPlaybackSpeedMultiplier);
+            RegisterPlaybackSpeedSlider(_playbackBoardActionSpeedSlider, _playbackBoardActionSpeedValue, ActionPlaybackSettings.DefaultGroupSpeedMultiplier);
+            RegisterPlaybackSpeedSlider(_playbackDockSpeedSlider, _playbackDockSpeedValue, ActionPlaybackSettings.DefaultGroupSpeedMultiplier);
+            RegisterPlaybackSpeedSlider(_playbackTargetSpeedSlider, _playbackTargetSpeedValue, ActionPlaybackSettings.DefaultGroupSpeedMultiplier);
+            RegisterPlaybackSpeedSlider(_playbackHazardSpeedSlider, _playbackHazardSpeedValue, ActionPlaybackSettings.DefaultGroupSpeedMultiplier);
+            RegisterPlaybackSpeedSlider(_playbackTerminalSpeedSlider, _playbackTerminalSpeedValue, ActionPlaybackSettings.DefaultGroupSpeedMultiplier);
+            RegisterPlaybackSpeedSlider(_playbackGravitySpawnSpeedSlider, _playbackGravitySpawnSpeedValue, ActionPlaybackSettings.DefaultGroupSpeedMultiplier);
+            RegisterPlaybackSpeedSlider(_fxPlaybackSpeedSlider, _fxPlaybackSpeedValue, FxEventRouter.DefaultFxPlaybackSpeedMultiplier);
 
             if (_playAllFxButton is not null)
             {
@@ -1428,6 +1438,31 @@ namespace Rescue.Unity.Debugging
             return row;
         }
 
+        private static VisualElement MakeSpeedSliderRow(
+            string title,
+            out Slider slider,
+            out Label valueLabel,
+            string sliderName,
+            string valueName)
+        {
+            VisualElement row = new VisualElement();
+            row.AddToClassList("field-row");
+            row.AddToClassList("speed-slider-row");
+            Label titleLabel = new Label(title);
+            titleLabel.AddToClassList("speed-slider-title");
+            row.Add(titleLabel);
+            slider = new Slider(FxEventRouter.MinFxPlaybackSpeedMultiplier, FxEventRouter.MaxFxPlaybackSpeedMultiplier)
+            {
+                name = sliderName,
+            };
+            slider.style.flexGrow = 1.0f;
+            row.Add(slider);
+            valueLabel = new Label(FormatSpeed(FxEventRouter.DefaultFxPlaybackSpeedMultiplier)) { name = valueName };
+            valueLabel.AddToClassList("speed-slider-value");
+            row.Add(valueLabel);
+            return row;
+        }
+
         private static Button MakeButton(string text, string name, out Button button)
         {
             button = new Button { text = text, name = name };
@@ -1468,18 +1503,20 @@ namespace Rescue.Unity.Debugging
             }
         }
 
-        private void RegisterPlaybackSpeedSelector(DropdownField? selector)
+        private void RegisterPlaybackSpeedSlider(Slider? slider, Label? valueLabel, float initialSpeed)
         {
-            if (selector is null)
+            if (slider is null)
             {
                 return;
             }
 
-            selector.choices = new List<string>(SpeedChoices);
-            selector.SetValueWithoutNotify(FormatSpeed(ActionPlaybackSettings.DefaultGroupSpeedMultiplier));
-            selector.RegisterValueChangedCallback(evt =>
+            slider.lowValue = FxEventRouter.MinFxPlaybackSpeedMultiplier;
+            slider.highValue = FxEventRouter.MaxFxPlaybackSpeedMultiplier;
+            RefreshSpeedSlider(slider, valueLabel, initialSpeed);
+            slider.RegisterValueChangedCallback(evt =>
             {
-                if (!_initialized || string.Equals(evt.previousValue, evt.newValue, StringComparison.Ordinal))
+                RefreshSpeedSlider(null, valueLabel, evt.newValue);
+                if (!_initialized || Mathf.Approximately(evt.previousValue, evt.newValue))
                 {
                     return;
                 }

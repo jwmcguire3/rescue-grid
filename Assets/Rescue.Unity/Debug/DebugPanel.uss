@@ -73,6 +73,20 @@
     margin-bottom: 4px;
 }
 
+.speed-slider-title {
+    min-width: 136px;
+}
+
+.speed-slider-row > Slider {
+    flex-grow: 1;
+}
+
+.speed-slider-value {
+    min-width: 44px;
+    margin-left: 6px;
+    -unity-text-align: middle-right;
+}
+
 .event-log-entry {
     margin-bottom: 8px;
     padding-bottom: 6px;

@@ -29,13 +29,46 @@
 
                 <ui:Label text="Action Playback" class="debug-section" />
                 <ui:Toggle name="playback-enabled-toggle" text="Playback Enabled" />
-                <ui:DropdownField name="playback-speed-selector" label="Playback Speed" />
-                <ui:DropdownField name="playback-board-action-speed-selector" label="Board Action Speed" />
-                <ui:DropdownField name="playback-dock-speed-selector" label="Dock Speed" />
-                <ui:DropdownField name="playback-target-speed-selector" label="Target Speed" />
-                <ui:DropdownField name="playback-hazard-speed-selector" label="Hazard Speed" />
-                <ui:DropdownField name="playback-terminal-speed-selector" label="Terminal Speed" />
-                <ui:DropdownField name="playback-gravity-spawn-speed-selector" label="Gravity/Spawn Speed" />
+                <ui:VisualElement class="field-row speed-slider-row">
+                    <ui:Label text="Playback Speed" class="speed-slider-title" />
+                    <ui:Slider name="playback-speed-slider" low-value="0.25" high-value="4" />
+                    <ui:Label name="playback-speed-value" text="0.5x" class="speed-slider-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="field-row speed-slider-row">
+                    <ui:Label text="Board Action Speed" class="speed-slider-title" />
+                    <ui:Slider name="playback-board-action-speed-slider" low-value="0.25" high-value="4" />
+                    <ui:Label name="playback-board-action-speed-value" text="1x" class="speed-slider-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="field-row speed-slider-row">
+                    <ui:Label text="Dock Speed" class="speed-slider-title" />
+                    <ui:Slider name="playback-dock-speed-slider" low-value="0.25" high-value="4" />
+                    <ui:Label name="playback-dock-speed-value" text="1x" class="speed-slider-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="field-row speed-slider-row">
+                    <ui:Label text="Target Speed" class="speed-slider-title" />
+                    <ui:Slider name="playback-target-speed-slider" low-value="0.25" high-value="4" />
+                    <ui:Label name="playback-target-speed-value" text="1x" class="speed-slider-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="field-row speed-slider-row">
+                    <ui:Label text="Hazard Speed" class="speed-slider-title" />
+                    <ui:Slider name="playback-hazard-speed-slider" low-value="0.25" high-value="4" />
+                    <ui:Label name="playback-hazard-speed-value" text="1x" class="speed-slider-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="field-row speed-slider-row">
+                    <ui:Label text="Terminal Speed" class="speed-slider-title" />
+                    <ui:Slider name="playback-terminal-speed-slider" low-value="0.25" high-value="4" />
+                    <ui:Label name="playback-terminal-speed-value" text="1x" class="speed-slider-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="field-row speed-slider-row">
+                    <ui:Label text="Gravity/Spawn Speed" class="speed-slider-title" />
+                    <ui:Slider name="playback-gravity-spawn-speed-slider" low-value="0.25" high-value="4" />
+                    <ui:Label name="playback-gravity-spawn-speed-value" text="1x" class="speed-slider-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="field-row speed-slider-row">
+                    <ui:Label text="FX Playback Speed" class="speed-slider-title" />
+                    <ui:Slider name="fx-playback-speed-slider" low-value="0.25" high-value="4" />
+                    <ui:Label name="fx-playback-speed-value" text="1x" class="speed-slider-value" />
+                </ui:VisualElement>
                 <ui:Label name="playback-step-value" text="Playback step: Idle" class="debug-value" />
                 <ui:Toggle name="fx-diagnostics-toggle" text="FX Diagnostics" />
                 <ui:Button name="play-all-fx-button" text="Play All FX Diagnostics" />

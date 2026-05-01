@@ -12,6 +12,10 @@ namespace Rescue.Unity.FX
     [DisallowMultipleComponent]
     public class FxEventRouter : MonoBehaviour
     {
+        public const float DefaultFxPlaybackSpeedMultiplier = 1.0f;
+        public const float MinFxPlaybackSpeedMultiplier = 0.25f;
+        public const float MaxFxPlaybackSpeedMultiplier = 4.0f;
+
         [SerializeField] private FxVisualRegistry? fxRegistry;
         [SerializeField] private Transform? fxRoot;
         [SerializeField] private BoardGridViewPresenter? boardGrid;
@@ -19,6 +23,7 @@ namespace Rescue.Unity.FX
         [SerializeField] private bool alignSpawnedFxToPresentationPlane = true;
         [SerializeField] private Vector3 spawnedFxPlaneEulerOffset = new Vector3(90f, 0f, 0f);
         [SerializeField] private float spawnedFxSurfaceOffset = 0.28f;
+        [SerializeField] private float fxPlaybackSpeedMultiplier = DefaultFxPlaybackSpeedMultiplier;
         [SerializeField] private bool diagnosticsEnabled;
         [SerializeField] private float diagnosticMinimumVisibleSeconds;
 
@@ -65,6 +70,18 @@ namespace Rescue.Unity.FX
         {
             get => spawnedFxSurfaceOffset;
             set => spawnedFxSurfaceOffset = Mathf.Max(0f, value);
+        }
+
+        public float FxPlaybackSpeedMultiplier
+        {
+            get => Mathf.Clamp(
+                fxPlaybackSpeedMultiplier,
+                MinFxPlaybackSpeedMultiplier,
+                MaxFxPlaybackSpeedMultiplier);
+            set => fxPlaybackSpeedMultiplier = Mathf.Clamp(
+                value,
+                MinFxPlaybackSpeedMultiplier,
+                MaxFxPlaybackSpeedMultiplier);
         }
 
         public bool DiagnosticsEnabled
@@ -702,8 +719,24 @@ namespace Rescue.Unity.FX
             instance.transform.SetPositionAndRotation(
                 ResolveFxWorldPosition(worldPosition, hook) + (presentationRotation * prefab.transform.localPosition),
                 presentationRotation * prefab.transform.localRotation);
+            ApplyFxPlaybackSpeed(instance);
             ApplyDiagnosticVisibility(instance, hook);
             return instance;
+        }
+
+        private void ApplyFxPlaybackSpeed(GameObject instance)
+        {
+            SpriteSequenceFxPlayer[] players = instance.GetComponentsInChildren<SpriteSequenceFxPlayer>(includeInactive: true);
+            for (int i = 0; i < players.Length; i++)
+            {
+                SpriteSequenceFxPlayer player = players[i];
+                bool wasPlaying = player.IsPlaying;
+                player.SetFramePlaybackSpeedMultiplier(FxPlaybackSpeedMultiplier);
+                if (wasPlaying)
+                {
+                    player.RestartPlayback();
+                }
+            }
         }
 
         private Vector3 ResolveFxWorldPosition(Vector3 worldPosition, FxEventHook hook)

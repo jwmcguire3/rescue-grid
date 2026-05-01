@@ -103,8 +103,8 @@ namespace Rescue.Core.Tests.Rules
                     new DebrisTile(DebrisType.B)));
             GameState state = PipelineTestFixtures.CreateState(board);
 
-            ActionResult firstAction = Pipeline.RunAction(state, new ActionInput(new TileCoord(0, 0)));
-            ActionResult secondAction = Pipeline.RunAction(firstAction.State, new ActionInput(new TileCoord(2, 1)));
+            ActionResult firstAction = Core.Pipeline.Pipeline.RunAction(state, new ActionInput(new TileCoord(0, 0)));
+            ActionResult secondAction = Core.Pipeline.Pipeline.RunAction(firstAction.State, new ActionInput(new TileCoord(2, 1)));
 
             Assert.That(firstAction.Events, Has.Some.EqualTo(new BlockerDamaged(new TileCoord(1, 1), BlockerType.Crate, 1)));
             Assert.That(firstAction.Events, Has.None.TypeOf<BlockerBroken>());
