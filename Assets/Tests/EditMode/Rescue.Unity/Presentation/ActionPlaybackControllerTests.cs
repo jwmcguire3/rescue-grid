@@ -131,32 +131,59 @@ namespace Rescue.Unity.Presentation.Tests
 
             ActionPlaybackController controller = CreateController(settings);
 
-            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.RemoveGroup), Is.EqualTo(0.11f));
-            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.BreakBlockerOrReveal), Is.EqualTo(0.09f));
-            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.DockFeedback), Is.EqualTo(0.10f));
-            Assert.That(GetStepDuration(controller, new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 1, OverflowCount: 0)), Is.EqualTo(0.08f));
-            Assert.That(GetStepDuration(controller, new DockCleared(DebrisType.A, SetsCleared: 1, OccupancyAfterClear: 0)), Is.EqualTo(0.07f));
-            Assert.That(GetStepDuration(controller, new DockWarningChanged(DockWarningLevel.Safe, DockWarningLevel.Caution)), Is.EqualTo(0.42f));
-            Assert.That(GetStepDuration(controller, new DockWarningChanged(DockWarningLevel.Caution, DockWarningLevel.Acute)), Is.EqualTo(0.33f));
-            Assert.That(GetStepDuration(controller, new DockJamTriggered(OverflowCount: 1)), Is.EqualTo(0.61f));
+            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.RemoveGroup), Is.EqualTo(0.22f));
+            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.BreakBlockerOrReveal), Is.EqualTo(0.18f));
+            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.DockFeedback), Is.EqualTo(0.20f));
+            Assert.That(GetStepDuration(controller, new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 1, OverflowCount: 0)), Is.EqualTo(0.16f));
+            Assert.That(GetStepDuration(controller, new DockCleared(DebrisType.A, SetsCleared: 1, OccupancyAfterClear: 0)), Is.EqualTo(0.14f));
+            Assert.That(GetStepDuration(controller, new DockWarningChanged(DockWarningLevel.Safe, DockWarningLevel.Caution)), Is.EqualTo(0.84f));
+            Assert.That(GetStepDuration(controller, new DockWarningChanged(DockWarningLevel.Caution, DockWarningLevel.Acute)), Is.EqualTo(0.66f));
+            Assert.That(GetStepDuration(controller, new DockJamTriggered(OverflowCount: 1)), Is.EqualTo(1.22f));
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.Gravity), Is.EqualTo(0.18f));
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.Spawn), Is.EqualTo(0.13f));
-            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.TargetExtract), Is.EqualTo(0.16f));
-            Assert.That(GetStepDuration(controller, new Won("pup-1", TotalActions: 3, ExtractedTargetOrder: ImmutableArray.Create("pup-1"))), Is.EqualTo(0.73f));
-            Assert.That(GetStepDuration(controller, new Lost(ActionOutcome.LossDockOverflow)), Is.EqualTo(0.81f));
-            Assert.That(GetStepDuration(controller, new Lost(ActionOutcome.LossWaterOnTarget)), Is.EqualTo(0.81f));
-            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.WaterRise), Is.EqualTo(0.19f));
+            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.TargetExtract), Is.EqualTo(0.32f));
+            Assert.That(GetStepDuration(controller, new Won("pup-1", TotalActions: 3, ExtractedTargetOrder: ImmutableArray.Create("pup-1"))), Is.EqualTo(1.46f));
+            Assert.That(GetStepDuration(controller, new Lost(ActionOutcome.LossDockOverflow)), Is.EqualTo(1.62f));
+            Assert.That(GetStepDuration(controller, new Lost(ActionOutcome.LossWaterOnTarget)), Is.EqualTo(1.62f));
+            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.WaterRise), Is.EqualTo(0.38f));
         }
 
         [Test]
-        public void ActionPlaybackController_SpeedMultiplierScalesStepDurations()
+        public void ActionPlaybackController_SpeedMultiplierScalesGameplayStepsButNotGravityOrSpawn()
         {
             ActionPlaybackSettings settings = CreateSettings(playbackEnabled: true, yieldBetweenSteps: false);
             SetPrivateField(settings, "removeDurationSeconds", 0.20f);
+            SetPrivateField(settings, "gravityDurationSeconds", 0.18f);
+            SetPrivateField(settings, "spawnDurationSeconds", 0.13f);
             settings.SetPlaybackSpeedMultiplier(4.0f);
             ActionPlaybackController controller = CreateController(settings);
 
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.RemoveGroup), Is.EqualTo(0.05f));
+            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.Gravity), Is.EqualTo(0.18f));
+            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.Spawn), Is.EqualTo(0.13f));
+        }
+
+        [Test]
+        public void ActionPlaybackController_GroupSpeedMultipliersRouteRepresentativeSteps()
+        {
+            ActionPlaybackSettings settings = CreateSettings(playbackEnabled: true, yieldBetweenSteps: false);
+            settings.SetPlaybackSpeedMultiplier(1.0f);
+            settings.SetBoardActionSpeedMultiplier(2.0f);
+            settings.SetDockSpeedMultiplier(4.0f);
+            settings.SetTargetSpeedMultiplier(0.5f);
+            settings.SetHazardSpeedMultiplier(2.0f);
+            settings.SetTerminalSpeedMultiplier(4.0f);
+            settings.SetGravitySpawnSpeedMultiplier(2.0f);
+            ActionPlaybackController controller = CreateController(settings);
+
+            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.RemoveGroup), Is.EqualTo(ActionPlaybackSettings.DefaultRemoveDurationSeconds / 2.0f));
+            Assert.That(GetStepDuration(controller, new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 1, OverflowCount: 0)), Is.EqualTo(ActionPlaybackSettings.DefaultDockInsertFeedbackDurationSeconds / 4.0f));
+            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.TargetExtract), Is.EqualTo(ActionPlaybackSettings.DefaultTargetExtractDurationSeconds / 0.5f));
+            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.WaterRise), Is.EqualTo(ActionPlaybackSettings.DefaultWaterRiseDurationSeconds / 2.0f));
+            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.VineGrowth), Is.EqualTo(ActionPlaybackSettings.DefaultVineGrowthDurationSeconds / 2.0f));
+            Assert.That(GetStepDuration(controller, new Won("pup-1", TotalActions: 3, ExtractedTargetOrder: ImmutableArray.Create("pup-1"))), Is.EqualTo(ActionPlaybackSettings.DefaultWinFxDurationSeconds / 4.0f));
+            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.Gravity), Is.EqualTo(ActionPlaybackSettings.DefaultGravityDurationSeconds / 2.0f));
+            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.Spawn), Is.EqualTo(ActionPlaybackSettings.DefaultSpawnDurationSeconds / 2.0f));
         }
 
         [Test]
@@ -196,9 +223,9 @@ namespace Rescue.Unity.Presentation.Tests
             object? feedbackPresenter = GetPrivateFieldValue(harness.DockPresenter, "feedbackPresenter");
             Assert.That(handled, Is.True);
             Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "gravityDurationSeconds"), Is.EqualTo(0.19f));
-            Assert.That(GetPrivateFieldValue(harness.WaterPresenter, "forecastPulseDurationSeconds"), Is.EqualTo(0.21f));
+            Assert.That(GetPrivateFieldValue(harness.WaterPresenter, "forecastPulseDurationSeconds"), Is.EqualTo(0.42f));
             Assert.That(feedbackPresenter, Is.Not.Null);
-            Assert.That(GetPropertyValue(feedbackPresenter!, "InsertDuration"), Is.EqualTo(0.09f));
+            Assert.That(GetPropertyValue(feedbackPresenter!, "InsertDuration"), Is.EqualTo(0.18f));
         }
 
         [Test]

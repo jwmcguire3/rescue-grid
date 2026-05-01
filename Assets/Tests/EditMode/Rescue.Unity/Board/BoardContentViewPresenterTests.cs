@@ -570,11 +570,11 @@ namespace Rescue.Unity.BoardPresentation.Tests
             harness.ContentPresenter.ApplyPlaybackSettings(settings);
 
             Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "gravityDurationSeconds"), Is.EqualTo(0.19f));
-            Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "blockerDamageDurationSeconds"), Is.EqualTo(0.09f));
-            Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "blockerBreakDurationSeconds"), Is.EqualTo(0.09f));
-            Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "iceRevealDurationSeconds"), Is.EqualTo(0.09f));
+            Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "blockerDamageDurationSeconds"), Is.EqualTo(0.18f));
+            Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "blockerBreakDurationSeconds"), Is.EqualTo(0.18f));
+            Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "iceRevealDurationSeconds"), Is.EqualTo(0.18f));
             Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "spawnDurationSeconds"), Is.EqualTo(0.14f));
-            Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "targetExtractDurationSeconds"), Is.EqualTo(0.17f));
+            Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "targetExtractDurationSeconds"), Is.EqualTo(0.34f));
             Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "boardPieceLandingSquashXScale"), Is.EqualTo(1.04f));
             Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "boardPieceLandingSquashYScale"), Is.EqualTo(0.94f));
             Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "boardPieceLandingBounceDistance"), Is.EqualTo(0.03f));

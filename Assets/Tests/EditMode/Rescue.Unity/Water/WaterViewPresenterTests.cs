@@ -172,10 +172,10 @@ namespace Rescue.Unity.Water.Tests
 
             presenter.ApplyPlaybackSettings(settings);
 
-            Assert.That(GetPrivateField(presenter, "waterRiseDurationSeconds"), Is.EqualTo(0.18f));
-            Assert.That(GetPrivateField(presenter, "forecastTransitionDurationSeconds"), Is.EqualTo(0.09f));
-            Assert.That(GetPrivateField(presenter, "forecastPulseDurationSeconds"), Is.EqualTo(0.21f));
-            Assert.That(GetPrivateField(presenter, "waterlinePulseDurationSeconds"), Is.EqualTo(0.17f));
+            Assert.That(GetPrivateField(presenter, "waterRiseDurationSeconds"), Is.EqualTo(0.36f));
+            Assert.That(GetPrivateField(presenter, "forecastTransitionDurationSeconds"), Is.EqualTo(0.18f));
+            Assert.That(GetPrivateField(presenter, "forecastPulseDurationSeconds"), Is.EqualTo(0.42f));
+            Assert.That(GetPrivateField(presenter, "waterlinePulseDurationSeconds"), Is.EqualTo(0.34f));
         }
 
         [Test]

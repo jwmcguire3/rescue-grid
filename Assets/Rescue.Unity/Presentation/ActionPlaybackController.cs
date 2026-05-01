@@ -35,8 +35,35 @@ namespace Rescue.Unity.Presentation
 
         public void ConfigureDebugPlayback(bool playbackEnabled, float playbackSpeedMultiplier)
         {
+            ConfigureDebugPlayback(
+                playbackEnabled,
+                playbackSpeedMultiplier,
+                settings.BoardActionSpeedMultiplier,
+                settings.DockSpeedMultiplier,
+                settings.TargetSpeedMultiplier,
+                settings.HazardSpeedMultiplier,
+                settings.TerminalSpeedMultiplier,
+                settings.GravitySpawnSpeedMultiplier);
+        }
+
+        public void ConfigureDebugPlayback(
+            bool playbackEnabled,
+            float playbackSpeedMultiplier,
+            float boardActionSpeedMultiplier,
+            float dockSpeedMultiplier,
+            float targetSpeedMultiplier,
+            float hazardSpeedMultiplier,
+            float terminalSpeedMultiplier,
+            float gravitySpawnSpeedMultiplier)
+        {
             settings.SetPlaybackEnabled(playbackEnabled);
             settings.SetPlaybackSpeedMultiplier(playbackSpeedMultiplier);
+            settings.SetBoardActionSpeedMultiplier(boardActionSpeedMultiplier);
+            settings.SetDockSpeedMultiplier(dockSpeedMultiplier);
+            settings.SetTargetSpeedMultiplier(targetSpeedMultiplier);
+            settings.SetHazardSpeedMultiplier(hazardSpeedMultiplier);
+            settings.SetTerminalSpeedMultiplier(terminalSpeedMultiplier);
+            settings.SetGravitySpawnSpeedMultiplier(gravitySpawnSpeedMultiplier);
             ApplyPlaybackSettingsToPresenters();
 
             if (!playbackEnabled && IsPlaying)

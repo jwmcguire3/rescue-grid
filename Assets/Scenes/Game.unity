@@ -246,7 +246,13 @@ MonoBehaviour:
   settings:
     playbackEnabled: 1
     yieldBetweenSteps: 1
-    playbackSpeedMultiplier: 1
+    playbackSpeedMultiplier: 0.5
+    boardActionSpeedMultiplier: 1
+    dockSpeedMultiplier: 1
+    targetSpeedMultiplier: 1
+    hazardSpeedMultiplier: 1
+    terminalSpeedMultiplier: 1
+    gravitySpawnSpeedMultiplier: 1
     removeDurationSeconds: 0.1
     breakBlockerOrRevealDurationSeconds: 0.1
     dockFeedbackDurationSeconds: 0.1

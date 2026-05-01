@@ -514,6 +514,12 @@ namespace Rescue.Unity.Debugging
             _playbackEnabledToggle = playbackEnabled;
             scroll.Add(playbackEnabled);
             scroll.Add(MakeFieldRow("Playback Speed", out _playbackSpeedSelector, "playback-speed-selector"));
+            scroll.Add(MakeFieldRow("Board Action Speed", out _playbackBoardActionSpeedSelector, "playback-board-action-speed-selector"));
+            scroll.Add(MakeFieldRow("Dock Speed", out _playbackDockSpeedSelector, "playback-dock-speed-selector"));
+            scroll.Add(MakeFieldRow("Target Speed", out _playbackTargetSpeedSelector, "playback-target-speed-selector"));
+            scroll.Add(MakeFieldRow("Hazard Speed", out _playbackHazardSpeedSelector, "playback-hazard-speed-selector"));
+            scroll.Add(MakeFieldRow("Terminal Speed", out _playbackTerminalSpeedSelector, "playback-terminal-speed-selector"));
+            scroll.Add(MakeFieldRow("Gravity/Spawn Speed", out _playbackGravitySpawnSpeedSelector, "playback-gravity-spawn-speed-selector"));
             scroll.Add(MakeRow(out _playbackStepValue, "playback-step-value", "Playback step: Idle"));
             Toggle fxDiagnostics = new Toggle("FX Diagnostics") { name = "fx-diagnostics-toggle" };
             _fxDiagnosticsToggle = fxDiagnostics;

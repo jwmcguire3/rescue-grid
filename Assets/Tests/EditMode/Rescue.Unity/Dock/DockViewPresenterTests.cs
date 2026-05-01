@@ -149,11 +149,11 @@ namespace Rescue.Unity.UI.Tests
 
             presenter.ApplyPlaybackSettings(settings);
 
-            Assert.That(presenter.InsertDuration, Is.EqualTo(0.09f));
-            Assert.That(presenter.ClearDuration, Is.EqualTo(0.07f));
-            Assert.That(presenter.CautionPulseDuration, Is.EqualTo(0.42f));
-            Assert.That(presenter.AcuteShakeDuration, Is.EqualTo(0.33f));
-            Assert.That(presenter.FailedPulseDuration, Is.EqualTo(0.61f));
+            Assert.That(presenter.InsertDuration, Is.EqualTo(0.18f));
+            Assert.That(presenter.ClearDuration, Is.EqualTo(0.14f));
+            Assert.That(presenter.CautionPulseDuration, Is.EqualTo(0.84f));
+            Assert.That(presenter.AcuteShakeDuration, Is.EqualTo(0.66f));
+            Assert.That(presenter.FailedPulseDuration, Is.EqualTo(1.22f));
         }
 
         [Test]

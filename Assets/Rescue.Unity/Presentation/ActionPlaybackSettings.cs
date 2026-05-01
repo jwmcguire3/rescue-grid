@@ -29,13 +29,20 @@ namespace Rescue.Unity.Presentation
         public const float DefaultWaterlinePulseDurationSeconds = 0.20f;
         public const float DefaultVinePreviewDurationSeconds = 0.18f;
         public const float DefaultVineGrowthDurationSeconds = 0.18f;
-        public const float DefaultPlaybackSpeedMultiplier = 1.0f;
+        public const float DefaultPlaybackSpeedMultiplier = 0.5f;
+        public const float DefaultGroupSpeedMultiplier = 1.0f;
         public const float MinPlaybackSpeedMultiplier = 0.10f;
         public const float MaxPlaybackSpeedMultiplier = 8.0f;
 
         [SerializeField] private bool playbackEnabled = true;
         [SerializeField] private bool yieldBetweenSteps;
         [SerializeField] private float playbackSpeedMultiplier = DefaultPlaybackSpeedMultiplier;
+        [SerializeField] private float boardActionSpeedMultiplier = DefaultGroupSpeedMultiplier;
+        [SerializeField] private float dockSpeedMultiplier = DefaultGroupSpeedMultiplier;
+        [SerializeField] private float targetSpeedMultiplier = DefaultGroupSpeedMultiplier;
+        [SerializeField] private float hazardSpeedMultiplier = DefaultGroupSpeedMultiplier;
+        [SerializeField] private float terminalSpeedMultiplier = DefaultGroupSpeedMultiplier;
+        [SerializeField] private float gravitySpawnSpeedMultiplier = DefaultGroupSpeedMultiplier;
         [SerializeField] private float removeDurationSeconds = DefaultRemoveDurationSeconds;
         [SerializeField] private float breakBlockerOrRevealDurationSeconds = DefaultBreakBlockerOrRevealDurationSeconds;
         [SerializeField] private float dockFeedbackDurationSeconds = DefaultDockFeedbackDurationSeconds;
@@ -69,25 +76,49 @@ namespace Rescue.Unity.Presentation
             MinPlaybackSpeedMultiplier,
             MaxPlaybackSpeedMultiplier);
 
-        public float RemoveDurationSeconds => ScaleDuration(removeDurationSeconds);
+        public float BoardActionSpeedMultiplier => ClampSpeedMultiplier(boardActionSpeedMultiplier);
 
-        public float BreakBlockerOrRevealDurationSeconds => ScaleDuration(breakBlockerOrRevealDurationSeconds);
+        public float DockSpeedMultiplier => ClampSpeedMultiplier(dockSpeedMultiplier);
 
-        public float DockFeedbackDurationSeconds => ScaleDuration(dockFeedbackDurationSeconds);
+        public float TargetSpeedMultiplier => ClampSpeedMultiplier(targetSpeedMultiplier);
 
-        public float DockInsertFeedbackDurationSeconds => ScaleDuration(dockInsertFeedbackDurationSeconds);
+        public float HazardSpeedMultiplier => ClampSpeedMultiplier(hazardSpeedMultiplier);
 
-        public float DockClearFeedbackDurationSeconds => ScaleDuration(dockClearFeedbackDurationSeconds);
+        public float TerminalSpeedMultiplier => ClampSpeedMultiplier(terminalSpeedMultiplier);
 
-        public float DockWarningCautionDurationSeconds => ScaleDuration(dockWarningCautionDurationSeconds);
+        public float GravitySpawnSpeedMultiplier => ClampSpeedMultiplier(gravitySpawnSpeedMultiplier);
 
-        public float DockWarningAcuteDurationSeconds => ScaleDuration(dockWarningAcuteDurationSeconds);
+        public float RemoveDurationSeconds => ScaleGameplayDuration(removeDurationSeconds, BoardActionSpeedMultiplier);
 
-        public float DockJamFeedbackDurationSeconds => ScaleDuration(dockJamFeedbackDurationSeconds);
+        public float BreakBlockerOrRevealDurationSeconds => ScaleGameplayDuration(
+            breakBlockerOrRevealDurationSeconds,
+            BoardActionSpeedMultiplier);
 
-        public float GravityDurationSeconds => ScaleDuration(gravityDurationSeconds);
+        public float DockFeedbackDurationSeconds => ScaleGameplayDuration(dockFeedbackDurationSeconds, DockSpeedMultiplier);
 
-        public float SpawnDurationSeconds => ScaleDuration(spawnDurationSeconds);
+        public float DockInsertFeedbackDurationSeconds => ScaleGameplayDuration(
+            dockInsertFeedbackDurationSeconds,
+            DockSpeedMultiplier);
+
+        public float DockClearFeedbackDurationSeconds => ScaleGameplayDuration(
+            dockClearFeedbackDurationSeconds,
+            DockSpeedMultiplier);
+
+        public float DockWarningCautionDurationSeconds => ScaleGameplayDuration(
+            dockWarningCautionDurationSeconds,
+            DockSpeedMultiplier);
+
+        public float DockWarningAcuteDurationSeconds => ScaleGameplayDuration(
+            dockWarningAcuteDurationSeconds,
+            DockSpeedMultiplier);
+
+        public float DockJamFeedbackDurationSeconds => ScaleGameplayDuration(
+            dockJamFeedbackDurationSeconds,
+            DockSpeedMultiplier);
+
+        public float GravityDurationSeconds => ScaleGravitySpawnDuration(gravityDurationSeconds);
+
+        public float SpawnDurationSeconds => ScaleGravitySpawnDuration(spawnDurationSeconds);
 
         public float BoardPieceLandingSquashXScale => Mathf.Max(1.0f, boardPieceLandingSquashXScale);
 
@@ -95,25 +126,35 @@ namespace Rescue.Unity.Presentation
 
         public float BoardPieceLandingBounceDistance => Mathf.Max(0.0f, boardPieceLandingBounceDistance);
 
-        public float TargetReactionDurationSeconds => ScaleDuration(targetReactionDurationSeconds);
+        public float TargetReactionDurationSeconds => ScaleGameplayDuration(
+            targetReactionDurationSeconds,
+            TargetSpeedMultiplier);
 
-        public float TargetExtractDurationSeconds => ScaleDuration(targetExtractDurationSeconds);
+        public float TargetExtractDurationSeconds => ScaleGameplayDuration(
+            targetExtractDurationSeconds,
+            TargetSpeedMultiplier);
 
-        public float WinFxDurationSeconds => ScaleDuration(winFxDurationSeconds);
+        public float WinFxDurationSeconds => ScaleGameplayDuration(winFxDurationSeconds, TerminalSpeedMultiplier);
 
-        public float LossFxDurationSeconds => ScaleDuration(lossFxDurationSeconds);
+        public float LossFxDurationSeconds => ScaleGameplayDuration(lossFxDurationSeconds, TerminalSpeedMultiplier);
 
-        public float WaterRiseDurationSeconds => ScaleDuration(waterRiseDurationSeconds);
+        public float WaterRiseDurationSeconds => ScaleGameplayDuration(waterRiseDurationSeconds, HazardSpeedMultiplier);
 
-        public float WaterForecastTransitionDurationSeconds => ScaleDuration(waterForecastTransitionDurationSeconds);
+        public float WaterForecastTransitionDurationSeconds => ScaleGameplayDuration(
+            waterForecastTransitionDurationSeconds,
+            HazardSpeedMultiplier);
 
-        public float WaterForecastPulseDurationSeconds => ScaleDuration(waterForecastPulseDurationSeconds);
+        public float WaterForecastPulseDurationSeconds => ScaleGameplayDuration(
+            waterForecastPulseDurationSeconds,
+            HazardSpeedMultiplier);
 
-        public float WaterlinePulseDurationSeconds => ScaleDuration(waterlinePulseDurationSeconds);
+        public float WaterlinePulseDurationSeconds => ScaleGameplayDuration(
+            waterlinePulseDurationSeconds,
+            HazardSpeedMultiplier);
 
-        public float VinePreviewDurationSeconds => ScaleDuration(vinePreviewDurationSeconds);
+        public float VinePreviewDurationSeconds => ScaleGameplayDuration(vinePreviewDurationSeconds, HazardSpeedMultiplier);
 
-        public float VineGrowthDurationSeconds => ScaleDuration(vineGrowthDurationSeconds);
+        public float VineGrowthDurationSeconds => ScaleGameplayDuration(vineGrowthDurationSeconds, HazardSpeedMultiplier);
 
         public void SetPlaybackEnabled(bool enabled)
         {
@@ -128,9 +169,52 @@ namespace Rescue.Unity.Presentation
                 MaxPlaybackSpeedMultiplier);
         }
 
-        private float ScaleDuration(float seconds)
+        public void SetBoardActionSpeedMultiplier(float multiplier)
         {
-            return seconds / PlaybackSpeedMultiplier;
+            boardActionSpeedMultiplier = ClampSpeedMultiplier(multiplier);
+        }
+
+        public void SetDockSpeedMultiplier(float multiplier)
+        {
+            dockSpeedMultiplier = ClampSpeedMultiplier(multiplier);
+        }
+
+        public void SetTargetSpeedMultiplier(float multiplier)
+        {
+            targetSpeedMultiplier = ClampSpeedMultiplier(multiplier);
+        }
+
+        public void SetHazardSpeedMultiplier(float multiplier)
+        {
+            hazardSpeedMultiplier = ClampSpeedMultiplier(multiplier);
+        }
+
+        public void SetTerminalSpeedMultiplier(float multiplier)
+        {
+            terminalSpeedMultiplier = ClampSpeedMultiplier(multiplier);
+        }
+
+        public void SetGravitySpawnSpeedMultiplier(float multiplier)
+        {
+            gravitySpawnSpeedMultiplier = ClampSpeedMultiplier(multiplier);
+        }
+
+        private float ScaleGameplayDuration(float seconds, float groupMultiplier)
+        {
+            return seconds / (PlaybackSpeedMultiplier * groupMultiplier);
+        }
+
+        private float ScaleGravitySpawnDuration(float seconds)
+        {
+            return seconds / GravitySpawnSpeedMultiplier;
+        }
+
+        private static float ClampSpeedMultiplier(float multiplier)
+        {
+            return Mathf.Clamp(
+                multiplier,
+                MinPlaybackSpeedMultiplier,
+                MaxPlaybackSpeedMultiplier);
         }
     }
 }

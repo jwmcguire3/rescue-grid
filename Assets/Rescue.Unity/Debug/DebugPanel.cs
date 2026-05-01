@@ -68,6 +68,12 @@ namespace Rescue.Unity.Debugging
         private Toggle? _fastForwardToggle;
         private Toggle? _playbackEnabledToggle;
         private DropdownField? _playbackSpeedSelector;
+        private DropdownField? _playbackBoardActionSpeedSelector;
+        private DropdownField? _playbackDockSpeedSelector;
+        private DropdownField? _playbackTargetSpeedSelector;
+        private DropdownField? _playbackHazardSpeedSelector;
+        private DropdownField? _playbackTerminalSpeedSelector;
+        private DropdownField? _playbackGravitySpawnSpeedSelector;
         private Label? _playbackStepValue;
         private Toggle? _fxDiagnosticsToggle;
         private Button? _playAllFxButton;
@@ -737,7 +743,21 @@ namespace Rescue.Unity.Debugging
 
             bool enabled = _playbackEnabledToggle?.value ?? controller.Settings.PlaybackEnabled;
             float speed = ParseSpeedMultiplier(_playbackSpeedSelector?.value);
-            controller.ConfigureDebugPlayback(enabled, speed);
+            float boardActionSpeed = ParseSpeedMultiplier(_playbackBoardActionSpeedSelector?.value);
+            float dockSpeed = ParseSpeedMultiplier(_playbackDockSpeedSelector?.value);
+            float targetSpeed = ParseSpeedMultiplier(_playbackTargetSpeedSelector?.value);
+            float hazardSpeed = ParseSpeedMultiplier(_playbackHazardSpeedSelector?.value);
+            float terminalSpeed = ParseSpeedMultiplier(_playbackTerminalSpeedSelector?.value);
+            float gravitySpawnSpeed = ParseSpeedMultiplier(_playbackGravitySpawnSpeedSelector?.value);
+            controller.ConfigureDebugPlayback(
+                enabled,
+                speed,
+                boardActionSpeed,
+                dockSpeed,
+                targetSpeed,
+                hazardSpeed,
+                terminalSpeed,
+                gravitySpawnSpeed);
             SetStatus($"Action playback {(enabled ? "enabled" : "disabled")} at {FormatSpeed(controller.Settings.PlaybackSpeedMultiplier)}.");
             RefreshPlaybackDebugUi();
         }
@@ -770,10 +790,32 @@ namespace Rescue.Unity.Debugging
                 _playbackSpeedSelector.SetValueWithoutNotify(FormatSpeed(controller.Settings.PlaybackSpeedMultiplier));
             }
 
+            RefreshSpeedSelector(_playbackBoardActionSpeedSelector, controller.Settings.BoardActionSpeedMultiplier);
+            RefreshSpeedSelector(_playbackDockSpeedSelector, controller.Settings.DockSpeedMultiplier);
+            RefreshSpeedSelector(_playbackTargetSpeedSelector, controller.Settings.TargetSpeedMultiplier);
+            RefreshSpeedSelector(_playbackHazardSpeedSelector, controller.Settings.HazardSpeedMultiplier);
+            RefreshSpeedSelector(_playbackTerminalSpeedSelector, controller.Settings.TerminalSpeedMultiplier);
+            RefreshSpeedSelector(_playbackGravitySpawnSpeedSelector, controller.Settings.GravitySpawnSpeedMultiplier);
+
             if (_playbackStepValue is not null)
             {
                 _playbackStepValue.text = $"Playback step: {controller.CurrentStepName}";
             }
+        }
+
+        private static void RefreshSpeedSelector(DropdownField? selector, float speed)
+        {
+            if (selector is null)
+            {
+                return;
+            }
+
+            if (selector.choices is null || selector.choices.Count == 0)
+            {
+                selector.choices = new List<string>(SpeedChoices);
+            }
+
+            selector.SetValueWithoutNotify(FormatSpeed(speed));
         }
 
         private void PlayAllFxDiagnostics()
@@ -1068,6 +1110,12 @@ namespace Rescue.Unity.Debugging
             _fastForwardToggle = panel.Q<Toggle>("fast-forward-toggle");
             _playbackEnabledToggle = panel.Q<Toggle>("playback-enabled-toggle");
             _playbackSpeedSelector = panel.Q<DropdownField>("playback-speed-selector");
+            _playbackBoardActionSpeedSelector = panel.Q<DropdownField>("playback-board-action-speed-selector");
+            _playbackDockSpeedSelector = panel.Q<DropdownField>("playback-dock-speed-selector");
+            _playbackTargetSpeedSelector = panel.Q<DropdownField>("playback-target-speed-selector");
+            _playbackHazardSpeedSelector = panel.Q<DropdownField>("playback-hazard-speed-selector");
+            _playbackTerminalSpeedSelector = panel.Q<DropdownField>("playback-terminal-speed-selector");
+            _playbackGravitySpawnSpeedSelector = panel.Q<DropdownField>("playback-gravity-spawn-speed-selector");
             _playbackStepValue = panel.Q<Label>("playback-step-value");
             _fxDiagnosticsToggle = panel.Q<Toggle>("fx-diagnostics-toggle");
             _playAllFxButton = panel.Q<Button>("play-all-fx-button");
@@ -1200,7 +1248,7 @@ namespace Rescue.Unity.Debugging
             if (_playbackSpeedSelector is not null)
             {
                 _playbackSpeedSelector.choices = new List<string>(SpeedChoices);
-                _playbackSpeedSelector.SetValueWithoutNotify("1x");
+                _playbackSpeedSelector.SetValueWithoutNotify(FormatSpeed(ActionPlaybackSettings.DefaultPlaybackSpeedMultiplier));
                 _playbackSpeedSelector.RegisterValueChangedCallback(evt =>
                 {
                     if (!_initialized || string.Equals(evt.previousValue, evt.newValue, StringComparison.Ordinal))
@@ -1211,6 +1259,13 @@ namespace Rescue.Unity.Debugging
                     ApplyPlaybackControlsFromUi();
                 });
             }
+
+            RegisterPlaybackSpeedSelector(_playbackBoardActionSpeedSelector);
+            RegisterPlaybackSpeedSelector(_playbackDockSpeedSelector);
+            RegisterPlaybackSpeedSelector(_playbackTargetSpeedSelector);
+            RegisterPlaybackSpeedSelector(_playbackHazardSpeedSelector);
+            RegisterPlaybackSpeedSelector(_playbackTerminalSpeedSelector);
+            RegisterPlaybackSpeedSelector(_playbackGravitySpawnSpeedSelector);
 
             if (_playAllFxButton is not null)
             {
@@ -1411,6 +1466,26 @@ namespace Rescue.Unity.Debugging
             {
                 _minimizeButton.text = _isPanelMinimized ? "Open" : "Minimize";
             }
+        }
+
+        private void RegisterPlaybackSpeedSelector(DropdownField? selector)
+        {
+            if (selector is null)
+            {
+                return;
+            }
+
+            selector.choices = new List<string>(SpeedChoices);
+            selector.SetValueWithoutNotify(FormatSpeed(ActionPlaybackSettings.DefaultGroupSpeedMultiplier));
+            selector.RegisterValueChangedCallback(evt =>
+            {
+                if (!_initialized || string.Equals(evt.previousValue, evt.newValue, StringComparison.Ordinal))
+                {
+                    return;
+                }
+
+                ApplyPlaybackControlsFromUi();
+            });
         }
 
         private void OnRootPointerDown(PointerDownEvent evt)

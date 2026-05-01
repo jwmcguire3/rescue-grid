@@ -30,6 +30,12 @@
                 <ui:Label text="Action Playback" class="debug-section" />
                 <ui:Toggle name="playback-enabled-toggle" text="Playback Enabled" />
                 <ui:DropdownField name="playback-speed-selector" label="Playback Speed" />
+                <ui:DropdownField name="playback-board-action-speed-selector" label="Board Action Speed" />
+                <ui:DropdownField name="playback-dock-speed-selector" label="Dock Speed" />
+                <ui:DropdownField name="playback-target-speed-selector" label="Target Speed" />
+                <ui:DropdownField name="playback-hazard-speed-selector" label="Hazard Speed" />
+                <ui:DropdownField name="playback-terminal-speed-selector" label="Terminal Speed" />
+                <ui:DropdownField name="playback-gravity-spawn-speed-selector" label="Gravity/Spawn Speed" />
                 <ui:Label name="playback-step-value" text="Playback step: Idle" class="debug-value" />
                 <ui:Toggle name="fx-diagnostics-toggle" text="FX Diagnostics" />
                 <ui:Button name="play-all-fx-button" text="Play All FX Diagnostics" />
