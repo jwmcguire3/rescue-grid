@@ -5,6 +5,7 @@ using Rescue.Unity.BoardPresentation;
 using Rescue.Unity.Presentation;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 
 namespace Rescue.Unity.Input
 {
@@ -450,27 +451,50 @@ namespace Rescue.Unity.Input
 
         private static bool TryGetMouseScreenPosition(out Vector2 screenPosition)
         {
-            screenPosition = default;
-            Mouse? mouse = Mouse.current;
-            if (mouse is null || !mouse.leftButton.wasPressedThisFrame)
-            {
-                return false;
-            }
-
-            screenPosition = mouse.position.ReadValue();
-            return true;
+            return TryReadMouseScreenPosition(Mouse.current, out screenPosition);
         }
 
         private static bool TryGetTouchScreenPosition(out Vector2 screenPosition)
         {
+            return TryReadTouchScreenPosition(Touchscreen.current, out screenPosition);
+        }
+
+        private static bool TryReadMouseScreenPosition(Mouse? mouse, out Vector2 screenPosition)
+        {
             screenPosition = default;
-            Touchscreen? touchscreen = Touchscreen.current;
-            if (touchscreen is null || !touchscreen.primaryTouch.press.wasPressedThisFrame)
+            if (mouse is null)
             {
                 return false;
             }
 
-            screenPosition = touchscreen.primaryTouch.position.ReadValue();
+            ButtonControl? leftButton = mouse.leftButton;
+            Vector2Control? position = mouse.position;
+            if (leftButton is null || position is null || !leftButton.wasPressedThisFrame)
+            {
+                return false;
+            }
+
+            screenPosition = position.ReadValue();
+            return true;
+        }
+
+        private static bool TryReadTouchScreenPosition(Touchscreen? touchscreen, out Vector2 screenPosition)
+        {
+            screenPosition = default;
+            if (touchscreen is null)
+            {
+                return false;
+            }
+
+            TouchControl? primaryTouch = touchscreen.primaryTouch;
+            ButtonControl? press = primaryTouch?.press;
+            Vector2Control? position = primaryTouch?.position;
+            if (press is null || position is null || !press.wasPressedThisFrame)
+            {
+                return false;
+            }
+
+            screenPosition = position.ReadValue();
             return true;
         }
     }

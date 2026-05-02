@@ -56,6 +56,28 @@ namespace Rescue.Unity.Input.Tests
         }
 
         [Test]
+        public void BoardInputPresenter_MissingMouseDeviceDoesNotThrow()
+        {
+            object?[] args = { null, default(Vector2) };
+
+            bool handled = InvokePrivateStaticBool("TryReadMouseScreenPosition", args);
+
+            Assert.That(handled, Is.False);
+            Assert.That(args[1], Is.EqualTo(default(Vector2)));
+        }
+
+        [Test]
+        public void BoardInputPresenter_MissingTouchscreenDeviceDoesNotThrow()
+        {
+            object?[] args = { null, default(Vector2) };
+
+            bool handled = InvokePrivateStaticBool("TryReadTouchScreenPosition", args);
+
+            Assert.That(handled, Is.False);
+            Assert.That(args[1], Is.EqualTo(default(Vector2)));
+        }
+
+        [Test]
         public void BoardInputPresenter_InvalidCoordDoesNotRunAction()
         {
             BoardInputPresenter presenter = CreateInputPresenter(gridView: null, gameStateView: null);
@@ -288,6 +310,23 @@ namespace Rescue.Unity.Input.Tests
             }
 
             return typedValue;
+        }
+
+        private static bool InvokePrivateStaticBool(string methodName, object?[] args)
+        {
+            System.Reflection.MethodInfo? method = typeof(BoardInputPresenter).GetMethod(
+                methodName,
+                System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+
+            Assert.That(method, Is.Not.Null, $"Expected private static method '{methodName}'.");
+            if (method is null)
+            {
+                throw new AssertionException($"Expected private static method '{methodName}'.");
+            }
+
+            object? result = method.Invoke(null, args);
+            Assert.That(result, Is.TypeOf<bool>());
+            return (bool)result!;
         }
 
         private static ActionPlaybackSettings CreateSettings(bool playbackEnabled, bool yieldBetweenSteps)
