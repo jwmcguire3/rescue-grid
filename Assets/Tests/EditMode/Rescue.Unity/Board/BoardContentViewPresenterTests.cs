@@ -1320,7 +1320,22 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Assert.That(secondChevron!.Find("LeftArm"), Is.Not.Null);
             Assert.That(secondChevron.Find("RightArm"), Is.Not.Null);
             Assert.That(pathObject.GetComponentsInChildren<Collider>(includeInactive: true), Is.Empty);
-            Assert.That(pathObject.GetComponentsInChildren<Renderer>(includeInactive: true), Has.Length.EqualTo(5));
+            Renderer[] renderers = pathObject.GetComponentsInChildren<Renderer>(includeInactive: true);
+            Assert.That(renderers, Has.Length.EqualTo(5));
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                Material? material = renderers[i].sharedMaterial;
+                Assert.That(material, Is.Not.Null);
+                Assert.That(material!.color.a, Is.LessThan(1f));
+                Assert.That(material.renderQueue, Is.GreaterThanOrEqualTo((int)UnityEngine.Rendering.RenderQueue.Transparent));
+                if (material.HasProperty("_ZWrite"))
+                {
+                    Assert.That(material.GetInt("_ZWrite"), Is.EqualTo(0));
+                }
+
+                Assert.That(renderers[i].shadowCastingMode, Is.EqualTo(UnityEngine.Rendering.ShadowCastingMode.Off));
+                Assert.That(renderers[i].receiveShadows, Is.False);
+            }
         }
 
         private static void AssertUsesDefaultParticleSystemMaterial(GameObject markerObject)

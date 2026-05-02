@@ -14,6 +14,7 @@ namespace Rescue.Unity.Presentation
     public sealed class VictoryScreenPresenter : MonoBehaviour
     {
         private const string DefaultImageAssetPath = "Assets/Rescue.Unity/Art/Win/RescueRowRestoredVictory.png";
+        private const string RuntimeImageResourcePath = "Rescue.Unity/Art/Win/RescueRowRestoredVictory";
         private const string RuntimeThemeResourcePath = "Rescue.Unity/Debug/UnityDefaultRuntimeTheme";
         private const int PanelSortingOrder = 1100;
         private const float VictoryImageWidth = 941.0f;
@@ -40,7 +41,7 @@ namespace Rescue.Unity.Presentation
 
         public static VictoryScreenPresenter EnsureInstance()
         {
-            VictoryScreenPresenter? existing = FindFirstObjectByType<VictoryScreenPresenter>();
+            VictoryScreenPresenter? existing = FindAnyObjectByType<VictoryScreenPresenter>();
             if (existing is not null)
             {
                 existing.EnsureDocument();
@@ -292,6 +293,12 @@ namespace Rescue.Unity.Presentation
 
         private Texture2D? ResolveVictoryImage()
         {
+            if (victoryImage is not null)
+            {
+                return victoryImage;
+            }
+
+            victoryImage = Resources.Load<Texture2D>(RuntimeImageResourcePath);
             if (victoryImage is not null)
             {
                 return victoryImage;

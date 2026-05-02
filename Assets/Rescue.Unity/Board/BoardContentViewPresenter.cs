@@ -1095,6 +1095,8 @@ namespace Rescue.Unity.BoardPresentation
             if (renderer is not null)
             {
                 renderer.sharedMaterial = GetRescuePathChevronMaterial();
+                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                renderer.receiveShadows = false;
             }
         }
 
@@ -1586,6 +1588,8 @@ namespace Rescue.Unity.BoardPresentation
             if (renderer is not null)
             {
                 renderer.sharedMaterial = GetRescuePathWashMaterial();
+                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                renderer.receiveShadows = false;
             }
         }
 
@@ -1611,9 +1615,13 @@ namespace Rescue.Unity.BoardPresentation
 
         private static Material CreateGeneratedTransparentMaterial(Color color)
         {
-            Shader? shader = Shader.Find("Standard");
+            Shader? shader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+            shader ??= Shader.Find("Particles/Standard Unlit");
+            shader ??= Shader.Find("Legacy Shaders/Particles/Alpha Blended");
             shader ??= Shader.Find("Unlit/Transparent");
             shader ??= Shader.Find("Sprites/Default");
+            shader ??= Shader.Find("Universal Render Pipeline/Unlit");
+            shader ??= Shader.Find("Standard");
             if (shader is null)
             {
                 throw new System.InvalidOperationException("Could not resolve a shader for the rescue path marker.");
@@ -1626,17 +1634,19 @@ namespace Rescue.Unity.BoardPresentation
             };
 
             material.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
+            material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            material.SetInt("_ZWrite", 0);
+            material.SetFloat("_Surface", 1.0f);
+            material.SetFloat("_Blend", 0.0f);
+            material.DisableKeyword("_ALPHATEST_ON");
+            material.EnableKeyword("_ALPHABLEND_ON");
+            material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+            material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
 
             if (shader.name == "Standard")
             {
                 material.SetFloat("_Mode", 3.0f);
-                material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-                material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                material.SetInt("_ZWrite", 0);
-                material.DisableKeyword("_ALPHATEST_ON");
-                material.EnableKeyword("_ALPHABLEND_ON");
-                material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-                material.renderQueue = 3000;
             }
 
             return material;

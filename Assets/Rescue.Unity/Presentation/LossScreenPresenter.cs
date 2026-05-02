@@ -14,6 +14,7 @@ namespace Rescue.Unity.Presentation
     public sealed class LossScreenPresenter : MonoBehaviour
     {
         private const string DefaultImageAssetPath = "Assets/Rescue.Unity/Art/Loss/RescueStalledLoss.png";
+        private const string RuntimeImageResourcePath = "Rescue.Unity/Art/Loss/RescueStalledLoss";
         private const string RuntimeThemeResourcePath = "Rescue.Unity/Debug/UnityDefaultRuntimeTheme";
         private const int PanelSortingOrder = 1095;
         private const float LossImageWidth = 941.0f;
@@ -40,7 +41,7 @@ namespace Rescue.Unity.Presentation
 
         public static LossScreenPresenter EnsureInstance()
         {
-            LossScreenPresenter? existing = FindFirstObjectByType<LossScreenPresenter>();
+            LossScreenPresenter? existing = FindAnyObjectByType<LossScreenPresenter>();
             if (existing is not null)
             {
                 existing.EnsureDocument();
@@ -286,6 +287,12 @@ namespace Rescue.Unity.Presentation
 
         private Texture2D? ResolveLossImage()
         {
+            if (lossImage is not null)
+            {
+                return lossImage;
+            }
+
+            lossImage = Resources.Load<Texture2D>(RuntimeImageResourcePath);
             if (lossImage is not null)
             {
                 return lossImage;

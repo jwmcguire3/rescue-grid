@@ -88,7 +88,9 @@ namespace Rescue.Unity.Presentation.Tests
             Button? nextLevelButton = frame?.Q<Button>("victory-next-level-button");
 
             Assert.That(frame, Is.Not.Null);
-            Assert.That(rootElement.Q<Image>("victory-screen-image"), Is.Not.Null);
+            Image? image = rootElement.Q<Image>("victory-screen-image");
+            Assert.That(image, Is.Not.Null);
+            Assert.That(image!.image, Is.Not.Null);
             Assert.That(replayButton, Is.Not.Null);
             Assert.That(nextLevelButton, Is.Not.Null);
         }

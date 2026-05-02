@@ -87,7 +87,9 @@ namespace Rescue.Unity.Presentation.Tests
             Button? tryAgainButton = frame?.Q<Button>("loss-try-again-button");
 
             Assert.That(frame, Is.Not.Null);
-            Assert.That(rootElement.Q<Image>("loss-screen-image"), Is.Not.Null);
+            Image? image = rootElement.Q<Image>("loss-screen-image");
+            Assert.That(image, Is.Not.Null);
+            Assert.That(image!.image, Is.Not.Null);
             Assert.That(replayButton, Is.Not.Null);
             Assert.That(tryAgainButton, Is.Not.Null);
         }
