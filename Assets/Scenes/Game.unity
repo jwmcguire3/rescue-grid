@@ -203,7 +203,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   enableMouseInput: 1
-  enableTouchInput: 0
+  enableTouchInput: 1
   logStateViewDiagnostics: 0
   visualDebrisClickFallbackRadiusPixels: 96
 --- !u!114 &200000004

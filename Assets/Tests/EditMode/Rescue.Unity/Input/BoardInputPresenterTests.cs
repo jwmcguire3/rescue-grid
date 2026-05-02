@@ -46,6 +46,16 @@ namespace Rescue.Unity.Input.Tests
         }
 
         [Test]
+        public void BoardInputPresenter_TouchInputDefaultsOnForPhoneBuilds()
+        {
+            BoardInputPresenter presenter = CreateInputPresenter(gridView: null, gameStateView: null);
+
+            bool enableTouchInput = GetPrivateField<BoardInputPresenter, bool>(presenter, "enableTouchInput");
+
+            Assert.That(enableTouchInput, Is.True);
+        }
+
+        [Test]
         public void BoardInputPresenter_InvalidCoordDoesNotRunAction()
         {
             BoardInputPresenter presenter = CreateInputPresenter(gridView: null, gameStateView: null);
@@ -256,6 +266,28 @@ namespace Rescue.Unity.Input.Tests
             }
 
             field.SetValue(target, value);
+        }
+
+        private static TValue GetPrivateField<TOwner, TValue>(TOwner target, string fieldName)
+        {
+            System.Reflection.FieldInfo? field = typeof(TOwner).GetField(
+                fieldName,
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+            Assert.That(field, Is.Not.Null, $"Expected private field '{fieldName}'.");
+            if (field is null)
+            {
+                throw new AssertionException($"Expected private field '{fieldName}'.");
+            }
+
+            object? value = field.GetValue(target);
+            Assert.That(value, Is.TypeOf<TValue>());
+            if (value is not TValue typedValue)
+            {
+                throw new AssertionException($"Expected private field '{fieldName}' to hold {typeof(TValue).Name}.");
+            }
+
+            return typedValue;
         }
 
         private static ActionPlaybackSettings CreateSettings(bool playbackEnabled, bool yieldBetweenSteps)

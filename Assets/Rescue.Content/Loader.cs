@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Threading;
 using Rescue.Core.Rng;
 using Rescue.Core.State;
 
@@ -369,13 +371,93 @@ namespace Rescue.Content
                 throw new MissingMemberException("UnityEngine.Application.streamingAssetsPath was not found.");
             }
 
-            string levelPath = Path.Combine(streamingAssetsPath, "Levels", levelId + ".json");
-            if (!File.Exists(levelPath))
+            string levelPath = CombineStreamingAssetsPath(streamingAssetsPath, "Levels", levelId + ".json");
+            if (File.Exists(levelPath))
             {
-                throw new InvalidOperationException($"Level '{levelId}' was not found in Assets/StreamingAssets/Levels/.");
+                return File.ReadAllText(levelPath);
             }
 
-            return File.ReadAllText(levelPath);
+            if (IsStreamingAssetsUri(levelPath))
+            {
+                return LoadTextFromStreamingAssetsUri(levelPath, levelId);
+            }
+
+            throw new InvalidOperationException($"Level '{levelId}' was not found in Assets/StreamingAssets/Levels/.");
+        }
+
+        private static string CombineStreamingAssetsPath(string streamingAssetsPath, params string[] segments)
+        {
+            if (IsStreamingAssetsUri(streamingAssetsPath))
+            {
+                string combined = streamingAssetsPath.TrimEnd('/', '\\');
+                for (int i = 0; i < segments.Length; i++)
+                {
+                    combined += "/" + segments[i].Trim('/', '\\');
+                }
+
+                return combined;
+            }
+
+            return Path.Combine(new[] { streamingAssetsPath }.Concat(segments).ToArray());
+        }
+
+        private static bool IsStreamingAssetsUri(string path)
+        {
+            return path.Contains("://", StringComparison.Ordinal) || path.Contains("!/", StringComparison.Ordinal);
+        }
+
+        private static string LoadTextFromStreamingAssetsUri(string uri, string levelId)
+        {
+            Type requestType = Type.GetType("UnityEngine.Networking.UnityWebRequest, UnityEngine.UnityWebRequestModule")
+                ?? throw new PlatformNotSupportedException("UnityWebRequest was not available to read Android StreamingAssets.");
+            MethodInfo getMethod = requestType.GetMethod(
+                "Get",
+                BindingFlags.Public | BindingFlags.Static,
+                binder: null,
+                types: new[] { typeof(string) },
+                modifiers: null)
+                ?? throw new MissingMethodException("UnityWebRequest.Get(string) was not found.");
+
+            object request = getMethod.Invoke(null, new object[] { uri })
+                ?? throw new InvalidOperationException("UnityWebRequest.Get returned null.");
+
+            try
+            {
+                MethodInfo sendMethod = requestType.GetMethod("SendWebRequest", BindingFlags.Public | BindingFlags.Instance)
+                    ?? throw new MissingMethodException("UnityWebRequest.SendWebRequest was not found.");
+                object operation = sendMethod.Invoke(request, Array.Empty<object>())
+                    ?? throw new InvalidOperationException("UnityWebRequest.SendWebRequest returned null.");
+                PropertyInfo isDoneProperty = operation.GetType().GetProperty("isDone", BindingFlags.Public | BindingFlags.Instance)
+                    ?? throw new MissingMemberException("UnityWebRequestAsyncOperation.isDone was not found.");
+
+                while (isDoneProperty.GetValue(operation) is bool isDone && !isDone)
+                {
+                    Thread.Sleep(1);
+                }
+
+                string? error = requestType.GetProperty("error", BindingFlags.Public | BindingFlags.Instance)?.GetValue(request) as string;
+                PropertyInfo? resultProperty = requestType.GetProperty("result", BindingFlags.Public | BindingFlags.Instance);
+                if (resultProperty?.GetValue(request)?.ToString() is string result
+                    && !string.Equals(result, "Success", StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException(
+                        $"Level '{levelId}' could not be read from Android StreamingAssets. UnityWebRequest result: {result}. Error: {error ?? "<none>"}.");
+                }
+
+                object downloadHandler = requestType.GetProperty("downloadHandler", BindingFlags.Public | BindingFlags.Instance)?.GetValue(request)
+                    ?? throw new InvalidOperationException("UnityWebRequest.downloadHandler was null.");
+                string? text = downloadHandler.GetType().GetProperty("text", BindingFlags.Public | BindingFlags.Instance)?.GetValue(downloadHandler) as string;
+                if (string.IsNullOrWhiteSpace(text))
+                {
+                    throw new InvalidOperationException($"Level '{levelId}' was empty or unreadable in Android StreamingAssets.");
+                }
+
+                return text;
+            }
+            finally
+            {
+                (request as IDisposable)?.Dispose();
+            }
         }
 
         private static string FormatValidationErrors(IReadOnlyList<ValidationError> errors)

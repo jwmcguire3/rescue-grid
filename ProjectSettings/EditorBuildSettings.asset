@@ -5,7 +5,7 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/DebugGameplay.unity
     guid: 6b5b3bd7344f4d7ba8c3c7055f8790f4
   - enabled: 1

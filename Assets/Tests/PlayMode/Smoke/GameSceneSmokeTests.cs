@@ -366,12 +366,12 @@ namespace Rescue.PlayMode.Tests.Smoke
             Assert.That(boardContentRoot.parent, Is.SameAs(stageRoot), "Board content should share the board stage transform.");
             Assert.That(waterRoot.parent, Is.SameAs(stageRoot), "Water overlays should share the board stage transform.");
             Assert.That(dockRoot.parent, Is.Not.SameAs(stageRoot), "DockRoot should stay separate so its staging can be tuned independently.");
-            Assert.That(Vector3.Distance(stageRoot.localPosition, new Vector3(0f, -0.28f, -2.4f)), Is.LessThan(0.001f));
+            Assert.That(Vector3.Distance(stageRoot.localPosition, PortraitGameSceneLayout.BoardPortraitPosition), Is.LessThan(0.001f));
             Assert.That(Quaternion.Angle(stageRoot.localRotation, Quaternion.identity), Is.LessThan(0.1f), "BoardStageRoot should match the screenshot rotation.");
-            Assert.That(Vector3.Distance(stageRoot.localScale, new Vector3(1.4f, 1.4f, 1.4f)), Is.LessThan(0.001f));
-            Assert.That(Vector3.Distance(dockRoot.localPosition, new Vector3(0f, -0.5f, -10.5f)), Is.LessThan(0.001f));
-            Assert.That(Quaternion.Angle(dockRoot.localRotation, Quaternion.Euler(15f, 0f, 0f)), Is.LessThan(0.1f), "DockRoot should match the staged dock tilt.");
-            Assert.That(Vector3.Distance(dockRoot.localScale, new Vector3(1.8f, 1.8f, 1.8f)), Is.LessThan(0.001f));
+            Assert.That(Vector3.Distance(stageRoot.localScale, PortraitGameSceneLayout.BoardPortraitScale), Is.LessThan(0.001f));
+            Assert.That(Vector3.Distance(dockRoot.localPosition, PortraitGameSceneLayout.DockPortraitPosition), Is.LessThan(0.001f));
+            Assert.That(Quaternion.Angle(dockRoot.localRotation, PortraitGameSceneLayout.DockPortraitRotation), Is.LessThan(0.1f), "DockRoot should match the portrait staged dock tilt.");
+            Assert.That(Vector3.Distance(dockRoot.localScale, PortraitGameSceneLayout.DockPortraitScale), Is.LessThan(0.001f));
         }
 
         private static void AssertDirectionalLightMatchesStaging()

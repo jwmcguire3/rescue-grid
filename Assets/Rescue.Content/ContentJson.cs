@@ -23,6 +23,14 @@ namespace Rescue.Content
         private static object? _serializerOptions;
         private static MethodInfo? _deserializeMethod;
         private static MethodInfo? _serializeMethod;
+        private static JsonBackend _backend;
+
+        private enum JsonBackend
+        {
+            None,
+            SystemTextJson,
+            NewtonsoftJson,
+        }
 
         public static LevelJson DeserializeLevel(string json)
         {
@@ -35,7 +43,14 @@ namespace Rescue.Content
 
             try
             {
-                object? value = _deserializeMethod!.Invoke(null, new object?[] { json, typeof(LevelJson), _serializerOptions });
+                object? value = _backend switch
+                {
+                    JsonBackend.SystemTextJson => _deserializeMethod!.Invoke(null, new object?[] { json, typeof(LevelJson), _serializerOptions }),
+                    JsonBackend.NewtonsoftJson => _deserializeMethod!.Invoke(
+                        null,
+                        new object?[] { json, typeof(LevelJson), ((NewtonsoftInvocationSettings)_serializerOptions!).Settings }),
+                    _ => throw new InvalidOperationException("JSON serializer was not initialized."),
+                };
                 if (value is not LevelJson level)
                 {
                     throw new ContentJsonException("Level JSON did not produce a schema object.", null, innerException: null);
@@ -60,7 +75,14 @@ namespace Rescue.Content
 
             try
             {
-                object? value = _serializeMethod!.Invoke(null, new object?[] { level, typeof(LevelJson), _serializerOptions });
+                object? value = _backend switch
+                {
+                    JsonBackend.SystemTextJson => _serializeMethod!.Invoke(null, new object?[] { level, typeof(LevelJson), _serializerOptions }),
+                    JsonBackend.NewtonsoftJson => _serializeMethod!.Invoke(
+                        null,
+                        new object?[] { level, typeof(LevelJson), ((NewtonsoftInvocationSettings)_serializerOptions!).Formatting, ((NewtonsoftInvocationSettings)_serializerOptions).Settings }),
+                    _ => throw new InvalidOperationException("JSON serializer was not initialized."),
+                };
                 if (value is not string json)
                 {
                     throw new ContentJsonException("Level JSON serialization failed.", null, innerException: null);
@@ -88,45 +110,161 @@ namespace Rescue.Content
                     return;
                 }
 
-                Assembly jsonAssembly = LoadJsonAssembly();
-                Type serializerType = RequireType(jsonAssembly, "System.Text.Json.JsonSerializer");
-                Type optionsType = RequireType(jsonAssembly, "System.Text.Json.JsonSerializerOptions");
-                Type namingPolicyType = RequireType(jsonAssembly, "System.Text.Json.JsonNamingPolicy");
-                Type converterType = RequireType(jsonAssembly, "System.Text.Json.Serialization.JsonStringEnumConverter");
+                if (TryInitializeSystemTextJson())
+                {
+                    return;
+                }
 
-                object options = Activator.CreateInstance(optionsType)
-                    ?? throw new InvalidOperationException("Unable to create JsonSerializerOptions.");
-                SetProperty(optionsType, options, "PropertyNameCaseInsensitive", true);
-                SetProperty(optionsType, options, "WriteIndented", true);
-                object? camelCase = namingPolicyType.GetProperty("CamelCase", BindingFlags.Public | BindingFlags.Static)?.GetValue(null);
-                SetProperty(optionsType, options, "PropertyNamingPolicy", camelCase);
-
-                object converters = optionsType.GetProperty("Converters", BindingFlags.Public | BindingFlags.Instance)?.GetValue(options)
-                    ?? throw new InvalidOperationException("Unable to access JsonSerializerOptions.Converters.");
-                object converter = Activator.CreateInstance(converterType)
-                    ?? throw new InvalidOperationException("Unable to create JsonStringEnumConverter.");
-                converters.GetType().GetMethod("Add", BindingFlags.Public | BindingFlags.Instance)?.Invoke(converters, new[] { converter });
-
-                MethodInfo deserializeMethod = serializerType.GetMethod(
-                    "Deserialize",
-                    BindingFlags.Public | BindingFlags.Static,
-                    binder: null,
-                    types: new[] { typeof(string), typeof(Type), optionsType },
-                    modifiers: null)
-                    ?? throw new MissingMethodException("JsonSerializer.Deserialize(string, Type, JsonSerializerOptions) was not found.");
-                MethodInfo serializeMethod = serializerType.GetMethod(
-                    "Serialize",
-                    BindingFlags.Public | BindingFlags.Static,
-                    binder: null,
-                    types: new[] { typeof(object), typeof(Type), optionsType },
-                    modifiers: null)
-                    ?? throw new MissingMethodException("JsonSerializer.Serialize(object, Type, JsonSerializerOptions) was not found.");
-
-                _jsonAssembly = jsonAssembly;
-                _serializerOptions = options;
-                _deserializeMethod = deserializeMethod;
-                _serializeMethod = serializeMethod;
+                InitializeNewtonsoftJson();
             }
+        }
+
+        private static bool TryInitializeSystemTextJson()
+        {
+            Assembly jsonAssembly;
+            try
+            {
+                jsonAssembly = LoadJsonAssembly();
+            }
+            catch
+            {
+                return false;
+            }
+
+            Type serializerType = RequireType(jsonAssembly, "System.Text.Json.JsonSerializer");
+            Type optionsType = RequireType(jsonAssembly, "System.Text.Json.JsonSerializerOptions");
+            MethodInfo? deserializeMethod = serializerType.GetMethod(
+                "Deserialize",
+                BindingFlags.Public | BindingFlags.Static,
+                binder: null,
+                types: new[] { typeof(string), typeof(Type), optionsType },
+                modifiers: null);
+            MethodInfo? serializeMethod = serializerType.GetMethod(
+                "Serialize",
+                BindingFlags.Public | BindingFlags.Static,
+                binder: null,
+                types: new[] { typeof(object), typeof(Type), optionsType },
+                modifiers: null);
+
+            if (deserializeMethod is null || serializeMethod is null)
+            {
+                return false;
+            }
+
+            Type namingPolicyType = RequireType(jsonAssembly, "System.Text.Json.JsonNamingPolicy");
+            Type converterType = RequireType(jsonAssembly, "System.Text.Json.Serialization.JsonStringEnumConverter");
+
+            object options = Activator.CreateInstance(optionsType)
+                ?? throw new InvalidOperationException("Unable to create JsonSerializerOptions.");
+            SetProperty(optionsType, options, "PropertyNameCaseInsensitive", true);
+            SetProperty(optionsType, options, "WriteIndented", true);
+            object? camelCase = namingPolicyType.GetProperty("CamelCase", BindingFlags.Public | BindingFlags.Static)?.GetValue(null);
+            SetProperty(optionsType, options, "PropertyNamingPolicy", camelCase);
+
+            object converters = optionsType.GetProperty("Converters", BindingFlags.Public | BindingFlags.Instance)?.GetValue(options)
+                ?? throw new InvalidOperationException("Unable to access JsonSerializerOptions.Converters.");
+            object converter = Activator.CreateInstance(converterType)
+                ?? throw new InvalidOperationException("Unable to create JsonStringEnumConverter.");
+            converters.GetType().GetMethod("Add", BindingFlags.Public | BindingFlags.Instance)?.Invoke(converters, new[] { converter });
+
+            _jsonAssembly = jsonAssembly;
+            _serializerOptions = options;
+            _deserializeMethod = deserializeMethod;
+            _serializeMethod = serializeMethod;
+            _backend = JsonBackend.SystemTextJson;
+            return true;
+        }
+
+        private static void InitializeNewtonsoftJson()
+        {
+            Assembly jsonAssembly = LoadNewtonsoftAssembly();
+            Type jsonConvertType = RequireNewtonsoftType(jsonAssembly, "Newtonsoft.Json.JsonConvert");
+            Type settingsType = RequireNewtonsoftType(jsonAssembly, "Newtonsoft.Json.JsonSerializerSettings");
+            Type formattingType = RequireNewtonsoftType(jsonAssembly, "Newtonsoft.Json.Formatting");
+            Type contractResolverType = RequireNewtonsoftType(jsonAssembly, "Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver");
+            Type stringEnumConverterType = RequireNewtonsoftType(jsonAssembly, "Newtonsoft.Json.Converters.StringEnumConverter");
+
+            object settings = Activator.CreateInstance(settingsType)
+                ?? throw new InvalidOperationException("Unable to create JsonSerializerSettings.");
+            object contractResolver = Activator.CreateInstance(contractResolverType)
+                ?? throw new InvalidOperationException("Unable to create CamelCasePropertyNamesContractResolver.");
+            SetProperty(settingsType, settings, "ContractResolver", contractResolver);
+
+            object converters = settingsType.GetProperty("Converters", BindingFlags.Public | BindingFlags.Instance)?.GetValue(settings)
+                ?? throw new InvalidOperationException("Unable to access JsonSerializerSettings.Converters.");
+            object converter = Activator.CreateInstance(stringEnumConverterType)
+                ?? throw new InvalidOperationException("Unable to create StringEnumConverter.");
+            converters.GetType().GetMethod("Add", BindingFlags.Public | BindingFlags.Instance)?.Invoke(converters, new[] { converter });
+
+            MethodInfo deserializeMethod = jsonConvertType.GetMethod(
+                "DeserializeObject",
+                BindingFlags.Public | BindingFlags.Static,
+                binder: null,
+                types: new[] { typeof(string), typeof(Type), settingsType },
+                modifiers: null)
+                ?? throw new MissingMethodException("JsonConvert.DeserializeObject(string, Type, JsonSerializerSettings) was not found.");
+            MethodInfo serializeMethod = jsonConvertType.GetMethod(
+                "SerializeObject",
+                BindingFlags.Public | BindingFlags.Static,
+                binder: null,
+                types: new[] { typeof(object), typeof(Type), formattingType, settingsType },
+                modifiers: null)
+                ?? throw new MissingMethodException("JsonConvert.SerializeObject(object, Type, Formatting, JsonSerializerSettings) was not found.");
+
+            object indented = Enum.Parse(formattingType, "Indented");
+            _jsonAssembly = jsonAssembly;
+            _serializerOptions = new NewtonsoftInvocationSettings(settings, indented);
+            _deserializeMethod = deserializeMethod;
+            _serializeMethod = serializeMethod;
+            _backend = JsonBackend.NewtonsoftJson;
+        }
+
+        private sealed record NewtonsoftInvocationSettings(object Settings, object Formatting);
+
+        private static Assembly LoadNewtonsoftAssembly()
+        {
+            Assembly? loaded = FindLoadedAssembly("Newtonsoft.Json");
+            if (loaded is not null)
+            {
+                return loaded;
+            }
+
+            try
+            {
+                return Assembly.Load(new AssemblyName("Newtonsoft.Json"));
+            }
+            catch
+            {
+                // Fall through to Unity package cache probing.
+            }
+
+            string baseDirectory = Directory.GetCurrentDirectory();
+            string packageCacheDirectory = Path.Combine(baseDirectory, "Library", "PackageCache");
+            if (Directory.Exists(packageCacheDirectory))
+            {
+                string[] candidates = Directory.GetFiles(packageCacheDirectory, "Newtonsoft.Json.dll", SearchOption.AllDirectories);
+                for (int i = 0; i < candidates.Length; i++)
+                {
+                    Assembly assembly = Assembly.LoadFrom(candidates[i]);
+                    if (string.Equals(assembly.GetName().Name, "Newtonsoft.Json", StringComparison.Ordinal))
+                    {
+                        return assembly;
+                    }
+                }
+            }
+
+            throw new FileNotFoundException("Newtonsoft.Json.dll could not be located for runtime loading.");
+        }
+
+        private static Type RequireNewtonsoftType(Assembly assembly, string fullName)
+        {
+            Type? type = assembly.GetType(fullName, throwOnError: false);
+            if (type is null)
+            {
+                throw new TypeLoadException($"Type '{fullName}' was not found in Newtonsoft.Json.");
+            }
+
+            return type;
         }
 
         private static Assembly LoadJsonAssembly()

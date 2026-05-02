@@ -15,13 +15,21 @@ namespace Rescue.Unity.Input
         [SerializeField] private GameStateViewPresenter? gameStateView;
         [SerializeField] private LayerMask boardCellLayer = ~0;
         [SerializeField] private bool enableMouseInput = true;
-        [SerializeField] private bool enableTouchInput;
+        [SerializeField] private bool enableTouchInput = true;
         [SerializeField] private bool logStateViewDiagnostics;
         [SerializeField] private float visualDebrisClickFallbackRadiusPixels = 96f;
 
         private GameState? fallbackState;
 
         public GameState? CurrentState => gameStateView?.CurrentState ?? fallbackState;
+
+        private void Awake()
+        {
+            if (Application.isMobilePlatform)
+            {
+                enableTouchInput = true;
+            }
+        }
 
         private void Update()
         {
