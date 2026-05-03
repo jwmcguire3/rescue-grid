@@ -317,6 +317,8 @@ public static class BuildScripts
 
     private static void EnsureRequiredBuildInputs()
     {
+        AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport | ImportAssetOptions.ForceUpdate);
+
         string[] scenes = GetEnabledScenes();
         if (scenes.Length == 0)
         {
