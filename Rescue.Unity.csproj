@@ -101,6 +101,7 @@
     <Compile Include="Assets\Rescue.Unity\Presentation\ActionPlaybackPlan.cs" />
     <Compile Include="Assets\Rescue.Unity\Editor\Art\Validation\MeshyAssetValidationMenu.cs" />
     <Compile Include="Assets\Rescue.Unity\Presentation\LossScreenPresenter.cs" />
+    <Compile Include="Assets\Rescue.Unity\Presentation\L00IntroImagePresenter.cs" />
     <Compile Include="Assets\Rescue.Unity\Art\Registries\BlockerVisualRegistry.cs" />
     <Compile Include="Assets\Rescue.Unity\Capture\CaptureRunner.cs" />
     <Compile Include="Assets\Rescue.Unity\Audio\AudioSettingsController.cs" />

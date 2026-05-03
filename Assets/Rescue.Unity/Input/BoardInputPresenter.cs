@@ -21,8 +21,11 @@ namespace Rescue.Unity.Input
         [SerializeField] private float visualDebrisClickFallbackRadiusPixels = 96f;
 
         private GameState? fallbackState;
+        private bool inputBlocked;
 
         public GameState? CurrentState => gameStateView?.CurrentState ?? fallbackState;
+
+        public bool IsInputBlocked => inputBlocked;
 
         private void Awake()
         {
@@ -57,6 +60,11 @@ namespace Rescue.Unity.Input
             fallbackState = state;
         }
 
+        public void SetInputBlocked(bool blocked)
+        {
+            inputBlocked = blocked;
+        }
+
         public bool TryGetTileCoordFromObject(GameObject source, out TileCoord coord)
         {
             coord = default;
@@ -82,6 +90,11 @@ namespace Rescue.Unity.Input
 
         private bool TryHandleScreenPosition(Vector2 screenPosition)
         {
+            if (inputBlocked)
+            {
+                return false;
+            }
+
             Camera? cameraToUse = ResolveInputCamera();
             if (cameraToUse is null)
             {
@@ -135,6 +148,11 @@ namespace Rescue.Unity.Input
 
         private bool TryRunActionAt(TileCoord coord, Vector2 screenPosition, GameObject hitObject, string hitObjectPath)
         {
+            if (inputBlocked)
+            {
+                return false;
+            }
+
             if (gameStateView is not null && gameStateView.IsPlaybackActive)
             {
                 return false;

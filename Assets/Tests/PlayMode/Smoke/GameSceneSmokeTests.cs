@@ -8,6 +8,7 @@ using Rescue.Unity.BoardPresentation;
 using Rescue.Unity.Debugging;
 using Rescue.Unity.Feedback;
 using Rescue.Unity.FX;
+using Rescue.Unity.Input;
 using Rescue.Unity.Presentation;
 using Rescue.Unity.UI;
 using UnityEngine;
@@ -148,6 +149,41 @@ namespace Rescue.PlayMode.Tests.Smoke
             AssertDirectionalLightMatchesStaging();
 
             yield return null;
+        }
+
+        [UnityTest]
+        public System.Collections.IEnumerator GameScene_L00IntroImageBlocksInputUntilDismissedAndReturnsOnReload()
+        {
+            PlayableLevelSession session = FindRequired<PlayableLevelSession>();
+            BoardInputPresenter boardInput = FindRequired<BoardInputPresenter>();
+            L00IntroImagePresenter intro = FindRequired<L00IntroImagePresenter>();
+
+            Assert.That(session.CurrentLevelId, Is.EqualTo("L00"));
+            Assert.That(intro.IsVisible, Is.True, "L00 should show the intro image before play.");
+            Assert.That(boardInput.IsInputBlocked, Is.True, "L00 intro should block board input while visible.");
+
+            GameState initialState = session.CurrentState ?? throw new AssertionException("Game scene did not load L00.");
+            Assert.That(boardInput.TryRunActionAt(new TileCoord(4, 0)), Is.False, "The first board tap should be consumed by the intro gate.");
+            Assert.That(session.CurrentState?.ActionCount, Is.EqualTo(initialState.ActionCount));
+
+            intro.Dismiss();
+            yield return null;
+
+            Assert.That(intro.IsVisible, Is.False);
+            Assert.That(boardInput.IsInputBlocked, Is.False);
+            Assert.That(boardInput.TryRunActionAt(new TileCoord(4, 0)), Is.True, "After dismissing the intro, L00 should accept normal board input.");
+            yield return WaitForPlayback();
+            Assert.That(session.CurrentState?.ActionCount, Is.EqualTo(1));
+
+            session.LoadLevel("L00", session.Seed);
+            yield return null;
+            Assert.That(intro.IsVisible, Is.True, "Reloading L00 should show the intro again.");
+            Assert.That(boardInput.IsInputBlocked, Is.True);
+
+            session.LoadLevel("L01", session.Seed);
+            yield return null;
+            Assert.That(intro.IsVisible, Is.False, "Loading a non-L00 level should hide the intro.");
+            Assert.That(boardInput.IsInputBlocked, Is.False);
         }
 
         [UnityTest]

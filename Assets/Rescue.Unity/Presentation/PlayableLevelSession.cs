@@ -42,6 +42,7 @@ namespace Rescue.Unity.Presentation
         [SerializeField] private BoardInputPresenter? boardInput;
         [SerializeField] private VictoryScreenPresenter? victoryScreen;
         [SerializeField] private LossScreenPresenter? lossScreen;
+        [SerializeField] private L00IntroImagePresenter? l00IntroImage;
         [SerializeField] private string startingLevelId = InitialLevelId;
         [SerializeField] private int seed = InitialSeed;
 
@@ -87,6 +88,7 @@ namespace Rescue.Unity.Presentation
             SyncVictoryAvailability();
             gameStateView?.Rebuild(loaded);
             boardInput?.SetCurrentState(loaded, refreshView: false);
+            SyncL00IntroImage();
         }
 
         public void ReplayCurrentLevel()
@@ -188,6 +190,11 @@ namespace Rescue.Unity.Presentation
                 lossScreen.ReplayRequested -= ReplayCurrentLevel;
                 lossScreen.TryAgainRequested -= HandleRetryRequested;
             }
+
+            if (l00IntroImage is not null)
+            {
+                l00IntroImage.Dismissed -= HandleL00IntroDismissed;
+            }
         }
 
         private static void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -253,7 +260,13 @@ namespace Rescue.Unity.Presentation
                 lossScreen = LossScreenPresenter.EnsureInstance();
             }
 
+            if (l00IntroImage is null)
+            {
+                l00IntroImage = L00IntroImagePresenter.EnsureInstance();
+            }
+
             BindTerminalButtons();
+            BindL00IntroImage();
         }
 
         private void BindTerminalButtons()
@@ -273,6 +286,41 @@ namespace Rescue.Unity.Presentation
                 lossScreen.ReplayRequested += ReplayCurrentLevel;
                 lossScreen.TryAgainRequested += HandleRetryRequested;
             }
+        }
+
+        private void BindL00IntroImage()
+        {
+            if (l00IntroImage is null)
+            {
+                return;
+            }
+
+            l00IntroImage.Dismissed -= HandleL00IntroDismissed;
+            l00IntroImage.Dismissed += HandleL00IntroDismissed;
+        }
+
+        private void SyncL00IntroImage()
+        {
+            if (l00IntroImage is null)
+            {
+                return;
+            }
+
+            bool shouldShow = string.Equals(currentLevelId, InitialLevelId, StringComparison.Ordinal);
+            boardInput?.SetInputBlocked(shouldShow);
+            if (shouldShow)
+            {
+                l00IntroImage.Show();
+            }
+            else
+            {
+                l00IntroImage.Hide();
+            }
+        }
+
+        private void HandleL00IntroDismissed()
+        {
+            boardInput?.SetInputBlocked(false);
         }
 
         private void HandleNextRequested()
