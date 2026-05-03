@@ -5,14 +5,14 @@
     "width": 7,
     "height": 9,
     "tiles": [
-      [".", ".", "A", "A", ".", "B", "B"],
-      [".", ".", "V", ".", ".", "T1", "CR"],
-      [".", "CR", "V", ".", "IE", "CR", "."],
-      [".", ".", "V", ".", ".", "C", "."],
-      ["D", "CR", ".", ".", ".", "C", "."],
-      ["D", "T0", "CR", "V", "IA", ".", "."],
-      ["E", "CR", "V", ".", ".", ".", "."],
-      ["E", ".", ".", ".", ".", ".", "."],
+      ["F", "F", "A", "A", ".", "B", "B"],
+      ["E", "C", "V", ".", ".", "T1", "CR"],
+      ["E", "CR", "V", ".", "IE", "CR", "B"],
+      ["D", "D", "V", ".", "A", "C", "B"],
+      ["D", "CR", "F", ".", "A", "C", "C"],
+      ["D", "T0", "CR", "V", "IA", "F", "F"],
+      ["E", "CR", "V", "B", "B", "A", "A"],
+      ["E", "C", "C", "F", "F", "D", "."],
       [".", ".", ".", ".", ".", ".", "."]
     ]
   },
@@ -47,7 +47,7 @@
     "expectedPath": "Clip the authored vine lane twice early to keep the shortcut open, rescue the lower urgent puppy, and only then pivot up to the safer target.",
     "expectedFailMode": "The player lets the vine lane grow shut, spends extra actions rerouting, and then loses to combined water and dock pressure rather than one clean mistake.",
     "whatItProves": "Vine supports the rescue-order seed by taxing future actions instead of stealing the board's identity.",
-    "notes": "Growth priority is a single visible lane through the center-right, not a diffuse spread pattern.",
+    "notes": "The rebuilt board keeps the authored vine growth lane visually isolated, while adding enough surrounding material that clipping vine competes with real dock and rescue choices.",
     "isRuleTeach": false
   }
 }

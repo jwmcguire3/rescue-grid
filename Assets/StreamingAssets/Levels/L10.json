@@ -5,13 +5,13 @@
     "width": 7,
     "height": 8,
     "tiles": [
-      [".", ".", "A", "A", ".", "B", "B"],
-      [".", ".", "CR", ".", "CR", "T1", "CR"],
-      [".", "C", "IA", "V", ".", "CR", "."],
-      [".", "CR", ".", ".", ".", "D", "."],
-      ["E", "CR", "T0", "CR", ".", "ID", "."],
-      ["E", "V", "CR", ".", ".", "D", "."],
-      ["A", "A", ".", ".", "V", ".", "."],
+      ["F", ".", "A", "A", ".", "B", "B"],
+      ["F", ".", "CR", ".", "CR", "T1", "CR"],
+      [".", "C", "IA", "V", "F", "CR", "D"],
+      [".", "CR", "B", ".", "F", "D", "D"],
+      ["E", "CR", "T0", "CR", ".", "ID", "A"],
+      ["E", "V", "CR", "B", "B", "D", "A"],
+      ["A", "A", "F", "F", "V", ".", "C"],
       [".", ".", ".", ".", ".", ".", "."]
     ]
   },
@@ -45,7 +45,7 @@
     "expectedPath": "Take the central choke immediately by cutting the low vine and adjacent blocker chain, rescue the lower puppy first, then branch upward into the safer top-right rescue.",
     "expectedFailMode": "The player cashes obvious side pairs for dock value before opening the choke, then runs short on actions and flexibility once water and vine pressure start compounding.",
     "whatItProves": "All three blockers can coexist without hiding the rescue-order seed.",
-    "notes": "The board keeps one obvious center lane so the exam is about route commitment, not searching for hidden lines.",
+    "notes": "The rebuilt board keeps the central choke readable while surrounding it with real dock and blocker choices so the all-systems exam no longer reads sparse.",
     "isRuleTeach": false
   }
 }

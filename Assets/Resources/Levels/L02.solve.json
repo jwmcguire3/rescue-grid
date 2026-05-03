@@ -6,12 +6,20 @@
   "ExpectAlternateSeedDivergence": true,
   "Actions": [
     {
-      "Row": 3,
+      "Row": 1,
       "Col": 0
     },
     {
+      "Row": 5,
+      "Col": 5
+    },
+    {
+      "Row": 4,
+      "Col": 4
+    },
+    {
       "Row": 0,
-      "Col": 1
+      "Col": 0
     }
   ]
 }

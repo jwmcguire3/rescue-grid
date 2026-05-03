@@ -5,14 +5,14 @@
     "width": 6,
     "height": 8,
     "tiles": [
-      [".", ".", ".", "A", "A", "A"],
-      [".", ".", ".", "CR", "T1", "CR"],
-      [".", ".", ".", "B", "CR", "."],
-      [".", "CR", ".", ".", ".", "."],
-      ["C", "IA", ".", ".", ".", "D"],
-      ["C", "T0", "IB", ".", "CR", "D"],
-      ["E", "IC", ".", ".", ".", "."],
-      ["E", "E", ".", ".", ".", "."]
+      [".", "F", "D", "A", "A", "."],
+      ["E", "E", "D", "CR", "T1", "."],
+      ["E", "C", "C", "B", "CR", "D"],
+      ["D", "CR", "B", "B", "F", "F"],
+      ["C", "CR", "B", "A", "E", "D"],
+      ["C", "T0", "IB", "B", "CR", "D"],
+      ["E", "IC", "B", "B", "B", "."],
+      ["E", "C", ".", ".", ".", "."]
     ]
   },
   "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
@@ -42,7 +42,7 @@
     "expectedPath": "Open the lower puppy through the left-side ice first, then pivot to the top crate pocket once the urgent rescue is secured.",
     "expectedFailMode": "The player spends too many early actions on the tidier upper crate side because it looks faster, then loses tempo on the lower rescue.",
     "whatItProves": "Rescue order survives once the board gets slightly messier.",
-    "notes": "The lower route mixes three ice tiles with nearby pairs so the correct line is legible, while the top A-led pocket is intentionally the false-clean solve.",
+    "notes": "The rebuilt board keeps the lower mixed-blocker route as the generous intended line while the denser top crate pocket remains a cleaner-looking but slower temptation.",
     "isRuleTeach": false
   }
 }

@@ -42,10 +42,10 @@
   },
   "meta": {
     "intent": "Produce one instantly legible, high-stakes rescue beat with a hero puppy hanging over the flood and a clean route that reads in seconds even to a cold viewer.",
-    "expectedPath": "Clear the authored lower B triple to trigger the hero rescue immediately, then clear the compact upper-right A pair to free the secondary puppy and end the level cleanly.",
-    "expectedFailMode": "The player spends actions in the wrong pocket, misses the obvious lower rescue beat, and loses the simple capture read to avoidable pressure.",
+    "expectedPath": "Reject the compact upper-left bait clear, take the authored lower B triple to trigger the hero rescue, then clear the compact upper-right A pair to free the secondary puppy and end cleanly.",
+    "expectedFailMode": "The player keeps spending actions in the bait pocket or generic clears, misses the obvious lower rescue beat, and loses the simple capture read to avoidable pressure.",
     "whatItProves": "The game has a genuinely captureable rescue sequence that resolves through the real action pipeline rather than a scripted fake.",
-    "notes": "The rebuilt capture board keeps the hero sightline and roofed rescue neighbors, while adding enough surrounding material for an 80%+ opening read.",
+    "notes": "The capture board keeps the hero sightline and roofed rescue neighbors, while the upper-left D pair is an intentional first-read bait choice before the urgent lower B rescue.",
     "isRuleTeach": false
   }
 }

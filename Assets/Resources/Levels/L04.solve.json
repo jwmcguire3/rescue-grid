@@ -6,44 +6,36 @@
   "ExpectAlternateSeedDivergence": true,
   "Actions": [
     {
+      "Row": 2,
+      "Col": 0
+    },
+    {
       "Row": 0,
       "Col": 2
     },
     {
       "Row": 1,
-      "Col": 3
-    },
-    {
-      "Row": 0,
-      "Col": 3
-    },
-    {
-      "Row": 1,
-      "Col": 2
-    },
-    {
-      "Row": 2,
-      "Col": 4
-    },
-    {
-      "Row": 1,
-      "Col": 0
-    },
-    {
-      "Row": 2,
-      "Col": 3
-    },
-    {
-      "Row": 1,
-      "Col": 0
-    },
-    {
-      "Row": 2,
-      "Col": 0
-    },
-    {
-      "Row": 3,
       "Col": 1
+    },
+    {
+      "Row": 1,
+      "Col": 3
+    },
+    {
+      "Row": 4,
+      "Col": 0
+    },
+    {
+      "Row": 6,
+      "Col": 0
+    },
+    {
+      "Row": 2,
+      "Col": 3
+    },
+    {
+      "Row": 0,
+      "Col": 3
     }
   ]
 }

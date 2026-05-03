@@ -5,14 +5,14 @@
     "width": 8,
     "height": 9,
     "tiles": [
-      [".", ".", "A", "A", ".", "B", "B", "."],
-      [".", ".", "CR", "T2", "CR", ".", "IA", "."],
-      [".", "C", "CR", "V", ".", ".", "CR", "."],
-      [".", ".", ".", "CR", ".", "V", "D", "."],
-      ["E", ".", "CR", ".", "CR", "T1", "CR", "."],
-      ["E", "CR", "V", ".", "IA", "CR", ".", "."],
-      ["T0", "CR", ".", "V", ".", ".", "IE", "."],
-      ["CR", ".", ".", ".", ".", ".", ".", "."],
+      ["F", "F", "A", "A", ".", "B", "B", "."],
+      ["D", "C", "CR", "T2", "CR", "F", "IA", "."],
+      ["D", "C", "CR", "V", "F", "F", "CR", "A"],
+      [".", "E", "D", "CR", "C", "V", "D", "A"],
+      ["E", "B", "CR", ".", "CR", "T1", "CR", "C"],
+      ["E", "CR", "V", "B", "IA", "CR", "C", "C"],
+      ["T0", "CR", ".", "V", ".", "D", "IE", "F"],
+      ["CR", "A", "A", "D", "D", "F", "F", "."],
       [".", ".", ".", ".", ".", ".", ".", "."]
     ]
   },
@@ -48,7 +48,7 @@
     "expectedPath": "Commit fully to the lower-left rescue first, pivot hard into the middle-right target second, and only then spend actions on the safer top rescue.",
     "expectedFailMode": "The player brute-forces low-value clears across the whole board, never really commits, and loses either to dock overflow or to water catching the first urgent puppy.",
     "whatItProves": "The Phase 1 seed scales into real tension without collapsing into busywork.",
-    "notes": "Density is concentrated near target lanes so the board stays parseable instead of becoming uniformly noisy.",
+    "notes": "The rebuilt stress test reaches late-onboarding density through route-adjacent material, while preserving open pivot cells around the three target lanes.",
     "isRuleTeach": false
   }
 }

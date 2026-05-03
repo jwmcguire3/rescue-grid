@@ -5,12 +5,12 @@
     "width": 6,
     "height": 7,
     "tiles": [
-      [".", ".", "A", "A", ".", "."],
-      [".", ".", "CR", "CR", ".", "."],
-      [".", "CR", "T0", "CR", ".", "."],
-      ["C", "A", "CR", "B", "D", "."],
-      ["C", "A", "CR", "B", "D", "."],
-      ["C", "A", ".", "B", "D", "."],
+      ["F", "F", "A", "A", "C", "."],
+      ["D", ".", "CR", "CR", "C", "C"],
+      ["D", "CR", "T0", "CR", "F", "."],
+      ["C", "A", "CR", "B", "D", "D"],
+      ["C", "A", "CR", "B", "D", "F"],
+      ["C", "A", ".", "B", "D", "F"],
       [".", ".", ".", ".", ".", "."]
     ]
   },
@@ -40,7 +40,7 @@
     "expectedPath": "Clear the lower-center A and B columns to open the lane around the puppy, then take the top A pair to finish the rescue before the second rise matters.",
     "expectedFailMode": "The player chases the easy side triples first, stuffs the dock with mismatched pieces, and walks into Dock Jam instead of finishing the rescue lane.",
     "whatItProves": "The game can deliver 'save the puppy' before it reads as abstract clearing.",
-    "notes": "The center route is intentionally cleaner than the side-value clears so the first rescue lands fast when the player commits to it.",
+    "notes": "The rebuilt first rescue keeps the direct center lane readable, but adds enough side material for the opening board to feel like production play rather than an empty teach board.",
     "isRuleTeach": false
   }
 }

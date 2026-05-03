@@ -22,7 +22,7 @@
   ],
   "initialFloodedRows": 0,
   "water": {
-    "riseInterval": 10
+    "riseInterval": 3
   },
   "vine": {
     "growthThreshold": 4,
@@ -39,9 +39,9 @@
   "meta": {
     "intent": "Force first-clear priority between the lower puppy that is near the coming water and the upper-right puppy that looks cleaner to rescue.",
     "expectedPath": "Rescue the lower puppy first even though the upper-right puppy looks more open, then pivot across the board to finish the safer rescue.",
-    "expectedFailMode": "The player saves the easier upper-right puppy first, spends too many actions away from the lower route, and risks losing the lower puppy to water.",
+    "expectedFailMode": "The player saves the easier upper-right puppy first, spends too many actions away from the lower route, and lets the first water rise catch the lower puppy's row.",
     "whatItProves": "By Level 3, rescue order is the puzzle.",
-    "notes": "The urgent puppy now sits on the first flood row, with two compact route groups that must be taken before the safer upper-right rescue.",
+    "notes": "This level intentionally uses a tight 3-action water interval as the first rescue-order pressure spike: lower-first is fair, but upper-first spends too much of the opening water budget before the urgent route is safe.",
     "isRuleTeach": false
   }
 }

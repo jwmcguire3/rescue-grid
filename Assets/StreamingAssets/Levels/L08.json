@@ -5,13 +5,13 @@
     "width": 7,
     "height": 8,
     "tiles": [
-      [".", ".", ".", "A", "A", ".", "."],
-      [".", ".", ".", "V", ".", ".", "."],
-      [".", ".", ".", "V", ".", ".", "."],
-      [".", ".", ".", ".", ".", ".", "."],
+      ["F", "F", ".", "A", "A", ".", "E"],
+      [".", "C", ".", "V", "B", "B", "F"],
+      ["D", "C", "C", "V", "A", "F", "."],
+      [".", "D", "D", ".", "A", "C", "C"],
       ["B", "B", "CR", "T0", "CR", "C", "C"],
-      ["D", ".", ".", "V", ".", ".", "E"],
-      ["D", ".", "CR", "V", "CR", ".", "E"],
+      ["D", "A", "A", "V", ".", "F", "E"],
+      ["D", ".", "CR", "V", "CR", "B", "E"],
       [".", ".", ".", ".", ".", ".", "."]
     ]
   },
@@ -43,7 +43,7 @@
     "expectedPath": "Notice the center preview, clip the vine before it grows into the gap above the puppy, then continue opening the rescue lane with the side pairs.",
     "expectedFailMode": "The player ignores the warning, lets the growth land in the center gap, and turns a clean rescue path into a slower reroute.",
     "whatItProves": "Route urgency can be visual and fair.",
-    "notes": "The authored growth tile is the empty cell directly above the puppy's lane so the preview should read as relevant pressure instead of random spread.",
+    "notes": "The rebuilt tutorial preserves the empty preview cell above the puppy, but fills the surrounding board so the warned vine cost appears inside real play.",
     "isRuleTeach": false
   }
 }

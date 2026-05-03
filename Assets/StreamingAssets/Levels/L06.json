@@ -5,13 +5,13 @@
     "width": 7,
     "height": 8,
     "tiles": [
-      [".", ".", "A", "A", ".", ".", "."],
-      [".", ".", ".", "CR", ".", ".", "."],
-      [".", "IA", ".", ".", ".", "IB", "."],
-      ["B", "CR", ".", "T1", ".", "CR", "C"],
-      ["B", ".", "CR", ".", "CR", ".", "C"],
-      ["D", "IC", ".", "T0", ".", "ID", "E"],
-      ["D", "CR", ".", "CR", ".", "CR", "E"],
+      ["F", "F", "A", "A", "B", "B", "."],
+      ["D", "D", "C", "CR", "F", "E", "E"],
+      ["D", "IA", "C", "B", "F", "IB", "E"],
+      ["B", "CR", "B", "T1", "F", "CR", "C"],
+      ["B", "A", "CR", "D", "CR", "C", "C"],
+      ["D", "IC", "A", "T0", "B", "ID", "E"],
+      ["D", "CR", ".", "CR", "B", "CR", "E"],
       [".", ".", ".", ".", ".", ".", "."]
     ]
   },
@@ -42,7 +42,7 @@
     "expectedPath": "Read the center first, use the small top A entry to start opening the middle, then route through the stacked central targets instead of farming the broad side columns.",
     "expectedFailMode": "The player keeps taking the satisfying left and right side clears, feels busy, and wastes too many actions before the center route is meaningfully open.",
     "whatItProves": "The player can orient in a larger greybox without the game turning mushy.",
-    "notes": "The blocker count is intentionally concentrated around the centerline so the board reads bigger, not denser; the side columns are there to tempt broad but low-value clears.",
+    "notes": "The rebuilt larger board keeps the centerline rescue read while filling the sides with real but lower-value clears, so broad clearing is tempting without becoming the intended route.",
     "isRuleTeach": false
   }
 }
