@@ -100,6 +100,18 @@ namespace Rescue.PlayMode.Tests.Smoke
             audioSettings.SetFxVolume(0.6f);
             Assert.That(PlayerPrefs.GetFloat(AudioSettingsController.MusicVolumePrefsKey), Is.EqualTo(0.25f).Within(0.001f));
             Assert.That(PlayerPrefs.GetFloat(AudioSettingsController.FxVolumePrefsKey), Is.EqualTo(0.6f).Within(0.001f));
+            settings.SetMusicMuted(true);
+            Assert.That(audioSettings.MusicVolume, Is.EqualTo(0.0f).Within(0.001f));
+            Assert.That(audioSettings.FxVolume, Is.EqualTo(0.6f).Within(0.001f));
+            settings.SetMusicMuted(false);
+            Assert.That(audioSettings.MusicVolume, Is.EqualTo(0.25f).Within(0.001f));
+            Assert.That(audioSettings.FxVolume, Is.EqualTo(0.6f).Within(0.001f));
+            settings.SetFxMuted(true);
+            Assert.That(audioSettings.MusicVolume, Is.EqualTo(0.25f).Within(0.001f));
+            Assert.That(audioSettings.FxVolume, Is.EqualTo(0.0f).Within(0.001f));
+            settings.SetFxMuted(false);
+            Assert.That(audioSettings.MusicVolume, Is.EqualTo(0.25f).Within(0.001f));
+            Assert.That(audioSettings.FxVolume, Is.EqualTo(0.6f).Within(0.001f));
             Assert.That(audioRouter.AudioSource, Is.Not.Null, "Game.unity should provide an AudioSource for routed feedback.");
             Assert.That(musicPlayer.AudioSource, Is.Not.Null, "Game.unity should provide a dedicated AudioSource for music.");
             Assert.That(musicPlayer.AudioSource, Is.Not.SameAs(audioRouter.AudioSource));

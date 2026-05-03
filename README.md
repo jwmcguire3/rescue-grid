@@ -1,6 +1,6 @@
 # Rescue Grid
 
-Rescue Grid is a Unity 6.4 Phase 1 prototype for a tactical animal-rescue puzzle game.
+Rescue Grid is a Unity `6000.4.3f1` Phase 1 prototype for a tactical animal-rescue puzzle game.
 
 The prototype is scoped to prove the core seed:
 
@@ -13,7 +13,7 @@ The authoritative design source is `docs/phase_1_spec.md`. Do not pull mechanics
 
 ## Current State
 
-The repository is a playable Phase 1 prototype with a deterministic core, authored packet, player scene, debug scene, tooling, and first-pass presentation. The strongest areas are:
+The repository is a playable Phase 1 prototype with a deterministic core, authored packet, player scene, debug scene, tooling, first-pass presentation, and dev build scripts for Android, iOS, WebGL, and capture builds. The strongest areas are:
 
 - Immutable `Rescue.Core` state and deterministic rules.
 - A fixed action pipeline with isolated steps and regression tests.
@@ -24,10 +24,7 @@ The repository is a playable Phase 1 prototype with a deterministic core, author
 
 The main product risk is player-facing clarity and emotional proof. A cold player should be able to read water pressure, dock failures, vine pressure, rescue order, and the puppy extraction beat without relying on debug context.
 
-Latest checked-in result artifacts show:
-
-- Targeted EditMode runs passed for board content, board input, FX routing, playback, and prefabization; targeted PlayMode `Game.unity` smoke passed 4/4 on 2026-04-28.
-- Full PlayMode artifact `playmode-results.xml`: 17/39 passed and 22 failed on 2026-04-28.
+Generated build, Android, capture, and test outputs are intentionally ignored. Source control should stay focused on authored content, code, Unity settings, docs, scripts, and committed solve data rather than local result logs or build products.
 
 ## Phase 1 Scope
 
@@ -115,7 +112,7 @@ Current packet:
 - `L00.json`: rule-teach opener.
 - `L01.json` through `L15.json`: main Phase 1 packet.
 
-Solve files live in `Assets/Resources/Levels/` as `L00.solve.json` through `L15.solve.json`. The L15 capture path is also represented in `capture/L15.capture.json` and documented in `docs/capture.md`.
+Solve files live in `Assets/Resources/Levels/` as `L00.solve.json` through `L15.solve.json`. The committed L15 capture source of truth is `Assets/Resources/Levels/L15.solve.json`; generated capture reports are written at runtime under `persistentDataPath/capture/` or by verification under `Build/Logs/`, and the workflow is documented in `docs/capture.md`.
 
 The level schema currently supports:
 
@@ -208,6 +205,7 @@ scripts/preview-level.sh
 scripts/telemetry-report.sh
 scripts/build-capture.sh
 scripts/record-l15.sh
+scripts/record-l15.ps1
 scripts/build-web.sh
 scripts/build-android.sh
 scripts/build-ios.sh
@@ -233,12 +231,37 @@ Capture verification:
 powershell -ExecutionPolicy Bypass -File .\scripts\verify-capture.ps1
 ```
 
+## Build and Distribution
+
+Development builds use Unity `6000.4.3f1` with the relevant platform support installed. Set `UNITY_PATH` to the Unity editor executable, or make `Unity` available on `PATH`.
+
+Build scripts write generated output under `Build/` by default:
+
+```bash
+scripts/build-android.sh
+scripts/build-ios.sh
+scripts/build-web.sh
+scripts/build-capture.sh
+```
+
+Android builds support APK or AAB output:
+
+```bash
+RESCUE_ANDROID_FORMAT=apk scripts/build-android.sh
+RESCUE_ANDROID_FORMAT=aab scripts/build-android.sh
+```
+
+iOS builds export an Xcode project under `Build/iOS/XcodeProject`; signing and device install happen in Xcode. WebGL builds write to `Build/WebGL` and should be served with a local static file server. Capture builds write under `Build/Capture/`; desktop verification can also write `Build/Logs/L15.capture.json`.
+
+See `docs/distribution.md` for platform install notes and telemetry collection, and `docs/capture.md` for the L15 capture workflow.
+
 ## Repository Map
 
 - `docs/phase_1_spec.md`: authoritative Phase 1 design and playtest contract.
 - `docs/tuning.md`: tuning notes.
 - `docs/distribution.md`: distribution notes.
 - `docs/capture.md`: L15 capture build and recording workflow.
+- `docs/replay.md`: replay tooling and deterministic playback notes.
 - `Assets/Rescue.Core/`: immutable state, rules, pipeline, RNG, undo.
 - `Assets/Rescue.Core.Tests/`: core EditMode tests.
 - `Assets/Rescue.Content/`: level schema, loader, validator, ASCII preview.
@@ -253,6 +276,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\verify-capture.ps1
 - `Assets/Tests/PlayMode/`: PlayMode smoke/debug tests.
 - `Tools/`: .NET CLI support tools.
 - `scripts/`: local automation.
+- `Build/`, `Artifacts/`, `.utmp/`, root `capture/`, and root test result/log files: ignored generated output.
 
 ## Known Gaps
 
@@ -260,7 +284,7 @@ The next work should make existing Phase 1 behavior clearer within the locked sc
 
 Highest-value gaps:
 
-- Resolve the failing full PlayMode smoke artifact and keep targeted scene smoke coverage green.
+- Keep targeted EditMode and PlayMode scene smoke coverage green after presentation changes.
 - Strengthen `TargetOneClearAway`, `WaterWarning`, `VinePreviewChanged`, and `VineGrown` as player-facing presentation.
 - Tune persistent next-flood-row forecast readability across L00-L15.
 - Make dock overflow, Dock Jam, win, and loss causality unmistakable.
