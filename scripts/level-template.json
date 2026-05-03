@@ -1,6 +1,6 @@
 {
   "id": "LTEMPLATE",
-  "name": "Level Template",
+  "name": "Template Only - Replace Board",
   "board": {
     "width": 6,
     "height": 7,
@@ -45,7 +45,7 @@
     "expectedPath": "Describe the intended solve path here.",
     "expectedFailMode": "Describe the common failure mode here.",
     "whatItProves": "Describe what this level proves about the design.",
-    "notes": "Optional: author notes, density exceptions, contactMode choice, spawnIntegrity exceptions, tuning deviations, or anything a reviewer needs to know.",
+    "notes": "Template only: replace the board completely. Do not preserve this layout, groups, or solve path when creating a real level.",
     "isRuleTeach": false
   }
 }

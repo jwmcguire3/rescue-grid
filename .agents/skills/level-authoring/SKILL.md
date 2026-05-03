@@ -23,13 +23,15 @@ Core identity:
 Before authoring or modifying levels, read the relevant sources:
 
 - `docs/phase_1_spec.md` for authoritative Phase 1 design and rules.
-- `Assets/Rescue.Content/README.md` for authoritative JSON schema and loader behavior.
+- `Assets/Rescue.Content/README.md` for the Rescue.Content pipeline map.
 - `Assets/Rescue.Content/AUTHORING.md` for validation, preview, template, and tooling commands.
 - `references/LEVEL_DESIGN_PRINCIPLES.md` for rescue-first design rules, fairness, and common mistakes.
 - `references/LEVEL_ROLES_AND_ARCHETYPES.md` when choosing the level role or reviewing pacing.
 - `references/DENSITY_AND_READABILITY.md` when checking start-state density, first-move readability, empty cells, or required authoring discipline.
 - `references/PHASE1_LEVEL_INTENTS.md` when modifying L00-L15 prototype levels.
 - `references/FIRST_100_ROADMAP.md` when designing production campaign levels beyond the Phase 1 packet.
+
+Exact executable content behavior lives in `Assets/Rescue.Content/Schema.cs`, `Validator.cs`, `Loader.cs`, and `Tuning.cs`.
 
 If a referenced file is missing, proceed from the current project docs and note the missing reference in the response.
 

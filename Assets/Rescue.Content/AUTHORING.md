@@ -51,7 +51,7 @@ Using the script wrapper:
 Or directly against one file:
 
 ```
-dotnet run --project Tools/LevelValidator -- validate Assets/StreamingAssets/Levels/L03.json
+dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- validate Assets/StreamingAssets/Levels/L03.json
 ```
 
 Exit code `0` = valid (warnings may still print). Exit code `1` = errors. Exit code `2` = bad invocation.
@@ -67,7 +67,7 @@ Using the helper script:
 Or directly:
 
 ```
-dotnet run --project Tools/LevelValidator -- preview Assets/StreamingAssets/Levels/L03.json
+dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- preview Assets/StreamingAssets/Levels/L03.json
 ```
 
 Output is the ASCII board preceded by a header line:
@@ -106,6 +106,12 @@ If a level is intentionally sparse or deviates from tuning tables, document the 
 
 ```
 ./scripts/validate-levels.sh
+```
+
+Or directly:
+
+```
+dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- validate-all Assets/StreamingAssets/Levels
 ```
 
 This runs `validate-all` over the entire `Assets/StreamingAssets/Levels/` directory and prints a summary. Exit code `0` only if every level passes.
