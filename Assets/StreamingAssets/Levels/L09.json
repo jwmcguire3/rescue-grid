@@ -5,13 +5,13 @@
     "width": 7,
     "height": 8,
     "tiles": [
-      [".", ".", ".", ".", "A", "A", "."],
-      [".", ".", "CR", ".", ".", "T1", "CR"],
-      [".", ".", ".", ".", "V", "CR", "C"],
-      [".", "CR", ".", ".", ".", ".", "C"],
-      ["B", "CR", ".", "V", ".", ".", "C"],
-      ["B", "T0", "CR", ".", ".", "CR", "C"],
-      ["D", ".", ".", ".", "V", ".", "E"],
+      [".", "F", "D", "D", "CR", "CR", "."],
+      ["C", "C", "CR", ".", "V", "T1", "CR"],
+      [".", "B", "B", "V", "F", "CR", "E"],
+      [".", "CR", "C", "C", ".", "E", "E"],
+      ["B", "V", "C", "E", "E", "V", "."],
+      ["B", "T0", "CR", "A", "A", "D", "F"],
+      ["B", "B", "CR", "A", ".", "D", "."],
       [".", ".", ".", ".", ".", ".", "."]
     ]
   },
@@ -41,10 +41,10 @@
   },
   "meta": {
     "intent": "Create real triage between the lower puppy that is close to the water and the upper-right route that vine is about to worsen.",
-    "expectedPath": "Solve the lower puppy first, clipping a vine on the way so the counter resets, then pivot into the upper-right pocket before the route taxes stack up.",
+    "expectedPath": "Open the lower-left pocket first by clearing the B cluster that clips the vine beside the water-near puppy, use the A cluster to finish that rescue, then pivot into the more expensive upper-right pocket.",
     "expectedFailMode": "The player tunnels on the vine-threatened upper side first, spends actions protecting that lane, and loses the lower puppy to the rising water.",
     "whatItProves": "The prototype can create triage, not just obstacle management.",
-    "notes": "The growth priority sits in the right-hand approach pocket so vine pressure is visible, but the lower rescue remains the real first obligation because of the pre-flooded row.",
+    "notes": "The rebuilt start is dense enough for mid-onboarding while preserving two readable pockets. The lower route intentionally has a fast vine-clipping opener; the upper-right route carries more blockers so tunneling there spends the action budget before the water-near rescue.",
     "isRuleTeach": false
   }
 }
