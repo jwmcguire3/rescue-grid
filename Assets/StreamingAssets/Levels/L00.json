@@ -5,13 +5,13 @@
     "width": 6,
     "height": 7,
     "tiles": [
-      ["CR", "CR", "CR", ".", ".", "."],
-      [".", ".", "B", ".", ".", "."],
-      ["T0", "CR", "B", ".", ".", "."],
-      ["CR", ".", "CR", ".", ".", "."],
-      ["A", "A", ".", ".", ".", "."],
-      [".", ".", ".", ".", ".", "."],
-      [".", ".", ".", ".", ".", "."]
+      ["CR", "CR", "CR", "C", "C", "."],
+      [".", "D", "B", ".", "F", "F"],
+      ["T0", "CR", "B", ".", "D", "."],
+      ["CR", "D", "CR", ".", "D", "F"],
+      ["A", "A", "D", "D", ".", "F"],
+      ["C", "C", ".", ".", "F", "F"],
+      [".", ".", "C", "C", ".", "."]
     ]
   },
   "debrisTypePool": ["A", "B", "C", "D", "F"],
@@ -40,7 +40,7 @@
     "expectedPath": "Tap the visible lower-left A pair at row 4, col 0, watch the first flood row appear, then tap the B pair at row 1, col 2 to pop the side blocker and free the puppy.",
     "expectedFailMode": "The player treats the board like static cleanup and misses the authored contrast between planning time and action time.",
     "whatItProves": "The player can learn the prototype's defining timing rule through interaction instead of explanation.",
-    "notes": "The opening A group is intentionally parked beside the future flood edge so the first water rise reads immediately.",
+    "notes": "The opening A group remains beside the future flood edge, but the board now carries real surrounding material so the rule teach reads as gameplay instead of an empty diagram.",
     "isRuleTeach": true
   }
 }

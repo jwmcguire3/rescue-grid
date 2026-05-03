@@ -30,6 +30,7 @@ Before authoring or modifying levels, read the relevant sources:
 - `references/DENSITY_AND_READABILITY.md` when checking start-state density, first-move readability, empty cells, or required authoring discipline.
 - `references/PHASE1_LEVEL_INTENTS.md` when modifying L00-L15 prototype levels.
 - `references/FIRST_100_ROADMAP.md` when designing production campaign levels beyond the Phase 1 packet.
+- `references/FIRST_100_PACING_MODEL.md` when designing production campaign flow, level-set sequencing, or retention/tension curves.
 
 Exact executable content behavior lives in `Assets/Rescue.Content/Schema.cs`, `Validator.cs`, `Loader.cs`, and `Tuning.cs`.
 

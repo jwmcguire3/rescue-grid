@@ -5,14 +5,14 @@
     "width": 7,
     "height": 9,
     "tiles": [
-      [".", ".", "A", "A", ".", "B", "B"],
-      [".", ".", ".", "CR", ".", "T2", "CR"],
-      [".", "C", ".", "IC", ".", "CR", "."],
-      [".", "CR", ".", ".", ".", "D", "."],
+      ["F", "F", "A", "A", ".", "B", "B"],
+      ["D", ".", "C", "CR", ".", "T2", "CR"],
+      ["D", "C", "C", "IC", "F", "CR", "."],
+      [".", "CR", "D", ".", "F", "D", "D"],
       ["A", ".", "CR", "T1", "CR", "D", "."],
-      ["A", "CR", ".", "CR", ".", "V", "."],
-      ["T0", "CR", ".", "E", "E", "V", "."],
-      ["CR", ".", ".", ".", ".", ".", "."],
+      ["A", "CR", "C", "CR", "E", "V", "F"],
+      ["T0", "CR", "C", "E", "E", "V", "F"],
+      ["CR", "B", "B", ".", "F", "F", "."],
       [".", ".", ".", ".", ".", ".", "."]
     ]
   },
@@ -47,7 +47,7 @@
     "expectedPath": "Rescue the lower-left puppy first, pivot through the center target second, and leave the safer top-right puppy for last.",
     "expectedFailMode": "The player half-opens all three lanes, burns actions without finishing any route, and turns readable triage into self-authored overload.",
     "whatItProves": "Three targets can create triage pressure without becoming unreadable noise.",
-    "notes": "The board is intentionally broad and sparse between target clusters so players can verbalize order at first read.",
+    "notes": "The rebuild keeps broad triage lanes but raises density around each route so half-opening all three targets becomes a real self-authored mistake.",
     "isRuleTeach": false
   }
 }

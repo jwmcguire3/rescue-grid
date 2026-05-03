@@ -1,14 +1,28 @@
 # First 100 Roadmap
 
-This roadmap is for production campaign planning beyond the Phase 1 L00-L15 prototype packet. Do not treat it as a fixed list of implemented levels.
+This roadmap defines the first 100 production campaign levels. Do not treat it as a fixed list of implemented JSON boards.
+
+L00 is the production rule-teach opener. L01-L15 are production onboarding levels, not a separate temporary packet. Together they must teach, prove, and sell the core game: acting advances danger, thinking is free, dock tension is self-authored, rescue order is central, and extraction is the emotional payoff.
+
+Numbering note: L00 sits before the numbered campaign count as the rule-teach opener. The first 100 production campaign levels are Levels 1-100, with L01-L15 forming the first onboarding run inside that count.
+
+Use FIRST_100_PACING_MODEL.md for the tension/release rhythm inside each band.
 
 Use this file to infer reasonable defaults when designing new production levels or packets.
 
+## Production onboarding: L00-L15
+
+L00-L15 are the production onboarding spine. They should preserve the Phase 1 proof goals in `docs/phase_1_spec.md` while also serving first-session retention, confidence, density, and tension/release pacing.
+
+L00 must feel like the player is already playing the real game, not looking at a sparse tutorial diagram. L01-L15 should build confidence, introduce rescue-first priorities, let the player feel clever, and escalate into a memorable onboarding spectacle without breaking readability.
+
+Use `FIRST_100_PACING_MODEL.md` to place teach, practice, choice, pressure, release, exam, recovery, and spectacle beats inside L00-L15 and inside every later 10-level band. Do not run the onboarding as a flat difficulty ramp.
+
 ## Campaign arc
 
-### Levels 1-10: Rescue literacy
+### Levels 1-10: Rescue literacy and first-session confidence
 
-Make the player understand that rescue, not clearing, is the point. Emphasize valid group clears, dock basics, visible target progress, first rescue extraction, water as action-based pressure, and first rescue-order choice.
+Make the player understand that rescue, not clearing, is the point while feeling competent enough to continue. Emphasize valid group clears, dock basics, visible target progress, first rescue extraction, water as action-based pressure, ice as future value, and the first rescue-order choices. L01-L10 are production onboarding: teach clearly, create confidence, then make L10 feel like "I understand the core game."
 
 ### Levels 11-20: Dock discipline
 
@@ -45,3 +59,5 @@ Remix known rules in fresh geometries. Emphasize strong first reads, varied boar
 ### Levels 91-100: Campaign climax
 
 Deliver memorable, readable rescue drama using the full known ruleset. Emphasize high-stakes but legible target order, satisfying rescue moves, emotionally clear extraction, and spectacle levels that still play honestly.
+
+Level 100 should be memorable and emotionally clear, not merely the hardest board. It should leave the player remembering the rescue decision and payoff, not just the difficulty spike.
