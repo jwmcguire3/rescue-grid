@@ -5,6 +5,7 @@ Logs/
 Build/
 obj/
 UserSettings/
+/.utmp/
 
 # Authoring artefacts (disposable output from watch-levels.sh and preview-level.sh)
 Assets/StreamingAssets/Levels/*_validation.log
@@ -23,12 +24,19 @@ Assets/StreamingAssets/Levels/*_preview.txt
 .codex-dotnet/
 .codex-home/
 .dotnet/
+/.dotnet-home/
+/.dotnet_home/
 .nuget/
 UIElementsSchema/
 
 # Test output
 *-results.xml
 *-tests.log
+*-tests-noquit.log
+
+# Local verification artifacts
+/Artifacts/
+/capture/
 
 # OS
 .DS_Store
