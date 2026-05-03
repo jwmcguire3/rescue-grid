@@ -142,7 +142,36 @@ Not desired:
 
 ---
 
-## 1.3 Group definition and valid input
+## 1.3 Start state density
+
+Rescue Grid levels begin visually complete by default. The opening board should look like real gameplay, not a tutorial diagram.
+
+Empty cells are allowed only when they are part of authored board geometry, environmental negative space, hazard space, spawn corridors, readability around a target, or a deliberately shaped rescue route.
+
+Empty cells must never appear as arbitrary missing pieces whose only purpose is to point at a lesson.
+
+Teaching should be done through board shape, target placement, blocker framing, piece distribution, first-move legibility, dock setup, water forecast, target state progression, and hazard timing.
+
+The first playable impression should be: "I am already playing the real game."
+
+### Density targets
+
+| Level type | Target visual occupancy |
+|---|---:|
+| L00 rule-teach exception | 60-75% |
+| Early Phase 1 levels | 70-80% |
+| Mid Phase 1 levels | 75-85% |
+| Late Phase 1 levels | 80-90% |
+
+Visual occupancy includes debris, blockers, targets, vines, ice, flooded rows, and any supported authored non-playable/environment cells.
+
+A level below target must justify the exception in `meta.notes`.
+
+Density is a design-review rule, not only a validator rule.
+
+---
+
+## 1.4 Group definition and valid input
 
 A valid group is:
 
@@ -163,7 +192,7 @@ Invalid taps must not feel like hidden punishment.
 
 ---
 
-## 1.4 Action pipeline
+## 1.5 Action pipeline
 
 This order is a locked rules contract. If action order is fuzzy, fairness becomes fuzzy.
 
@@ -237,6 +266,7 @@ This order is a locked rules contract. If action order is fuzzy, fairness become
 11. **Gravity settle**
    - Dry, active pieces fall into empty dry spaces.
    - Locked rescue-path empty tiles are transparent to falling debris, but remain reserved and unoccupied.
+   - Gravity may include controlled diagonal settling if enabled by the Gravity and Deadboard Integrity Addendum.
    - Gravity does not affect already-latched extraction.
 
 12. **Spawn**
@@ -279,7 +309,7 @@ Do not show hazard advance before dock resolution. Do not show gravity/spawn bef
 
 ---
 
-## 1.5 Dock logic
+## 1.6 Dock logic
 
 ### Dock size
 
@@ -325,7 +355,7 @@ This exception does not apply to non-final targets. If the player rescues one pu
 
 ---
 
-## 1.6 Hazard behavior — water
+## 1.7 Hazard behavior — water
 
 Water is the only primary hazard in Phase 1.
 
@@ -404,7 +434,7 @@ Reason: within-level acceleration risks “pseudo-timer” feel before the seed 
 
 ---
 
-## 1.7 Blocker behavior
+## 1.8 Blocker behavior
 
 ### Crate
 
@@ -448,7 +478,7 @@ One growth tile total per growth event. Never multiple simultaneous spreads in P
 
 ---
 
-## 1.8 Rescue logic
+## 1.9 Rescue logic
 
 ### Extraction trigger
 
@@ -560,7 +590,7 @@ Purpose: test whether a recoverable hazard-contact beat improves fairness and em
 
 ---
 
-## 1.9 Undo rules
+## 1.10 Undo rules
 
 One free undo per level.
 
@@ -586,7 +616,7 @@ This is mandatory protection against mis-tap frustration and aligns with the sco
 
 ---
 
-## 1.10 Win and loss conditions
+## 1.11 Win and loss conditions
 
 ### Win condition
 
@@ -809,6 +839,36 @@ If players describe vine more than rescue order in Levels 9–13, vine is steali
 
 ---
 
+## 2.7 Density and readability tuning
+
+If a level is too easy, do not first make it harder by adding clutter or removing readability.
+
+Preferred difficulty order:
+
+1. sharpen rescue-order pressure,
+2. tighten dock residue choices,
+3. adjust blocker placement,
+4. adjust target placement relative to water,
+5. reduce assistance,
+6. increase starting flood,
+7. reduce water interval within allowed band.
+
+If a level is too sparse, add meaningful board material that supports route choice, dock decisions, rescue readability, or emotional staging. Do not add filler pieces that create noise without decisions.
+
+---
+
+## 2.8 Phase 1 level rebuild note
+
+Existing L00–L15 JSON layouts are draft/proof layouts until they pass the start-state density and readability rules.
+
+When rebuilding them, preserve each level's purpose, expected path, expected fail mode, water/dock/vine tuning, and proof target unless explicitly changed.
+
+Do not preserve sparse tutorial-diagram geometry merely because it exists in the current JSON.
+
+If a level needs to remain unusually sparse for rule-teach or capture clarity, document the reason in `meta.notes`.
+
+---
+
 # 3. Level-by-level intent packet
 
 I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is enough to scaffold the seed, pressure it, and produce diagnostic data without drifting into content production.
@@ -816,11 +876,12 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 ## Level 0 — Rule teach
 
 **Geometry:** 6x7 rectangle  
-**Composition:** 1 puppy, 2 crates, 5 debris types, one visible opening pair  
+**Composition:** 1 puppy, light crate framing, 5 debris types, one clearly framed opening pair, and enough surrounding board material to read as a real Rescue Grid board rather than an isolated rule diagram.  
 **Pressure:** water held before first valid action, then rises immediately on that action and resumes normal ticking  
 **Intent:** teach the core rule through contrast — thinking is free, acting advances danger  
-**Expected path:** tap the visible pair, observe the first rise, then free the puppy  
+**Expected path:** tap the clearly framed opening pair, observe that acting advances water, then use the next readable route action to free the puppy.  
 **Expected fail mode:** player treats the board as static cleanup and misses the authored contrast  
+**Density/readability:** L00 may be sparser than normal, but it must still look like a real Rescue Grid board, not a pair of isolated teaching moves.  
 **What it proves:** the player can learn the prototype’s defining timing rule through interaction instead of explanation
 
 ## Level 1 — First rescue
@@ -831,6 +892,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 **Intent:** teach tap group, dock clear, target state progression, rescue extraction, water is coming  
 **Expected path:** clear lower-center pairs, see puppy progress state, open direct lane, free puppy before second water rise  
 **Expected fail mode:** overfill dock while chasing easy side groups  
+**Density/readability:** Begin visually complete. Empty space must serve route, hazard, geometry, spawn corridor, target readability, or mobile-scale readability. Do not use emptiness merely to point at the lesson.  
 **What it proves:** the game can deliver “save the puppy” before it reads as abstract clearing
 
 ## Level 2 — Dock discipline serves rescue
@@ -841,6 +903,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 **Intent:** teach that the dock is not a bag of free storage while keeping the puppy as the reason for the route  
 **Expected path:** clear with dock discipline to open the puppy lane, avoid hoarding mismatched singles  
 **Expected fail mode:** trigger Dock Jam, survive or fail through poor rack sequencing  
+**Density/readability:** Begin visually complete. Empty space must serve route, hazard, geometry, spawn corridor, target readability, or mobile-scale readability. Do not use emptiness merely to point at the lesson.  
 **What it proves:** dock losses can read as self-authored without teaching that the dock is the whole game
 
 ## Level 3 — Rescue order arrives
@@ -851,6 +914,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 **Intent:** force first clear priority between near-water puppy and easier-but-safer puppy  
 **Expected path:** save lower puppy first even though upper puppy looks more open  
 **Expected fail mode:** save the easier puppy first, lose lower puppy to water  
+**Density/readability:** Begin visually complete. Empty space must serve route, hazard, geometry, spawn corridor, target readability, or mobile-scale readability. Do not use emptiness merely to point at the lesson.  
 **What it proves:** by Level 3, rescue order is the puzzle
 
 ## Level 4 — Ice introduction
@@ -861,6 +925,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 **Intent:** teach revealed future value and adjacency literacy  
 **Expected path:** break ice on urgent lane before cashing easier dock sets elsewhere  
 **Expected fail mode:** ignore frozen lane, run out of time opening route  
+**Density/readability:** Begin visually complete. Empty space must serve route, hazard, geometry, spawn corridor, target readability, or mobile-scale readability. Do not use emptiness merely to point at the lesson.  
 **What it proves:** ice reads immediately and does not muddle the seed
 
 ## Level 5 — Sequencing with mixed blockers
@@ -871,6 +936,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 **Intent:** combine order choice with blocker choice  
 **Expected path:** open lower target through ice first, then pivot top target  
 **Expected fail mode:** spend too many actions on crate-only side because it looks cleaner  
+**Density/readability:** Begin visually complete. Empty space must serve route, hazard, geometry, spawn corridor, target readability, or mobile-scale readability. Do not use emptiness merely to point at the lesson.  
 **What it proves:** rescue order survives once the board gets slightly messier
 
 ## Level 6 — First bigger read
@@ -881,6 +947,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 **Intent:** test first-read readability on a larger board  
 **Expected path:** take central lane, not the broad outer clear  
 **Expected fail mode:** broad side clears feel productive but waste action budget  
+**Density/readability:** Begin visually complete. Empty space must serve route, hazard, geometry, spawn corridor, target readability, or mobile-scale readability. Do not use emptiness merely to point at the lesson.  
 **What it proves:** the player can orient in a larger greybox without the game turning mushy
 
 ## Level 7 — Vine introduction, static first
@@ -891,6 +958,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 **Intent:** teach vine as visible route blocker before it starts pressuring  
 **Expected path:** clear vine lane because it is obviously shortest  
 **Expected fail mode:** treat vine as just another tile and slow down route  
+**Density/readability:** Begin visually complete. Empty space must serve route, hazard, geometry, spawn corridor, target readability, or mobile-scale readability. Do not use emptiness merely to point at the lesson.  
 **What it proves:** vine can enter as pressure visualization, not confusion
 
 ## Level 8 — Vine growth tutorial
@@ -901,6 +969,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 **Intent:** teach that ignoring vine creates future cost  
 **Expected path:** cut vine when preview appears, then continue route  
 **Expected fail mode:** ignore preview, let vine close the clean lane  
+**Density/readability:** Begin visually complete. Empty space must serve route, hazard, geometry, spawn corridor, target readability, or mobile-scale readability. Do not use emptiness merely to point at the lesson.  
 **What it proves:** route urgency can be visual and fair
 
 ## Level 9 — Order plus vine pressure
@@ -911,6 +980,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 **Intent:** make player choose between the lower water threat and the lane that vine is about to worsen  
 **Expected path:** solve water-near puppy first, clip one vine on the way  
 **Expected fail mode:** tunnel on vine side and lose the lower puppy  
+**Density/readability:** Begin visually complete. Empty space must serve route, hazard, geometry, spawn corridor, target readability, or mobile-scale readability. Do not use emptiness merely to point at the lesson.  
 **What it proves:** the prototype can create triage, not just obstacle management
 
 ## Level 10 — First packet midpoint exam
@@ -921,6 +991,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 **Intent:** pressure first meaningful route planning under all current rules  
 **Expected path:** take choke quickly, then branch  
 **Expected fail mode:** over-collect dock value before opening choke  
+**Density/readability:** Begin visually complete. Empty space must serve route, hazard, geometry, spawn corridor, target readability, or mobile-scale readability. Do not use emptiness merely to point at the lesson.  
 **What it proves:** all three blockers can coexist without hiding the seed
 
 ## Level 11 — False-easy target trap
@@ -931,6 +1002,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 **Intent:** punish “finish what looks easiest” thinking  
 **Expected path:** route to buried lower puppy first  
 **Expected fail mode:** rescue high open puppy, lose buried lower puppy  
+**Density/readability:** Begin visually complete. Empty space must serve route, hazard, geometry, spawn corridor, target readability, or mobile-scale readability. Do not use emptiness merely to point at the lesson.  
 **What it proves:** order remains legible even when the board tempts the wrong answer
 
 ## Level 12 — Three-target readability test
@@ -941,6 +1013,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 **Intent:** first true triage board  
 **Expected path:** lower-left, then center, then top-right  
 **Expected fail mode:** players try to half-solve all three and save none efficiently  
+**Density/readability:** Begin visually complete. Empty space must serve route, hazard, geometry, spawn corridor, target readability, or mobile-scale readability. Do not use emptiness merely to point at the lesson.  
 **What it proves:** players can still verbalize order and attribution under higher cognitive load
 
 ## Level 13 — Vine pressure exam
@@ -951,6 +1024,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 **Intent:** make the player respect vine as future action tax  
 **Expected path:** clip vine twice early, then finish urgent rescue  
 **Expected fail mode:** let vine grow, then get action-starved and overflow dock while rerouting  
+**Density/readability:** Begin visually complete. Empty space must serve route, hazard, geometry, spawn corridor, target readability, or mobile-scale readability. Do not use emptiness merely to point at the lesson.  
 **What it proves:** vine supports the seed rather than becoming a side mechanic
 
 ## Level 14 — Late packet stress test
@@ -961,6 +1035,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 **Intent:** determine whether the system still feels fair when difficulty rises sharply  
 **Expected path:** commit fully to one rescue, pivot hard to second, ignore tempting low-value clears  
 **Expected fail mode:** brute-force clearing or indecision causes either dock fail or water fail  
+**Density/readability:** Begin visually complete. Empty space must serve route, hazard, geometry, spawn corridor, target readability, or mobile-scale readability. Do not use emptiness merely to point at the lesson.  
 **What it proves:** the seed scales into real tension instead of collapsing into busywork
 
 ## Level 15 — Capture level / concept proof
@@ -971,6 +1046,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 **Intent:** create the most understandable high-stakes rescue beat for footage and final concept proof  
 **Expected path:** clear visible wrong-side bait once, realize it, then take urgent route  
 **Expected fail mode:** chase bait side and lose hero moment  
+**Density/readability:** Prioritize immediate sightline clarity for the hero rescue beat, but do not create clarity by leaving most of the board empty.  
 **What it proves:** the game has one captureable “I know exactly what to do here” rescue sequence from real play
 
 ---
@@ -1321,7 +1397,34 @@ This is the triage framework for first external playtests.
 
 ---
 
-## 5.9 Special red-flag reads
+## 5.9 Tutorial diagram board
+
+### What players say
+
+- “It felt like a tutorial board.”
+- “The answer was being pointed at.”
+- “The board looked empty.”
+- “It did not feel like the real game yet.”
+
+### Likely causes
+
+- too many empty cells
+- teaching through absence instead of composition
+- route isolated from the rest of the board
+- target surrounded by artificial whitespace
+- first move made obvious by deleting alternatives
+
+### Primary fix order
+
+1. Add meaningful surrounding board material.
+2. Preserve first-move legibility through local clustering and route framing.
+3. Use blockers and target placement to guide attention.
+4. Keep empty cells only where they serve route, hazard, geometry, spawn corridor, or readability.
+5. Document deliberate sparse exceptions in `meta.notes`.
+
+---
+
+## 5.10 Special red-flag reads
 
 These are kill/pause indicators, not just balance notes.
 

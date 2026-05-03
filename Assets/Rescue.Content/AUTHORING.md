@@ -2,13 +2,24 @@
 
 `docs/phase_1_spec.md` is authoritative for Phase 1 design and rules.
 
-`Assets/Rescue.Content/README.md` is authoritative for level JSON schema and loader behavior.
+`Assets/Rescue.Content/README.md` maps the Rescue.Content level pipeline and points to the code/docs that own schema, validation, loader behavior, tooling, and design authority.
 
 `.agents/skills/level-authoring/SKILL.md` is the Codex workflow/router for level authoring. It points agents to the relevant project docs and focused references before they author, review, or validate levels.
 
+Executable behavior lives in code:
+
+- `Assets/Rescue.Content/Schema.cs` defines the level content data model.
+- `Assets/Rescue.Content/Validator.cs` defines validation errors and warnings.
+- `Assets/Rescue.Content/Loader.cs` defines how valid content becomes `GameState`.
+- `Assets/Rescue.Content/Tuning.cs` defines content defaults and tuning mapping.
+
 ## Level files
 
-Levels live in `Assets/StreamingAssets/Levels/` as `L00.json` through `L15.json`. The filename must match the `id` field inside the JSON.
+Authored playable levels live in `Assets/StreamingAssets/Levels/`.
+
+The current Phase 1 packet contains `L00.json` through `L15.json`.
+
+The filename must match the `id` field inside the JSON.
 
 A complete template with every required field is at [`scripts/level-template.json`](../../scripts/level-template.json). Copy it, rename it to the target level id, and fill in all values before authoring the tile grid.
 
@@ -69,6 +80,28 @@ L03 — Rescue order arrives  [6×7]  water:10  flooded:0
 
 Preview exits non-zero if validation has errors, so you always see validation output first.
 
+## Design review after preview
+
+Validation passing is required but not sufficient.
+
+After previewing a level, review it against:
+
+- `docs/phase_1_spec.md`
+- `.agents/skills/level-authoring/SKILL.md`
+- `.agents/skills/level-authoring/references/DENSITY_AND_READABILITY.md`
+- the level's `meta.intent`, `meta.expectedPath`, and `meta.expectedFailMode`
+
+Check:
+
+- Does the opening board look visually complete?
+- Are empty cells justified by route, hazard, geometry, spawn corridor, target readability, or mobile readability?
+- Is the intended first move readable without making the board look like a tutorial diagram?
+- Does the expected path avoid relying on lucky spawn?
+- Is the expected failure mode fair and attributable?
+- Does the level end emotionally on rescue?
+
+If a level is intentionally sparse or deviates from tuning tables, document the reason in `meta.notes`.
+
 ## Validate all levels
 
 ```
@@ -76,6 +109,20 @@ Preview exits non-zero if validation has errors, so you always see validation ou
 ```
 
 This runs `validate-all` over the entire `Assets/StreamingAssets/Levels/` directory and prints a summary. Exit code `0` only if every level passes.
+
+## Verify solve scripts
+
+Solve/replay scripts live in `Assets/Resources/Levels/` as `<levelId>.solve.json`.
+
+Use the solve authoring tool to verify that solve scripts still match current level behavior:
+
+```bash
+dotnet run --project Tools/SolveAuthoring/SolveAuthoring.csproj -- --verify-solves
+```
+
+Run this after changing level JSON, rules, loader behavior, or solve scripts.
+
+If a solve script mismatch appears, determine whether the level changed, the script is stale, or the expected result is wrong.
 
 ## Watch mode
 
@@ -110,11 +157,15 @@ The watcher handles both normal saves and atomic swap-write saves (VS Code defau
 
 ## Commit workflow
 
-One level per commit. Format:
+For individual level edits, prefer one level per commit.
+
+Format:
 
 ```
 level: L03 — rescue order arrives
 ```
+
+For documentation, tooling, template, or coordinated level-set changes, use a focused commit that describes the scope.
 
 If the level deviates from the tuning tables in the design spec, document the deviation in `meta.notes`.
 
