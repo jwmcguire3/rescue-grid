@@ -5,13 +5,13 @@
     "width": 6,
     "height": 7,
     "tiles": [
-      [".", "A",  "B",  "C",  ".",  "."],
-      [".", "A",  "B",  ".",  ".",  "."],
-      [".", ".",  "IA", ".",  ".",  "."],
-      [".", "V",  ".",  ".",  ".",  "."],
-      [".", ".",  "CR", ".",  ".",  "."],
-      [".", "CR", "T0", ".",  ".",  "."],
-      [".", ".",  ".",  ".",  ".",  "."]
+      ["A", "A",  "C",  "C",  "D",  "F"],
+      ["C", "B",  "B",  ".",  "D",  "F"],
+      ["C", "C",  "IA", "D",  ".",  "A"],
+      ["C", "V",  "A",  "A",  "B",  "B"],
+      ["D", "CR", ".",  "F",  "C",  "C"],
+      ["D", "CR", "T0", "F",  "A",  "B"],
+      ["A", "A",  ".",  "D",  "F",  "B"]
     ]
   },
   "debrisTypePool": ["A", "B", "C", "D", "F"],
@@ -21,7 +21,8 @@
   ],
   "initialFloodedRows": 0,
   "water": {
-    "riseInterval": 12
+    "riseInterval": 12,
+    "contactMode": "ImmediateLoss"
   },
   "vine": {
     "growthThreshold": 4,
@@ -33,14 +34,18 @@
   },
   "assistance": {
     "chance": 0.70,
-    "consecutiveEmergencyCap": 2
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
   },
   "meta": {
-    "intent": "Template showing every required field. Replace all values before using as a real level.",
+    "intent": "Template showing current standard authoring fields. Replace all values before using as a real level.",
     "expectedPath": "Describe the intended solve path here.",
     "expectedFailMode": "Describe the common failure mode here.",
     "whatItProves": "Describe what this level proves about the design.",
-    "notes": "Optional: author notes, deviations from tuning tables, or anything a reviewer needs to know.",
+    "notes": "Optional: author notes, density exceptions, contactMode choice, spawnIntegrity exceptions, tuning deviations, or anything a reviewer needs to know.",
     "isRuleTeach": false
   }
 }

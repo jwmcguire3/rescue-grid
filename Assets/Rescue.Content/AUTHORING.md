@@ -21,7 +21,7 @@ The current Phase 1 packet contains `L00.json` through `L15.json`.
 
 The filename must match the `id` field inside the JSON.
 
-A complete template with every required field is at [`scripts/level-template.json`](../../scripts/level-template.json). Copy it, rename it to the target level id, and fill in all values before authoring the tile grid.
+An explicit authoring template with the current standard fields is at [`scripts/level-template.json`](../../scripts/level-template.json). Copy it, rename it to the target level id, and fill in all values before authoring the tile grid.
 
 ## ASCII symbol legend
 
