@@ -216,14 +216,14 @@ namespace Rescue.PlayMode.Tests.Debug
 
             Assert.That(light.type, Is.EqualTo(LightType.Directional));
             Assert.That(Vector3.Distance(light.transform.localPosition, new Vector3(0f, 3f, 0f)), Is.LessThan(0.001f));
-            Assert.That(Quaternion.Angle(light.transform.localRotation, Quaternion.Euler(50f, 120f, 0f)), Is.LessThan(0.1f));
+            Assert.That(Quaternion.Angle(light.transform.localRotation, Quaternion.Euler(60f, 60f, 0f)), Is.LessThan(0.1f));
             Assert.That(Vector3.Distance(light.transform.localScale, Vector3.one), Is.LessThan(0.001f));
-            Assert.That(light.color.r, Is.EqualTo(101f / 255f).Within(0.001f));
-            Assert.That(light.color.g, Is.EqualTo(54f / 255f).Within(0.001f));
-            Assert.That(light.color.b, Is.EqualTo(0f).Within(0.001f));
+            Assert.That(light.color.r, Is.EqualTo(1f).Within(0.001f));
+            Assert.That(light.color.g, Is.EqualTo(217f / 255f).Within(0.001f));
+            Assert.That(light.color.b, Is.EqualTo(173f / 255f).Within(0.001f));
             Assert.That(light.intensity, Is.EqualTo(1f).Within(0.001f));
             Assert.That(light.bounceIntensity, Is.EqualTo(1f).Within(0.001f));
-            Assert.That(light.shadows, Is.EqualTo(LightShadows.Hard));
+            Assert.That(light.shadows, Is.EqualTo(LightShadows.Soft));
             Assert.That(light.cookie, Is.Null);
             Assert.That(light.flare, Is.Null);
             Assert.That(light.renderMode, Is.EqualTo(LightRenderMode.Auto));

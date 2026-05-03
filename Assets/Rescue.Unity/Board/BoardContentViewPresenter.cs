@@ -316,7 +316,7 @@ namespace Rescue.Unity.BoardPresentation
             {
                 for (int i = contentRoot.childCount - 1; i >= 0; i--)
                 {
-                    DestroyContentObject(contentRoot.GetChild(i).gameObject);
+                    DestroyContentObject(contentRoot.GetChild(i).gameObject, immediate: true);
                 }
             }
 
@@ -335,7 +335,7 @@ namespace Rescue.Unity.BoardPresentation
                     continue;
                 }
 
-                DestroyContentObject(contentObject);
+                DestroyContentObject(contentObject, immediate: true);
                 spawnedContent.RemoveAt(i);
             }
 
@@ -650,9 +650,9 @@ namespace Rescue.Unity.BoardPresentation
             return false;
         }
 
-        private void DestroyContentObject(GameObject contentObject)
+        private void DestroyContentObject(GameObject contentObject, bool immediate = false)
         {
-            if (Application.isPlaying)
+            if (Application.isPlaying && !immediate)
             {
                 Destroy(contentObject);
             }
@@ -1291,7 +1291,7 @@ namespace Rescue.Unity.BoardPresentation
             }
 
             RemoveSpawnedContentReference(vinePreviewObject);
-            DestroyContentObject(vinePreviewObject);
+            DestroyContentObject(vinePreviewObject, immediate: true);
             vinePreviewObject = null;
             vinePreviewCoord = null;
         }
@@ -1362,7 +1362,7 @@ namespace Rescue.Unity.BoardPresentation
                     continue;
                 }
 
-                DestroyContentObject(marker);
+                DestroyContentObject(marker, immediate: true);
                 targetObstacleMarkers.RemoveAt(i);
             }
         }
@@ -1735,7 +1735,7 @@ namespace Rescue.Unity.BoardPresentation
             }
 
             RemoveSpawnedContentReference(removedView.Object);
-            DestroyContentObject(removedView.Object);
+            DestroyContentObject(removedView.Object, immediate: true);
         }
 
         private static bool TryGetLivePieceView(BoardPieceRegistry registry, TileCoord coord, out BoardPieceView? view)
@@ -1919,7 +1919,7 @@ namespace Rescue.Unity.BoardPresentation
                     }
 
                     RemoveSpawnedContentReference(childObject);
-                    DestroyContentObject(childObject);
+                    DestroyContentObject(childObject, immediate: true);
                 }
             }
 
@@ -1938,7 +1938,7 @@ namespace Rescue.Unity.BoardPresentation
                 }
 
                 spawnedContent.RemoveAt(i);
-                DestroyContentObject(contentObject);
+                DestroyContentObject(contentObject, immediate: true);
             }
         }
 
@@ -2462,7 +2462,7 @@ namespace Rescue.Unity.BoardPresentation
 
             spawnedTargetsById.Remove(targetId);
             RemoveSpawnedContentReference(targetView.Object);
-            DestroyContentObject(targetView.Object);
+            DestroyContentObject(targetView.Object, immediate: true);
         }
 
         private void UnregisterAndDestroyTarget(string targetId, GameObject targetObject)
