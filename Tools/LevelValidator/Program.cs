@@ -18,6 +18,8 @@ internal static class Program
             {
                 "validate" => ValidateSingle(args[1]),
                 "validate-all" => ValidateAll(args[1]),
+                "validate-phase1" => ValidatePhase1Single(args[1]),
+                "validate-phase1-all" => ValidatePhase1All(args[1]),
                 "preview" => Preview(args[1]),
                 _ => UnknownCommand(args[0]),
             };
@@ -52,6 +54,59 @@ internal static class Program
         }
 
         return hasErrors ? 1 : 0;
+    }
+
+    private static int ValidatePhase1Single(string path)
+    {
+        ValidationResult result = ValidatePhase1(path);
+        WriteResult(path, result);
+        return result.HasErrors ? 1 : 0;
+    }
+
+    private static int ValidatePhase1All(string levelsDir)
+    {
+        string[] files = Directory.GetFiles(levelsDir, "*.json", SearchOption.TopDirectoryOnly);
+        Array.Sort(files, StringComparer.OrdinalIgnoreCase);
+
+        bool hasErrors = false;
+        for (int i = 0; i < files.Length; i++)
+        {
+            ValidationResult result = ValidatePhase1(files[i]);
+            WriteResult(files[i], result);
+            hasErrors |= result.HasErrors;
+        }
+
+        return hasErrors ? 1 : 0;
+    }
+
+    private static ValidationResult ValidatePhase1(string path)
+    {
+        string json = File.ReadAllText(path);
+        ValidationResult coreResult = Validator.Validate(json);
+        if (coreResult.HasErrors)
+        {
+            return coreResult;
+        }
+
+        LevelJson level = ContentJson.DeserializeLevel(json);
+        ValidationResult policyResult = Phase1PolicyValidator.Validate(level);
+        if (policyResult.Errors.Count == 0)
+        {
+            return coreResult;
+        }
+
+        ValidationError[] combined = new ValidationError[coreResult.Errors.Count + policyResult.Errors.Count];
+        for (int i = 0; i < coreResult.Errors.Count; i++)
+        {
+            combined[i] = coreResult.Errors[i];
+        }
+
+        for (int i = 0; i < policyResult.Errors.Count; i++)
+        {
+            combined[coreResult.Errors.Count + i] = policyResult.Errors[i];
+        }
+
+        return ValidationResult.FromErrors(combined);
     }
 
     private static int Preview(string path)
@@ -104,6 +159,8 @@ internal static class Program
         Console.WriteLine("Usage:");
         Console.WriteLine("  validate <path>");
         Console.WriteLine("  validate-all <levels-dir>");
+        Console.WriteLine("  validate-phase1 <path>");
+        Console.WriteLine("  validate-phase1-all <levels-dir>");
         Console.WriteLine("  preview <path>");
     }
 }

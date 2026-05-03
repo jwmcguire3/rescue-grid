@@ -9,7 +9,8 @@
 Executable behavior lives in code:
 
 - `Assets/Rescue.Content/Schema.cs` defines the level content data model.
-- `Assets/Rescue.Content/Validator.cs` defines validation errors and warnings.
+- `Assets/Rescue.Content/Validator.cs` defines core validation errors and warnings.
+- `Assets/Rescue.Content/Phase1PolicyValidator.cs` defines Phase 1 packet policy warnings.
 - `Assets/Rescue.Content/Loader.cs` defines how valid content becomes `GameState`.
 - `Assets/Rescue.Content/Tuning.cs` defines content defaults and tuning mapping.
 
@@ -42,6 +43,8 @@ Multi-character codes are padded to 2 characters and separated by a single space
 
 ## Validate one level
 
+Core validation checks JSON, schema, board consistency, runtime support, and general playability heuristics. Use this for any authored level, including content outside the Phase 1 packet.
+
 Using the script wrapper:
 
 ```
@@ -55,6 +58,16 @@ dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- validate Asse
 ```
 
 Exit code `0` = valid (warnings may still print). Exit code `1` = errors. Exit code `2` = bad invocation.
+
+## Validate Phase 1 packet policy
+
+Phase 1 policy validation runs core validation plus packet-specific warnings for L00-L15 tuning expectations, such as Dock Jam placement, debris pool bands, L07 static vine setup, Phase 1 water interval floor, reinforced crate usage, and spawn-integrity exception notes.
+
+Use it when editing or reviewing the Phase 1 packet:
+
+```
+dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- validate-phase1 Assets/StreamingAssets/Levels/L03.json
+```
 
 ## Preview a level
 
@@ -114,7 +127,15 @@ Or directly:
 dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- validate-all Assets/StreamingAssets/Levels
 ```
 
-This runs `validate-all` over the entire `Assets/StreamingAssets/Levels/` directory and prints a summary. Exit code `0` only if every level passes.
+This runs core `validate-all` over the entire `Assets/StreamingAssets/Levels/` directory and prints a summary. Exit code `0` only if every level passes.
+
+For the current Phase 1 packet, also run:
+
+```
+dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- validate-phase1-all Assets/StreamingAssets/Levels
+```
+
+Use core validation for general content validity. Use Phase 1 policy validation when the content is expected to remain aligned with the L00-L15 prototype packet.
 
 ## Verify solve scripts
 

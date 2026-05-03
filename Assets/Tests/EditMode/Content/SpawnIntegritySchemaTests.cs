@@ -44,7 +44,7 @@ namespace Rescue.Content.Tests
         }
 
         [Test]
-        public void Validate_ExceptionPolicyWithoutNotes_Warns()
+        public void Phase1PolicyValidator_ExceptionPolicyWithoutNotes_Warns()
         {
             LevelJson level = CreateLevel() with
             {
@@ -60,7 +60,7 @@ namespace Rescue.Content.Tests
                 },
             };
 
-            ValidationResult result = Validator.Validate(level);
+            ValidationResult result = Phase1PolicyValidator.Validate(level);
 
             Assert.That(result.HasErrors, Is.False);
             Assert.That(result.Errors.Select(error => error.Code), Has.Member("phase1.spawnIntegrity.exactTripleException"));

@@ -6,7 +6,8 @@
 
 - Schema/types: `Assets/Rescue.Content/Schema.cs`
 - JSON serialization/deserialization: `Assets/Rescue.Content/ContentJson.cs`
-- Validation rules/warnings: `Assets/Rescue.Content/Validator.cs`
+- Core validation rules/warnings: `Assets/Rescue.Content/Validator.cs`
+- Phase 1 packet policy warnings: `Assets/Rescue.Content/Phase1PolicyValidator.cs`
 - Runtime loading into `GameState`: `Assets/Rescue.Content/Loader.cs`
 - ASCII preview: `Assets/Rescue.Content/AsciiPreview.cs`
 - Tuning defaults/override mapping: `Assets/Rescue.Content/Tuning.cs`
@@ -29,7 +30,7 @@ These scripts verify expected behavior. They are not the source of layout truth.
 
 ## Tooling
 
-`Tools/LevelValidator` supports `validate`, `validate-all`, and `preview`.
+`Tools/LevelValidator` supports `validate`, `validate-all`, `validate-phase1`, `validate-phase1-all`, and `preview`.
 
 `Tools/SolveAuthoring` verifies solve scripts with `--verify-solves`.
 
@@ -57,13 +58,14 @@ Do not hardcode stale validation results here. If status needs to be reported, r
 
 ```bash
 dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- validate-all Assets/StreamingAssets/Levels
+dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- validate-phase1-all Assets/StreamingAssets/Levels
 dotnet run --project Tools/SolveAuthoring/SolveAuthoring.csproj -- --verify-solves
 ```
 
 ## What not to put here
 
 - Do not duplicate the full schema; use `Schema.cs`.
-- Do not duplicate validator logic; use `Validator.cs`.
+- Do not duplicate validator logic; use `Validator.cs` for core content validation and `Phase1PolicyValidator.cs` for Phase 1 packet policy warnings.
 - Do not duplicate loader behavior; use `Loader.cs`.
 - Do not duplicate Phase 1 design rules; use `docs/phase_1_spec.md`.
 - Do not duplicate authoring workflow; use `AUTHORING.md`.
