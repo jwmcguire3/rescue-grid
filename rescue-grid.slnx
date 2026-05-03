@@ -13,6 +13,7 @@
   <Project Path="Rescue.Unity.EditorTools.csproj" />
   <Project Path="Rescue.Unity.FX.EditMode.Tests.csproj" />
   <Project Path="Rescue.Content.EditMode.Tests.csproj" />
+  <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="Rescue.Telemetry.csproj" />
   <Project Path="Rescue.Replay.EditMode.Tests.csproj" />
   <Project Path="Rescue.Unity.Feedback.EditMode.Tests.csproj" />
@@ -24,5 +25,4 @@
   <Project Path="Rescue.Replay.csproj" />
   <Project Path="Rescue.Unity.Input.EditMode.Tests.csproj" />
   <Project Path="Rescue.Unity.Targets.EditMode.Tests.csproj" />
-  <Project Path="Assembly-CSharp-Editor.csproj" />
 </Solution>

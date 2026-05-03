@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 
@@ -28,8 +29,8 @@ public static class BuildScripts
         BuildPlayerOptions options = CreatePlayerOptions(BuildTargetGroup.iOS, BuildTarget.iOS, outputDirectory);
 
         WithTemporarySetting(
-            () => PlayerSettings.GetApplicationIdentifier(BuildTargetGroup.iOS),
-            value => PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iOS, value),
+            () => PlayerSettings.GetApplicationIdentifier(NamedBuildTarget.iOS),
+            value => PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.iOS, value),
             bundleIdentifier,
             () =>
             {
@@ -66,8 +67,8 @@ public static class BuildScripts
         BuildPlayerOptions options = CreatePlayerOptions(BuildTargetGroup.Android, BuildTarget.Android, outputPath);
 
         WithTemporarySetting(
-            () => PlayerSettings.GetApplicationIdentifier(BuildTargetGroup.Android),
-            value => PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, value),
+            () => PlayerSettings.GetApplicationIdentifier(NamedBuildTarget.Android),
+            value => PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, value),
             bundleIdentifier,
             () =>
             {
@@ -239,8 +240,8 @@ public static class BuildScripts
             GetEnvironmentVariable("RESCUE_BUILD_APP_IDENTIFIER", DefaultBaseIdentifier) + ".capture");
 
         WithTemporarySetting(
-            () => PlayerSettings.GetApplicationIdentifier(BuildTargetGroup.Android),
-            value => PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, value),
+            () => PlayerSettings.GetApplicationIdentifier(NamedBuildTarget.Android),
+            value => PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, value),
             bundleIdentifier,
             () =>
             {
@@ -274,8 +275,8 @@ public static class BuildScripts
             GetEnvironmentVariable("RESCUE_BUILD_APP_IDENTIFIER", DefaultBaseIdentifier) + ".capture");
 
         WithTemporarySetting(
-            () => PlayerSettings.GetApplicationIdentifier(BuildTargetGroup.iOS),
-            value => PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iOS, value),
+            () => PlayerSettings.GetApplicationIdentifier(NamedBuildTarget.iOS),
+            value => PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.iOS, value),
             bundleIdentifier,
             () =>
             {
