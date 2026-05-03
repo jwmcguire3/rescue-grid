@@ -628,7 +628,9 @@ namespace Rescue.Unity.Presentation.Tests
             dockVisual.transform.SetParent(presenterObject.transform, false);
             MeshRenderer dockRenderer = dockVisual.GetComponent<MeshRenderer>();
             Material safeMaterial = new Material(Shader.Find("Standard"));
+            Material failedMaterial = new Material(Shader.Find("Standard"));
             createdObjects.Add(safeMaterial);
+            createdObjects.Add(failedMaterial);
             for (int i = 0; i < 7; i++)
             {
                 Transform anchor = CreateTrackedGameObject($"Slot_{i:00}").transform;
@@ -638,6 +640,7 @@ namespace Rescue.Unity.Presentation.Tests
 
             SetPrivateField(dockView, "sharedDockRenderer", dockRenderer);
             SetPrivateField(dockView, "safeMaterial", safeMaterial);
+            SetPrivateField(dockView, "failedMaterial", failedMaterial);
             SetPrivateField(dockView, "pieceContainer", dockPieceContainer);
             SetPrivateField(dockView, "fallbackPiecePrefab", fallbackPiecePrefab);
 

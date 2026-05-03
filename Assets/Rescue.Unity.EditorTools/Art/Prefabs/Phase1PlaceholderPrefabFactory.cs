@@ -314,7 +314,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             Material failedDockMaterial = CreateOrUpdateTexturedMaterial(
                 CombinePath(materialsPath, "Dock_Failed_Phase1.mat"),
                 shader,
-                CombinePath(artRootPath, "Textures", "Dock", "Meshy_AI_Dock_fail_0424154736_texture_fbx.png"))
+                CombinePath(artRootPath, "Textures", "Dock", "Dock_Failed_Phase1.png"))
                 ?? placeholderAssets.DockFailedMaterial;
 
             Material iceOverlayMaterial = CreateOrUpdateMaterial(
@@ -584,9 +584,9 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             Material material = CreateOrUpdateMaterial(assetPath, shader, Color.white, transparent);
             material.mainTexture = texture;
 
-            if (!string.IsNullOrWhiteSpace(normalTexturePath))
+            if (normalTexturePath is { Length: > 0 } normalPath && !string.IsNullOrWhiteSpace(normalPath))
             {
-                Texture2D? normalTexture = LoadNormalTexture(normalTexturePath);
+                Texture2D? normalTexture = LoadNormalTexture(normalPath);
                 if (normalTexture is not null)
                 {
                     material.SetTexture("_BumpMap", normalTexture);
