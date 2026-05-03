@@ -1,6 +1,10 @@
 # Level Authoring — Rescue Grid Phase 1
 
-The authoritative design guide is at [`.agents/skills/level-authoring/SKILL.md`](../../.agents/skills/level-authoring/SKILL.md). Read it before authoring or modifying any level. This file documents the tooling that the skill references.
+`docs/phase_1_spec.md` is authoritative for Phase 1 design and rules.
+
+`Assets/Rescue.Content/README.md` is authoritative for level JSON schema and loader behavior.
+
+`.agents/skills/level-authoring/SKILL.md` is the Codex workflow/router for level authoring. It points agents to the relevant project docs and focused references before they author, review, or validate levels.
 
 ## Level files
 
