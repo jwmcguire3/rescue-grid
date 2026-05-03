@@ -1,95 +1,69 @@
-# Rescue.Content Level Schema
+# Rescue.Content
 
-`Rescue.Content` defines the Phase 1 level JSON contract, the pure validator, and the loader that converts validated content into `Rescue.Core.State.GameState`.
+`Rescue.Content` reads authored level JSON, validates it, previews it, applies content/tuning defaults, and loads it into `Rescue.Core.State.GameState`. Levels are authored as JSON, not Unity scenes.
 
-## File shape
+## Authority map
 
-```json
-{
-  "id": "L03",
-  "name": "Rescue order arrives",
-  "board": {
-    "width": 6,
-    "height": 7,
-    "tiles": [[".", ".", ".", ".", ".", "."]]
-  },
-  "debrisTypePool": ["A", "B", "C", "D", "F"],
-  "baseDistribution": {
-    "A": 1.0,
-    "B": 1.0,
-    "C": 1.0,
-    "D": 1.0,
-    "F": 1.0
-  },
-  "targets": [
-    { "id": "0", "row": 2, "col": 3 }
-  ],
-  "initialFloodedRows": 0,
-  "water": {
-    "riseInterval": 10,
-    "contactMode": "ImmediateLoss"
-  },
-  "vine": {
-    "growthThreshold": 4,
-    "growthPriority": [
-      { "row": 3, "col": 4 }
-    ]
-  },
-  "dock": {
-    "size": 7,
-    "jamEnabled": false
-  },
-  "assistance": {
-    "chance": 0.7,
-    "consecutiveEmergencyCap": 2,
-    "spawnIntegrity": {
-      "allowExactTripleSpawns": false,
-      "allowOversizedSpawnGroups": false
-    }
-  },
-  "meta": {
-    "intent": "Teach rescue order pressure.",
-    "expectedPath": "Save the lower target first.",
-    "expectedFailMode": "Save the easy target first and lose the urgent one.",
-    "whatItProves": "Rescue order is the puzzle.",
-    "isRuleTeach": false,
-    "notes": "Optional author notes."
-  }
-}
+- Schema/types: `Assets/Rescue.Content/Schema.cs`
+- JSON serialization/deserialization: `Assets/Rescue.Content/ContentJson.cs`
+- Validation rules/warnings: `Assets/Rescue.Content/Validator.cs`
+- Runtime loading into `GameState`: `Assets/Rescue.Content/Loader.cs`
+- ASCII preview: `Assets/Rescue.Content/AsciiPreview.cs`
+- Tuning defaults/override mapping: `Assets/Rescue.Content/Tuning.cs`
+- Authoring/tool workflow: `Assets/Rescue.Content/AUTHORING.md`
+- Phase 1 design/rules/tuning: `docs/phase_1_spec.md`
+- Codex/agent workflow: `.agents/skills/level-authoring/SKILL.md`
+- Authoring template: `scripts/level-template.json`
+
+## Authored level storage
+
+Authored playable levels live in `Assets/StreamingAssets/Levels/`. The current Phase 1 packet is `L00.json` through `L15.json`, and these files are the authoritative playable level definitions.
+
+Unity `.meta` files are asset metadata, not level definitions.
+
+## Solve/replay script storage
+
+Solve and replay scripts live in `Assets/Resources/Levels/`. The current pattern is `L00.solve.json` through `L15.solve.json`.
+
+These scripts verify expected behavior. They are not the source of layout truth.
+
+## Tooling
+
+`Tools/LevelValidator` supports `validate`, `validate-all`, and `preview`.
+
+`Tools/SolveAuthoring` verifies solve scripts with `--verify-solves`.
+
+Wrapper scripts:
+
+- `scripts/validate-levels.sh`
+- `scripts/preview-level.sh`
+- `scripts/watch-levels.sh`
+
+Use `Assets/Rescue.Content/AUTHORING.md` for the exact authoring and validation workflow.
+
+## Runtime consumers
+
+Runtime gameplay loads by level id through `Loader.LoadLevel(...)` from `Assets/StreamingAssets/Levels/`.
+
+The debug panel discovers and loads levels from `Assets/StreamingAssets/Levels/` when present in the repo.
+
+Smoke, replay, and capture tools consume solve scripts from `Assets/Resources/Levels/`.
+
+## Current content status
+
+The current authored Phase 1 packet is `L00` through `L15`.
+
+Do not hardcode stale validation results here. If status needs to be reported, run:
+
+```bash
+dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- validate-all Assets/StreamingAssets/Levels
+dotnet run --project Tools/SolveAuthoring/SolveAuthoring.csproj -- --verify-solves
 ```
 
-## Tile codes
+## What not to put here
 
-- `.`: empty tile
-- `A`..`F`: debris tiles
-- `CR`: crate with 1 HP
-- `CX`: reinforced crate with 2 HP (off by default in Phase 1)
-- `I<X>`: ice with hidden debris `X`, for example `IA`
-- `V`: vine blocker
-- `T<id>`: target tile matching an entry in `targets`, for example `T0`
-
-## Validation rules
-
-The validator is pure .NET and operates on raw JSON strings. It checks:
-
-- board width and height against the `tiles` array
-- tile code recognition
-- debris pool size and distribution consistency
-- unique target ids
-- target coordinates, matching `T<id>` board tiles, and stray board targets
-- initial flooded rows, rise interval, dock size, and assistance chance ranges
-- rule-teach levels require a positive `water.riseInterval`
-- vine growth-priority bounds
-- heuristic warnings for unreachable targets, disconnected dry regions, singleton-heavy dock traps, and water-budget pressure
-- heuristic start errors when a target or one of its required access neighbors begins in flooded rows
-
-## Loader behavior
-
-- `Loader.LoadLevel(LevelJson, seed)` validates first, then builds the immutable `GameState`
-- `Loader.LoadLevel(levelId, seed)` reads `Assets/StreamingAssets/Levels/<levelId>.json` through Unity's streaming assets path
-- bottom `initialFloodedRows` are converted into `FloodedTile`
-- `WaterState.ActionsUntilRise` starts at `riseInterval`
-- `meta.isRuleTeach = true` keeps the waterline in its teach state until the first valid action, then normal ticking resumes
-- `riseInterval = 0` means water is disabled for the level
-- `water.contactMode` is optional and defaults to `ImmediateLoss`; set it to `OneTickGrace` to make first contact mark a target distressed before unresolved contact expires.
-- `assistance.spawnIntegrity` is optional and defaults to strict normal spawning: no immediate spawned exact triples and no fresh spawned groups larger than 5. Set `allowExactTripleSpawns` or `allowOversizedSpawnGroups` only for explicit teaching, coaching, dead-board relief, or scripted relief, and document the reason in `meta.notes`.
+- Do not duplicate the full schema; use `Schema.cs`.
+- Do not duplicate validator logic; use `Validator.cs`.
+- Do not duplicate loader behavior; use `Loader.cs`.
+- Do not duplicate Phase 1 design rules; use `docs/phase_1_spec.md`.
+- Do not duplicate authoring workflow; use `AUTHORING.md`.
