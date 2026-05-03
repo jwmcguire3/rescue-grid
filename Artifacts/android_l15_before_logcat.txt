@@ -1,0 +1,479 @@
+﻿--------- beginning of system
+05-02 00:23:34.593 I/ActivityManager( 2602): Changes in 10057 5 to 15, 144 to 0
+05-02 00:23:34.959 W/ActivityManager( 2602): registerReceiverWithFeature: no app for null
+05-02 00:23:35.006 I/ActivityManager( 2602): Start proc 27283:com.defaultcompany.rescuegrid.dev/u0a393 for top-activity {com.defaultcompany.rescuegrid.dev/com.unity3d.player.UnityPlayerGameActivity}
+05-02 00:23:35.006 I/ActivityManager( 2602): ProcessObserver broadcast disabled
+05-02 00:23:35.061 I/ActivityManager( 2602): Changes in 10393 20 to 19, 0 to 255
+05-02 00:23:35.208 I/ActivityManager( 2602): Changes in 10393 19 to 12, 255 to 128
+--------- beginning of main
+05-02 00:23:35.270 I/Unity   (27283): applyWindowUIChanges fullScreen = true, renderOutsideSafeArea = false
+05-02 00:23:35.305 D/Unity   (27283): CommandLine:  
+05-02 00:23:35.334 I/Unity   (27283): UnityApplication::CreateInstance
+05-02 00:23:35.334 I/Unity   (27283): GameActivity Package Version '4.4.0'
+05-02 00:23:35.335 I/Unity   (27283): Starting Game Loop
+05-02 00:23:35.340 I/Unity   (27283): Handle cmd APP_CMD_START(11)
+05-02 00:23:35.341 I/Unity   (27283): onResume
+05-02 00:23:35.347 I/Unity   (27283): Handle cmd APP_CMD_RESUME(12)
+05-02 00:23:35.364 I/Unity   (27283): onPause
+05-02 00:23:35.365 I/Unity   (27283): pauseUnity
+05-02 00:23:35.365 I/Unity   (27283): Handle cmd APP_CMD_PAUSE(14)
+05-02 00:23:35.372 I/ActivityManager( 2602): Changes in 10144 6 to 5, 239 to 255
+05-02 00:23:35.376 I/Unity   (27283): Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+05-02 00:23:35.385 I/Unity   (27283): Handle cmd APP_CMD_CONTENT_RECT_CHANGED(5)
+05-02 00:23:35.391 I/ActivityManager( 2602): Changes in 10393 12 to 2, 128 to 255
+05-02 00:23:35.411 I/Unity   (27283): Handle cmd APP_CMD_INIT_WINDOW(1)
+05-02 00:23:35.417 I/ActivityManager( 2602): Changes in 10107 10 to 10, 0 to 128
+05-02 00:23:35.420 I/Unity   (27283): MemoryManager: Using 'Dynamic Heap' Allocator.
+05-02 00:23:35.420 D/Unity   (27283): [UnityMemory] Configuration Parameters - Can be set up in boot.config
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-temp-allocator-size-cloud-worker=32768"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-temp-allocator-size-audio-worker=65536"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-allocator-temp-initial-block-size-main=262144"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-allocator-temp-initial-block-size-worker=262144"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-temp-allocator-size-background-worker=32768"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-temp-allocator-size-job-worker=262144"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-temp-allocator-size-preload-manager=262144"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-temp-allocator-size-gfx=262144"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-bucket-allocator-granularity=16"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-bucket-allocator-bucket-count=8"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-bucket-allocator-block-size=4194304"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-bucket-allocator-block-count=1"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-main-allocator-block-size=16777216"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-thread-allocator-block-size=16777216"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-gfx-main-allocator-block-size=16777216"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-gfx-thread-allocator-block-size=16777216"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-cache-allocator-block-size=4194304"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-typetree-allocator-block-size=2097152"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-profiler-bucket-allocator-granularity=16"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-profiler-bucket-allocator-bucket-count=8"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-profiler-bucket-allocator-block-size=4194304"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-profiler-bucket-allocator-block-count=1"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-profiler-allocator-block-size=16777216"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-profiler-editor-allocator-block-size=1048576"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-temp-allocator-size-main=4194304"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-job-temp-allocator-block-size=2097152"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-job-temp-allocator-block-size-background=1048576"
+05-02 00:23:35.420 D/Unity   (27283):     "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+05-02 00:23:35.422 I/ActivityManager( 2602): Changes in 5025 8 to 8, 0 to 128
+05-02 00:23:35.431 I/ActivityManager( 2602): Changes in 10107 10 to 10, 128 to 0
+05-02 00:23:35.441 D/Unity   (27283): Enabling Unity systrace
+05-02 00:23:35.441 D/Unity   (27283): Starting Unity systrace
+05-02 00:23:35.447 I/ActivityManager( 2602): Changes in 5025 8 to 8, 128 to 0
+05-02 00:23:35.451 I/Unity   (27283): SetGameState: isLoading: true, mode: UNKNOWN, label: -2, quality: -1
+05-02 00:23:35.454 D/Unity   (27283): [VFS] Mount /data/app/~~mNvw6xb8UPFL90fXu4EM4g==/com.defaultcompany.rescuegrid.dev-mYiJ09Cph1WVaOCWMyDlSQ==/base.apk
+05-02 00:23:35.465 I/ActivityManager( 2602): Changes in 5006 8 to 8, 0 to 128
+05-02 00:23:35.467 I/ActivityManager( 2602): Changes in 5006 8 to 8, 128 to 0
+05-02 00:23:35.471 I/Unity   (27283): SystemInfo CPU = ARM64 FP ASIMD AES, Cores = 8, Memory = 11085mb
+05-02 00:23:35.471 I/Unity   (27283): SystemInfo ARM big.LITTLE configuration: 6 big (mask: 0xfc), 2 little (mask: 0x3)
+05-02 00:23:35.471 I/Unity   (27283): ApplicationInfo 'com.defaultcompany.rescuegrid.dev', Version '1.0', Min API Level '25', Target API Level '36'
+05-02 00:23:35.471 I/Unity   (27283): Built from '6000.4/staging' branch, Version '6000.4.3f1 (39d1a88d4dd1)', Build type 'Development', Scripting Backend 'il2cpp', CPU 'arm64-v8a', Stripping 'Enabled'
+05-02 00:23:35.471 I/Unity   (27283): Device Model 'samsung SM-S928U', OS 'Android OS 16 (API 36)'
+05-02 00:23:35.472 D/Unity   (27283): Determine if il2cpp resources need to extracted:
+05-02 00:23:35.479 D/Unity   (27283):     il2cpp resources are up to date, not extracting
+05-02 00:23:35.482 D/Unity   (27283): Starting managed debugger on port 56861
+05-02 00:23:35.962 D/Unity   (27283): CodeReloadManager initialized
+05-02 00:23:35.962 D/Unity   (27283): [EGL] Attaching window :0xb40000776d0fac20
+05-02 00:23:35.962 D/Unity   (27283): InitializeScriptEngine OK (0x7626e48fc0)
+05-02 00:23:35.962 D/Unity   (27283): Found 1 interfaces on host :
+05-02 00:23:35.962 D/Unity   (27283):  0) 10.0.0.103
+05-02 00:23:35.962 D/Unity   (27283): 
+05-02 00:23:35.963 D/Unity   (27283): Player connection [504745767872]  Target information:
+05-02 00:23:35.963 D/Unity   (27283): 
+05-02 00:23:35.963 D/Unity   (27283): Player connection [504745767872]  * "[IP] 10.0.0.103 [Port] 55000 [Flags] 2 [Guid] 1156557861 [EditorId] 3114505429 [Version] 1048832 [Id] AndroidPlayer(11,samsung_SM-S928U@10.0.0.103) [Debug] 1 [PackageName] AndroidPlayer [ProjectName] rescue-grid" 
+05-02 00:23:35.963 D/Unity   (27283): 
+05-02 00:23:35.963 D/Unity   (27283): Player connection [504745767872] Started UDP target info broadcast (1) on [225.0.0.222:54997].
+05-02 00:23:35.963 D/Unity   (27283): 
+05-02 00:23:35.969 D/Unity   (27283): Input System module state changed to: Initialized.
+05-02 00:23:35.971 D/Unity   (27283): [Physics::Module] Initialized fallback backend.
+05-02 00:23:35.971 D/Unity   (27283): [Physics::Module] Id: 0xdecafbad
+05-02 00:23:35.972 D/Unity   (27283): PlayerInitEngineNoGraphics OK
+05-02 00:23:35.972 I/Unity   (27283): Company Name: DefaultCompany
+05-02 00:23:35.972 I/Unity   (27283): Product Name: rescue-grid
+05-02 00:23:35.972 D/Unity   (27283): AndroidGraphics::Startup window =  0xb40000776d0fac20
+05-02 00:23:35.972 D/Unity   (27283): [EGL] Attaching window :0xb40000776d0fac20
+05-02 00:23:35.973 D/Unity   (27283): [Subsystems] Discovering subsystems at path /data/app/~~mNvw6xb8UPFL90fXu4EM4g==/com.defaultcompany.rescuegrid.dev-mYiJ09Cph1WVaOCWMyDlSQ==/base.apk/assets/bin/Data/UnitySubsystems
+05-02 00:23:35.975 D/Unity   (27283): [Vulkan init] extensions: count=14
+05-02 00:23:35.975 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_debug_report [enabled=0, external=0]
+05-02 00:23:35.975 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_debug_utils [enabled=1, external=0]
+05-02 00:23:35.975 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_surface_maintenance1 [enabled=0, external=0]
+05-02 00:23:35.975 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_swapchain_colorspace [enabled=1, external=0]
+05-02 00:23:35.975 D/Unity   (27283): [Vulkan init] extensions: name=VK_GOOGLE_surfaceless_query [enabled=0, external=0]
+05-02 00:23:35.975 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_android_surface [enabled=1, external=0]
+05-02 00:23:35.975 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_device_group_creation [enabled=0, external=0]
+05-02 00:23:35.975 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_external_fence_capabilities [enabled=1, external=0]
+05-02 00:23:35.975 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_external_memory_capabilities [enabled=1, external=0]
+05-02 00:23:35.975 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_external_semaphore_capabilities [enabled=1, external=0]
+05-02 00:23:35.975 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_get_physical_device_properties2 [enabled=1, external=0]
+05-02 00:23:35.975 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_get_surface_capabilities2 [enabled=0, external=0]
+05-02 00:23:35.975 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_surface [enabled=1, external=0]
+05-02 00:23:35.975 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_surface_protected_capabilities [enabled=0, external=0]
+05-02 00:23:35.986 D/Unity   (27283): [Vulkan init] SelectPhysicalDevice requestedDeviceIndex=-1 xrDevice=0x0
+05-02 00:23:35.986 D/Unity   (27283): [Vulkan init] Physical Device 0xb40000777d10abb0 [0]: "Adreno (TM) 750" deviceType=1 vendorID=5143 deviceID=43051401
+05-02 00:23:35.986 D/Unity   (27283): [VULKAN] Android Device Info:
+05-02 00:23:35.986 D/Unity   (27283): {"Vendor": "Qualcomm","Device Name": "Adreno (TM) 750","Brand": "samsung","Product Name": "e3qsqw","Android OS Version": "16","Vulkan API Version": "Variant: 0 major.minor.patch:1.3.128","Driver Version": "2150604839"}
+05-02 00:23:35.986 D/Unity   (27283): Vulkan detection: 2
+05-02 00:23:35.986 D/Unity   (27283): GfxDevice: creating device client; kGfxThreadingModeThreaded
+05-02 00:23:35.986 D/Unity   (27283): [Vulkan init] extensions: count=14
+05-02 00:23:35.986 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_debug_report [enabled=0, external=0]
+05-02 00:23:35.986 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_debug_utils [enabled=1, external=0]
+05-02 00:23:35.986 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_surface_maintenance1 [enabled=0, external=0]
+05-02 00:23:35.986 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_swapchain_colorspace [enabled=1, external=0]
+05-02 00:23:35.986 D/Unity   (27283): [Vulkan init] extensions: name=VK_GOOGLE_surfaceless_query [enabled=0, external=0]
+05-02 00:23:35.986 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_android_surface [enabled=1, external=0]
+05-02 00:23:35.986 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_device_group_creation [enabled=0, external=0]
+05-02 00:23:35.986 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_external_fence_capabilities [enabled=1, external=0]
+05-02 00:23:35.986 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_external_memory_capabilities [enabled=1, external=0]
+05-02 00:23:35.986 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_external_semaphore_capabilities [enabled=1, external=0]
+05-02 00:23:35.986 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_get_physical_device_properties2 [enabled=1, external=0]
+05-02 00:23:35.986 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_get_surface_capabilities2 [enabled=0, external=0]
+05-02 00:23:35.986 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_surface [enabled=1, external=0]
+05-02 00:23:35.986 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_surface_protected_capabilities [enabled=0, external=0]
+05-02 00:23:35.988 D/Unity   (27283): [Vulkan init] SelectPhysicalDevice requestedDeviceIndex=-1 xrDevice=0x0
+05-02 00:23:35.988 D/Unity   (27283): [Vulkan init] Physical Device 0xb40000777d10a770 [0]: "Adreno (TM) 750" deviceType=1 vendorID=5143 deviceID=43051401
+05-02 00:23:35.988 D/Unity   (27283): [Vulkan init] Selected physical device 0xb40000777d10a770
+05-02 00:23:35.988 D/Unity   (27283): [Vulkan init] Graphics queue count=1
+05-02 00:23:36.000 D/Unity   (27283): SwappyWrapper: InitSwappyWrapper() succeeded.
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: count=132
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_ANDROID_external_memory_android_hardware_buffer [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_4444_formats [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_astc_decode_mode [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_blend_operation_advanced [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_border_color_swizzle [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_calibrated_timestamps [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_color_write_enable [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_conditional_rendering [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_conservative_rasterization [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_custom_border_color [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_depth_clamp_zero_one [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_depth_clip_control [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_depth_clip_enable [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_descriptor_indexing [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_device_address_binding_report [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_device_fault [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_device_memory_report [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_extended_dynamic_state [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_extended_dynamic_state2 [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_filter_cubic [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_fragment_density_map [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_fragment_density_map2 [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_global_priority [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_global_priority_query [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_hdr_metadata [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_host_query_reset [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_image_2d_view_of_3d [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_image_robustness [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_image_view_min_lod [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_index_type_uint8 [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_inline_uniform_block [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_line_rasterization [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_load_store_op_none [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_multisampled_render_to_single_sampled [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_pipeline_creation_cache_control [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_pipeline_creation_feedback [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_primitive_topology_list_restart [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_private_data [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_provoking_vertex [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_queue_family_foreign [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_robustness2 [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_sample_locations [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_sampler_filter_minmax [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_scalar_block_layout [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_separate_stencil_usage [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_shader_atomic_float [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_shader_demote_to_helper_invocation [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_shader_module_identifier [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_shader_stencil_export [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_shader_viewport_index_layer [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_subgroup_size_control [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_swapchain_maintenance1 [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_texel_buffer_alignment [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_texture_compression_astc_hdr [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_tooling_info [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_transform_feedback [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_vertex_attribute_divisor [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_EXT_vertex_input_dynamic_state [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_GOOGLE_display_timing [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_IMG_filter_cubic [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_16bit_storage [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_8bit_storage [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_acceleration_structure [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_bind_memory2 [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_buffer_device_address [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_copy_commands2 [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_create_renderpass2 [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_dedicated_allocation [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_deferred_host_operations [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_depth_stencil_resolve [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_descriptor_update_template [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_device_group [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_draw_indirect_count [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_driver_properties [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_dynamic_rendering [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_external_fence [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_external_fence_fd [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_external_memory [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_external_memory_fd [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_external_semaphore [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_external_semaphore_fd [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_format_feature_flags2 [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_fragment_shading_rate [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_get_memory_requirements2 [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_global_priority [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_image_format_list [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_imageless_framebuffer [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_incremental_present [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_maintenance1 [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_maintenance2 [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_maintenance3 [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_maintenance4 [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_multiview [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_pipeline_executable_properties [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_push_descriptor [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_ray_query [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_relaxed_block_layout [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_sampler_mirror_clamp_to_edge [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_sampler_ycbcr_conversion [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_separate_depth_stencil_layouts [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_shader_atomic_int64 [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_shader_clock [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_shader_draw_parameters [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_shader_float16_int8 [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_shader_float_controls [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_shader_integer_dot_product [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_shader_non_semantic_info [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_shader_subgroup_extended_types [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_shader_subgroup_uniform_control_flow [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_shader_terminate_invocation [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_shared_presentable_image [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_spirv_1_4 [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_storage_buffer_storage_class [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_swapchain [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_swapchain_mutable_format [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_synchronization2 [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_timeline_semaphore [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_uniform_buffer_standard_layout [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_variable_pointers [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_vulkan_memory_model [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_workgroup_memory_explicit_layout [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_KHR_zero_initialize_workgroup_memory [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_NV_optical_flow [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_QCOM_fragment_density_map_offset [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_QCOM_image_processing [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_QCOM_multiview_per_view_render_areas [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_QCOM_multiview_per_view_viewports [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_QCOM_render_pass_shader_resolve [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_QCOM_render_pass_store_ops [enabled=1, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_QCOM_render_pass_transform [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_QCOM_rotated_copy_commands [enabled=0, external=0]
+05-02 00:23:36.001 D/Unity   (27283): [Vulkan init] extensions: name=VK_QCOM_tile_properties [enabled=1, external=0]
+05-02 00:23:36.003 D/Unity   (27283): Vulkan API version 1.1.0 (1.3.128 supported by driver, 1.1.0 requested)
+05-02 00:23:36.003 D/Unity   (27283): Vulkan vendor=[Qualcomm] id=[5143]
+05-02 00:23:36.003 D/Unity   (27283): Vulkan renderer=[Adreno (TM) 750] id=[43051401]
+05-02 00:23:36.003 D/Unity   (27283): Vulkan device type 1
+05-02 00:23:36.003 D/Unity   (27283): Vulkan driverversion=[512.762.39 (0x802fa027)] uint=[-2144362457]
+05-02 00:23:36.003 D/Unity   (27283): Vulkan driverLibraryString=[Qualcomm Technologies Inc. Adreno Vulkan Driver (8), Driver Build: c81b28e1a5, I5a61fcf667, 1750408231
+05-02 00:23:36.003 D/Unity   (27283): Date: 06/20/25
+05-02 00:23:36.003 D/Unity   (27283): Compiler Version: E031.45.02.26
+05-02 00:23:36.003 D/Unity   (27283): Driver Branch: 
+05-02 00:23:36.003 D/Unity   (27283): ]
+05-02 00:23:36.003 D/Unity   (27283): VK use pretransform: 0
+05-02 00:23:36.008 D/Unity   (27283): Vulkan PSO: Cache data successfully loaded [size=162565,path=/storage/emulated/0/Android/data/com.defaultcompany.rescuegrid.dev/cache/vulkan_pso_cache.bin]
+05-02 00:23:36.010 D/Unity   (27283): [EGL] Attaching window :0x0
+05-02 00:23:36.010 D/Unity   (27283): AndroidDisplayManagerVulkan::AttachWindow(0xb40000776d0fac20, 0)
+05-02 00:23:36.010 D/Unity   (27283): InitializeOrResetSwapChain 1080x2340 hdr=0 samples=0
+05-02 00:23:36.030 D/Unity   (27283): AndroidDisplayManagerVulkan::AttachWindow(0xb40000776d0fac20, 0)
+05-02 00:23:36.030 D/Unity   (27283): Initialize engine version: 6000.4.3f1 (39d1a88d4dd1)
+05-02 00:23:36.056 I/ActivityManager( 2602): Changes in 10141 19 to 5, 0 to 144
+05-02 00:23:36.127 D/Unity   (27283): [Physics::Module] Selected backend.
+05-02 00:23:36.127 D/Unity   (27283): [Physics::Module] Name: PhysX
+05-02 00:23:36.127 D/Unity   (27283): [Physics::Module] Id: 0xf2b8ea05
+05-02 00:23:36.127 D/Unity   (27283): [Physics::Module] SDK Version: 4.1.2
+05-02 00:23:36.127 D/Unity   (27283): [Physics::Module] Integration Version: 1.0.0
+05-02 00:23:36.127 D/Unity   (27283): [Physics::Module] Threading Mode: Multi-Threaded
+05-02 00:23:36.170 D/Unity   (27283): PlayerInitEngineGraphics OK
+05-02 00:23:36.177 D/Unity   (27283): Found 41 native sensors
+05-02 00:23:36.178 D/Unity   (27283): Sensor :        Accelerometer ( 1) ; 0.004786 / 0.00s ; lsm6dsv LSM6DSV Accelerometer Non-wakeup / STMicro 
+05-02 00:23:36.178 D/Unity   (27283): Sensor :        Accelerometer ( 1) ; 0.004786 / 0.00s ; lsm6dsv LSM6DSV Accelerometer Non-wakeup / STMicro 
+05-02 00:23:36.178 D/Unity   (27283): enabled Accelerometer sensor
+05-02 00:23:36.178 D/Unity   (27283): Input: Touchpad enabled(1079.00, 2339.00)
+05-02 00:23:36.178 I/Unity   (27283): SetGameState: isLoading: false, mode: UNKNOWN, label: -1, quality: 2
+05-02 00:23:36.178 I/Unity   (27283):     HasWindow = 1, HasFocus = 0
+05-02 00:23:36.179 I/Unity   (27283): Handle cmd APP_CMD_WINDOW_RESIZED(3)
+05-02 00:23:36.179 D/Unity   (27283): NativeWindow resized 1080x2340
+05-02 00:23:36.179 I/Unity   (27283): Handle cmd APP_CMD_WINDOW_REDRAW_NEEDED(4)
+05-02 00:23:36.179 I/Unity   (27283): Handle cmd APP_CMD_LOW_MEMORY(10)
+05-02 00:23:36.179 I/Unity   (27283): Handle cmd APP_CMD_TERM_WINDOW(2)
+05-02 00:23:36.179 D/Unity   (27283): Vulkan PSO: Pipeline cache has not changed skipping save handle[cd101070]
+05-02 00:23:36.179 D/Unity   (27283): Using NDK Choreographer.
+05-02 00:23:36.180 D/Unity   (27283): Sensor :        Accelerometer ( 1) ; 0.004786 / 0.00s ; lsm6dsv LSM6DSV Accelerometer Non-wakeup / STMicro 
+05-02 00:23:36.180 I/Unity   (27283): SetGameState: isLoading: false, mode: CONTENT, label: -6, quality: 2
+05-02 00:23:36.181 D/Unity   (27283): AndroidDisplayManagerVulkan::AttachWindow(0x0, 0)
+05-02 00:23:36.181 D/Unity   (27283): PersistentUnitySurface.preserveContent: com.unity3d.player.UnityPlayerGameActivity$GameActivitySurfaceView{ae76705 V.E...... ......I. 0,0-1080,2340 #7f08012b app:id/unitySurfaceView}
+05-02 00:23:36.181 D/Unity   (27283): PersistentUnitySurface.PlaceholderView.Copy: com.unity3d.player.UnityPlayerGameActivity$GameActivitySurfaceView{ae76705 V.E...... ......I. 0,0-1080,2340 #7f08012b app:id/unitySurfaceView} Width 1080  Height 2340
+05-02 00:23:36.182 D/Unity   (27283): PixelCopy finished: 3
+05-02 00:23:36.185 I/Unity   (27283): Handle cmd APP_CMD_STOP(15)
+05-02 00:23:36.185 I/Unity   (27283): Handle cmd APP_CMD_SAVE_STATE(13)
+05-02 00:23:36.196 I/Unity   (27283): Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+05-02 00:23:36.197 I/Unity   (27283): Handle cmd APP_CMD_START(11)
+05-02 00:23:36.197 I/Unity   (27283): onResume
+05-02 00:23:36.198 I/Unity   (27283): Handle cmd APP_CMD_RESUME(12)
+05-02 00:23:36.199 I/Unity   (27283): applyWindowUIChanges fullScreen = true, renderOutsideSafeArea = false
+05-02 00:23:36.199 I/Unity   (27283): applyWindowUIChanges fullScreen = true, renderOutsideSafeArea = false
+05-02 00:23:36.200 I/Unity   (27283): Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+05-02 00:23:36.204 I/Unity   (27283): Handle cmd APP_CMD_INIT_WINDOW(1)
+05-02 00:23:36.205 D/Unity   (27283): AndroidDisplayManagerVulkan::AttachWindow(0xb40000776d2315e0, 0)
+05-02 00:23:36.205 D/Unity   (27283): InitializeOrResetSwapChain 1080x2340 hdr=0 samples=0
+05-02 00:23:36.210 I/Unity   (27283): windowFocusChanged: true
+05-02 00:23:36.210 I/Unity   (27283): resumeUnity
+05-02 00:23:36.222 I/Unity   (27283): windowFocusChanged: true
+05-02 00:23:36.226 I/Unity   (27283):     HasWindow = 1, HasFocus = 0
+05-02 00:23:36.226 I/Unity   (27283): Handle cmd APP_CMD_WINDOW_REDRAW_NEEDED(4)
+05-02 00:23:36.226 I/Unity   (27283): Handle cmd APP_CMD_GAINED_FOCUS(7)
+05-02 00:23:36.226 I/Unity   (27283): Handle cmd APP_CMD_GAINED_FOCUS(7)
+05-02 00:23:36.250 I/Unity   (27283): SetGameState: isLoading: true, mode: CONTENT, label: -6, quality: 2
+05-02 00:23:38.066 I/ActivityManager( 2602): Changes in 10313 6 to 10, 128 to 0
+05-02 00:23:38.308 D/Unity   (27283): UnloadTime: 2.289792 ms
+05-02 00:23:38.368 I/Unity   (27283): SetGameState: isLoading: false, mode: CONTENT, label: -6, quality: 2
+05-02 00:23:38.461 I/Unity   (27283): SetGameState: isLoading: true, mode: CONTENT, label: -6, quality: 2
+05-02 00:23:38.529 I/Unity   (27283): SetGameState: isLoading: false, mode: CONTENT, label: -6, quality: 2
+05-02 00:23:38.530 D/Unity   (27283): Found 1 interfaces on host samsung_SM-S928U@10.0.0.103:
+05-02 00:23:38.530 D/Unity   (27283):  0) 10.0.0.103
+05-02 00:23:38.530 D/Unity   (27283): 
+05-02 00:23:38.531 D/Unity   (27283): Player connection [504745767872]  Target information:
+05-02 00:23:38.531 D/Unity   (27283): 
+05-02 00:23:38.531 D/Unity   (27283): Player connection [504745767872]  * "[IP] 10.0.0.103 [Port] 55000 [Flags] 2 [Guid] 1156557861 [EditorId] 3114505429 [Version] 1048832 [Id] AndroidPlayer(11,samsung_SM-S928U@10.0.0.103) [Debug] 1 [PackageName] AndroidPlayer [ProjectName] rescue-grid" 
+05-02 00:23:38.531 D/Unity   (27283): 
+05-02 00:23:38.531 D/Unity   (27283): Player connection [504745767872] Started UDP target info broadcast (1) on [225.0.0.222:54997].
+05-02 00:23:38.531 D/Unity   (27283): 
+05-02 00:23:38.531 D/Unity   (27283): Player connection [504745767872] Started UDP target info broadcast (1) on [225.0.0.222:54997].
+05-02 00:23:38.531 D/Unity   (27283): 
+05-02 00:23:38.653 D/Unity   (27283): Sensor :        Accelerometer ( 1) ; 0.004786 / 0.00s ; lsm6dsv LSM6DSV Accelerometer Non-wakeup / STMicro 
+05-02 00:23:38.653 I/Unity   (27283): SetGameState: isLoading: false, mode: UNKNOWN, label: 0, quality: 2
+05-02 00:23:38.666 D/Unity   (27283): Stopping Unity systrace
+05-02 00:23:38.765 I/Unity   (27283): SetGameState: isLoading: true, mode: UNKNOWN, label: -4, quality: 2
+05-02 00:23:38.800 D/Unity   (27283): Failed to load native plugin: Unable to lookup library path for '_burst_0_0'.
+05-02 00:23:39.085 I/Unity   (27283): SetGameState: isLoading: false, mode: UNKNOWN, label: 0, quality: 2
+05-02 00:23:39.102 I/Unity   (27283): Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+05-02 00:23:39.176 I/Unity   (27283): Handle cmd APP_CMD_WINDOW_REDRAW_NEEDED(4)
+05-02 00:23:39.176 I/Unity   (27283): Handle cmd APP_CMD_WINDOW_RESIZED(3)
+05-02 00:23:39.176 D/Unity   (27283): NativeWindow resized 1080x2256
+05-02 00:23:39.177 I/Unity   (27283): Handle cmd APP_CMD_WINDOW_REDRAW_NEEDED(4)
+05-02 00:23:39.177 I/Unity   (27283): Handle cmd APP_CMD_CONTENT_RECT_CHANGED(5)
+05-02 00:23:39.181 D/Unity   (27283): InitializeOrResetSwapChain 1080x2256 hdr=0 samples=0
+05-02 00:23:39.184 I/Unity   (27283): applyWindowUIChanges fullScreen = true, renderOutsideSafeArea = false
+05-02 00:23:42.060 I/ActivityManager( 2602): Changes in 10141 5 to 15, 144 to 0
+05-02 00:23:43.317 I/ActivityManager( 2602): Changes in 10115 5 to 19, 184 to 0
+05-02 00:23:43.819 I/ActivityManager( 2602): Changes in 10256 15 to 15, 128 to 0
+05-02 00:23:50.344 I/ActivityManager( 2602): Changes in 10115 19 to 8, 0 to 128
+05-02 00:23:50.357 I/ActivityManager( 2602): Changes in 10115 8 to 10, 128 to 0
+05-02 00:23:50.824 I/ActivityManager( 2602): Changes in 10117 15 to 8, 0 to 128
+05-02 00:23:51.054 I/ActivityManager( 2602): Changes in 10117 8 to 10, 128 to 0
+05-02 00:23:51.104 I/ActivityManager( 2602): Changes in 10256 15 to 8, 0 to 128
+05-02 00:23:51.336 I/ActivityManager( 2602): Broadcasting: Intent { act=android.intent.action.MEDIA_SCANNER_SCAN_FILE dat=file:///... flg=0x400000 }
+05-02 00:23:51.337 I/ActivityManager( 2602): Enqueued broadcast Intent { act=android.intent.action.MEDIA_SCANNER_SCAN_FILE dat=file:///... flg=0x400000 }: 0
+05-02 00:23:51.344 I/ActivityManager( 2602): Broadcast completed: result=0
+05-02 00:23:51.898 I/ActivityManager( 2602): Changes in 10117 15 to 8, 0 to 128
+05-02 00:23:51.990 I/ActivityManager( 2602): Changes in 10069 10 to 8, 0 to 128
+05-02 00:23:52.135 I/ActivityManager( 2602): Changes in 5004 19 to 8, 0 to 128
+05-02 00:23:54.517 I/ActivityManager( 2602): Changes in 10117 8 to 10, 128 to 0
+05-02 00:23:54.517 I/ActivityManager( 2602): Changes in 10069 8 to 10, 128 to 0
+05-02 00:23:54.517 I/ActivityManager( 2602): Changes in 5004 8 to 10, 128 to 0
+05-02 00:23:55.968 I/ActivityManager( 2602): Changes in 10256 8 to 10, 128 to 0
+05-02 00:24:02.082 I/ActivityManager( 2602): Changes in 10069 10 to 5, 0 to 144
+05-02 00:24:05.917 I/Unity   (27283): SetGameState: isLoading: true, mode: UNKNOWN, label: -4, quality: 2
+05-02 00:24:05.958 I/Unity   (27283): SetGameState: isLoading: false, mode: UNKNOWN, label: 0, quality: 2
+05-02 00:24:08.157 I/ActivityManager( 2602): Broadcasting: Intent { act=android.intent.action.MEDIA_SCANNER_SCAN_FILE dat=file:///... flg=0x400000 }
+05-02 00:24:08.158 I/ActivityManager( 2602): Enqueued broadcast Intent { act=android.intent.action.MEDIA_SCANNER_SCAN_FILE dat=file:///... flg=0x400000 }: 0
+05-02 00:24:08.170 I/ActivityManager( 2602): Broadcast completed: result=0
+05-02 00:24:08.246 I/ActivityManager( 2602): Changes in 10069 5 to 10, 144 to 0
+05-02 00:24:08.714 I/ActivityManager( 2602): Changes in 10117 19 to 8, 0 to 128
+05-02 00:24:08.807 I/ActivityManager( 2602): Changes in 10069 10 to 8, 0 to 128
+05-02 00:24:08.858 I/ActivityManager( 2602): Changes in 5004 19 to 8, 0 to 128
+05-02 00:24:10.356 I/ActivityManager( 2602): Changes in 10115 19 to 8, 0 to 128
+05-02 00:24:10.375 I/ActivityManager( 2602): Changes in 10115 8 to 10, 128 to 0
+05-02 00:24:11.043 I/ActivityManager( 2602): Changes in 10117 8 to 10, 128 to 0
+05-02 00:24:11.043 I/ActivityManager( 2602): Changes in 10069 8 to 10, 128 to 0
+05-02 00:24:11.043 I/ActivityManager( 2602): Changes in 5004 8 to 10, 128 to 0
+05-02 00:24:12.439 I/ActivityManager( 2602): Changes in 10115 19 to 5, 0 to 184
+05-02 00:24:18.889 I/ActivityManager( 2602): Changes in 10069 10 to 5, 0 to 144
+05-02 00:24:24.991 I/ActivityManager( 2602): Changes in 10069 5 to 10, 144 to 0
+05-02 00:24:27.466 I/ActivityManager( 2602): Changes in 10115 5 to 10, 184 to 0
+05-02 00:24:28.763 I/ActivityManager( 2602): Process com.samsung.euicc (pid 27103) has died: fg  SVC (239,2435)
+05-02 00:24:29.299 I/ActivityManager( 2602): Changes in 10117 19 to 8, 0 to 128
+05-02 00:24:29.411 I/ActivityManager( 2602): Changes in 10117 8 to 10, 128 to 0
+05-02 00:24:29.733 I/ActivityManager( 2602): Broadcasting: Intent { act=android.intent.action.MEDIA_SCANNER_SCAN_FILE dat=file:///... flg=0x400000 }
+05-02 00:24:29.734 I/ActivityManager( 2602): Enqueued broadcast Intent { act=android.intent.action.MEDIA_SCANNER_SCAN_FILE dat=file:///... flg=0x400000 }: 0
+05-02 00:24:29.740 I/ActivityManager( 2602): Broadcast completed: result=0
+05-02 00:24:30.294 I/ActivityManager( 2602): Changes in 10117 19 to 8, 0 to 128
+05-02 00:24:30.351 I/ActivityManager( 2602): Changes in 10115 19 to 8, 0 to 128
+05-02 00:24:30.358 I/ActivityManager( 2602): Changes in 10069 10 to 8, 0 to 128
+05-02 00:24:30.365 I/ActivityManager( 2602): Changes in 10115 8 to 10, 128 to 0
+05-02 00:24:30.388 I/ActivityManager( 2602): Changes in 5004 19 to 8, 0 to 128
+05-02 00:24:32.625 I/ActivityManager( 2602): Changes in 10117 8 to 10, 128 to 0
+05-02 00:24:32.625 I/ActivityManager( 2602): Changes in 10069 8 to 10, 128 to 0
+05-02 00:24:32.625 I/ActivityManager( 2602): Changes in 5004 8 to 10, 128 to 0
+05-02 00:24:40.445 I/ActivityManager( 2602): Changes in 10069 10 to 5, 0 to 144
+05-02 00:24:46.589 I/ActivityManager( 2602): Changes in 10069 5 to 10, 144 to 0
+05-02 00:24:49.959 I/Unity   (27283): SetGameState: isLoading: true, mode: UNKNOWN, label: -4, quality: 2
+05-02 00:24:50.008 I/Unity   (27283): SetGameState: isLoading: false, mode: UNKNOWN, label: 0, quality: 2
+05-02 00:24:52.372 I/ActivityManager( 2602): Changes in 10115 19 to 8, 0 to 128
+05-02 00:24:52.382 I/ActivityManager( 2602): Changes in 10115 8 to 10, 128 to 0
+05-02 00:24:52.858 I/ActivityManager( 2602): Changes in 10117 19 to 8, 0 to 128
+05-02 00:24:52.933 I/ActivityManager( 2602): Changes in 10117 8 to 10, 128 to 0
+05-02 00:24:53.296 I/ActivityManager( 2602): Broadcasting: Intent { act=android.intent.action.MEDIA_SCANNER_SCAN_FILE dat=file:///... flg=0x400000 }
+05-02 00:24:53.297 I/ActivityManager( 2602): Enqueued broadcast Intent { act=android.intent.action.MEDIA_SCANNER_SCAN_FILE dat=file:///... flg=0x400000 }: 0
+05-02 00:24:53.301 I/ActivityManager( 2602): Broadcast completed: result=0
+05-02 00:24:53.856 I/ActivityManager( 2602): Changes in 10117 19 to 8, 0 to 128
+05-02 00:24:53.924 I/ActivityManager( 2602): Changes in 10069 10 to 8, 0 to 128
+05-02 00:24:53.976 I/ActivityManager( 2602): Changes in 5004 19 to 8, 0 to 128
+05-02 00:24:56.213 I/ActivityManager( 2602): Changes in 10117 8 to 10, 128 to 0
+05-02 00:24:56.214 I/ActivityManager( 2602): Changes in 10069 8 to 10, 128 to 0
+05-02 00:24:56.214 I/ActivityManager( 2602): Changes in 5004 8 to 10, 128 to 0
+05-02 00:25:04.002 I/ActivityManager( 2602): Changes in 10069 10 to 5, 0 to 144
+05-02 00:25:10.107 I/ActivityManager( 2602): Changes in 10069 5 to 10, 144 to 0
+05-02 00:25:12.380 I/ActivityManager( 2602): Changes in 10115 19 to 8, 0 to 128
+05-02 00:25:12.395 I/ActivityManager( 2602): Changes in 10115 8 to 10, 128 to 0
+05-02 00:25:19.158 I/ActivityManager( 2602): Changes in 10117 19 to 8, 0 to 128
+05-02 00:25:19.282 I/ActivityManager( 2602): Changes in 10117 8 to 10, 128 to 0
+05-02 00:25:19.635 I/ActivityManager( 2602): Broadcasting: Intent { act=android.intent.action.MEDIA_SCANNER_SCAN_FILE dat=file:///... flg=0x400000 }
+05-02 00:25:19.636 I/ActivityManager( 2602): Enqueued broadcast Intent { act=android.intent.action.MEDIA_SCANNER_SCAN_FILE dat=file:///... flg=0x400000 }: 0
+05-02 00:25:19.641 I/ActivityManager( 2602): Broadcast completed: result=0
+05-02 00:25:20.186 I/ActivityManager( 2602): Changes in 10117 19 to 8, 0 to 128
+05-02 00:25:20.260 I/ActivityManager( 2602): Changes in 10069 10 to 8, 0 to 128
+05-02 00:25:20.306 I/ActivityManager( 2602): Changes in 5004 19 to 8, 0 to 128
+05-02 00:25:22.520 I/ActivityManager( 2602): Changes in 10117 8 to 10, 128 to 0
+05-02 00:25:22.520 I/ActivityManager( 2602): Changes in 10069 8 to 10, 128 to 0
+05-02 00:25:22.520 I/ActivityManager( 2602): Changes in 5004 8 to 10, 128 to 0
+05-02 00:25:30.357 I/ActivityManager( 2602): Changes in 10069 10 to 5, 0 to 144
+05-02 00:25:32.388 I/ActivityManager( 2602): Changes in 10115 19 to 8, 0 to 128
+05-02 00:25:32.403 I/ActivityManager( 2602): Changes in 10115 8 to 10, 128 to 0
+05-02 00:25:36.526 I/ActivityManager( 2602): Changes in 10069 5 to 10, 144 to 0
+05-02 00:25:50.689 I/ActivityManager( 2602): Changes in 10117 19 to 8, 0 to 128
+05-02 00:25:50.781 I/ActivityManager( 2602): Changes in 10117 8 to 10, 128 to 0
+05-02 00:25:51.169 I/ActivityManager( 2602): Broadcasting: Intent { act=android.intent.action.MEDIA_SCANNER_SCAN_FILE dat=file:///... flg=0x400000 }
+05-02 00:25:51.170 I/ActivityManager( 2602): Enqueued broadcast Intent { act=android.intent.action.MEDIA_SCANNER_SCAN_FILE dat=file:///... flg=0x400000 }: 0
+05-02 00:25:51.177 I/ActivityManager( 2602): Broadcast completed: result=0
+05-02 00:25:51.757 I/ActivityManager( 2602): Changes in 10117 19 to 8, 0 to 128
+05-02 00:25:51.818 I/ActivityManager( 2602): Changes in 10069 10 to 8, 0 to 128
+05-02 00:25:51.871 I/ActivityManager( 2602): Changes in 5004 19 to 8, 0 to 128
+05-02 00:25:52.387 I/ActivityManager( 2602): Changes in 10115 19 to 8, 0 to 128
+05-02 00:25:52.399 I/ActivityManager( 2602): Changes in 10115 8 to 10, 128 to 0
+05-02 00:25:54.104 I/ActivityManager( 2602): Changes in 10117 8 to 10, 128 to 0
+05-02 00:25:54.104 I/ActivityManager( 2602): Changes in 10069 8 to 10, 128 to 0
+05-02 00:25:54.104 I/ActivityManager( 2602): Changes in 5004 8 to 10, 128 to 0
+05-02 00:26:01.912 I/ActivityManager( 2602): Changes in 10069 10 to 5, 0 to 144
+05-02 00:26:04.253 W/ActivityManager( 2602): Background start not allowed: service Intent { act=com.facebook.analytics2.logger.UPLOAD_NOW xflg=0x4 cmp=com.facebook.katana/com.facebook.analytics2.logger.legacy.uploader.LollipopUploadService (has extras) } to com.facebook.katana/com.facebook.analytics2.logger.legacy.uploader.LollipopUploadService from pid=-1 uid=10350 pkg=com.facebook.katana startFg?=false
+05-02 00:26:04.258 I/ActivityManager( 2602): Changes in 90102 17 to 11, 0 to 128
+05-02 00:26:04.258 I/ActivityManager( 2602): Changes in 90100 17 to 17, 0 to 128
+05-02 00:26:04.258 I/ActivityManager( 2602): Changes in 10350 16 to 11, 0 to 128
+05-02 00:26:04.334 I/Choreographer(21961): Skipped 32255 frames!  The application may be doing too much work on its main thread.
+05-02 00:26:04.336 I/ActivityManager( 2602): Changes in 90102 11 to 17, 128 to 0
+05-02 00:26:04.336 I/ActivityManager( 2602): Changes in 90100 17 to 17, 128 to 0
+05-02 00:26:04.336 I/ActivityManager( 2602): Changes in 10350 11 to 16, 128 to 0
+05-02 00:26:04.607 I/ActivityManager( 2602): Changes in 10211 19 to 6, 0 to 128
+05-02 00:26:04.607 I/ActivityManager( 2602): Changes in 10127 19 to 6, 0 to 128
+05-02 00:26:04.607 I/ActivityManager( 2602): Changes in 5278 19 to 6, 0 to 128
+05-02 00:26:08.043 I/ActivityManager( 2602): Changes in 10069 5 to 10, 144 to 0
+05-02 00:26:09.630 I/ActivityManager( 2602): Changes in 10211 6 to 10, 128 to 0
+05-02 00:26:09.631 I/ActivityManager( 2602): Changes in 10127 6 to 10, 128 to 0
+05-02 00:26:09.632 I/ActivityManager( 2602): Changes in 5278 6 to 10, 128 to 0

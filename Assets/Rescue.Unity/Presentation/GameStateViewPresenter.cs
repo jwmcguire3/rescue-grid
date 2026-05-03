@@ -193,6 +193,7 @@ namespace Rescue.Unity.Presentation
             }
 
             lossScreen?.Hide();
+            PortraitGameSceneLayout.ApplyBoardStageLayout(state.Board.Width);
 
             if (boardGrid is null)
             {

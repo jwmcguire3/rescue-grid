@@ -1,0 +1,883 @@
+[Licensing::Module] Trying to connect to existing licensing client channel...
+Built from '6000.4/staging' branch; Version is '6000.4.3f1 (39d1a88d4dd1) revision 3789224'; Using compiler version '194234433'; Build Type 'Release'
+OS: 'Windows 11  (10.0.26200) Core' Language: 'en' Physical Memory: 32609 MB
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-jwmcg" at "2026-05-02T04:31:57.8952257Z"
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
+System  architecture: x64
+Process architecture: x64
+Date: 2026-05-02T04:31:57Z
+
+COMMAND LINE ARGUMENTS:
+C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Unity.exe
+-batchmode
+-quit
+-projectPath
+C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid
+-buildTarget
+Android
+-executeMethod
+BuildScripts.BuildAndroid
+-logFile
+C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Artifacts\android_build.log
+Successfully changed project path to: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid
+C:/Users/jwmcg/OneDrive/Documents/AI Projects/Live Envirnments/rescue-grid
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+    "memorysetup-temp-allocator-size-gfx=262144"
+    "memorysetup-temp-allocator-size-preload-manager=33554432"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=33554432"
+    "memorysetup-bucket-allocator-block-count=8"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=33554432"
+    "memorysetup-profiler-bucket-allocator-block-count=8"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=16777216"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+Player connection [42708]  Target information:
+
+Player connection [42708]  * "[IP] 10.0.0.151 [Port] 55504 [Flags] 2 [Guid] 2118918831 [EditorId] 2118918831 [Version] 1048832 [Id] WindowsEditor(7,Johnnys_Super) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [42708] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [42708] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+[Package Manager] Connected to IPC stream "Upm-32576" after 0.2 seconds.
+[Licensing::Module] Licensing is not yet initialized.
+[Licensing::Client] Error: HandshakeResponse reported an error:
+	ResponseCode: 505
+	ResponseStatus: Unsupported protocol version '1.18.1'.
+[Licensing::Module] Error: Failed to handshake to channel: "LicenseClient-jwmcg"
+[Licensing::IpcConnector] LicenseClient-jwmcg channel disconnected successfully.
+[Licensing::IpcConnector] Channel LicenseClient-jwmcg-6000.4.3 doesn't exist
+[Licensing::Module] Successfully launched the LicensingClient (PId: 33064)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-jwmcg-6000.4.3" at "2026-05-02T04:31:59.3044242Z"
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.1+9fbee8e
+  Session Id:              3347d5ee3ed94c788e4aefa100148b8b
+  Correlation Id:          ac75766ff9939bdb5790fddee37a535a
+  External correlation Id: 886687130554446514
+  Machine Id:              1BeB/TLi2XvtpQs0S1BLgEO37gQ=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-jwmcg-6000.4.3" (connect: 0.16s, validation: 0.04s, handshake: 1.22s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-jwmcg-6000.4.3-notifications" at "2026-05-02T04:32:00.5571948Z"
+[Licensing::Module] Connected to LicensingClient (PId: 33064, launch time: 0.00, total connection time: 1.41s)
+[Licensing::Module] Error: Access token is unavailable; failed to update
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: 2475969837267-UnityPersXXXX
+  Product: Unity Personal
+  Type: Assigned
+  Expiration: Unlimited
+[Licensing::Client] Successfully updated license, isAsync: True, time: 0.01
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] Licensing Background thread has ended after 2.68s
+[Licensing::Module] Licensing is initialized (took 2.37s).
+[Licensing::Client] Successfully resolved entitlement details
+Library Redirect Path: Library/
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+[Licensing::Client] Successfully resolved entitlement details
+Targeting platform: Android
+Initialize engine version: 6000.4.3f1 (39d1a88d4dd1)
+[Subsystems] Discovering subsystems at path C:/Program Files/Unity/Hub/Editor/6000.4.3f1/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path C:/Users/jwmcg/OneDrive/Documents/AI Projects/Live Envirnments/rescue-grid/Assets
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.1]
+    Renderer: NVIDIA GeForce RTX 4080 SUPER (ID=0x2702)
+    Vendor:   NVIDIA
+    VRAM:     16045 MB
+    Driver:   32.0.15.9174
+Initialize mono
+Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/6000.4.3f1/Editor/Data/Managed'
+Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/6000.4.3f1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
+Mono config path = 'C:/Program Files/Unity/Hub/Editor/6000.4.3f1/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56576
+CodeReloadManager initialized
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+ImportWorker Server TCP listen port: 0
+AcceleratorClientConnectionCallback - disconnected - :0
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.4.3f1/Editor/Data/PlaybackEngines/WebGLSupport/UnityEditor.WebGL.Extensions.dll
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.4.3f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.4.3f1/Editor/Data/PlaybackEngines/AndroidPlayer/UnityEditor.Android.Extensions.dll
+Registered in 0.001684 seconds.
+Native extension for Android target not found
+Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
+Package Manager log level set to [2]
+ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.244 seconds
+Domain Reload Profiling: 523ms
+	BeginReloadAssembly (80ms)
+		CreateAndSetChildDomain (5ms)
+	RebuildCommonClasses (23ms)
+	RebuildNativeTypeToScriptingClass (8ms)
+	initialDomainReloadingComplete (39ms)
+	LoadAllAssembliesAndSetupDomain (128ms)
+		LoadAssemblies (74ms)
+		AnalyzeDomain (121ms)
+			TypeCache.Refresh (121ms)
+				TypeCache.ScanAssembly (112ms)
+	FinalizeReload (245ms)
+		SetupLoadedEditorAssemblies (0ms)
+			InitializePlatformSupportModulesInManaged (36ms)
+			BeforeProcessingInitializeOnLoad (51ms)
+			ProcessInitializeOnLoadAttributes (65ms)
+			ProcessInitializeOnLoadMethodAttributes (53ms)
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Client] Successfully resolved entitlement details
+Application.AssetDatabase Initial Refresh Start
+[Package Manager] Restoring resolved packages state from cache
+[Licensing::Client] Successfully resolved entitlement details
+[Package Manager] Registered 56 packages:
+  Packages from [https://packages.unity.com]:
+    com.unity.ads@4.16.4 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.ads@e89225828059)
+    com.unity.ai.navigation@2.0.12 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.ai.navigation@734c2c4c5591)
+    com.unity.analytics@3.8.2 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.analytics@c9d14a6bdec6)
+    com.unity.collab-proxy@2.12.4 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.collab-proxy@0b1559bcd34e)
+    com.unity.ide.rider@3.0.39 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.ide.rider@4504839d03f7)
+    com.unity.ide.visualstudio@2.0.27 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.ide.visualstudio@dc1ddd4f09b6)
+    com.unity.inputsystem@1.11.2 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.inputsystem@3c4a97c3950f)
+    com.unity.purchasing@4.15.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.purchasing@ffbc76639aab)
+    com.unity.timeline@1.8.12 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.timeline@8cd8509afae5)
+    com.unity.xr.legacyinputhelpers@3.0.1 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.xr.legacyinputhelpers@3f62d634f63b)
+    com.unity.services.core@1.16.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.services.core@8ba50f624741)
+    com.unity.services.analytics@6.3.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.services.analytics@cde4e6cf92f9)
+    com.unity.nuget.newtonsoft-json@3.2.2 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.nuget.newtonsoft-json@4dfd81071c64)
+  Built-in packages:
+    com.unity.2d.sprite@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.2d.sprite@929df5adbb1f)
+    com.unity.2d.tilemap@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.2d.tilemap@c457c5249013)
+    com.unity.multiplayer.center@1.0.1 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.multiplayer.center@f01f4ba8d00a)
+    com.unity.test-framework@1.6.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.test-framework@76560ee600cb)
+    com.unity.textmeshpro@5.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.textmeshpro@53f43edfd2e0)
+    com.unity.ugui@2.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.ugui@d8a2716f3013)
+    com.unity.modules.accessibility@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.accessibility)
+    com.unity.modules.adaptiveperformance@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.adaptiveperformance)
+    com.unity.modules.ai@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.ai)
+    com.unity.modules.androidjni@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.androidjni)
+    com.unity.modules.animation@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.animation)
+    com.unity.modules.assetbundle@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.assetbundle)
+    com.unity.modules.audio@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.audio)
+    com.unity.modules.cloth@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.cloth)
+    com.unity.modules.director@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.director)
+    com.unity.modules.imageconversion@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.imageconversion)
+    com.unity.modules.imgui@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.imgui)
+    com.unity.modules.jsonserialize@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.jsonserialize)
+    com.unity.modules.particlesystem@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.particlesystem)
+    com.unity.modules.physics@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.physics)
+    com.unity.modules.physics2d@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.physics2d)
+    com.unity.modules.screencapture@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.screencapture)
+    com.unity.modules.terrain@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.terrain)
+    com.unity.modules.terrainphysics@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.terrainphysics)
+    com.unity.modules.tilemap@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.tilemap)
+    com.unity.modules.ui@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.ui)
+    com.unity.modules.uielements@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.uielements)
+    com.unity.modules.umbra@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.umbra)
+    com.unity.modules.unityanalytics@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.unityanalytics)
+    com.unity.modules.unitywebrequest@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.unitywebrequest)
+    com.unity.modules.unitywebrequestassetbundle@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.unitywebrequestassetbundle)
+    com.unity.modules.unitywebrequestaudio@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.unitywebrequestaudio)
+    com.unity.modules.unitywebrequesttexture@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.unitywebrequesttexture)
+    com.unity.modules.unitywebrequestwww@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.unitywebrequestwww)
+    com.unity.modules.vectorgraphics@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.vectorgraphics)
+    com.unity.modules.vehicles@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.vehicles)
+    com.unity.modules.video@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.video)
+    com.unity.modules.vr@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.vr)
+    com.unity.modules.wind@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.wind)
+    com.unity.modules.xr@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.xr)
+    com.unity.modules.subsystems@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.subsystems)
+    com.unity.modules.hierarchycore@1.0.0 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.modules.hierarchycore)
+    com.unity.ext.nunit@2.0.5 (location: C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\PackageCache\com.unity.ext.nunit@d8c07649098d)
+[Package Manager] com.unity.textmeshpro is deprecated: This package is no longer supported. TextMeshPro functionalities are now included in the com.unity.ugui package. To continue using them, consider adding it to your project dependencies.
+[Subsystems] No new subsystems found in resolved package list.
+[Package Manager] Done registering packages in 0.01 seconds
+Assembly for Assembly Definition File 'Assets/Rescue.Unity.Tests/Rescue.Unity.Tests.asmdef' will not be compiled, because it has no scripts associated with it.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:LogFormat (UnityEngine.LogType,string,object[])
+UnityEngine.Debug:LogWarningFormat (string,object[])
+UnityEditor.Scripting.ScriptCompilation.EditorCompilation:WarnIfThereAreAssembliesWithoutAnyScripts (UnityEditor.Scripting.ScriptCompilation.ScriptAssemblySettings,UnityEditor.Scripting.ScriptCompilation.ScriptAssembly[])
+UnityEditor.Scripting.ScriptCompilation.EditorCompilation:CompileScriptsWithSettings (UnityEditor.Scripting.ScriptCompilation.ScriptAssemblySettings)
+UnityEditor.Scripting.ScriptCompilation.EditorCompilation:CompileScripts (UnityEditor.Scripting.ScriptCompilation.EditorScriptCompilationOptions,UnityEditor.BuildTarget,int,string[])
+UnityEditor.Scripting.ScriptCompilation.EditorCompilationInterface/<>c__DisplayClass21_0:<CompileScripts>b__0 ()
+UnityEditor.Scripting.ScriptCompilation.EditorCompilationInterface:EmitExceptionAsError<UnityEditor.Scripting.ScriptCompilation.EditorCompilation/CompileStatus> (System.Func`1<UnityEditor.Scripting.ScriptCompilation.EditorCompilation/CompileStatus>,UnityEditor.Scripting.ScriptCompilation.EditorCompilation/CompileStatus)
+UnityEditor.Scripting.ScriptCompilation.EditorCompilationInterface:CompileScripts (UnityEditor.Scripting.ScriptCompilation.EditorScriptCompilationOptions,UnityEditor.BuildTarget,int,string[])
+
+Starting: C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1300b0aE.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssemblies
+WorkingDir: C:/Users/jwmcg/OneDrive/Documents/AI Projects/Live Envirnments/rescue-grid
+DisplayProgressbar: Compiling Scripts
+ExitCode: 0 Duration: 0s133ms
+*** Tundra build success (0.11 seconds), 0 items updated, 945 evaluated
+AssetDatabase: script compilation time: 0.404576s
+Begin MonoManager ReloadAssembly
+Assembly Assembly-CSharp-Editor-firstpass.dll at Library/ScriptAssemblies/Assembly-CSharp-Editor-firstpass.dll not valid. Loading of assembly skipped.
+Assembly Assembly-CSharp-firstpass.dll at Library/ScriptAssemblies/Assembly-CSharp-firstpass.dll not valid. Loading of assembly skipped.
+Assembly Assembly-CSharp.dll at Library/ScriptAssemblies/Assembly-CSharp.dll not valid. Loading of assembly skipped.
+Assembly DocCodeExamples.dll at Library/ScriptAssemblies/DocCodeExamples.dll not valid. Loading of assembly skipped.
+Assembly Rescue.Unity.Tests.dll at Library/ScriptAssemblies/Rescue.Unity.Tests.dll not valid. Loading of assembly skipped.
+Assembly TestNewCustomAssembly.dll at Library/ScriptAssemblies/TestNewCustomAssembly.dll not valid. Loading of assembly skipped.
+Assembly Unity.2D.Sprite.Package.EditorTests.dll at Library/ScriptAssemblies/Unity.2D.Sprite.Package.EditorTests.dll not valid. Loading of assembly skipped.
+Assembly Unity.2D.Tilemap.Package.EditorTests.dll at Library/ScriptAssemblies/Unity.2D.Tilemap.Package.EditorTests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Analytics.DataPrivacy.Tests.dll at Library/ScriptAssemblies/Unity.Analytics.DataPrivacy.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Analytics.StandardEvents.EditorTests.dll at Library/ScriptAssemblies/Unity.Analytics.StandardEvents.EditorTests.dll not valid. Loading of assembly skipped.
+Assembly Unity.InputSystem.IntegrationTests.dll at Library/ScriptAssemblies/Unity.InputSystem.IntegrationTests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Multiplayer.Center.Editor.Tests.dll at Library/ScriptAssemblies/Unity.Multiplayer.Center.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Multiplayer.Center.Tests.dll at Library/ScriptAssemblies/Unity.Multiplayer.Center.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.TextMeshPro.Editor.Tests.dll at Library/ScriptAssemblies/Unity.TextMeshPro.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.TextMeshPro.Tests.dll at Library/ScriptAssemblies/Unity.TextMeshPro.Tests.dll not valid. Loading of assembly skipped.
+Assembly UnityEditor.UI.Common.Tests.dll at Library/ScriptAssemblies/UnityEditor.UI.Common.Tests.dll not valid. Loading of assembly skipped.
+Assembly UnityEditor.UI.EditorTests.dll at Library/ScriptAssemblies/UnityEditor.UI.EditorTests.dll not valid. Loading of assembly skipped.
+Assembly UnityEditor.XR.LegacyInputHelpers.Tests.dll at Library/ScriptAssemblies/UnityEditor.XR.LegacyInputHelpers.Tests.dll not valid. Loading of assembly skipped.
+Assembly UnityEngine.Advertisements.Editor.Tests.dll at Library/ScriptAssemblies/UnityEngine.Advertisements.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly UnityEngine.Advertisements.Tests.dll at Library/ScriptAssemblies/UnityEngine.Advertisements.Tests.dll not valid. Loading of assembly skipped.
+Assembly UnityEngine.Purchasing.Apple.dll at Library/ScriptAssemblies/UnityEngine.Purchasing.Apple.dll not valid. Loading of assembly skipped.
+Assembly UnityEngine.Purchasing.AppleMacos.dll at Library/ScriptAssemblies/UnityEngine.Purchasing.AppleMacos.dll not valid. Loading of assembly skipped.
+Assembly UnityEngine.Purchasing.Security.dll at Library/ScriptAssemblies/UnityEngine.Purchasing.Security.dll not valid. Loading of assembly skipped.
+Assembly UnityEngine.Purchasing.WinRT.dll at Library/ScriptAssemblies/UnityEngine.Purchasing.WinRT.dll not valid. Loading of assembly skipped.
+Assembly UnityEngine.SpatialTracking.Tests.dll at Library/ScriptAssemblies/UnityEngine.SpatialTracking.Tests.dll not valid. Loading of assembly skipped.
+Assembly UnityEngine.UI.Tests.dll at Library/ScriptAssemblies/UnityEngine.UI.Tests.dll not valid. Loading of assembly skipped.
+Refreshing native plugins compatible for Editor in 3.22 ms, found 3 plugins.
+Native extension for Android target not found
+Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
+ScheduleIndexationOnStartup MainProcess:True IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.671 seconds
+Domain Reload Profiling: 1274ms
+	BeginReloadAssembly (240ms)
+		DisableScriptedObjects (14ms)
+		CreateAndSetChildDomain (140ms)
+	RebuildCommonClasses (23ms)
+	RebuildNativeTypeToScriptingClass (8ms)
+	initialDomainReloadingComplete (37ms)
+	LoadAllAssembliesAndSetupDomain (294ms)
+		LoadAssemblies (233ms)
+		AnalyzeDomain (117ms)
+			TypeCache.Refresh (86ms)
+				TypeCache.ScanAssembly (76ms)
+			BuildScriptInfoCaches (28ms)
+			ResolveRequiredComponents (3ms)
+	FinalizeReload (671ms)
+		SetupLoadedEditorAssemblies (0ms)
+			InitializePlatformSupportModulesInManaged (22ms)
+			BeforeProcessingInitializeOnLoad (122ms)
+			ProcessInitializeOnLoadAttributes (285ms)
+			ProcessInitializeOnLoadMethodAttributes (137ms)
+			AfterProcessingInitializeOnLoad (3ms)
+		AwakeInstancesAfterBackupRestoration (13ms)
+(Values over 0.050ms)
+Asset Pipeline Refresh (id=b846ffd7c51539e48b4617e0f8b57fbe): Total: 2.003 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
+	Summary:
+		Imports: total=0 (actual=0, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=916 ms
+		Asset DB Callback time: managed=13 ms, native=10 ms
+		Scripting: domain reloads=1, domain reload time=606 ms, compile time=405 ms, other=50 ms
+		Project Asset Count: scripts=1075, non-scripts=1536
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 0
+	InvokePackagesCallback: 12.087ms
+	ApplyChangesToAssetFolders: 0.409ms
+	Scan: 80.856ms
+	CategorizeScriptCompilationAssets: 16.180ms
+	ProcessAssetsWithTransientArtifactChanges: 27.012ms
+	CategorizeAssets: 12.484ms
+	CompileScripts: 405.464ms
+	ImportOutOfDateAssets: 680.876ms (680.293ms without children)
+		UnloadImportedAssets: 0.100ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.225ms
+		OnDemandSchedulerStart: 0.257ms
+	PostProcessAllAssets: 13.084ms
+		MonoPostProcessAllAssets: 13.046ms
+			WindowAssetPostprocessingWatcher.OnPostprocessAllAssets 4.763ms
+			SyncVS.PostprocessSyncProject 2.013ms
+			SpeedTree9Postprocessor.OnPostprocessAllAssets 0.455ms
+			ReferencedClipsPostProcessor.OnPostprocessAllAssets 0.204ms
+			InputActionAssetPostprocessor.OnPostprocessAllAssets 0.166ms
+			AssetDatabaseCallbacks.OnPostprocessAllAssets 0.116ms
+			TerrainToolbarOverlayPostProcessor.OnPostprocessAllAssets 0.112ms
+			ProjectSettingsPostprocessor.OnPostprocessAllAssets 0.060ms
+			RenderPipelineGlobalSettingsPostprocessor.OnPostprocessAllAssets 0.051ms
+	UnloadStreamsBegin: 0.868ms
+	PersistCurrentRevisions: 0.053ms
+	GenerateScriptTypeHashes: 1.140ms
+	GenerateScriptTypeSerializationHashes: 2.607ms
+	Untracked: 749.407ms
+
+Application.AssetDatabase Initial Refresh End
+Launched and connected shader compiler UnityShaderCompiler.exe after 0.01 seconds
+Scanning for USB devices : 17.372ms
+Initializing Unity extensions:
+[MODES] ModeService[none].Initialize
+[MODES] ModeService[none].LoadModes
+[MODES] Loading mode Default (0) for mode-current-id-rescue-grid
+Unloading 4 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 3832 unused Assets / (2.0 MB). Loaded Objects now: 4441.
+Memory consumption went from 149.2 MB to 147.3 MB.
+Total: 7.701800 ms (FindLiveObjects: 0.223600 ms CreateObjectMapping: 0.119600 ms MarkObjects: 6.523600 ms  DeleteObjects: 0.833200 ms)
+
+[ServicesCore]: To use Unity's dashboard services, you need to link your Unity project to a project ID. To do this, go to Project Settings to select your organization, select your project and then link a project ID. You also need to make sure your organization has access to the required products. Visit https://dashboard.unity3d.com to sign up.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:LogWarning (string,object)
+Unity.Services.Core.Internal.CoreLogger:LogWarning (object) (at ./Library/PackageCache/com.unity.services.core@8ba50f624741/Runtime/Core.Internal/Logging/CoreLogger.cs:15)
+Unity.Services.Core.Editor.ProjectUnlinkBuildWarning:OnPreprocessBuild (UnityEditor.Build.Reporting.BuildReport) (at ./Library/PackageCache/com.unity.services.core@8ba50f624741/Editor/Core/Build/ProjectUnlinkBuildWarning.cs:29)
+UnityEditor.Build.BuildPipelineInterfaces/<>c__DisplayClass17_0:<OnBuildPreProcess>b__1 (UnityEditor.Build.IPreprocessBuildWithReport)
+UnityEditor.Build.BuildPipelineInterfaces:InvokeCallbackInterfacesPair<UnityEditor.Build.IPreprocessBuild, UnityEditor.Build.IPreprocessBuildWithReport> (System.Collections.Generic.List`1<UnityEditor.Build.IPreprocessBuild>,System.Action`1<UnityEditor.Build.IPreprocessBuild>,System.Collections.Generic.List`1<UnityEditor.Build.IPreprocessBuildWithReport>,System.Action`1<UnityEditor.Build.IPreprocessBuildWithReport>,bool)
+UnityEditor.Build.BuildPipelineInterfaces:OnBuildPreProcess (UnityEditor.Build.Reporting.BuildReport)
+UnityEditor.BuildPipeline:BuildPlayerInternal (string[],string,string,UnityEditor.BuildTargetGroup,UnityEditor.BuildTarget,int,UnityEditor.BuildOptions,string[],bool)
+UnityEditor.BuildPipeline:BuildPlayer (UnityEditor.BuildPlayerOptions)
+BuildScripts:ExecuteBuild (UnityEditor.BuildPlayerOptions) (at Assets/Editor/BuildScripts.cs:305)
+BuildScripts/<>c__DisplayClass6_0:<BuildAndroid>b__8 () (at Assets/Editor/BuildScripts.cs:84)
+BuildScripts:WithTemporarySetting<UnityEditor.AndroidArchitecture> (System.Func`1<UnityEditor.AndroidArchitecture>,System.Action`1<UnityEditor.AndroidArchitecture>,UnityEditor.AndroidArchitecture,System.Action) (at Assets/Editor/BuildScripts.cs:426)
+BuildScripts/<>c__DisplayClass6_0:<BuildAndroid>b__5 () (at Assets/Editor/BuildScripts.cs:80)
+BuildScripts:WithTemporarySetting<bool> (System.Func`1<bool>,System.Action`1<bool>,bool,System.Action) (at Assets/Editor/BuildScripts.cs:426)
+BuildScripts/<>c__DisplayClass6_0:<BuildAndroid>b__2 () (at Assets/Editor/BuildScripts.cs:74)
+BuildScripts:WithTemporarySetting<string> (System.Func`1<string>,System.Action`1<string>,string,System.Action) (at Assets/Editor/BuildScripts.cs:426)
+BuildScripts:BuildAndroid () (at Assets/Editor/BuildScripts.cs:68)
+
+(Filename: ./Library/PackageCache/com.unity.services.core@8ba50f624741/Editor/Core/Build/ProjectUnlinkBuildWarning.cs Line: 29)
+
+Start importing ProjectSettings/ProjectSettings.asset using Guid(00000000000000004000000000000000) (LibraryAssetImporter) -> (Import Result ID: 'a4e62f3b6df5e6091535461b2e7af2ac') in 0.00373 seconds [static dependencies only]. Details - ImportResultOutputID=d3ca6db29495033f6ec6c171ea098da8 DependenciesID=b518b8cc42adeda108faebccfd02bd03 StaticDependenciesID=ca1c973dc3dd90873d0893c893efd3b6 
+Start importing ProjectSettings/UnityConnectSettings.asset using Guid(0000000000000000a100000000000000) (LibraryAssetImporter) -> (Import Result ID: '956de973ed8d31b1e1a71a1754b1d75d') in 0.0010872 seconds [static dependencies only]. Details - ImportResultOutputID=774300b76df88929d1cf5f28fecd3c40 DependenciesID=0428d16a55179509c06ad1117274f8e8 StaticDependenciesID=c9f3104d2c2f30b88bfb842211bbcf9a 
+Refreshing native plugins compatible for Editor in 3.16 ms, found 3 plugins.
+Asset Pipeline Refresh (id=4eb30caebda7d3d4a8a29907769b7695): Total: 0.062 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+DisplayProgressbar: Checking prerequisites
+Reporting tool paths:
+ JDK: 'C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\PlaybackEngines\AndroidPlayer\OpenJDK'
+ Android SDK: 'C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK'
+ Android NDK: 'C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\PlaybackEngines\AndroidPlayer\NDK'
+ Gradle: 'C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\PlaybackEngines\AndroidPlayer\Tools\gradle' (Gradle Version: '8.13' Android Plugin Version: '8.10.0')
+Active Input Handling is set to "Both" in Player Settings.
+
+This is not supported on Android and might cause input and performance issues.
+
+To resolve this, select a single active input handling method under Project Settings > Player > Active Input Handling.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+UnityEditor.Android.PostProcessor.Tasks.CheckPrerequisites:ValidateInputHandling () (at /home/bokken/build/output/unity/unity/PlatformDependent/AndroidPlayer/Editor/Managed/PostProcessor/Tasks/CheckPrerequisites.cs:131)
+UnityEditor.Android.PostProcessor.Tasks.CheckPrerequisites:Execute (UnityEditor.Android.PostProcessor.PostProcessorContext) (at /home/bokken/build/output/unity/unity/PlatformDependent/AndroidPlayer/Editor/Managed/PostProcessor/Tasks/CheckPrerequisites.cs:65)
+UnityEditor.Android.PostProcessor.PostProcessRunner:RunAllTasks (UnityEditor.Android.PostProcessor.PostProcessorContext) (at /home/bokken/build/output/unity/unity/PlatformDependent/AndroidPlayer/Editor/Managed/PostProcessor/AndroidPostProcessor.cs:112)
+UnityEditor.Android.PostProcessAndroidPlayer:PrepareForBuild (UnityEditor.BuildOptions,UnityEditor.BuildTarget) (at /home/bokken/build/output/unity/unity/PlatformDependent/AndroidPlayer/Editor/Managed/PostProcessAndroidPlayer.cs:60)
+UnityEditor.Android.AndroidBuildPostprocessor:PrepareForBuild (UnityEditor.BuildPlayerOptions) (at /home/bokken/build/output/unity/unity/PlatformDependent/AndroidPlayer/Editor/Managed/ExtensionModule.cs:1253)
+UnityEditor.PostprocessBuildPlayer:PrepareForBuild (UnityEditor.BuildPlayerOptions)
+UnityEditor.BuildPipeline:BuildPlayerInternal (string[],string,string,UnityEditor.BuildTargetGroup,UnityEditor.BuildTarget,int,UnityEditor.BuildOptions,string[],bool)
+UnityEditor.BuildPipeline:BuildPlayer (UnityEditor.BuildPlayerOptions)
+BuildScripts:ExecuteBuild (UnityEditor.BuildPlayerOptions) (at Assets/Editor/BuildScripts.cs:305)
+BuildScripts/<>c__DisplayClass6_0:<BuildAndroid>b__8 () (at Assets/Editor/BuildScripts.cs:84)
+BuildScripts:WithTemporarySetting<UnityEditor.AndroidArchitecture> (System.Func`1<UnityEditor.AndroidArchitecture>,System.Action`1<UnityEditor.AndroidArchitecture>,UnityEditor.AndroidArchitecture,System.Action) (at Assets/Editor/BuildScripts.cs:426)
+BuildScripts/<>c__DisplayClass6_0:<BuildAndroid>b__5 () (at Assets/Editor/BuildScripts.cs:80)
+BuildScripts:WithTemporarySetting<bool> (System.Func`1<bool>,System.Action`1<bool>,bool,System.Action) (at Assets/Editor/BuildScripts.cs:426)
+BuildScripts/<>c__DisplayClass6_0:<BuildAndroid>b__2 () (at Assets/Editor/BuildScripts.cs:74)
+BuildScripts:WithTemporarySetting<string> (System.Func`1<string>,System.Action`1<string>,string,System.Action) (at Assets/Editor/BuildScripts.cs:426)
+BuildScripts:BuildAndroid () (at Assets/Editor/BuildScripts.cs:68)
+
+(Filename: /home/bokken/build/output/unity/unity/PlatformDependent/AndroidPlayer/Editor/Managed/PostProcessor/Tasks/CheckPrerequisites.cs Line: 131)
+
+Android PostProcess task "Checking prerequisites" took 13.4768 ms
+DisplayProgressbar: Detect Java Development Kit (JDK)
+Android PostProcess task "Detect Java Development Kit (JDK)" took 57.6712 ms
+DisplayProgressbar: Detecting Android SDK
+AndroidSDKTools:
+
+	root          : C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK
+	cmdline-tools : C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK\cmdline-tools\16.0
+	platform-tools: C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK\platform-tools
+	build-tools   : C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK\build-tools\36.0.0
+
+	adb           : C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK\platform-tools\adb.exe
+
+Android PostProcess task "Detecting Android SDK" took 1139.1117 ms
+DisplayProgressbar: Detect Android NDK
+Android PostProcess task "Detect Android NDK" took 0.8692 ms
+Android PostProcess task "Trying to find a suitable Android device" took 0.2777 ms
+DisplayProgressbar: Check resources
+Android PostProcess task "Check resources" took 0.133 ms
+DisplayProgressbar: Check Android Player Settings
+Android PostProcess task "Check Android Player Settings" took 1.2413 ms
+Starting: C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1300b0aESkipCompile.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssembliesAndTypeDB
+WorkingDir: C:/Users/jwmcg/OneDrive/Documents/AI Projects/Live Envirnments/rescue-grid
+DisplayProgressbar: Compiling Scripts
+ExitCode: 0 Duration: 0s61ms
+*** Tundra build success (0.05 seconds), 0 items updated, 4 evaluated
+Asset Pipeline Refresh (id=b9c54fe914d8ae543be5044ee660ce1c): Total: 0.006 seconds - Initiated by RefreshV2(NoUpdateAssetOptions)
+[ScriptCompilation] Requested script compilation because: Recompiling scripts for player build.
+BuildPlayer: start building target 13
+Starting: C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1300b0aPDevDbg.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssembliesAndTypeDB
+WorkingDir: C:/Users/jwmcg/OneDrive/Documents/AI Projects/Live Envirnments/rescue-grid
+Total cache size 268400268
+Total cache size after purge 268400268, took 00:00:00.3465933
+ExitCode: 0 Duration: 0s303ms
+[295/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Rescue.Core.dll
+[304/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.UI.pdb
+[315/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.UI.dll
+[317/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Rescue.Telemetry.dll
+[344/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Rescue.Core.pdb
+[347/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Rescue.Replay.dll
+[361/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Rescue.Telemetry.pdb
+[362/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Rescue.Replay.pdb
+[363/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.SpatialTracking.dll
+[364/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.SpatialTracking.pdb
+[365/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Multiplayer.Center.Common.pdb
+[366/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Analytics.DataPrivacy.pdb
+[367/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Multiplayer.Center.Common.dll
+[368/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.Purchasing.SecurityCore.dll
+[369/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.Purchasing.WinRTCore.dll
+[370/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.Purchasing.SecurityCore.pdb
+[371/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.AI.Navigation.dll
+[372/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.dll
+[373/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.AI.Navigation.pdb
+[374/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.Purchasing.WinRTCore.pdb
+[375/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.InternalAPIEngineBridge.004.dll
+[376/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Analytics.DataPrivacy.dll
+[377/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.pdb
+[378/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.Advertisements.dll
+[379/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.XR.LegacyInputHelpers.dll
+[380/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.InputSystem.dll
+[381/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.Purchasing.Security.dll
+[382/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.Threading.dll
+[383/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.InputSystem.ForUI.dll
+[384/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.Purchasing.dll
+[385/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.Components.dll
+[386/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.Registration.dll
+[387/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.Telemetry.dll
+[388/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.Networking.dll
+[389/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Purchasing.Common.dll
+[390/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.Purchasing.WinRTStub.dll
+[391/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.Purchasing.Codeless.dll
+[392/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Rescue.Content.dll
+[393/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Rescue.Content.pdb
+[394/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.Configuration.dll
+[395/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.Purchasing.Stores.dll
+[396/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Rescue.Unity.dll
+[397/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.Purchasing.AppleMacosStub.dll
+[398/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.Purchasing.AppleStub.dll
+[399/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Analytics.dll
+[400/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.Scheduler.dll
+[401/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.Analytics.dll
+[402/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.Device.dll
+[403/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.TextMeshPro.dll
+[404/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.Purchasing.AppleCore.dll
+[405/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.Environments.Internal.dll
+[406/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Timeline.dll
+[407/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.Purchasing.Codeless.pdb
+[408/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.Internal.dll
+[409/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.Environments.dll
+[410/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.Purchasing.AppleStub.pdb
+[411/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.Purchasing.Stores.pdb
+[412/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.Registration.pdb
+[413/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.Purchasing.AppleMacosStub.pdb
+[414/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.Networking.pdb
+[415/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Rescue.Unity.pdb
+[416/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.Purchasing.pdb
+[417/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.Components.pdb
+[418/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.Purchasing.AppleCore.pdb
+[419/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.Device.pdb
+[420/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.Environments.Internal.pdb
+[421/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.Purchasing.Security.pdb
+[422/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.Environments.pdb
+[423/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.Configuration.pdb
+[424/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.Scheduler.pdb
+[425/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Analytics.pdb
+[426/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.Threading.pdb
+[427/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.Telemetry.pdb
+[428/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Purchasing.Common.pdb
+[429/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.Analytics.pdb
+[430/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.Purchasing.WinRTStub.pdb
+[431/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.TextMeshPro.pdb
+[432/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Services.Core.Internal.pdb
+[433/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.InputSystem.ForUI.pdb
+[434/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.XR.LegacyInputHelpers.pdb
+[435/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.InternalAPIEngineBridge.004.pdb
+[436/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.Timeline.pdb
+[437/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/UnityEngine.Advertisements.pdb
+[438/441    0s] CopyFiles Library/Bee/PlayerScriptAssemblies/Unity.InputSystem.pdb
+*** Tundra build success (0.29 seconds), 84 items updated, 441 evaluated
+Not rebuilding Data files -- no changes
+
+
+Mono dependencies included in the build
+Dependency assembly - Rescue.Replay.dll
+Dependency assembly - System.ObjectModel.dll
+Dependency assembly - System.Windows.dll
+Dependency assembly - Rescue.Telemetry.dll
+Dependency assembly - Microsoft.CSharp.dll
+Dependency assembly - System.ServiceModel.dll
+Dependency assembly - System.Diagnostics.FileVersionInfo.dll
+Dependency assembly - Microsoft.Win32.Registry.AccessControl.dll
+Dependency assembly - Rescue.Unity.dll
+Dependency assembly - Unity.InternalAPIEngineBridge.004.dll
+Dependency assembly - System.Security.Cryptography.OpenSsl.dll
+Dependency assembly - System.Messaging.dll
+Dependency assembly - UnityEngine.Advertisements.dll
+Dependency assembly - System.Net.Http.dll
+Dependency assembly - System.Runtime.InteropServices.dll
+Dependency assembly - Unity.Timeline.dll
+Dependency assembly - System.Diagnostics.Contracts.dll
+Dependency assembly - System.Runtime.Serialization.Json.dll
+Dependency assembly - System.Net.AuthenticationManager.dll
+Dependency assembly - System.Text.RegularExpressions.dll
+Dependency assembly - System.Net.Utilities.dll
+Dependency assembly - System.Net.WebHeaderCollection.dll
+Dependency assembly - System.Reflection.Emit.ILGeneration.dll
+Dependency assembly - System.ServiceModel.Activation.dll
+Dependency assembly - I18N.MidEast.dll
+Dependency assembly - System.Resources.Reader.dll
+Dependency assembly - System.Dynamic.Runtime.dll
+Dependency assembly - System.Runtime.dll
+Dependency assembly - System.Data.DataSetExtensions.dll
+Dependency assembly - System.Net.Security.dll
+Dependency assembly - System.Reflection.Extensions.dll
+Dependency assembly - System.Net.HttpListener.dll
+Dependency assembly - System.Drawing.Primitives.dll
+Dependency assembly - System.Reflection.Emit.dll
+Dependency assembly - UnityEngine.Purchasing.Security.dll
+Dependency assembly - System.Runtime.Numerics.dll
+Dependency assembly - System.ServiceProcess.dll
+Dependency assembly - System.Data.Entity.dll
+Dependency assembly - System.IO.Compression.FileSystem.dll
+Dependency assembly - System.Security.Cryptography.ProtectedData.dll
+Dependency assembly - System.dll
+Dependency assembly - System.Windows.Forms.DataVisualization.dll
+Dependency assembly - Microsoft.Bcl.AsyncInterfaces.dll
+Dependency assembly - System.Diagnostics.Tracing.dll
+Dependency assembly - System.Runtime.Loader.dll
+Dependency assembly - System.Security.Principal.dll
+Dependency assembly - System.ValueTuple.dll
+Dependency assembly - System.IO.FileSystem.Watcher.dll
+Dependency assembly - System.ServiceModel.Internals.dll
+Dependency assembly - System.ComponentModel.Annotations.dll
+Dependency assembly - System.Data.OracleClient.dll
+Dependency assembly - System.Drawing.Design.dll
+Dependency assembly - System.Xml.XmlSerializer.dll
+Dependency assembly - System.Diagnostics.Process.dll
+Dependency assembly - Mono.Data.Tds.dll
+Dependency assembly - System.Text.Encoding.CodePages.dll
+Dependency assembly - Rescue.Core.dll
+Dependency assembly - System.Runtime.Serialization.dll
+Dependency assembly - Unity.Services.Core.Configuration.dll
+Dependency assembly - System.Net.Mail.dll
+Dependency assembly - UnityEngine.Purchasing.WinRTCore.dll
+Dependency assembly - System.IO.Pipes.dll
+Dependency assembly - System.Globalization.Calendars.dll
+Dependency assembly - System.Diagnostics.Debug.dll
+Dependency assembly - System.Reflection.DispatchProxy.dll
+Dependency assembly - System.Resources.Writer.dll
+Dependency assembly - System.Linq.dll
+Dependency assembly - System.Security.Cryptography.Encoding.dll
+Dependency assembly - System.Threading.AccessControl.dll
+Dependency assembly - System.Xml.Xsl.Primitives.dll
+Dependency assembly - System.Security.Cryptography.Primitives.dll
+Dependency assembly - System.Collections.Immutable.dll
+Dependency assembly - System.Collections.Specialized.dll
+Dependency assembly - Mono.Security.dll
+Dependency assembly - System.IdentityModel.dll
+Dependency assembly - System.DirectoryServices.dll
+Dependency assembly - System.IO.FileSystem.DriveInfo.dll
+Dependency assembly - Unity.Analytics.DataPrivacy.dll
+Dependency assembly - System.Configuration.Install.dll
+Dependency assembly - System.Runtime.Caching.dll
+Dependency assembly - System.ComponentModel.Primitives.dll
+Dependency assembly - System.Collections.NonGeneric.dll
+Dependency assembly - I18N.CJK.dll
+Dependency assembly - System.IO.FileSystem.dll
+Dependency assembly - System.Web.Extensions.Design.dll
+Dependency assembly - System.Reflection.Primitives.dll
+Dependency assembly - Microsoft.Win32.Registry.dll
+Dependency assembly - System.Diagnostics.TextWriterTraceListener.dll
+Dependency assembly - System.Json.dll
+Dependency assembly - Unity.Services.Core.Environments.dll
+Dependency assembly - System.Security.Principal.Windows.dll
+Dependency assembly - Unity.Services.Core.Registration.dll
+Dependency assembly - System.Data.SqlClient.dll
+Dependency assembly - netstandard.dll
+Dependency assembly - System.IO.UnmanagedMemoryStream.dll
+Dependency assembly - System.Net.Sockets.dll
+Dependency assembly - System.Net.NetworkInformation.dll
+Dependency assembly - System.Security.Claims.dll
+Dependency assembly - System.ServiceModel.Routing.dll
+Dependency assembly - Unity.Services.Core.Device.dll
+Dependency assembly - System.Security.Cryptography.Cng.dll
+Dependency assembly - UnityEngine.Purchasing.WinRTStub.dll
+Dependency assembly - System.Runtime.InteropServices.WindowsRuntime.dll
+Dependency assembly - System.Threading.Tasks.Extensions.dll
+Dependency assembly - UnityEngine.XR.LegacyInputHelpers.dll
+Dependency assembly - System.ServiceModel.NetTcp.dll
+Dependency assembly - System.Data.Services.dll
+Dependency assembly - System.Xml.XDocument.dll
+Dependency assembly - UnityEngine.Purchasing.Stores.dll
+Dependency assembly - Unity.Services.Core.Internal.dll
+Dependency assembly - Unity.Services.Analytics.dll
+Dependency assembly - System.Xml.Linq.dll
+Dependency assembly - Rescue.Content.dll
+Dependency assembly - System.Net.NameResolution.dll
+Dependency assembly - System.Security.Cryptography.Algorithms.dll
+Dependency assembly - System.ServiceModel.Duplex.dll
+Dependency assembly - System.Memory.dll
+Dependency assembly - System.Net.Primitives.dll
+Dependency assembly - System.Resources.ReaderWriter.dll
+Dependency assembly - System.Threading.Tasks.dll
+Dependency assembly - System.Net.dll
+Dependency assembly - System.Xml.XPath.XmlDocument.dll
+Dependency assembly - UnityEngine.Purchasing.AppleMacosStub.dll
+Dependency assembly - System.ComponentModel.dll
+Dependency assembly - I18N.dll
+Dependency assembly - System.Globalization.dll
+Dependency assembly - System.AppContext.dll
+Dependency assembly - System.Security.Cryptography.Encryption.Aes.dll
+Dependency assembly - System.Runtime.Remoting.dll
+Dependency assembly - System.DirectoryServices.Protocols.dll
+Dependency assembly - System.Diagnostics.TraceSource.dll
+Dependency assembly - System.Data.dll
+Dependency assembly - System.Threading.Thread.dll
+Dependency assembly - System.Security.Cryptography.Encryption.dll
+Dependency assembly - System.Transactions.dll
+Dependency assembly - System.EnterpriseServices.dll
+Dependency assembly - System.Runtime.Serialization.Formatters.dll
+Dependency assembly - System.Diagnostics.StackTrace.dll
+Dependency assembly - System.Buffers.dll
+Dependency assembly - I18N.West.dll
+Dependency assembly - System.Net.ServicePoint.dll
+Dependency assembly - System.Reflection.Emit.Lightweight.dll
+Dependency assembly - System.Drawing.dll
+Dependency assembly - System.Xml.XPath.dll
+Dependency assembly - System.Net.WebSockets.dll
+Dependency assembly - Unity.Multiplayer.Center.Common.dll
+Dependency assembly - System.Net.Ping.dll
+Dependency assembly - System.Runtime.Handles.dll
+Dependency assembly - System.Threading.Overlapped.dll
+Dependency assembly - System.Management.dll
+Dependency assembly - System.Xml.dll
+Dependency assembly - System.Security.Cryptography.Encryption.ECDiffieHellman.dll
+Dependency assembly - System.Data.Services.Client.dll
+Dependency assembly - System.Net.Cache.dll
+Dependency assembly - System.Text.Json.dll
+Dependency assembly - System.Web.RegularExpressions.dll
+Dependency assembly - System.Numerics.Vectors.dll
+Dependency assembly - UnityEngine.UI.dll
+Dependency assembly - Unity.Services.Core.Analytics.dll
+Dependency assembly - System.Runtime.InteropServices.RuntimeInformation.dll
+Dependency assembly - System.ServiceModel.Security.dll
+Dependency assembly - Accessibility.dll
+Dependency assembly - System.Data.Common.dll
+Dependency assembly - System.Configuration.dll
+Dependency assembly - System.IdentityModel.Selectors.dll
+Dependency assembly - System.ServiceModel.Web.dll
+Dependency assembly - System.ComponentModel.DataAnnotations.dll
+Dependency assembly - System.Runtime.CompilerServices.Unsafe.dll
+Dependency assembly - UnityEngine.Purchasing.AppleCore.dll
+Dependency assembly - System.ServiceModel.Primitives.dll
+Dependency assembly - System.Linq.Parallel.dll
+Dependency assembly - System.Security.Cryptography.Pkcs.dll
+Dependency assembly - System.Web.Services.dll
+Dependency assembly - System.Threading.ThreadPool.dll
+Dependency assembly - System.IO.Pipelines.dll
+Dependency assembly - System.Threading.Tasks.Parallel.dll
+Dependency assembly - System.Data.Linq.dll
+Dependency assembly - System.Console.dll
+Dependency assembly - System.Security.Cryptography.Hashing.dll
+Dependency assembly - System.Core.dll
+Dependency assembly - Unity.TextMeshPro.dll
+Dependency assembly - System.Collections.Concurrent.dll
+Dependency assembly - System.Security.Cryptography.DeriveBytes.dll
+Dependency assembly - Mono.Data.Sqlite.dll
+Dependency assembly - Purchasing.Common.dll
+Dependency assembly - Unity.Services.Core.Networking.dll
+Dependency assembly - Microsoft.Win32.Primitives.dll
+Dependency assembly - System.Security.dll
+Dependency assembly - I18N.Other.dll
+Dependency assembly - Unity.InputSystem.ForUI.dll
+Dependency assembly - System.ComponentModel.Composition.dll
+Dependency assembly - System.Numerics.dll
+Dependency assembly - System.Security.Cryptography.RSA.dll
+Dependency assembly - Unity.Services.Core.dll
+Dependency assembly - System.Security.Cryptography.Encryption.ECDsa.dll
+Dependency assembly - Unity.AI.Navigation.dll
+Dependency assembly - System.Xml.XmlDocument.dll
+Dependency assembly - System.Xml.XPath.XDocument.dll
+Dependency assembly - System.Design.dll
+Dependency assembly - System.IO.MemoryMappedFiles.dll
+Dependency assembly - System.Web.Extensions.dll
+Dependency assembly - System.ComponentModel.EventBasedAsync.dll
+Dependency assembly - System.IO.FileSystem.AccessControl.dll
+Dependency assembly - System.Threading.Timer.dll
+Dependency assembly - System.Runtime.DurableInstancing.dll
+Dependency assembly - System.Text.Encoding.dll
+Dependency assembly - System.Threading.dll
+Dependency assembly - UnityEngine.SpatialTracking.dll
+Dependency assembly - Unity.Services.Core.Scheduler.dll
+Dependency assembly - System.Text.Encoding.Extensions.dll
+Dependency assembly - System.Reflection.dll
+Dependency assembly - System.Reflection.Context.dll
+Dependency assembly - System.Security.Cryptography.Hashing.Algorithms.dll
+Dependency assembly - Unity.Services.Core.Threading.dll
+Dependency assembly - System.Net.Http.WebRequest.dll
+Dependency assembly - System.Xaml.dll
+Dependency assembly - System.ServiceModel.Discovery.dll
+Dependency assembly - System.IO.FileSystem.Primitives.dll
+Dependency assembly - System.ComponentModel.TypeConverter.dll
+Dependency assembly - Unity.Services.Core.Components.dll
+Dependency assembly - System.Xml.Serialization.dll
+Dependency assembly - System.ServiceModel.Http.dll
+Dependency assembly - System.Web.DynamicData.dll
+Dependency assembly - System.Security.SecureString.dll
+Dependency assembly - UnityEngine.Purchasing.SecurityCore.dll
+Dependency assembly - UnityEngine.Purchasing.Codeless.dll
+Dependency assembly - Unity.Services.Core.Environments.Internal.dll
+Dependency assembly - System.Net.WebSockets.Client.dll
+Dependency assembly - I18N.Rare.dll
+Dependency assembly - System.Security.AccessControl.dll
+Dependency assembly - System.Web.ApplicationServices.dll
+Dependency assembly - System.Runtime.Serialization.Formatters.Soap.dll
+Dependency assembly - System.IO.Compression.ZipFile.dll
+Dependency assembly - System.Security.Cryptography.RandomNumberGenerator.dll
+Dependency assembly - System.IO.IsolatedStorage.dll
+Dependency assembly - System.Resources.ResourceManager.dll
+Dependency assembly - System.Diagnostics.Tools.dll
+Dependency assembly - System.IO.Compression.dll
+Dependency assembly - Unity.Services.Core.Telemetry.dll
+Dependency assembly - System.Web.dll
+Dependency assembly - Newtonsoft.Json.dll
+Dependency assembly - UnityEngine.Purchasing.AppleStub.dll
+Dependency assembly - System.Runtime.Extensions.dll
+Dependency assembly - System.Diagnostics.TraceEvent.dll
+Dependency assembly - System.Runtime.Serialization.Primitives.dll
+Dependency assembly - System.Collections.dll
+Dependency assembly - System.Linq.Queryable.dll
+Dependency assembly - UnityEngine.Purchasing.dll
+Dependency assembly - System.Windows.Forms.dll
+Dependency assembly - System.ServiceProcess.ServiceController.dll
+Dependency assembly - System.Net.Requests.dll
+Dependency assembly - System.Runtime.CompilerServices.VisualC.dll
+Dependency assembly - System.Runtime.Serialization.Xml.dll
+Dependency assembly - Unity.InputSystem.dll
+Dependency assembly - System.Reflection.TypeExtensions.dll
+Dependency assembly - System.Globalization.Extensions.dll
+Dependency assembly - System.IO.dll
+Dependency assembly - System.Security.Cryptography.Csp.dll
+Dependency assembly - mscorlib.dll
+Dependency assembly - System.Text.Encodings.Web.dll
+Dependency assembly - System.Linq.Expressions.dll
+Dependency assembly - System.Xml.ReaderWriter.dll
+Dependency assembly - System.Security.Cryptography.X509Certificates.dll
+
+DisplayProgressbar: Initializing
+Android PostProcess task "Initializing" took 0.8185 ms
+DisplayProgressbar: Check gradle project collisions
+Android PostProcess task "Check gradle project collisions" took 0.1608 ms
+DisplayProgressbar: Preparing banner
+Android PostProcess task "Preparing banner" took 0.2538 ms
+Total cache size 268400268
+Total cache size after purge 268400268, took 00:00:00.2258901
+Starting: C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --dagfile="Library/Bee/Playerdf8a6a3b.dag" --profile="Library/Bee/backend1.traceevents" Player
+WorkingDir: C:/Users/jwmcg/OneDrive/Documents/AI Projects/Live Envirnments/rescue-grid
+DisplayProgressbar: Incremental Player Build
+ExitCode: 0 Duration: 0s211ms
+DisplayProgressbar: Calling IPostGenerateGradleAndroidProject callbacks
+Calling IPostGenerateGradleAndroidProject callbacks on 'C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary':
+    Call "IAPResolver.IAPAndroidDependencies.OnPostGenerateGradleAndroidProject" from assembly 'IAPResolver'
+Android PostProcess task "Calling IPostGenerateGradleAndroidProject callbacks" took 3.4635 ms
+DisplayProgressbar: Validate Gradle Project
+Android PostProcess task "Validate Gradle Project" took 0.5504 ms
+Android PostProcess task "Unity Services Symbol Upload" took 0.2156 ms
+DisplayProgressbar: Building Gradle project
+Total cache size 268400268
+Total cache size after purge 268400268, took 00:00:00.2345777
+Starting: C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\PlaybackEngines\AndroidPlayer\OpenJDK\bin\java.exe -classpath "C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\PlaybackEngines\AndroidPlayer\Tools\gradle\lib\gradle-launcher-8.13.jar" org.gradle.launcher.GradleMain "-Dorg.gradle.jvmargs=-Xmx4096m" "assembleDebug" 
+WorkingDir: C:/Users/jwmcg/OneDrive/Documents/AI Projects/Live Envirnments/rescue-grid/Library/Bee/Android/Prj/IL2CPP/Gradle\launcher
+Build log was saved at 'C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\Library\Bee\Android\Prj\IL2CPP\Gradle\launcher\build\outputs\logs\unity-assembleDebug-build.log'
+Android PostProcess task "Building Gradle project" took 9718.1894 ms
+DisplayProgressbar: Building Gradle Symbols
+Android PostProcess task "Building Gradle Symbols" took 0.1447 ms
+DisplayProgressbar: Processing Mapping File
+Android PostProcess task "Processing Mapping File" took 0.1745 ms
+DisplayProgressbar: Moving output package(s)
+Copy 'C:/Users/jwmcg/OneDrive/Documents/AI Projects/Live Envirnments/rescue-grid/Library/Bee/Android/Prj/IL2CPP/Gradle\launcher\build\outputs\apk\debug\launcher-debug.apk' -> 
+ 'C:/Users/jwmcg/OneDrive/Documents/AI Projects/Live Envirnments/rescue-grid/Build/Android/rescue-grid-android-dev.apk'
+Android PostProcess task "Moving output package(s)" took 41.7043 ms
+Android PostProcess task "Checking Symbols size" took 0.5531 ms
+Refreshing native plugins compatible for Editor in 3.69 ms, found 3 plugins.
+
+-------------------------------------------------------------------------------
+Build Report
+Information on used Assets is not available, since player data was not rebuilt.
+Do a clean build to view the Asset build report information.
+-------------------------------------------------------------------------------
+Unloading 20 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 108 unused Assets / (0.8 MB). Loaded Objects now: 4464.
+Memory consumption went from 151.7 MB to 151.0 MB.
+Total: 7.039000 ms (FindLiveObjects: 0.148200 ms CreateObjectMapping: 0.051200 ms MarkObjects: 6.580500 ms  DeleteObjects: 0.258300 ms)
+
+DisplayProgressNotification: Build Successful
+Build Finished, Result: Success.
+##utp:{"type":"PlayerBuildInfo","version":2,"phase":"Immediate","time":1777696336419,"processId":32576,"steps":[{"description":"Preprocess Player","duration":21},{"description":"Prepare For Build","duration":1222},{"description":"ProducePlayerScriptAssemblies","duration":562},{"description":"Verify Build setup","duration":111},{"description":"Prepare assets for target platform","duration":2},{"description":"Prepare splash screen","duration":0},{"description":"Run script only build","duration":19},{"description":"Build scripts DLLs","duration":18},{"description":"Postprocess built player","duration":10321}],"duration":12276}
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+Loaded scene 'Temp/__Backupscenes/0.backup'
+	Deserialize:            0.332 ms
+	Integration:            5.494 ms
+	Integration of assets:  0.001 ms
+	Thread Wait Time:       0.007 ms
+	Total Operation Time:   5.834 ms
+Unloading 0 unused Assets / (0 B). Loaded Objects now: 4464.
+Memory consumption went from 150.0 MB to 150.0 MB.
+Total: 6.693000 ms (FindLiveObjects: 0.143900 ms CreateObjectMapping: 0.042700 ms MarkObjects: 6.481800 ms  DeleteObjects: 0.023600 ms)
+
+Build succeeded for Android at 'Build\Android\rescue-grid-android-dev.apk'. Total size: 1428726239 bytes.
+Batchmode quit successfully invoked - shutting down!
+Starting: C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\PlaybackEngines\AndroidPlayer\OpenJDK\bin\java.exe -classpath "C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\PlaybackEngines\AndroidPlayer\Tools\gradle\lib\gradle-launcher-8.13.jar" org.gradle.launcher.GradleMain "-Dorg.gradle.jvmargs=-Xmx4096m" "--stop" 
+WorkingDir: 
+Build log was saved at 'C:\Users\jwmcg\OneDrive\Documents\AI Projects\Live Envirnments\rescue-grid\build\outputs\logs\unity---stop-build.log'
+Killing ADB server in 2.0603299 seconds.
+Start importing ProjectSettings/ProjectSettings.asset using Guid(00000000000000004000000000000000) (LibraryAssetImporter) -> (Import Result ID: 'a4e62f3b6df5e6091535461b2e7af2ac') in 0.0014864 seconds [static dependencies only]. Details - ImportResultOutputID=d3ca6db29495033f6ec6c171ea098da8 DependenciesID=b518b8cc42adeda108faebccfd02bd03 StaticDependenciesID=ca1c973dc3dd90873d0893c893efd3b6 
+Refreshing native plugins compatible for Editor in 2.97 ms, found 3 plugins.
+Asset Pipeline Refresh (id=86833ff6a9f64c4429193f6ecc81038c): Total: 0.043 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input Polling Thread exited.
+Input System module state changed to: Shutdown.
+[Licensing::IpcConnector] LicenseClient-jwmcg-6000.4.3-notifications channel disconnected successfully.
+[Licensing::IpcConnector] LicenseClient-jwmcg-6000.4.3 channel disconnected successfully.
+AcceleratorClientConnectionCallback - disconnected - :0
+Cleanup mono
+CodeReloadManager destroyed
+Exiting batchmode successfully now!
+Exiting without the bug reporter. Application will terminate with return code 0

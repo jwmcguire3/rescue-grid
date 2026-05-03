@@ -12,10 +12,14 @@ namespace Rescue.Unity.Presentation
         private const string BoardStageRootName = "BoardStageRoot";
         private const string DockRootName = "DockRoot";
         private const float PortraitAspectThreshold = 0.8f;
+        private const float BoardPortraitViewportWidthUsage = 0.94f;
+        private const float BoardCellSize = 1.0f;
+        private const float MinimumBoardPortraitScale = 0.72f;
 
         public static readonly Vector3 CameraPortraitPosition = new Vector3(0f, 10.5f, -12.0f);
         public static readonly Quaternion CameraPortraitRotation = Quaternion.Euler(55.0f, 0.0f, 0.0f);
         public const float CameraPortraitOrthographicSize = 8.9f;
+        public const int MobileTargetFrameRate = 60;
 
         public static readonly Vector3 BoardPortraitPosition = new Vector3(0f, -0.25f, -2.3f);
         public static readonly Vector3 BoardPortraitScale = new Vector3(1.1f, 1.1f, 1.1f);
@@ -43,9 +47,49 @@ namespace Rescue.Unity.Presentation
             }
 
             ApplyRuntimeOrientation();
+            ApplyRuntimeFramePacing();
             ApplyCameraLayout(Camera.main ?? FindNamedCamera(MainCameraName), ResolveScreenAspect());
             ApplyStageTransform(BoardStageRootName, BoardPortraitPosition, Quaternion.identity, BoardPortraitScale);
             ApplyStageTransform(DockRootName, DockPortraitPosition, DockPortraitRotation, DockPortraitScale);
+        }
+
+        public static void ApplyBoardStageLayout(int boardWidth)
+        {
+            GameObject? boardStage = GameObject.Find(BoardStageRootName);
+            if (boardStage is null)
+            {
+                return;
+            }
+
+            ApplyStageTransform(
+                BoardStageRootName,
+                BoardPortraitPosition,
+                Quaternion.identity,
+                ResolveBoardPortraitScale(boardWidth, ResolveScreenAspect()));
+        }
+
+        public static Vector3 ResolveBoardPortraitScale(int boardWidth, float aspect)
+        {
+            float defaultUniformScale = BoardPortraitScale.x;
+            if (aspect <= 0f || aspect >= PortraitAspectThreshold || boardWidth <= 0)
+            {
+                return BoardPortraitScale;
+            }
+
+            float usableViewportWidth = CameraPortraitOrthographicSize * 2.0f * aspect * BoardPortraitViewportWidthUsage;
+            float boardWorldWidthAtUnitScale = boardWidth * BoardCellSize;
+            if (usableViewportWidth <= 0f || boardWorldWidthAtUnitScale <= 0f)
+            {
+                return BoardPortraitScale;
+            }
+
+            float fittedUniformScale = usableViewportWidth / boardWorldWidthAtUnitScale;
+            float uniformScale = Mathf.Clamp(
+                Mathf.Min(defaultUniformScale, fittedUniformScale),
+                MinimumBoardPortraitScale,
+                defaultUniformScale);
+
+            return new Vector3(uniformScale, uniformScale, uniformScale);
         }
 
         public static void ApplyCameraLayout(Camera? camera, float aspect)
@@ -82,6 +126,17 @@ namespace Rescue.Unity.Presentation
             Screen.autorotateToPortraitUpsideDown = false;
             Screen.autorotateToLandscapeLeft = false;
             Screen.autorotateToLandscapeRight = false;
+        }
+
+        private static void ApplyRuntimeFramePacing()
+        {
+            if (!Application.isMobilePlatform)
+            {
+                return;
+            }
+
+            QualitySettings.vSyncCount = 0;
+            Application.targetFrameRate = MobileTargetFrameRate;
         }
 
         private static void ApplyStageTransform(string objectName, Vector3 position, Quaternion rotation, Vector3 scale)

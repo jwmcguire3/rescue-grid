@@ -65,6 +65,27 @@ namespace Rescue.Unity.Presentation.Tests
                 Is.GreaterThan(camera.orthographicSize * 2f));
         }
 
+        [Test]
+        public void ResolveBoardPortraitScale_LeavesSmallBoardsAtDefaultScale()
+        {
+            Vector3 scale = PortraitGameSceneLayout.ResolveBoardPortraitScale(6, 9.0f / 20.0f);
+
+            Assert.That(scale, Is.EqualTo(PortraitGameSceneLayout.BoardPortraitScale));
+        }
+
+        [Test]
+        public void ResolveBoardPortraitScale_FitsNineColumnBoardsInNarrowPortrait()
+        {
+            const float aspect = 9.0f / 20.0f;
+
+            Vector3 scale = PortraitGameSceneLayout.ResolveBoardPortraitScale(9, aspect);
+
+            float viewportWidth = PortraitGameSceneLayout.CameraPortraitOrthographicSize * 2.0f * aspect;
+            float boardWidth = 9.0f * scale.x;
+            Assert.That(scale.x, Is.LessThan(PortraitGameSceneLayout.BoardPortraitScale.x));
+            Assert.That(boardWidth, Is.LessThan(viewportWidth));
+        }
+
         private Camera CreateCamera()
         {
             cameraObject = new GameObject("Main Camera");
