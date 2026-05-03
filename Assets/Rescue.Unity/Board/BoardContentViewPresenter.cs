@@ -159,6 +159,7 @@ namespace Rescue.Unity.BoardPresentation
         {
             StopAllCoroutines();
             moveAnimationTokens.Clear();
+            RemoveUntrackedContentObjects();
             SyncImmediate(state);
         }
 
@@ -287,20 +288,48 @@ namespace Rescue.Unity.BoardPresentation
                 }
             }
 
+            string untrackedContent = DescribeUntrackedContentChildren();
+            if (!string.IsNullOrEmpty(untrackedContent))
+            {
+                if (mismatchCount > 0)
+                {
+                    builder.Append("; ");
+                }
+
+                builder.Append("untrackedContent=").Append(untrackedContent);
+                mismatchCount++;
+            }
+
             return mismatchCount == 0 ? "none" : builder.ToString();
         }
 
         public void RebuildContent(GameState state)
         {
+            StopAllCoroutines();
+            ClearContent();
             SyncImmediate(state);
         }
 
         public void ClearContent()
         {
+            if (contentRoot is not null)
+            {
+                for (int i = contentRoot.childCount - 1; i >= 0; i--)
+                {
+                    DestroyContentObject(contentRoot.GetChild(i).gameObject);
+                }
+            }
+
             for (int i = spawnedContent.Count - 1; i >= 0; i--)
             {
                 GameObject? contentObject = spawnedContent[i];
                 if (contentObject == null)
+                {
+                    spawnedContent.RemoveAt(i);
+                    continue;
+                }
+
+                if (contentRoot is not null && contentObject.transform.IsChildOf(contentRoot))
                 {
                     spawnedContent.RemoveAt(i);
                     continue;
@@ -1877,6 +1906,44 @@ namespace Rescue.Unity.BoardPresentation
         private void RemoveUntrackedContentObjects()
         {
             HashSet<GameObject> trackedObjects = new HashSet<GameObject>();
+            CollectTrackedContentObjects(trackedObjects);
+
+            if (contentRoot is not null)
+            {
+                for (int i = contentRoot.childCount - 1; i >= 0; i--)
+                {
+                    GameObject childObject = contentRoot.GetChild(i).gameObject;
+                    if (trackedObjects.Contains(childObject))
+                    {
+                        continue;
+                    }
+
+                    RemoveSpawnedContentReference(childObject);
+                    DestroyContentObject(childObject);
+                }
+            }
+
+            for (int i = spawnedContent.Count - 1; i >= 0; i--)
+            {
+                GameObject? contentObject = spawnedContent[i];
+                if (contentObject == null)
+                {
+                    spawnedContent.RemoveAt(i);
+                    continue;
+                }
+
+                if (trackedObjects.Contains(contentObject))
+                {
+                    continue;
+                }
+
+                spawnedContent.RemoveAt(i);
+                DestroyContentObject(contentObject);
+            }
+        }
+
+        private void CollectTrackedContentObjects(ISet<GameObject> trackedObjects)
+        {
             visualRegistry.AddTrackedObjects(trackedObjects);
 
             foreach (KeyValuePair<string, TargetVisualView> entry in spawnedTargetsById)
@@ -1899,24 +1966,37 @@ namespace Rescue.Unity.BoardPresentation
                     trackedObjects.Add(targetObstacleMarkers[i]);
                 }
             }
+        }
 
-            for (int i = spawnedContent.Count - 1; i >= 0; i--)
+        private string DescribeUntrackedContentChildren()
+        {
+            if (contentRoot is null)
             {
-                GameObject? contentObject = spawnedContent[i];
-                if (contentObject == null)
-                {
-                    spawnedContent.RemoveAt(i);
-                    continue;
-                }
-
-                if (trackedObjects.Contains(contentObject))
-                {
-                    continue;
-                }
-
-                spawnedContent.RemoveAt(i);
-                DestroyContentObject(contentObject);
+                return string.Empty;
             }
+
+            HashSet<GameObject> trackedObjects = new HashSet<GameObject>();
+            CollectTrackedContentObjects(trackedObjects);
+            System.Text.StringBuilder builder = new System.Text.StringBuilder();
+            int untrackedCount = 0;
+            for (int i = 0; i < contentRoot.childCount; i++)
+            {
+                GameObject childObject = contentRoot.GetChild(i).gameObject;
+                if (trackedObjects.Contains(childObject))
+                {
+                    continue;
+                }
+
+                if (untrackedCount > 0)
+                {
+                    builder.Append('|');
+                }
+
+                builder.Append(childObject.name);
+                untrackedCount++;
+            }
+
+            return untrackedCount == 0 ? string.Empty : builder.ToString();
         }
 
         private void RemoveSpawnedContentReference(GameObject contentObject)

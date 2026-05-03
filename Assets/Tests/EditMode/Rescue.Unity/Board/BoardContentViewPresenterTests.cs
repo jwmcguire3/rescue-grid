@@ -1168,6 +1168,77 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Assert.That(harness.ContentRoot.childCount, Is.EqualTo(2));
         }
 
+        [Test]
+        public void BoardContentViewPresenter_SyncImmediateDestroysUntrackedContentRootChildren()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new DebrisTile(DebrisType.A))));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+            GameObject orphan = CreateTrackedGameObject("Content_00_09_Debris_Orphan");
+            orphan.transform.SetParent(harness.ContentRoot, false);
+
+            harness.ContentPresenter.SyncImmediate(state);
+
+            Assert.That(orphan == null, Is.True);
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
+            Assert.That(harness.ContentRoot.GetChild(0).name, Does.Contain("Debris_A"));
+            Assert.That(harness.ContentPresenter.DescribeStateMismatches(state), Is.EqualTo("none"));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_ForceSyncToStateDestroysInFlightContentRemovedFromSpawnedRegistry()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState debrisState = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new DebrisTile(DebrisType.A))));
+            GameState emptyState = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new EmptyTile())));
+
+            harness.GridPresenter.RebuildGrid(debrisState);
+            harness.ContentPresenter.SyncImmediate(debrisState);
+            GameObject? debrisObject = GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 0));
+            Assert.That(debrisObject, Is.Not.Null);
+            GetSpawnedContentList(harness.ContentPresenter).Remove(debrisObject!);
+
+            harness.ContentPresenter.ForceSyncToState(emptyState);
+
+            Assert.That(debrisObject == null, Is.True);
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(0));
+            Assert.That(harness.ContentPresenter.DescribeStateMismatches(emptyState), Is.EqualTo("none"));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_RebuildContentClearsContentRootBeforeRepopulating()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState wideState = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new DebrisTile(DebrisType.A),
+                    new DebrisTile(DebrisType.B))));
+            GameState narrowState = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(
+                    new EmptyTile(),
+                    new DebrisTile(DebrisType.C))));
+
+            harness.GridPresenter.RebuildGrid(wideState);
+            harness.ContentPresenter.SyncImmediate(wideState);
+            GameObject orphan = CreateTrackedGameObject("Content_00_02_Debris_Orphan");
+            orphan.transform.SetParent(harness.ContentRoot, false);
+
+            harness.GridPresenter.RebuildGrid(narrowState);
+            harness.ContentPresenter.RebuildContent(narrowState);
+
+            Assert.That(orphan == null, Is.True);
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(1));
+            Assert.That(harness.ContentRoot.GetChild(0).name, Does.Contain("Debris_C"));
+            Assert.That(GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 0)), Is.Null);
+            Assert.That(GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 1)), Is.Not.Null);
+            Assert.That(harness.ContentPresenter.DescribeStateMismatches(narrowState), Is.EqualTo("none"));
+        }
+
         private PresenterHarness CreateHarness()
         {
             GameObject presenterObject = CreateTrackedGameObject("BoardPresenter");

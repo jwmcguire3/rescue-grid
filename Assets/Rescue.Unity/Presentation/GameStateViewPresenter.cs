@@ -74,7 +74,7 @@ namespace Rescue.Unity.Presentation
             victoryScreen?.Hide();
             lossScreen?.Hide();
             ResolveFxEventRouter()?.ClearSpawnedFx();
-            ForceSyncToState(state, "rebuild", cancelActivePlayback: true, clearPlaybackPlan: true);
+            ForceSyncToState(state, "rebuild", cancelActivePlayback: true, clearPlaybackPlan: true, rebuildContent: true);
         }
 
         public void ApplyActionResult(GameState previousState, ActionInput input, ActionResult result)
@@ -167,7 +167,8 @@ namespace Rescue.Unity.Presentation
             GameState state,
             string context = "authoritative sync",
             bool cancelActivePlayback = true,
-            bool clearPlaybackPlan = true)
+            bool clearPlaybackPlan = true,
+            bool rebuildContent = false)
         {
             if (state is null)
             {
@@ -210,7 +211,15 @@ namespace Rescue.Unity.Presentation
             }
             else
             {
-                boardContent.ForceSyncToState(state);
+                if (rebuildContent)
+                {
+                    boardContent.RebuildContent(state);
+                }
+                else
+                {
+                    boardContent.ForceSyncToState(state);
+                }
+
                 string mismatches = boardContent.DescribeStateMismatches(state);
                 if (!string.Equals(mismatches, "none", System.StringComparison.Ordinal))
                 {
