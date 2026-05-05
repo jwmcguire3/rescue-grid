@@ -1,9 +1,8 @@
 {
-  "name": "Rescue.PlayMode.Tests",
-  "rootNamespace": "Rescue.PlayMode.Tests",
+  "name": "Rescue.Unity.Haptics.EditMode.Tests",
+  "rootNamespace": "Rescue.Unity.Haptics.Tests",
   "references": [
     "Rescue.Core",
-    "Rescue.Content",
     "Rescue.Unity"
   ],
   "includePlatforms": [

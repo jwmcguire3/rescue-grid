@@ -16,9 +16,9 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <EnableDefaultItems>false</EnableDefaultItems>
     <LangVersion>10.0</LangVersion>
-    <RootNamespace>Rescue.PlayMode.Tests</RootNamespace>
+    <RootNamespace>Rescue.Unity.Haptics.Tests</RootNamespace>
     <OutputType>Library</OutputType>
-    <AssemblyName>Rescue.PlayMode.Tests</AssemblyName>
+    <AssemblyName>Rescue.Unity.Haptics.EditMode.Tests</AssemblyName>
     <TargetFramework>netstandard2.1</TargetFramework>
     <BaseDirectory>.</BaseDirectory>
   </PropertyGroup>
@@ -49,21 +49,10 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Tests\PlayMode\Debug\DebugPanelSmokeTests.cs" />
-    <Compile Include="Assets\Tests\PlayMode\Smoke\GameSceneSmokeTests.cs" />
-    <Compile Include="Assets\Tests\PlayMode\Smoke\ActionPlaybackSmokeTests.cs" />
-    <Compile Include="Assets\Tests\PlayMode\Smoke\UndoSmokeTests.cs" />
-    <Compile Include="Assets\Tests\PlayMode\Smoke\SmokeTestHarness.cs" />
-    <Compile Include="Assets\Tests\PlayMode\Smoke\DebugGameplayPlaybackSceneWiringSmokeTests.cs" />
-    <Compile Include="Assets\Tests\PlayMode\Compatibility\IsExternalInit.cs" />
-    <Compile Include="Assets\Tests\PlayMode\Smoke\RetrySmokeTests.cs" />
-    <Compile Include="Assets\Tests\PlayMode\Debug\TunePanelSmokeTests.cs" />
-    <Compile Include="Assets\Tests\PlayMode\Smoke\LifecycleSmokeTests.cs" />
-    <Compile Include="Assets\Tests\PlayMode\Smoke\PerfSmokeTests.cs" />
-    <Compile Include="Assets\Tests\PlayMode\Debug\DebugGameplaySceneSmokeTests.cs" />
+    <Compile Include="Assets\Tests\EditMode\Rescue.Unity\Haptics\HapticEventRouterTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\Tests\PlayMode\Rescue.PlayMode.Tests.asmdef" />
+    <None Include="Assets\Tests\EditMode\Rescue.Unity\Haptics\Rescue.Unity.Haptics.EditMode.Tests.asmdef" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
@@ -1173,7 +1162,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Rescue.Core.csproj" />
-    <ProjectReference Include="Rescue.Content.csproj" />
     <ProjectReference Include="Rescue.Unity.csproj" />
   </ItemGroup>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
