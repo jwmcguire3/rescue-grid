@@ -28,6 +28,8 @@ namespace Rescue.PlayMode.Tests.Smoke
         {
             PlayerPrefs.DeleteKey(AudioSettingsController.MusicVolumePrefsKey);
             PlayerPrefs.DeleteKey(AudioSettingsController.FxVolumePrefsKey);
+            PlayerPrefs.DeleteKey(AudioSettingsController.HapticsEnabledPrefsKey);
+            PlayerPrefs.DeleteKey(AudioSettingsController.HapticsStrengthPrefsKey);
             PlayerPrefs.Save();
 
             if (DebugPanel.Instance is not null)
@@ -45,6 +47,8 @@ namespace Rescue.PlayMode.Tests.Smoke
         {
             PlayerPrefs.DeleteKey(AudioSettingsController.MusicVolumePrefsKey);
             PlayerPrefs.DeleteKey(AudioSettingsController.FxVolumePrefsKey);
+            PlayerPrefs.DeleteKey(AudioSettingsController.HapticsEnabledPrefsKey);
+            PlayerPrefs.DeleteKey(AudioSettingsController.HapticsStrengthPrefsKey);
             PlayerPrefs.Save();
 
             if (DebugPanel.Instance is not null)
@@ -99,20 +103,26 @@ namespace Rescue.PlayMode.Tests.Smoke
             settings.SetOpen(true);
             audioSettings.SetMusicVolume(0.25f);
             audioSettings.SetFxVolume(0.6f);
+            settings.SetHapticsEnabled(false);
             Assert.That(PlayerPrefs.GetFloat(AudioSettingsController.MusicVolumePrefsKey), Is.EqualTo(0.25f).Within(0.001f));
             Assert.That(PlayerPrefs.GetFloat(AudioSettingsController.FxVolumePrefsKey), Is.EqualTo(0.6f).Within(0.001f));
+            Assert.That(PlayerPrefs.GetInt(AudioSettingsController.HapticsEnabledPrefsKey), Is.EqualTo(0));
             settings.SetMusicMuted(true);
             Assert.That(audioSettings.MusicVolume, Is.EqualTo(0.0f).Within(0.001f));
             Assert.That(audioSettings.FxVolume, Is.EqualTo(0.6f).Within(0.001f));
+            Assert.That(audioSettings.HapticsEnabled, Is.False);
             settings.SetMusicMuted(false);
             Assert.That(audioSettings.MusicVolume, Is.EqualTo(0.25f).Within(0.001f));
             Assert.That(audioSettings.FxVolume, Is.EqualTo(0.6f).Within(0.001f));
+            Assert.That(audioSettings.HapticsEnabled, Is.False);
             settings.SetFxMuted(true);
             Assert.That(audioSettings.MusicVolume, Is.EqualTo(0.25f).Within(0.001f));
             Assert.That(audioSettings.FxVolume, Is.EqualTo(0.0f).Within(0.001f));
+            Assert.That(audioSettings.HapticsEnabled, Is.False);
             settings.SetFxMuted(false);
             Assert.That(audioSettings.MusicVolume, Is.EqualTo(0.25f).Within(0.001f));
             Assert.That(audioSettings.FxVolume, Is.EqualTo(0.6f).Within(0.001f));
+            Assert.That(audioSettings.HapticsEnabled, Is.False);
             Assert.That(audioRouter.AudioSource, Is.Not.Null, "Game.unity should provide an AudioSource for routed feedback.");
             Assert.That(musicPlayer.AudioSource, Is.Not.Null, "Game.unity should provide a dedicated AudioSource for music.");
             Assert.That(musicPlayer.AudioSource, Is.Not.SameAs(audioRouter.AudioSource));
@@ -124,6 +134,7 @@ namespace Rescue.PlayMode.Tests.Smoke
             AudioSettingsController reloadedSettings = FindRequired<AudioSettingsController>();
             Assert.That(reloadedSettings.MusicVolume, Is.EqualTo(0.25f).Within(0.001f));
             Assert.That(reloadedSettings.FxVolume, Is.EqualTo(0.6f).Within(0.001f));
+            Assert.That(reloadedSettings.HapticsEnabled, Is.False);
         }
 
         [UnityTest]

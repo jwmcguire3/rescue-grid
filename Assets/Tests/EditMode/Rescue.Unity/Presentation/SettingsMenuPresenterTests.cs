@@ -63,6 +63,8 @@ namespace Rescue.Unity.Presentation.Tests
             Slider? musicSlider = root.Q<Slider>("settings-music-slider");
             Slider? fxSlider = root.Q<Slider>("settings-fx-slider");
             Slider? hapticsStrengthSlider = root.Q<Slider>("settings-haptics-strength-slider");
+            Toggle? hapticsToggle = root.Q<Toggle>("settings-haptics-toggle");
+            Label? hapticsStrengthLabel = root.Q<Label>("settings-haptics-strength-row-label");
 
             Assert.That(root.Q<Button>("settings-toggle-button"), Is.Not.Null);
             Assert.That(root.Q<Button>("settings-resume-button"), Is.Not.Null);
@@ -70,8 +72,12 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(root.Q<DropdownField>("settings-level-dropdown"), Is.Not.Null);
             Assert.That(root.Q<Toggle>("settings-mute-music-toggle"), Is.Not.Null);
             Assert.That(root.Q<Toggle>("settings-mute-fx-toggle"), Is.Not.Null);
-            Assert.That(root.Q<Toggle>("settings-haptics-toggle"), Is.Not.Null);
+            Assert.That(hapticsToggle, Is.Not.Null);
+            Assert.That(hapticsToggle!.label, Is.EqualTo("Vibrations"));
+            Assert.That(hapticsToggle.value, Is.True);
             Assert.That(hapticsStrengthSlider, Is.Not.Null);
+            Assert.That(hapticsStrengthLabel, Is.Not.Null);
+            Assert.That(hapticsStrengthLabel!.text, Is.EqualTo("Strength"));
             Assert.That(root.Q<Label>("settings-music-slider-value-label"), Is.Not.Null);
             Assert.That(root.Q<Label>("settings-fx-slider-value-label"), Is.Not.Null);
             Assert.That(root.Q<Label>("settings-haptics-strength-slider-value-label"), Is.Not.Null);
@@ -121,17 +127,25 @@ namespace Rescue.Unity.Presentation.Tests
             presenter.SetOpen(true);
             presenter.SetHapticsEnabled(false);
             VisualElement root = RootElement();
-            root.Q<Slider>("settings-haptics-strength-slider")!.value = 0.72f;
+            Slider hapticsStrengthSlider = root.Q<Slider>("settings-haptics-strength-slider")!;
+            VisualElement hapticsStrengthRow = root.Q<VisualElement>("settings-haptics-strength-row")!;
 
             Assert.That(audioSettings.MusicVolume, Is.EqualTo(0.37f).Within(0.001f));
             Assert.That(audioSettings.FxVolume, Is.EqualTo(0.62f).Within(0.001f));
             Assert.That(audioSettings.HapticsEnabled, Is.False);
-            Assert.That(audioSettings.HapticsStrength, Is.EqualTo(0.72f).Within(0.001f));
+            Assert.That(PlayerPrefs.GetInt(AudioSettingsController.HapticsEnabledPrefsKey), Is.EqualTo(0));
+            Assert.That(audioSettings.HapticsStrength, Is.EqualTo(0.48f).Within(0.001f));
             Assert.That(root.Q<Toggle>("settings-haptics-toggle")!.value, Is.False);
+            Assert.That(root.Q<Toggle>("settings-haptics-toggle")!.label, Is.EqualTo("Vibrations"));
+            Assert.That(hapticsStrengthSlider.enabledSelf, Is.False);
+            Assert.That(hapticsStrengthRow.style.opacity.value, Is.EqualTo(0.45f).Within(0.001f));
 
             presenter.SetHapticsEnabled(true);
             Assert.That(audioSettings.HapticsEnabled, Is.True);
+            Assert.That(PlayerPrefs.GetInt(AudioSettingsController.HapticsEnabledPrefsKey), Is.EqualTo(1));
             Assert.That(root.Q<Toggle>("settings-haptics-toggle")!.value, Is.True);
+            Assert.That(hapticsStrengthSlider.enabledSelf, Is.True);
+            Assert.That(hapticsStrengthRow.style.opacity.value, Is.EqualTo(1.0f).Within(0.001f));
         }
 
         [Test]

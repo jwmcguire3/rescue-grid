@@ -33,6 +33,7 @@ namespace Rescue.Unity.Presentation
         private Slider? musicSlider;
         private Slider? fxSlider;
         private Slider? hapticsStrengthSlider;
+        private VisualElement? hapticsStrengthRow;
         private Toggle? muteMusicToggle;
         private Toggle? muteFxToggle;
         private Toggle? hapticsToggle;
@@ -489,14 +490,14 @@ namespace Rescue.Unity.Presentation
             muteRow.Add(muteMusicToggle);
             muteRow.Add(muteFxToggle);
 
-            hapticsToggle = CreateMuteToggle("settings-haptics-toggle", "Haptics");
+            hapticsToggle = CreateMuteToggle("settings-haptics-toggle", "Vibrations");
             hapticsToggle.RegisterValueChangedCallback(evt => SetHapticsEnabled(evt.newValue));
             hapticsToggle.style.marginTop = 4f;
             hapticsToggle.style.marginBottom = 4f;
 
-            VisualElement hapticsStrengthRow = CreateSliderRow(
+            hapticsStrengthRow = CreateSliderRow(
                 "settings-haptics-strength-row",
-                "Touch",
+                "Strength",
                 "settings-haptics-strength-slider",
                 out hapticsStrengthSlider,
                 out hapticsStrengthValueLabel);
@@ -686,6 +687,12 @@ namespace Rescue.Unity.Presentation
             muteMusicToggle?.SetValueWithoutNotify(settings.MusicVolume <= 0f);
             muteFxToggle?.SetValueWithoutNotify(settings.FxVolume <= 0f);
             hapticsToggle?.SetValueWithoutNotify(settings.HapticsEnabled);
+            hapticsStrengthSlider?.SetEnabled(settings.HapticsEnabled);
+            if (hapticsStrengthRow is not null)
+            {
+                hapticsStrengthRow.style.opacity = settings.HapticsEnabled ? 1.0f : 0.45f;
+            }
+
             UpdateValueLabel(musicValueLabel, settings.MusicVolume);
             UpdateValueLabel(fxValueLabel, settings.FxVolume);
             UpdateValueLabel(hapticsStrengthValueLabel, settings.HapticsStrength);
