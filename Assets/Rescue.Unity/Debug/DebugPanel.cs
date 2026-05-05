@@ -37,6 +37,25 @@ namespace Rescue.Unity.Debugging
         private static readonly string[] SpeedChoices = { "0.25x", "0.5x", "1x", "2x", "4x" };
         private static readonly string[] AssistanceChoices = { "Current", "0", "1" };
         private static readonly string[] EmergencyChoices = { "Auto", "On", "Off" };
+        private static readonly string[] PacketLevelIds =
+        {
+            "L00",
+            "L01",
+            "L02",
+            "L03",
+            "L04",
+            "L05",
+            "L06",
+            "L07",
+            "L08",
+            "L09",
+            "L10",
+            "L11",
+            "L12",
+            "L13",
+            "L14",
+            "L15",
+        };
         private static readonly DebrisType[] OverflowDockPattern =
         {
             DebrisType.B,
@@ -418,16 +437,23 @@ namespace Rescue.Unity.Debugging
 
             if (_telemetryLogger is not null && _telemetrySession is not null)
             {
-                TelemetryHooks.OnAction(
-                    _currentLevelId,
-                    stateBefore,
-                    new ActionInput(nextTap.Value),
-                    result,
-                    (ulong)(uint)_currentSeed,
-                    actionStartMs,
-                    actionEndMs,
-                    _telemetrySession,
-                    _telemetryLogger);
+                try
+                {
+                    TelemetryHooks.OnAction(
+                        _currentLevelId,
+                        stateBefore,
+                        new ActionInput(nextTap.Value),
+                        result,
+                        (ulong)(uint)_currentSeed,
+                        actionStartMs,
+                        actionEndMs,
+                        _telemetrySession,
+                        _telemetryLogger);
+                }
+                catch (Exception ex) when (IsTelemetryUnavailable(ex))
+                {
+                    DisableTelemetryAfterFailure(ex);
+                }
             }
 
             string? capturedLossReplayPath = CaptureLossReplayIfNeeded(result.Outcome);
@@ -936,19 +962,59 @@ namespace Rescue.Unity.Debugging
         private void StartTelemetrySession(GameState state, string levelId, int seed)
         {
             _telemetryLogger?.Dispose();
+            _telemetryLogger = null;
+            _telemetrySession = null;
+
+#if UNITY_ANDROID && !UNITY_EDITOR
+            UnityEngine.Debug.LogWarning(
+                "DebugPanel telemetry is disabled on Android dev builds because the current telemetry JSON backend is not AOT-safe.");
+            return;
+#else
 
             string sessionId = DateTime.UtcNow.ToString("yyyyMMddHHmmss") + "_" + Guid.NewGuid().ToString("N")[..6];
             string logPath = Path.Combine(
                 Application.persistentDataPath, "telemetry", sessionId + ".jsonl");
 
-            TelemetryConfig config = TelemetryConfig.DevDefaults;
-            _telemetryLogger = new TelemetryLogger(logPath, config);
+            try
+            {
+                TelemetryConfig config = TelemetryConfig.DevDefaults;
+                _telemetryLogger = new TelemetryLogger(logPath, config);
 
-            long nowMs = (long)(Time.realtimeSinceStartupAsDouble * 1000.0);
-            _lastActionEndMs = nowMs;
-            _telemetrySession = new TelemetrySessionState { LevelStartMs = nowMs };
+                long nowMs = (long)(Time.realtimeSinceStartupAsDouble * 1000.0);
+                _lastActionEndMs = nowMs;
+                _telemetrySession = new TelemetrySessionState { LevelStartMs = nowMs };
 
-            TelemetryHooks.OnLevelStart(levelId, (ulong)(uint)seed, state, nowMs, _telemetryLogger);
+                TelemetryHooks.OnLevelStart(levelId, (ulong)(uint)seed, state, nowMs, _telemetryLogger);
+            }
+            catch (Exception ex) when (IsTelemetryUnavailable(ex))
+            {
+                DisableTelemetryAfterFailure(ex);
+            }
+#endif
+        }
+
+        private void DisableTelemetryAfterFailure(Exception ex)
+        {
+            _telemetryLogger?.Dispose();
+            _telemetryLogger = null;
+            _telemetrySession = null;
+            UnityEngine.Debug.LogWarning($"DebugPanel telemetry disabled after startup/action failure: {ex.GetType().Name}: {ex.Message}");
+        }
+
+        private static bool IsTelemetryUnavailable(Exception ex)
+        {
+            Exception? current = ex;
+            while (current is not null)
+            {
+                if (current is PlatformNotSupportedException || current is NotSupportedException)
+                {
+                    return true;
+                }
+
+                current = current.InnerException;
+            }
+
+            return false;
         }
 
         private void ClearReplayState()
@@ -1274,7 +1340,7 @@ namespace Rescue.Unity.Debugging
             RegisterPlaybackSpeedSlider(_playbackTargetSpeedSlider, _playbackTargetSpeedValue, ActionPlaybackSettings.DefaultGroupSpeedMultiplier);
             RegisterPlaybackSpeedSlider(_playbackHazardSpeedSlider, _playbackHazardSpeedValue, ActionPlaybackSettings.DefaultGroupSpeedMultiplier);
             RegisterPlaybackSpeedSlider(_playbackTerminalSpeedSlider, _playbackTerminalSpeedValue, ActionPlaybackSettings.DefaultGroupSpeedMultiplier);
-            RegisterPlaybackSpeedSlider(_playbackGravitySpawnSpeedSlider, _playbackGravitySpawnSpeedValue, ActionPlaybackSettings.DefaultGroupSpeedMultiplier);
+            RegisterPlaybackSpeedSlider(_playbackGravitySpawnSpeedSlider, _playbackGravitySpawnSpeedValue, ActionPlaybackSettings.DefaultGravitySpawnSpeedMultiplier);
             RegisterPlaybackSpeedSlider(_fxPlaybackSpeedSlider, _fxPlaybackSpeedValue, FxEventRouter.DefaultFxPlaybackSpeedMultiplier);
 
             if (_playAllFxButton is not null)
@@ -2047,6 +2113,13 @@ namespace Rescue.Unity.Debugging
             HashSet<string> ids = new HashSet<string>(StringComparer.Ordinal);
 
             AddIdsFromDirectory(Path.Combine(Application.dataPath, "StreamingAssets", "Levels"), ids);
+            if (ids.Count == 0)
+            {
+                for (int i = 0; i < PacketLevelIds.Length; i++)
+                {
+                    ids.Add(PacketLevelIds[i]);
+                }
+            }
 
             List<string> sorted = new List<string>(ids);
             sorted.Sort(StringComparer.Ordinal);

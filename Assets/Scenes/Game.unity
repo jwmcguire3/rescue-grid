@@ -252,7 +252,7 @@ MonoBehaviour:
     targetSpeedMultiplier: 1
     hazardSpeedMultiplier: 1
     terminalSpeedMultiplier: 1
-    gravitySpawnSpeedMultiplier: 1
+    gravitySpawnSpeedMultiplier: 4
     removeDurationSeconds: 0.1
     breakBlockerOrRevealDurationSeconds: 0.1
     dockFeedbackDurationSeconds: 0.1

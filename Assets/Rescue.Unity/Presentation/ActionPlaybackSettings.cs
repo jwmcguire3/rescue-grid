@@ -32,6 +32,7 @@ namespace Rescue.Unity.Presentation
         public const float DefaultVineGrowthDurationSeconds = 0.18f;
         public const float DefaultPlaybackSpeedMultiplier = 0.5f;
         public const float DefaultGroupSpeedMultiplier = 1.0f;
+        public const float DefaultGravitySpawnSpeedMultiplier = 4.0f;
         public const float MinPlaybackSpeedMultiplier = 0.10f;
         public const float MaxPlaybackSpeedMultiplier = 8.0f;
 
@@ -43,7 +44,7 @@ namespace Rescue.Unity.Presentation
         [SerializeField] private float targetSpeedMultiplier = DefaultGroupSpeedMultiplier;
         [SerializeField] private float hazardSpeedMultiplier = DefaultGroupSpeedMultiplier;
         [SerializeField] private float terminalSpeedMultiplier = DefaultGroupSpeedMultiplier;
-        [SerializeField] private float gravitySpawnSpeedMultiplier = DefaultGroupSpeedMultiplier;
+        [SerializeField] private float gravitySpawnSpeedMultiplier = DefaultGravitySpawnSpeedMultiplier;
         [SerializeField] private float removeDurationSeconds = DefaultRemoveDurationSeconds;
         [SerializeField] private float breakBlockerOrRevealDurationSeconds = DefaultBreakBlockerOrRevealDurationSeconds;
         [SerializeField] private float blockerBreakCascadeStaggerSeconds = DefaultBlockerBreakCascadeStaggerSeconds;
@@ -212,7 +213,7 @@ namespace Rescue.Unity.Presentation
 
         private float ScaleGravitySpawnDuration(float seconds)
         {
-            return seconds / GravitySpawnSpeedMultiplier;
+            return seconds / (PlaybackSpeedMultiplier * GravitySpawnSpeedMultiplier);
         }
 
         private static float ClampSpeedMultiplier(float multiplier)

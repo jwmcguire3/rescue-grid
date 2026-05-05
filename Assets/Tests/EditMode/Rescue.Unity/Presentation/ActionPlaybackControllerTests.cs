@@ -149,8 +149,8 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(GetStepDuration(controller, new DockWarningChanged(DockWarningLevel.Safe, DockWarningLevel.Caution)), Is.EqualTo(0.84f));
             Assert.That(GetStepDuration(controller, new DockWarningChanged(DockWarningLevel.Caution, DockWarningLevel.Acute)), Is.EqualTo(0.66f));
             Assert.That(GetStepDuration(controller, new DockJamTriggered(OverflowCount: 1)), Is.EqualTo(1.22f));
-            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.Gravity), Is.EqualTo(0.18f));
-            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.Spawn), Is.EqualTo(0.13f));
+            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.Gravity), Is.EqualTo(0.09f));
+            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.Spawn), Is.EqualTo(0.065f));
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.TargetExtract), Is.EqualTo(0.32f));
             Assert.That(GetStepDuration(controller, new Won("pup-1", TotalActions: 3, ExtractedTargetOrder: ImmutableArray.Create("pup-1"))), Is.EqualTo(1.46f));
             Assert.That(GetStepDuration(controller, new Lost(ActionOutcome.LossDockOverflow)), Is.EqualTo(1.62f));
@@ -159,7 +159,7 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
-        public void ActionPlaybackController_SpeedMultiplierScalesGameplayStepsButNotGravityOrSpawn()
+        public void ActionPlaybackController_SpeedMultiplierScalesAllPlaybackSteps()
         {
             ActionPlaybackSettings settings = CreateSettings(playbackEnabled: true, yieldBetweenSteps: false);
             SetPrivateField(settings, "removeDurationSeconds", 0.20f);
@@ -169,8 +169,8 @@ namespace Rescue.Unity.Presentation.Tests
             ActionPlaybackController controller = CreateController(settings);
 
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.RemoveGroup), Is.EqualTo(0.05f));
-            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.Gravity), Is.EqualTo(0.18f));
-            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.Spawn), Is.EqualTo(0.13f));
+            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.Gravity), Is.EqualTo(0.18f / (4.0f * ActionPlaybackSettings.DefaultGravitySpawnSpeedMultiplier)));
+            Assert.That(GetStepDuration(controller, ActionPlaybackStepType.Spawn), Is.EqualTo(0.13f / (4.0f * ActionPlaybackSettings.DefaultGravitySpawnSpeedMultiplier)));
         }
 
         [Test]
@@ -232,7 +232,7 @@ namespace Rescue.Unity.Presentation.Tests
 
             object? feedbackPresenter = GetPrivateFieldValue(harness.DockPresenter, "feedbackPresenter");
             Assert.That(handled, Is.True);
-            Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "gravityDurationSeconds"), Is.EqualTo(0.19f));
+            Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "gravityDurationSeconds"), Is.EqualTo(0.095f));
             Assert.That(GetPrivateFieldValue(harness.WaterPresenter, "forecastPulseDurationSeconds"), Is.EqualTo(0.42f));
             Assert.That(feedbackPresenter, Is.Not.Null);
             Assert.That(GetPropertyValue(feedbackPresenter!, "InsertDuration"), Is.EqualTo(0.18f));

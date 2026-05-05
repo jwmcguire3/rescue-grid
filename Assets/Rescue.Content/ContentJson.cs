@@ -110,11 +110,6 @@ namespace Rescue.Content
                     return;
                 }
 
-                if (TryInitializeSystemTextJson())
-                {
-                    return;
-                }
-
                 InitializeNewtonsoftJson();
             }
         }

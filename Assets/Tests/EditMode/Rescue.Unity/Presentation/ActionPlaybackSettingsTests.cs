@@ -36,7 +36,7 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(settings.TargetSpeedMultiplier, Is.EqualTo(ActionPlaybackSettings.DefaultGroupSpeedMultiplier));
             Assert.That(settings.HazardSpeedMultiplier, Is.EqualTo(ActionPlaybackSettings.DefaultGroupSpeedMultiplier));
             Assert.That(settings.TerminalSpeedMultiplier, Is.EqualTo(ActionPlaybackSettings.DefaultGroupSpeedMultiplier));
-            Assert.That(settings.GravitySpawnSpeedMultiplier, Is.EqualTo(ActionPlaybackSettings.DefaultGroupSpeedMultiplier));
+            Assert.That(settings.GravitySpawnSpeedMultiplier, Is.EqualTo(ActionPlaybackSettings.DefaultGravitySpawnSpeedMultiplier));
         }
 
         [Test]
@@ -52,8 +52,8 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(settings.DockWarningCautionDurationSeconds, Is.EqualTo(ScaleDefaultGameplay(ActionPlaybackSettings.DefaultDockWarningCautionDurationSeconds)));
             Assert.That(settings.DockWarningAcuteDurationSeconds, Is.EqualTo(ScaleDefaultGameplay(ActionPlaybackSettings.DefaultDockWarningAcuteDurationSeconds)));
             Assert.That(settings.DockJamFeedbackDurationSeconds, Is.EqualTo(ScaleDefaultGameplay(ActionPlaybackSettings.DefaultDockJamFeedbackDurationSeconds)));
-            Assert.That(settings.GravityDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultGravityDurationSeconds));
-            Assert.That(settings.SpawnDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultSpawnDurationSeconds));
+            Assert.That(settings.GravityDurationSeconds, Is.EqualTo(ScaleDefaultGravitySpawn(ActionPlaybackSettings.DefaultGravityDurationSeconds)));
+            Assert.That(settings.SpawnDurationSeconds, Is.EqualTo(ScaleDefaultGravitySpawn(ActionPlaybackSettings.DefaultSpawnDurationSeconds)));
             Assert.That(settings.BoardPieceLandingSquashXScale, Is.EqualTo(ActionPlaybackSettings.DefaultBoardPieceLandingSquashXScale));
             Assert.That(settings.BoardPieceLandingSquashYScale, Is.EqualTo(ActionPlaybackSettings.DefaultBoardPieceLandingSquashYScale));
             Assert.That(settings.BoardPieceLandingBounceDistance, Is.EqualTo(ActionPlaybackSettings.DefaultBoardPieceLandingBounceDistance));
@@ -69,8 +69,8 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(settings.BreakBlockerOrRevealDurationSeconds, Is.InRange(0.18f, 0.22f));
             Assert.That(settings.DockInsertFeedbackDurationSeconds, Is.InRange(0.14f, 0.18f));
             Assert.That(settings.DockClearFeedbackDurationSeconds, Is.InRange(0.14f, 0.18f));
-            Assert.That(settings.GravityDurationSeconds, Is.InRange(0.12f, 0.20f));
-            Assert.That(settings.SpawnDurationSeconds, Is.InRange(0.10f, 0.16f));
+            Assert.That(settings.GravityDurationSeconds, Is.InRange(0.07f, 0.08f));
+            Assert.That(settings.SpawnDurationSeconds, Is.InRange(0.055f, 0.065f));
             Assert.That(settings.TargetExtractDurationSeconds, Is.InRange(0.22f, 0.26f));
             Assert.That(settings.WinFxDurationSeconds, Is.InRange(1.15f, 1.25f));
             Assert.That(settings.LossFxDurationSeconds, Is.InRange(1.15f, 1.25f));
@@ -78,7 +78,7 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
-        public void ActionPlaybackSettings_SpeedMultiplierScalesGameplayDurationsButNotGravityOrSpawn()
+        public void ActionPlaybackSettings_SpeedMultiplierScalesAllPlaybackDurations()
         {
             ActionPlaybackSettings settings = new ActionPlaybackSettings();
 
@@ -87,8 +87,8 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(settings.PlaybackSpeedMultiplier, Is.EqualTo(2.0f));
             Assert.That(settings.RemoveDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultRemoveDurationSeconds / 2.0f));
             Assert.That(settings.BlockerBreakCascadeStaggerSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultBlockerBreakCascadeStaggerSeconds / 2.0f));
-            Assert.That(settings.GravityDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultGravityDurationSeconds));
-            Assert.That(settings.SpawnDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultSpawnDurationSeconds));
+            Assert.That(settings.GravityDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultGravityDurationSeconds / (2.0f * ActionPlaybackSettings.DefaultGravitySpawnSpeedMultiplier)));
+            Assert.That(settings.SpawnDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultSpawnDurationSeconds / (2.0f * ActionPlaybackSettings.DefaultGravitySpawnSpeedMultiplier)));
             Assert.That(settings.LossFxDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultLossFxDurationSeconds / 2.0f));
             Assert.That(settings.WaterForecastPulseDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultWaterForecastPulseDurationSeconds / 2.0f));
         }
@@ -150,6 +150,11 @@ namespace Rescue.Unity.Presentation.Tests
         private static float ScaleDefaultGameplay(float seconds)
         {
             return seconds / ActionPlaybackSettings.DefaultPlaybackSpeedMultiplier;
+        }
+
+        private static float ScaleDefaultGravitySpawn(float seconds)
+        {
+            return seconds / (ActionPlaybackSettings.DefaultPlaybackSpeedMultiplier * ActionPlaybackSettings.DefaultGravitySpawnSpeedMultiplier);
         }
     }
 }

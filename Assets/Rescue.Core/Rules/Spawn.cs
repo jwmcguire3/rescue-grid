@@ -11,6 +11,32 @@ namespace Rescue.Core.Rules
         double EffectiveAssistanceChance,
         bool IsEmergency);
 
+    public enum SpawnRefillDiagnosticReason
+    {
+        ReachableSpawn,
+        BlockedAbove,
+        RescuePathReserved,
+        TargetBarrier,
+        FloodedRow,
+        GravityUnreachable,
+    }
+
+    public readonly record struct SpawnRefillDiagnostic(
+        TileCoord Coord,
+        SpawnRefillDiagnosticReason Reason)
+    {
+        public string ReasonCode => Reason switch
+        {
+            SpawnRefillDiagnosticReason.ReachableSpawn => "reachable_spawn",
+            SpawnRefillDiagnosticReason.BlockedAbove => "blocked_above",
+            SpawnRefillDiagnosticReason.RescuePathReserved => "rescue_path_reserved",
+            SpawnRefillDiagnosticReason.TargetBarrier => "target_barrier",
+            SpawnRefillDiagnosticReason.FloodedRow => "flooded_row",
+            SpawnRefillDiagnosticReason.GravityUnreachable => "gravity_unreachable",
+            _ => "unknown",
+        };
+    }
+
     internal enum RoutePairQuality
     {
         None,
@@ -54,6 +80,62 @@ namespace Rescue.Core.Rules
         public static SpawnBias ComputeSpawnBias(GameState state, LevelConfig config)
         {
             return ComputeSpawnBias(state, config, state.DebugSpawnOverride, spawnCoord: null);
+        }
+
+        public static ImmutableArray<SpawnRefillDiagnostic> DiagnoseRefillGaps(Board board, WaterState water)
+        {
+            if (board is null)
+            {
+                throw new ArgumentNullException(nameof(board));
+            }
+
+            ImmutableArray<SpawnRefillDiagnostic>.Builder diagnostics = ImmutableArray.CreateBuilder<SpawnRefillDiagnostic>();
+            for (int row = 0; row < board.Height; row++)
+            {
+                for (int col = 0; col < board.Width; col++)
+                {
+                    TileCoord coord = new TileCoord(row, col);
+                    SpawnRefillDiagnostic? diagnostic = DiagnoseRefillGap(board, water, coord);
+                    if (diagnostic.HasValue)
+                    {
+                        diagnostics.Add(diagnostic.Value);
+                    }
+                }
+            }
+
+            return diagnostics.ToImmutable();
+        }
+
+        public static SpawnRefillDiagnostic? DiagnoseRefillGap(Board board, WaterState water, TileCoord coord)
+        {
+            if (board is null)
+            {
+                throw new ArgumentNullException(nameof(board));
+            }
+
+            if (!BoardHelpers.InBounds(board, coord))
+            {
+                throw new ArgumentOutOfRangeException(nameof(coord), "Coordinate is outside the board.");
+            }
+
+            int dryHeight = board.Height - water.FloodedRows;
+            Tile tile = BoardHelpers.GetTile(board, coord);
+            if (coord.Row >= dryHeight || tile is FloodedTile)
+            {
+                return new SpawnRefillDiagnostic(coord, SpawnRefillDiagnosticReason.FloodedRow);
+            }
+
+            if (tile is RescuePathTile)
+            {
+                return new SpawnRefillDiagnostic(coord, SpawnRefillDiagnosticReason.RescuePathReserved);
+            }
+
+            if (tile is not EmptyTile)
+            {
+                return null;
+            }
+
+            return new SpawnRefillDiagnostic(coord, ClassifyEmptyRefillGap(board, water, coord));
         }
 
         internal static SpawnBias ComputeSpawnBias(GameState state, LevelConfig config, TileCoord? spawnCoord)
@@ -267,6 +349,44 @@ namespace Rescue.Core.Rules
             }
 
             return false;
+        }
+
+        private static SpawnRefillDiagnosticReason ClassifyEmptyRefillGap(Board board, WaterState water, TileCoord coord)
+        {
+            int dryHeight = board.Height - water.FloodedRows;
+            bool passedRescuePath = false;
+            for (int row = 0; row <= coord.Row && row < dryHeight; row++)
+            {
+                Tile scanTile = BoardHelpers.GetTile(board, new TileCoord(row, coord.Col));
+                if (scanTile is RescuePathTile)
+                {
+                    passedRescuePath = true;
+                    continue;
+                }
+
+                if (passedRescuePath && scanTile is TargetTile)
+                {
+                    continue;
+                }
+
+                if (row == coord.Row)
+                {
+                    return scanTile is EmptyTile
+                        ? SpawnRefillDiagnosticReason.ReachableSpawn
+                        : SpawnRefillDiagnosticReason.BlockedAbove;
+                }
+
+                if (scanTile is EmptyTile)
+                {
+                    continue;
+                }
+
+                return scanTile is TargetTile
+                    ? SpawnRefillDiagnosticReason.TargetBarrier
+                    : SpawnRefillDiagnosticReason.BlockedAbove;
+            }
+
+            return SpawnRefillDiagnosticReason.GravityUnreachable;
         }
 
         private static DebrisType ChooseBestFallback(IReadOnlyList<SpawnCandidate> candidates)
