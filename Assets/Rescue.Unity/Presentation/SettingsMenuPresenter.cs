@@ -80,11 +80,22 @@ namespace Rescue.Unity.Presentation
 
         public void Toggle()
         {
+            if (IsTerminalScreenVisible())
+            {
+                SetOpen(false);
+                return;
+            }
+
             SetOpen(!isOpen);
         }
 
         public void SetOpen(bool open)
         {
+            if (open && IsTerminalScreenVisible())
+            {
+                open = false;
+            }
+
             EnsureDocument();
             isOpen = open;
             if (panel is not null)
@@ -100,6 +111,11 @@ namespace Rescue.Unity.Presentation
 
         public void RequestRestart()
         {
+            if (IsTerminalScreenVisible())
+            {
+                return;
+            }
+
             ResolveSceneReferences();
             session?.Retry();
             RefreshValues();
@@ -107,11 +123,21 @@ namespace Rescue.Unity.Presentation
 
         public void RequestResume()
         {
+            if (IsTerminalScreenVisible())
+            {
+                return;
+            }
+
             SetOpen(false);
         }
 
         public void SelectLevel(string levelChoice)
         {
+            if (IsTerminalScreenVisible())
+            {
+                return;
+            }
+
             ResolveSceneReferences();
             if (session is null || string.IsNullOrWhiteSpace(levelChoice))
             {
@@ -125,6 +151,11 @@ namespace Rescue.Unity.Presentation
 
         public void SetMusicMuted(bool muted)
         {
+            if (IsTerminalScreenVisible())
+            {
+                return;
+            }
+
             AudioSettingsController? settings = ResolveAudioSettings();
             if (settings is null)
             {
@@ -146,6 +177,11 @@ namespace Rescue.Unity.Presentation
 
         public void SetFxMuted(bool muted)
         {
+            if (IsTerminalScreenVisible())
+            {
+                return;
+            }
+
             AudioSettingsController? settings = ResolveAudioSettings();
             if (settings is null)
             {
@@ -387,6 +423,12 @@ namespace Rescue.Unity.Presentation
             VisualElement musicRow = CreateSliderRow("settings-music-row", "Music", "settings-music-slider", out musicSlider, out musicValueLabel);
             musicSlider.RegisterValueChangedCallback(evt =>
             {
+                if (IsTerminalScreenVisible())
+                {
+                    RefreshAudioControls();
+                    return;
+                }
+
                 RememberNonZeroMusic(evt.newValue);
                 ResolveAudioSettings()?.SetMusicVolume(evt.newValue);
                 RefreshAudioControls();
@@ -395,6 +437,12 @@ namespace Rescue.Unity.Presentation
             VisualElement fxRow = CreateSliderRow("settings-fx-row", "FX", "settings-fx-slider", out fxSlider, out fxValueLabel);
             fxSlider.RegisterValueChangedCallback(evt =>
             {
+                if (IsTerminalScreenVisible())
+                {
+                    RefreshAudioControls();
+                    return;
+                }
+
                 RememberNonZeroFx(evt.newValue);
                 ResolveAudioSettings()?.SetFxVolume(evt.newValue);
                 RefreshAudioControls();
@@ -615,6 +663,18 @@ namespace Rescue.Unity.Presentation
             }
 
             return audioSettings;
+        }
+
+        private static bool IsTerminalScreenVisible()
+        {
+            VictoryScreenPresenter? victoryScreen = FindAnyObjectByType<VictoryScreenPresenter>();
+            if (victoryScreen is not null && victoryScreen.IsVisible)
+            {
+                return true;
+            }
+
+            LossScreenPresenter? lossScreen = FindAnyObjectByType<LossScreenPresenter>();
+            return lossScreen is not null && lossScreen.IsVisible;
         }
 
         private static List<string> BuildLevelChoices()

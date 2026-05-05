@@ -304,7 +304,7 @@ namespace Rescue.Core.Tests.Rules
         }
 
         [Test]
-        public void RefillDiagnostics_ClassifiesEmptyBelowBlockerAsBlockedAbove()
+        public void RefillDiagnostics_ClassifiesEmptyBelowBlockerAsReachableSpawn()
         {
             Board board = PipelineTestFixtures.CreateBoard(
                 Row(new BlockerTile(BlockerType.Crate, 1, Hidden: null)),
@@ -312,16 +312,17 @@ namespace Rescue.Core.Tests.Rules
             GameState state = CreateSpawnState(board, assistanceChance: 0.0d);
 
             StepResult result = Step08_Spawn.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
-            SpawnRefillDiagnostic diagnostic = GetDiagnostic(result.State.Board, new TileCoord(1, 0));
+            SpawnRefillDiagnostic diagnostic = GetDiagnostic(board, new TileCoord(1, 0));
 
-            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(1, 0)), Is.TypeOf<EmptyTile>());
-            Assert.That(result.Events, Has.None.TypeOf<Spawned>());
-            Assert.That(diagnostic.Reason, Is.EqualTo(SpawnRefillDiagnosticReason.BlockedAbove));
-            Assert.That(diagnostic.ReasonCode, Is.EqualTo("blocked_above"));
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(0, 0)), Is.TypeOf<BlockerTile>());
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(1, 0)), Is.TypeOf<DebrisTile>());
+            Assert.That(result.Events, Has.Exactly(1).TypeOf<Spawned>());
+            Assert.That(diagnostic.Reason, Is.EqualTo(SpawnRefillDiagnosticReason.ReachableSpawn));
+            Assert.That(diagnostic.ReasonCode, Is.EqualTo("reachable_spawn"));
         }
 
         [Test]
-        public void RefillDiagnostics_ClassifiesEmptyBelowTargetWithoutRescuePathAsTargetBarrier()
+        public void RefillDiagnostics_ClassifiesEmptyBelowTargetAsReachableSpawn()
         {
             Board board = PipelineTestFixtures.CreateBoard(
                 Row(new TargetTile("target", Extracted: false)),
@@ -329,12 +330,13 @@ namespace Rescue.Core.Tests.Rules
             GameState state = CreateSpawnState(board, assistanceChance: 0.0d);
 
             StepResult result = Step08_Spawn.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
-            SpawnRefillDiagnostic diagnostic = GetDiagnostic(result.State.Board, new TileCoord(1, 0));
+            SpawnRefillDiagnostic diagnostic = GetDiagnostic(board, new TileCoord(1, 0));
 
-            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(1, 0)), Is.TypeOf<EmptyTile>());
-            Assert.That(result.Events, Has.None.TypeOf<Spawned>());
-            Assert.That(diagnostic.Reason, Is.EqualTo(SpawnRefillDiagnosticReason.TargetBarrier));
-            Assert.That(diagnostic.ReasonCode, Is.EqualTo("target_barrier"));
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(0, 0)), Is.TypeOf<TargetTile>());
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(1, 0)), Is.TypeOf<DebrisTile>());
+            Assert.That(result.Events, Has.Exactly(1).TypeOf<Spawned>());
+            Assert.That(diagnostic.Reason, Is.EqualTo(SpawnRefillDiagnosticReason.ReachableSpawn));
+            Assert.That(diagnostic.ReasonCode, Is.EqualTo("reachable_spawn"));
         }
 
         [Test]
@@ -371,6 +373,34 @@ namespace Rescue.Core.Tests.Rules
             Assert.That(GetDiagnostic(result.State.Board, new TileCoord(0, 0)).Reason, Is.EqualTo(SpawnRefillDiagnosticReason.RescuePathReserved));
             Assert.That(GetDiagnostic(result.State.Board, new TileCoord(1, 0)).Reason, Is.EqualTo(SpawnRefillDiagnosticReason.FloodedRow));
             Assert.That(GetDiagnostic(result.State.Board, new TileCoord(1, 0)).ReasonCode, Is.EqualTo("flooded_row"));
+        }
+
+        [Test]
+        public void Step08SpawnFillsAllOrdinaryDryEmptiesInStableColumnMajorOrder()
+        {
+            GameState state = CreateSpawnState(
+                PipelineTestFixtures.CreateBoard(
+                    Row(new EmptyTile(), new BlockerTile(BlockerType.Crate, 1, Hidden: null), new TargetTile("target", Extracted: false)),
+                    Row(new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                    Row(new RescuePathTile(ImmutableArray.Create("target")), new EmptyTile(), new FloodedTile())),
+                assistanceChance: 0.0d) with
+                {
+                    Water = new WaterState(FloodedRows: 1, ActionsUntilRise: 3, RiseInterval: 3),
+                };
+
+            StepResult result = Step08_Spawn.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
+
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(0, 1)), Is.TypeOf<BlockerTile>());
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(0, 2)), Is.TypeOf<TargetTile>());
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(2, 0)), Is.TypeOf<RescuePathTile>());
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(2, 2)), Is.TypeOf<FloodedTile>());
+            Assert.That(result.Events, Has.Exactly(1).TypeOf<Spawned>());
+            Spawned spawned = (Spawned)result.Events[0];
+            Assert.That(spawned.Pieces.Length, Is.EqualTo(4));
+            Assert.That(spawned.Pieces[0].Coord, Is.EqualTo(new TileCoord(0, 0)));
+            Assert.That(spawned.Pieces[1].Coord, Is.EqualTo(new TileCoord(1, 0)));
+            Assert.That(spawned.Pieces[2].Coord, Is.EqualTo(new TileCoord(1, 1)));
+            Assert.That(spawned.Pieces[3].Coord, Is.EqualTo(new TileCoord(1, 2)));
         }
 
         [Test]

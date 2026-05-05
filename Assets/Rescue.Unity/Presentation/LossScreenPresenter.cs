@@ -222,11 +222,13 @@ namespace Rescue.Unity.Presentation
             overlayRoot.style.alignItems = Align.Center;
             overlayRoot.style.justifyContent = Justify.Center;
             overlayRoot.style.backgroundColor = new Color(0f, 0f, 0f, 0.72f);
+            overlayRoot.pickingMode = PickingMode.Position;
 
             lossFrame = new VisualElement { name = "loss-frame" };
             lossFrame.style.position = Position.Relative;
             lossFrame.style.width = Length.Percent(100.0f);
             lossFrame.style.height = Length.Percent(100.0f);
+            lossFrame.pickingMode = PickingMode.Position;
             lossFrame.RegisterCallback<GeometryChangedEvent>(HandleLossFrameGeometryChanged);
 
             Image image = new Image
@@ -240,6 +242,7 @@ namespace Rescue.Unity.Presentation
             image.style.top = 0f;
             image.style.right = 0f;
             image.style.bottom = 0f;
+            image.pickingMode = PickingMode.Position;
 
             replayButton = CreateHitZoneButton("loss-replay-button", "Replay", 6.5f, 84.7f, 38.5f, 8.9f);
             replayButton.clicked += RequestReplay;

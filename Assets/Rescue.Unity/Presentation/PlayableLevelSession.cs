@@ -57,6 +57,8 @@ namespace Rescue.Unity.Presentation
 
         public GameState? CurrentState => gameStateView?.CurrentState;
 
+        public bool IsTerminalInputLocked => IsTerminalScreenVisible();
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Bootstrap()
         {
@@ -88,6 +90,7 @@ namespace Rescue.Unity.Presentation
             SyncVictoryAvailability();
             gameStateView?.Rebuild(loaded);
             boardInput?.SetCurrentState(loaded, refreshView: false);
+            SyncTerminalInputLock();
             SyncL00IntroImage();
         }
 
@@ -123,6 +126,12 @@ namespace Rescue.Unity.Presentation
         public bool TryUndo()
         {
             ResolveSceneReferences();
+            SyncTerminalInputLock();
+            if (IsTerminalInputLocked)
+            {
+                return false;
+            }
+
             GameState? current = CurrentState;
             if (current is null || undoSnapshots.Count == 0)
             {
@@ -144,6 +153,12 @@ namespace Rescue.Unity.Presentation
         public bool TryRunAction(TileCoord coord)
         {
             ResolveSceneReferences();
+            SyncTerminalInputLock();
+            if (IsTerminalInputLocked)
+            {
+                return false;
+            }
+
             GameState? current = CurrentState;
             if (current is null || gameStateView is null)
             {
@@ -175,6 +190,11 @@ namespace Rescue.Unity.Presentation
             {
                 LoadCurrentLevel();
             }
+        }
+
+        private void LateUpdate()
+        {
+            SyncTerminalInputLock();
         }
 
         private void OnDestroy()
@@ -321,6 +341,17 @@ namespace Rescue.Unity.Presentation
         private void HandleL00IntroDismissed()
         {
             boardInput?.SetInputBlocked(false);
+        }
+
+        private void SyncTerminalInputLock()
+        {
+            boardInput?.SetTerminalInputLocked(IsTerminalScreenVisible());
+        }
+
+        private bool IsTerminalScreenVisible()
+        {
+            return (victoryScreen is not null && victoryScreen.IsVisible)
+                || (lossScreen is not null && lossScreen.IsVisible);
         }
 
         private void HandleNextRequested()

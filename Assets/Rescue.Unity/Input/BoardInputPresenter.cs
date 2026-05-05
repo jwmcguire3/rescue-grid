@@ -22,10 +22,13 @@ namespace Rescue.Unity.Input
 
         private GameState? fallbackState;
         private bool inputBlocked;
+        private bool terminalInputLocked;
 
         public GameState? CurrentState => gameStateView?.CurrentState ?? fallbackState;
 
-        public bool IsInputBlocked => inputBlocked;
+        public bool IsInputBlocked => inputBlocked || terminalInputLocked;
+
+        public bool IsTerminalInputLocked => terminalInputLocked;
 
         private void Awake()
         {
@@ -65,6 +68,11 @@ namespace Rescue.Unity.Input
             inputBlocked = blocked;
         }
 
+        public void SetTerminalInputLocked(bool locked)
+        {
+            terminalInputLocked = locked;
+        }
+
         public bool TryGetTileCoordFromObject(GameObject source, out TileCoord coord)
         {
             coord = default;
@@ -90,7 +98,7 @@ namespace Rescue.Unity.Input
 
         private bool TryHandleScreenPosition(Vector2 screenPosition)
         {
-            if (inputBlocked)
+            if (IsInputBlocked)
             {
                 return false;
             }
@@ -148,7 +156,7 @@ namespace Rescue.Unity.Input
 
         private bool TryRunActionAt(TileCoord coord, Vector2 screenPosition, GameObject hitObject, string hitObjectPath)
         {
-            if (inputBlocked)
+            if (IsInputBlocked)
             {
                 return false;
             }

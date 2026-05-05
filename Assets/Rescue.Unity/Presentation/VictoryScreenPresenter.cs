@@ -227,11 +227,13 @@ namespace Rescue.Unity.Presentation
             overlayRoot.style.alignItems = Align.Center;
             overlayRoot.style.justifyContent = Justify.Center;
             overlayRoot.style.backgroundColor = new Color(0f, 0f, 0f, 0.72f);
+            overlayRoot.pickingMode = PickingMode.Position;
 
             victoryFrame = new VisualElement { name = "victory-frame" };
             victoryFrame.style.position = Position.Relative;
             victoryFrame.style.width = Length.Percent(100.0f);
             victoryFrame.style.height = Length.Percent(100.0f);
+            victoryFrame.pickingMode = PickingMode.Position;
             victoryFrame.RegisterCallback<GeometryChangedEvent>(HandleVictoryFrameGeometryChanged);
 
             Image image = new Image
@@ -245,6 +247,7 @@ namespace Rescue.Unity.Presentation
             image.style.top = 0f;
             image.style.right = 0f;
             image.style.bottom = 0f;
+            image.pickingMode = PickingMode.Position;
 
             replayButton = CreateHitZoneButton("victory-replay-button", "Replay", 7.5f, 87.5f, 35.0f, 8.5f);
             replayButton.clicked += RequestReplay;

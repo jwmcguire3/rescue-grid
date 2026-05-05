@@ -130,6 +130,42 @@ namespace Rescue.Unity.Input.Tests
             Assert.That(presenter.CurrentState!.ActionCount, Is.EqualTo(initialState.ActionCount));
         }
 
+        [Test]
+        public void BoardInputPresenter_IgnoresValidActionWhileTerminalInputLocked()
+        {
+            BoardInputPresenter presenter = CreateInputPresenter(gridView: null, gameStateView: null);
+            GameState initialState = CreateValidPairState();
+            presenter.SetCurrentState(initialState, refreshView: false);
+
+            presenter.SetTerminalInputLocked(true);
+            bool handled = presenter.TryRunActionAt(new TileCoord(0, 0));
+
+            Assert.That(handled, Is.False);
+            Assert.That(presenter.IsTerminalInputLocked, Is.True);
+            Assert.That(presenter.IsInputBlocked, Is.True);
+            Assert.That(presenter.CurrentState, Is.EqualTo(initialState));
+            Assert.That(presenter.CurrentState!.ActionCount, Is.EqualTo(initialState.ActionCount));
+        }
+
+        [Test]
+        public void BoardInputPresenter_AllowsValidActionAfterTerminalInputUnlocks()
+        {
+            BoardInputPresenter presenter = CreateInputPresenter(gridView: null, gameStateView: null);
+            GameState initialState = CreateValidPairState();
+            presenter.SetCurrentState(initialState, refreshView: false);
+
+            presenter.SetTerminalInputLocked(true);
+            Assert.That(presenter.TryRunActionAt(new TileCoord(0, 0)), Is.False);
+
+            presenter.SetTerminalInputLocked(false);
+            bool handled = presenter.TryRunActionAt(new TileCoord(0, 0));
+
+            Assert.That(handled, Is.True);
+            Assert.That(presenter.IsTerminalInputLocked, Is.False);
+            Assert.That(presenter.CurrentState, Is.Not.EqualTo(initialState));
+            Assert.That(presenter.CurrentState!.ActionCount, Is.EqualTo(initialState.ActionCount + 1));
+        }
+
         [UnityTest]
         public System.Collections.IEnumerator BoardInputPresenter_IgnoresInputWhilePlaybackIsActive()
         {

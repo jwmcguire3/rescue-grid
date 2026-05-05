@@ -82,14 +82,22 @@ namespace Rescue.Unity.Presentation.Tests
             presenter.Show();
 
             VisualElement rootElement = root!.GetComponent<UIDocument>().rootVisualElement;
+            int buttonCount = 0;
+            rootElement.Query<Button>().ForEach(_ => buttonCount++);
             VisualElement? frame = rootElement.Q<VisualElement>("loss-frame");
+            VisualElement? overlay = rootElement.Q<VisualElement>("loss-screen-root");
             Button? replayButton = frame?.Q<Button>("loss-replay-button");
             Button? tryAgainButton = frame?.Q<Button>("loss-try-again-button");
 
+            Assert.That(buttonCount, Is.EqualTo(2));
+            Assert.That(overlay, Is.Not.Null);
+            Assert.That(overlay!.pickingMode, Is.EqualTo(PickingMode.Position));
             Assert.That(frame, Is.Not.Null);
+            Assert.That(frame!.pickingMode, Is.EqualTo(PickingMode.Position));
             Image? image = rootElement.Q<Image>("loss-screen-image");
             Assert.That(image, Is.Not.Null);
             Assert.That(image!.image, Is.Not.Null);
+            Assert.That(image.pickingMode, Is.EqualTo(PickingMode.Position));
             Assert.That(replayButton, Is.Not.Null);
             Assert.That(tryAgainButton, Is.Not.Null);
         }

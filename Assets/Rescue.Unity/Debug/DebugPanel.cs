@@ -277,6 +277,17 @@ namespace Rescue.Unity.Debugging
                 RefreshUi();
             }
 
+            if (IsTerminalScreenVisible())
+            {
+                if (_isPlaying)
+                {
+                    _isPlaying = false;
+                    UpdatePlayButtonLabel();
+                }
+
+                return;
+            }
+
             if (!_isPlaying || _currentState is null)
             {
                 return;
@@ -409,6 +420,13 @@ namespace Rescue.Unity.Debugging
 
         public bool StepOneAction()
         {
+            if (IsTerminalScreenVisible())
+            {
+                SetStatus("Terminal screen is active; only its buttons accept input.");
+                RefreshUi();
+                return false;
+            }
+
             if (_loadedReplay is not null)
             {
                 return StepReplayAction();
@@ -528,6 +546,13 @@ namespace Rescue.Unity.Debugging
 
         public bool DebugUndo()
         {
+            if (IsTerminalScreenVisible())
+            {
+                SetStatus("Terminal screen is active; only its buttons accept input.");
+                RefreshUi();
+                return false;
+            }
+
             if (_debugUndo.Count == 0)
             {
                 SetStatus("Debug undo stack is empty.");
@@ -752,6 +777,12 @@ namespace Rescue.Unity.Debugging
         {
             ResolveVictoryScreenPresenter()?.Hide();
             ResolveLossScreenPresenter()?.Hide();
+        }
+
+        private bool IsTerminalScreenVisible()
+        {
+            return (_victoryScreenPresenter is not null && _victoryScreenPresenter.IsVisible)
+                || (_lossScreenPresenter is not null && _lossScreenPresenter.IsVisible);
         }
 
         private static bool IsLossOutcome(ActionOutcome outcome)
@@ -1059,6 +1090,11 @@ namespace Rescue.Unity.Debugging
             InputAction fastForwardAction = new InputAction("Fast Forward", binding: "<Keyboard>/f");
             fastForwardAction.performed += _ =>
             {
+                if (IsTerminalScreenVisible())
+                {
+                    return;
+                }
+
                 Keyboard? keyboard = Keyboard.current;
                 bool shiftPressed = keyboard is not null && (keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed);
                 if (shiftPressed)
@@ -1074,7 +1110,15 @@ namespace Rescue.Unity.Debugging
         private void RegisterAction(string name, string binding, Action<InputAction.CallbackContext> callback)
         {
             InputAction action = new InputAction(name, binding: binding);
-            action.performed += callback;
+            action.performed += context =>
+            {
+                if (IsTerminalScreenVisible())
+                {
+                    return;
+                }
+
+                callback(context);
+            };
             action.Enable();
             _inputActions.Add(action);
         }

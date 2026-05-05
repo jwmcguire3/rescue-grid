@@ -273,8 +273,8 @@ namespace Rescue.Core.Tests.Undo
 
             Assert.That(result.Snapshot, Is.Not.Null);
             Assert.That(result.Events, Has.Some.TypeOf<DeadboardMinimalShuffleApplied>());
-            Assert.That(result.Events, Has.None.TypeOf<Spawned>());
-            Assert.That(result.State.RngState, Is.EqualTo(original.RngState));
+            Assert.That(result.Events, Has.Some.TypeOf<Spawned>());
+            Assert.That(result.State.RngState, Is.Not.EqualTo(original.RngState));
             AssertGameStatesEqual(original with { UndoAvailable = false }, restored);
         }
 

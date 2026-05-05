@@ -83,14 +83,22 @@ namespace Rescue.Unity.Presentation.Tests
             presenter.Show();
 
             VisualElement rootElement = root!.GetComponent<UIDocument>().rootVisualElement;
+            int buttonCount = 0;
+            rootElement.Query<Button>().ForEach(_ => buttonCount++);
             VisualElement? frame = rootElement.Q<VisualElement>("victory-frame");
+            VisualElement? overlay = rootElement.Q<VisualElement>("victory-screen-root");
             Button? replayButton = frame?.Q<Button>("victory-replay-button");
             Button? nextLevelButton = frame?.Q<Button>("victory-next-level-button");
 
+            Assert.That(buttonCount, Is.EqualTo(2));
+            Assert.That(overlay, Is.Not.Null);
+            Assert.That(overlay!.pickingMode, Is.EqualTo(PickingMode.Position));
             Assert.That(frame, Is.Not.Null);
+            Assert.That(frame!.pickingMode, Is.EqualTo(PickingMode.Position));
             Image? image = rootElement.Q<Image>("victory-screen-image");
             Assert.That(image, Is.Not.Null);
             Assert.That(image!.image, Is.Not.Null);
+            Assert.That(image.pickingMode, Is.EqualTo(PickingMode.Position));
             Assert.That(replayButton, Is.Not.Null);
             Assert.That(nextLevelButton, Is.Not.Null);
         }

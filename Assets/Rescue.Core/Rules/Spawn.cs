@@ -14,11 +14,8 @@ namespace Rescue.Core.Rules
     public enum SpawnRefillDiagnosticReason
     {
         ReachableSpawn,
-        BlockedAbove,
         RescuePathReserved,
-        TargetBarrier,
         FloodedRow,
-        GravityUnreachable,
     }
 
     public readonly record struct SpawnRefillDiagnostic(
@@ -28,11 +25,8 @@ namespace Rescue.Core.Rules
         public string ReasonCode => Reason switch
         {
             SpawnRefillDiagnosticReason.ReachableSpawn => "reachable_spawn",
-            SpawnRefillDiagnosticReason.BlockedAbove => "blocked_above",
             SpawnRefillDiagnosticReason.RescuePathReserved => "rescue_path_reserved",
-            SpawnRefillDiagnosticReason.TargetBarrier => "target_barrier",
             SpawnRefillDiagnosticReason.FloodedRow => "flooded_row",
-            SpawnRefillDiagnosticReason.GravityUnreachable => "gravity_unreachable",
             _ => "unknown",
         };
     }
@@ -135,7 +129,7 @@ namespace Rescue.Core.Rules
                 return null;
             }
 
-            return new SpawnRefillDiagnostic(coord, ClassifyEmptyRefillGap(board, water, coord));
+            return new SpawnRefillDiagnostic(coord, SpawnRefillDiagnosticReason.ReachableSpawn);
         }
 
         internal static SpawnBias ComputeSpawnBias(GameState state, LevelConfig config, TileCoord? spawnCoord)
@@ -349,44 +343,6 @@ namespace Rescue.Core.Rules
             }
 
             return false;
-        }
-
-        private static SpawnRefillDiagnosticReason ClassifyEmptyRefillGap(Board board, WaterState water, TileCoord coord)
-        {
-            int dryHeight = board.Height - water.FloodedRows;
-            bool passedRescuePath = false;
-            for (int row = 0; row <= coord.Row && row < dryHeight; row++)
-            {
-                Tile scanTile = BoardHelpers.GetTile(board, new TileCoord(row, coord.Col));
-                if (scanTile is RescuePathTile)
-                {
-                    passedRescuePath = true;
-                    continue;
-                }
-
-                if (passedRescuePath && scanTile is TargetTile)
-                {
-                    continue;
-                }
-
-                if (row == coord.Row)
-                {
-                    return scanTile is EmptyTile
-                        ? SpawnRefillDiagnosticReason.ReachableSpawn
-                        : SpawnRefillDiagnosticReason.BlockedAbove;
-                }
-
-                if (scanTile is EmptyTile)
-                {
-                    continue;
-                }
-
-                return scanTile is TargetTile
-                    ? SpawnRefillDiagnosticReason.TargetBarrier
-                    : SpawnRefillDiagnosticReason.BlockedAbove;
-            }
-
-            return SpawnRefillDiagnosticReason.GravityUnreachable;
         }
 
         private static DebrisType ChooseBestFallback(IReadOnlyList<SpawnCandidate> candidates)

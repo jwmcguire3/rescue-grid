@@ -11,6 +11,7 @@ namespace Rescue.Unity.Presentation.Tests
     {
         private GameObject? presenterObject;
         private GameObject? audioObject;
+        private GameObject? terminalObject;
 
         [SetUp]
         public void SetUp()
@@ -33,6 +34,12 @@ namespace Rescue.Unity.Presentation.Tests
             {
                 UnityObject.DestroyImmediate(audioObject);
                 audioObject = null;
+            }
+
+            if (terminalObject is not null)
+            {
+                UnityObject.DestroyImmediate(terminalObject);
+                terminalObject = null;
             }
 
             PlayerPrefs.DeleteKey(AudioSettingsController.MusicVolumePrefsKey);
@@ -119,6 +126,22 @@ namespace Rescue.Unity.Presentation.Tests
             presenter.SetFxMuted(false);
             Assert.That(audioSettings.MusicVolume, Is.EqualTo(0.37f).Within(0.001f));
             Assert.That(audioSettings.FxVolume, Is.EqualTo(0.62f).Within(0.001f));
+        }
+
+        [Test]
+        public void SettingsMenuPresenter_IgnoresControlsWhileTerminalScreenIsVisible()
+        {
+            SettingsMenuPresenter presenter = CreatePresenter(out AudioSettingsController audioSettings);
+            audioSettings.SetMusicVolume(0.37f);
+            terminalObject = new GameObject("VisibleVictoryScreen");
+            terminalObject.AddComponent<UIDocument>();
+            terminalObject.AddComponent<VictoryScreenPresenter>().Show();
+
+            presenter.SetOpen(true);
+            presenter.SetMusicMuted(true);
+
+            Assert.That(presenter.IsOpen, Is.False);
+            Assert.That(audioSettings.MusicVolume, Is.EqualTo(0.37f).Within(0.001f));
         }
 
         private SettingsMenuPresenter CreatePresenter(out AudioSettingsController audioSettings)

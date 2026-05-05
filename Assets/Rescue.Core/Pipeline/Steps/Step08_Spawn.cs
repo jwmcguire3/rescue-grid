@@ -82,28 +82,13 @@ namespace Rescue.Core.Pipeline.Steps
 
             for (int col = 0; col < board.Width; col++)
             {
-                bool passedRescuePath = false;
                 for (int row = 0; row < dryHeight; row++)
                 {
                     TileCoord coord = new TileCoord(row, col);
-                    if (BoardHelpers.GetTile(board, coord) is RescuePathTile)
-                    {
-                        passedRescuePath = true;
-                        continue;
-                    }
-
-                    if (passedRescuePath && BoardHelpers.GetTile(board, coord) is TargetTile)
-                    {
-                        continue;
-                    }
-
                     if (BoardHelpers.GetTile(board, coord) is EmptyTile)
                     {
                         coords.Add(coord);
-                        continue;
                     }
-
-                    break;
                 }
             }
 

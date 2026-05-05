@@ -107,7 +107,7 @@ namespace Rescue.Core.Tests.Pipeline
                 DeadboardDiagnosticReason.HardNoValidGroups,
                 TargetId: null)));
             Assert.That(GroupOps.HasValidGroup(result.State.Board, result.State.Water), Is.False);
-            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(2, 0)), Is.TypeOf<EmptyTile>());
+            Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(2, 0)), Is.TypeOf<DebrisTile>());
             Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(2, 1)), Is.TypeOf<RescuePathTile>());
             Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(2, 2)), Is.EqualTo(new TargetTile("target", Extracted: false)));
             Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(2, 3)), Is.TypeOf<FloodedTile>());

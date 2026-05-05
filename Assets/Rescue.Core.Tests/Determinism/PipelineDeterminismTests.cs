@@ -83,7 +83,7 @@ namespace Rescue.Core.Tests.Determinism
         }
 
         [Test]
-        public void HardNoMoveRepairDoesNotConsumeRngAndIsDeterministic()
+        public void HardNoMoveRepairAfterFullRefillIsDeterministic()
         {
             GameState state = CreateHardNoMoveRepairPipelineState(0xFEED1234u);
             ActionInput input = new ActionInput(new TileCoord(2, 0));
@@ -92,8 +92,8 @@ namespace Rescue.Core.Tests.Determinism
             ActionResult second = Rescue.Core.Pipeline.Pipeline.RunAction(state, input);
 
             Assert.That(first.Events, Has.Some.TypeOf<DeadboardMinimalShuffleApplied>());
-            Assert.That(first.Events, Has.None.TypeOf<Spawned>());
-            Assert.That(first.State.RngState, Is.EqualTo(state.RngState));
+            Assert.That(first.Events, Has.Some.TypeOf<Spawned>());
+            Assert.That(first.State.RngState, Is.Not.EqualTo(state.RngState));
             AssertBoardEqual(first.State.Board, second.State.Board, "hard no-move repair final board");
             AssertActionEventSequenceEqual(first.Events, second.Events, "hard no-move repair event stream");
         }
