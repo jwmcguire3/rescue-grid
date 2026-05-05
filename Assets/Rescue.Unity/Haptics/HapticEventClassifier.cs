@@ -45,55 +45,61 @@ namespace Rescue.Unity.Haptics
             switch (actionEvent)
             {
                 case InvalidInput:
-                    signal = Create(HapticEventId.InvalidTap, 0.15f, 10, actionEvent);
+                    signal = Create(
+                        HapticEventId.InvalidTap,
+                        new HapticPattern(HapticPatternStyle.Tick, 0.12f, 25),
+                        10,
+                        HapticCooldownKey.InvalidTap,
+                        0.18f,
+                        actionEvent);
                     return true;
                 case GroupRemoved:
-                    signal = Create(HapticEventId.GroupClear, 0.20f, 20, actionEvent);
-                    return true;
+                    signal = default;
+                    return false;
                 case BlockerBroken:
                 case IceRevealed:
-                    signal = Create(HapticEventId.BlockerBreak, 0.30f, 30, actionEvent);
+                    signal = Create(HapticEventId.BlockerBreak, new HapticPattern(HapticPatternStyle.Pop, 0.30f, 40), 30, actionEvent);
                     return true;
                 case DockWarningChanged warningChanged when warningChanged.After == DockWarningLevel.Caution:
-                    signal = Create(HapticEventId.DockCaution, 0.25f, 40, actionEvent);
+                    signal = Create(HapticEventId.DockCaution, new HapticPattern(HapticPatternStyle.Tick, 0.22f, 35), 40, actionEvent);
                     return true;
                 case DockWarningChanged warningChanged when warningChanged.After == DockWarningLevel.Acute:
-                    signal = Create(HapticEventId.DockAcute, 0.65f, 70, actionEvent);
+                    signal = Create(HapticEventId.DockAcute, new HapticPattern(HapticPatternStyle.Pulse, 0.65f, 70), 70, actionEvent);
                     return true;
                 case DockWarningChanged warningChanged when warningChanged.After == DockWarningLevel.Fail:
                 case DockOverflowTriggered:
-                    signal = Create(HapticEventId.DockOverflow, 0.90f, 100, actionEvent);
+                    signal = Create(HapticEventId.DockOverflow, new HapticPattern(HapticPatternStyle.Failure, 0.90f, 125), 100, actionEvent);
                     return true;
                 case DockJamTriggered:
-                    signal = Create(HapticEventId.DockJam, 0.70f, 80, actionEvent);
+                    signal = Create(HapticEventId.DockJam, new HapticPattern(HapticPatternStyle.Warning, 0.65f, 70, 0.40f, 85, 45), 80, actionEvent);
                     return true;
                 case TargetProgressed:
                 case TargetOneClearAway:
-                    signal = Create(HapticEventId.TargetNearRescue, 0.25f, 35, actionEvent);
+                    signal = Create(HapticEventId.TargetNearRescue, new HapticPattern(HapticPatternStyle.Lift, 0.22f, 40), 35, actionEvent);
                     return true;
                 case TargetExtracted:
-                    signal = Create(HapticEventId.TargetExtract, 0.40f, 50, actionEvent);
+                    signal = Create(HapticEventId.TargetExtract, new HapticPattern(HapticPatternStyle.Pop, 0.38f, 50), 50, actionEvent);
                     return true;
                 case WaterWarning:
-                    signal = Create(HapticEventId.WaterWarning, 0.35f, 45, actionEvent);
+                    signal = Create(HapticEventId.WaterWarning, new HapticPattern(HapticPatternStyle.Warning, 0.30f, 45), 45, actionEvent);
                     return true;
                 case WaterRose:
-                    signal = Create(HapticEventId.WaterRise, 0.50f, 60, actionEvent);
+                    signal = Create(HapticEventId.WaterRise, new HapticPattern(HapticPatternStyle.Pulse, 0.45f, 75), 60, actionEvent);
                     return true;
                 case VinePreviewChanged previewChanged when previewChanged.PendingTile.HasValue:
-                    signal = Create(HapticEventId.VinePreview, 0.25f, 35, actionEvent);
+                    signal = Create(HapticEventId.VinePreview, new HapticPattern(HapticPatternStyle.Tick, 0.20f, 35), 35, actionEvent);
                     return true;
                 case VineGrown:
-                    signal = Create(HapticEventId.VineGrow, 0.45f, 55, actionEvent);
+                    signal = Create(HapticEventId.VineGrow, new HapticPattern(HapticPatternStyle.Warning, 0.40f, 60), 55, actionEvent);
                     return true;
                 case Lost lost when IsWaterLoss(lost.Outcome):
-                    signal = Create(HapticEventId.WaterLoss, 0.90f, 100, actionEvent);
+                    signal = Create(HapticEventId.WaterLoss, new HapticPattern(HapticPatternStyle.Failure, 0.90f, 125), 100, actionEvent);
                     return true;
                 case Lost lost when lost.Outcome == ActionOutcome.LossDockOverflow:
-                    signal = Create(HapticEventId.DockOverflow, 0.90f, 100, actionEvent);
+                    signal = Create(HapticEventId.DockOverflow, new HapticPattern(HapticPatternStyle.Failure, 0.90f, 125), 100, actionEvent);
                     return true;
                 case Won:
-                    signal = Create(HapticEventId.Win, 0.55f, 65, actionEvent);
+                    signal = Create(HapticEventId.Win, new HapticPattern(HapticPatternStyle.Success, 0.45f, 55, 0.30f, 95, 40), 75, actionEvent);
                     return true;
                 default:
                     signal = default;
@@ -106,15 +112,15 @@ namespace Rescue.Unity.Haptics
             switch (outcome)
             {
                 case ActionOutcome.Win:
-                    signal = Create(HapticEventId.Win, 0.55f, 65, nameof(ActionOutcome.Win));
+                    signal = Create(HapticEventId.Win, new HapticPattern(HapticPatternStyle.Success, 0.45f, 55, 0.30f, 95, 40), 75, nameof(ActionOutcome.Win));
                     return true;
                 case ActionOutcome.LossDockOverflow:
-                    signal = Create(HapticEventId.DockOverflow, 0.90f, 100, nameof(ActionOutcome.LossDockOverflow));
+                    signal = Create(HapticEventId.DockOverflow, new HapticPattern(HapticPatternStyle.Failure, 0.90f, 125), 100, nameof(ActionOutcome.LossDockOverflow));
                     return true;
                 case ActionOutcome.LossWaterOnTarget:
                 case ActionOutcome.LossRescuePathFlooded:
                 case ActionOutcome.LossDistressedExpired:
-                    signal = Create(HapticEventId.WaterLoss, 0.90f, 100, outcome.ToString());
+                    signal = Create(HapticEventId.WaterLoss, new HapticPattern(HapticPatternStyle.Failure, 0.90f, 125), 100, outcome.ToString());
                     return true;
                 default:
                     signal = default;
@@ -126,28 +132,68 @@ namespace Rescue.Unity.Haptics
         {
             return id switch
             {
-                HapticEventId.UndoUsed => Create(id, 0.20f, 20, nameof(HapticEventId.UndoUsed)),
-                HapticEventId.RetryConfirmed => Create(id, 0.25f, 25, nameof(HapticEventId.RetryConfirmed)),
-                _ => Create(id, 0f, 0, id.ToString()),
+                HapticEventId.UndoUsed => Create(
+                    id,
+                    new HapticPattern(HapticPatternStyle.Tick, 0.20f, 35),
+                    20,
+                    HapticCooldownKey.ManualCommand,
+                    0.20f,
+                    nameof(HapticEventId.UndoUsed)),
+                HapticEventId.RetryConfirmed => Create(
+                    id,
+                    new HapticPattern(HapticPatternStyle.Tick, 0.25f, 40),
+                    25,
+                    HapticCooldownKey.ManualCommand,
+                    0.20f,
+                    nameof(HapticEventId.RetryConfirmed)),
+                _ => Create(id, new HapticPattern(HapticPatternStyle.Tick, 0f, 0), 0, id.ToString()),
             };
         }
 
         private static HapticFeedbackSignal Create(
             HapticEventId id,
-            float intensity,
+            HapticPattern pattern,
             int priority,
             ActionEvent actionEvent)
         {
-            return Create(id, intensity, priority, actionEvent.GetType().Name);
+            return Create(id, pattern, priority, actionEvent.GetType().Name);
         }
 
         private static HapticFeedbackSignal Create(
             HapticEventId id,
-            float intensity,
+            HapticPattern pattern,
             int priority,
             string debugLabel)
         {
-            return new HapticFeedbackSignal(id, UnityEngine.Mathf.Clamp01(intensity), priority, debugLabel);
+            return Create(id, pattern, priority, HapticCooldownKey.None, 0f, debugLabel);
+        }
+
+        private static HapticFeedbackSignal Create(
+            HapticEventId id,
+            HapticPattern pattern,
+            int priority,
+            HapticCooldownKey cooldownKey,
+            float cooldownSeconds,
+            ActionEvent actionEvent)
+        {
+            return Create(id, pattern, priority, cooldownKey, cooldownSeconds, actionEvent.GetType().Name);
+        }
+
+        private static HapticFeedbackSignal Create(
+            HapticEventId id,
+            HapticPattern pattern,
+            int priority,
+            HapticCooldownKey cooldownKey,
+            float cooldownSeconds,
+            string debugLabel)
+        {
+            return new HapticFeedbackSignal(
+                id,
+                pattern.Clamp(1f),
+                priority,
+                cooldownKey,
+                UnityEngine.Mathf.Max(0f, cooldownSeconds),
+                debugLabel);
         }
 
         private static bool IsWaterLoss(ActionOutcome outcome)

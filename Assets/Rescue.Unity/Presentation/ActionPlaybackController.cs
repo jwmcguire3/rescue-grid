@@ -6,6 +6,7 @@ using Rescue.Core.State;
 using Rescue.Unity.BoardPresentation;
 using Rescue.Unity.Feedback;
 using Rescue.Unity.FX;
+using Rescue.Unity.Haptics;
 using Rescue.Unity.UI;
 using UnityEngine;
 
@@ -20,6 +21,7 @@ namespace Rescue.Unity.Presentation
         [SerializeField] private DockViewPresenter? dockView;
         [SerializeField] private FxEventRouter? fxEventRouter;
         [SerializeField] private AudioEventRouter? audioEventRouter;
+        [SerializeField] private HapticEventRouter? hapticEventRouter;
 
         private Coroutine? activePlayback;
         private PlaybackContext? activeContext;
@@ -102,6 +104,7 @@ namespace Rescue.Unity.Presentation
 
             int sessionId = ++playbackSessionId;
             activeContext = new PlaybackContext(sessionId, result, finalSync);
+            ResolveHapticEventRouter()?.BeginActionRoute(result);
 
             if (settings.YieldBetweenSteps)
             {
@@ -132,6 +135,7 @@ namespace Rescue.Unity.Presentation
 
             if (context is not null)
             {
+                ResolveHapticEventRouter()?.EndActionRoute();
                 context.FinalSync(context.Result);
             }
         }
@@ -220,6 +224,7 @@ namespace Rescue.Unity.Presentation
             }
 
             TryRoutePlaybackAudio(step, previousState, input, resultState);
+            TryRoutePlaybackHaptics(step, previousState, input, resultState);
         }
 
         private void PlaySingleEvent(ActionEvent sourceEvent, GameState previousState, GameState resultState)
@@ -426,6 +431,7 @@ namespace Rescue.Unity.Presentation
             }
             finally
             {
+                ResolveHapticEventRouter()?.EndActionRoute();
                 activeContext = null;
                 activePlayback = null;
                 IsPlaying = false;
@@ -494,6 +500,22 @@ namespace Rescue.Unity.Presentation
 
             audioEventRouter = GetComponent<AudioEventRouter>();
             return audioEventRouter;
+        }
+
+        private HapticEventRouter? ResolveHapticEventRouter()
+        {
+            if (hapticEventRouter is not null)
+            {
+                return hapticEventRouter;
+            }
+
+            hapticEventRouter = GetComponent<HapticEventRouter>();
+            if (hapticEventRouter is null)
+            {
+                hapticEventRouter = gameObject.AddComponent<HapticEventRouter>();
+            }
+
+            return hapticEventRouter;
         }
 
         private void TryRoutePlaybackFx(ActionPlaybackStep step, GameState previousState, ActionInput input, GameState resultState)
@@ -626,6 +648,26 @@ namespace Rescue.Unity.Presentation
             {
                 Debug.LogWarning(
                     $"{nameof(ActionPlaybackController)} skipped audio for playback step '{routedStep.SourceEventName ?? routedStep.StepType.ToString()}' after an exception: {exception.Message}",
+                    this);
+            }
+        }
+
+        private void TryRoutePlaybackHaptics(ActionPlaybackStep step, GameState previousState, ActionInput input, GameState resultState)
+        {
+            HapticEventRouter? router = ResolveHapticEventRouter();
+            if (router is null)
+            {
+                return;
+            }
+
+            try
+            {
+                router.RoutePlaybackBeat(previousState, input, resultState, step);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning(
+                    $"{nameof(ActionPlaybackController)} skipped haptics for playback step '{step.SourceEventName ?? step.StepType.ToString()}' after an exception: {exception.Message}",
                     this);
             }
         }

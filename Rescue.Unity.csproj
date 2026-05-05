@@ -51,14 +51,18 @@
   <ItemGroup>
     <Compile Include="Assets\Rescue.Unity\Presentation\VictoryScreenPresenter.cs" />
     <Compile Include="Assets\Rescue.Unity\Art\Validation\MeshyAssetValidationSettings.cs" />
+    <Compile Include="Assets\Rescue.Unity\Haptics\IHapticPlatformAdapter.cs" />
     <Compile Include="Assets\Rescue.Unity\Haptics\HapticFeedbackSignal.cs" />
     <Compile Include="Assets\Rescue.Unity\Feedback\AudioFeedbackEntry.cs" />
     <Compile Include="Assets\Rescue.Unity\Feedback\AudioEventRouter.cs" />
+    <Compile Include="Assets\Rescue.Unity\Haptics\AndroidHapticPlatformAdapter.cs" />
     <Compile Include="Assets\Rescue.Unity\Presentation\ActionPlaybackStepType.cs" />
     <Compile Include="Assets\Rescue.Unity\Telemetry\TelemetryEventClassifier.cs" />
     <Compile Include="Assets\Rescue.Unity\Feedback\AudioFeedbackRegistry.cs" />
     <Compile Include="Assets\Rescue.Unity\Presentation\ActionPlaybackStep.cs" />
+    <Compile Include="Assets\Rescue.Unity\Haptics\HapticPatternStyle.cs" />
     <Compile Include="Assets\Rescue.Unity\Board\BoardGridViewPresenter.cs" />
+    <Compile Include="Assets\Rescue.Unity\Haptics\HapticPattern.cs" />
     <Compile Include="Assets\Rescue.Unity\Haptics\HapticEventRouter.cs" />
     <Compile Include="Assets\Rescue.Unity\Audio\MusicTrackSelection.cs" />
     <Compile Include="Assets\Rescue.Unity\Board\TargetFeedbackResolver.cs" />
@@ -67,6 +71,8 @@
     <Compile Include="Assets\Rescue.Unity\Art\Validation\MeshyAssetValidationConfig.cs" />
     <Compile Include="Assets\Rescue.Unity\FX\FxDebugFramePlayer.cs" />
     <Compile Include="Assets\Rescue.Unity\Feedback\FeedbackEventId.cs" />
+    <Compile Include="Assets\Rescue.Unity\Haptics\HapticCooldownKey.cs" />
+    <Compile Include="Assets\Rescue.Unity\Haptics\HandheldHapticPlatformAdapter.cs" />
     <Compile Include="Assets\Rescue.Unity\UI\DockViewPresenter.cs" />
     <Compile Include="Assets\Rescue.Unity\Art\Registries\RegistryWarnings.cs" />
     <Compile Include="Assets\Rescue.Unity\Art\Validation\MeshyAssetValidator.cs" />
@@ -86,6 +92,7 @@
     <Compile Include="Assets\Rescue.Unity\Compatibility\IsExternalInit.cs" />
     <Compile Include="Assets\Rescue.Unity\Haptics\HapticEventClassifier.cs" />
     <Compile Include="Assets\Rescue.Unity\FX\FxEventHook.cs" />
+    <Compile Include="Assets\Rescue.Unity\Haptics\IOSHapticPlatformAdapter.cs" />
     <Compile Include="Assets\Rescue.Unity\Art\Registries\DockVisualConfig.cs" />
     <Compile Include="Assets\Rescue.Unity\Presentation\ActionPlaybackController.cs" />
     <Compile Include="Assets\Rescue.Unity\Audio\MusicTrackEntry.cs" />

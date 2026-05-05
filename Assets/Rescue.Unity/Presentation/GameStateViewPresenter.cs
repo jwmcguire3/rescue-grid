@@ -95,7 +95,6 @@ namespace Rescue.Unity.Presentation
 
             ActionPlaybackController? resolvedPlaybackController = ResolvePlaybackController();
             TryRouteResultAudio(previousState, input, result);
-            TryRouteResultHaptics(previousState, input, result);
 
             if (resolvedPlaybackController is not null &&
                 resolvedPlaybackController.TryPlayAction(previousState, input, result, FinalSyncActionResult))
@@ -107,6 +106,7 @@ namespace Rescue.Unity.Presentation
 
             dockFeedbackHandledByPlayback = false;
             CurrentPlaybackPlan = ActionPlaybackBuilder.Build(previousState, input, result);
+            TryRouteResultHaptics(previousState, input, result);
             FinalSyncActionResult(result);
         }
 

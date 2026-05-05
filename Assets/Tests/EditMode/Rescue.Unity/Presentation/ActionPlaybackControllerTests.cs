@@ -9,6 +9,7 @@ using Rescue.Core.State;
 using Rescue.Unity.BoardPresentation;
 using Rescue.Unity.Feedback;
 using Rescue.Unity.FX;
+using Rescue.Unity.Haptics;
 using Rescue.Unity.UI;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -561,6 +562,39 @@ namespace Rescue.Unity.Presentation.Tests
 
             Assert.That(handled, Is.True);
             Assert.That(audioRouter.PlayedIds, Is.Empty);
+        }
+
+        [Test]
+        public void ActionPlaybackController_RoutesHapticsAtPlaybackBeatAndDedupesFinalWin()
+        {
+            ControllerHarness harness = CreateControllerHarness(
+                playbackEnabled: true,
+                yieldBetweenSteps: false,
+                hapticRouterType: typeof(SpyHapticEventRouter));
+            SpyHapticEventRouter hapticRouter = (SpyHapticEventRouter)harness.HapticRouter!;
+            GameState previousState = CreateState();
+
+            ActionResult result = CreateResult(
+                previousState,
+                actionCount: 7,
+                new DockWarningChanged(DockWarningLevel.Caution, DockWarningLevel.Acute),
+                new TargetExtracted("pup-1", new TileCoord(2, 1)),
+                new WaterRose(FloodedRow: 1),
+                new Won("pup-1", TotalActions: 7, ExtractedTargetOrder: ImmutableArray.Create("pup-1")));
+
+            bool handled = harness.Controller.TryPlayAction(
+                previousState,
+                new ActionInput(new TileCoord(0, 0)),
+                result,
+                _ => { });
+
+            Assert.That(handled, Is.True);
+            Assert.That(hapticRouter.PlayedIds, Is.EqualTo(new[]
+            {
+                HapticEventId.DockAcute,
+                HapticEventId.WaterRise,
+                HapticEventId.Win,
+            }));
         }
 
         [Test]
@@ -1234,15 +1268,17 @@ namespace Rescue.Unity.Presentation.Tests
             bool playbackEnabled,
             bool yieldBetweenSteps,
             Type? fxRouterType = null,
-            Type? audioRouterType = null)
+            Type? audioRouterType = null,
+            Type? hapticRouterType = null)
         {
-            return CreateControllerHarness(CreateSettings(playbackEnabled, yieldBetweenSteps), fxRouterType, audioRouterType);
+            return CreateControllerHarness(CreateSettings(playbackEnabled, yieldBetweenSteps), fxRouterType, audioRouterType, hapticRouterType);
         }
 
         private ControllerHarness CreateControllerHarness(
             ActionPlaybackSettings settings,
             Type? fxRouterType = null,
-            Type? audioRouterType = null)
+            Type? audioRouterType = null,
+            Type? hapticRouterType = null)
         {
             GameObject presenterObject = CreateTrackedGameObject("PlaybackHarness");
             BoardGridViewPresenter gridPresenter = presenterObject.AddComponent<BoardGridViewPresenter>();
@@ -1312,6 +1348,12 @@ namespace Rescue.Unity.Presentation.Tests
                 audioRouter.BoardGrid = gridPresenter;
             }
 
+            HapticEventRouter? hapticRouter = null;
+            if (hapticRouterType is not null)
+            {
+                hapticRouter = (HapticEventRouter)presenterObject.AddComponent(hapticRouterType);
+            }
+
             ActionPlaybackController controller = presenterObject.AddComponent<ActionPlaybackController>();
             SetPrivateField(controller, "settings", settings);
             SetPrivateField(controller, "boardGrid", gridPresenter);
@@ -1320,6 +1362,7 @@ namespace Rescue.Unity.Presentation.Tests
             SetPrivateField(controller, "dockView", dockPresenter);
             SetPrivateField(controller, "fxEventRouter", fxRouter);
             SetPrivateField(controller, "audioEventRouter", audioRouter);
+            SetPrivateField(controller, "hapticEventRouter", hapticRouter);
 
             return new ControllerHarness(
                 controller,
@@ -1329,6 +1372,7 @@ namespace Rescue.Unity.Presentation.Tests
                 dockPresenter,
                 fxRouter,
                 audioRouter,
+                hapticRouter,
                 contentRoot,
                 waterRoot,
                 dockPieceContainer,
@@ -1587,6 +1631,7 @@ namespace Rescue.Unity.Presentation.Tests
                 DockViewPresenter dockPresenter,
                 FxEventRouter fxRouter,
                 AudioEventRouter? audioRouter,
+                HapticEventRouter? hapticRouter,
                 Transform contentRoot,
                 Transform waterRoot,
                 Transform dockPieceContainer,
@@ -1600,6 +1645,7 @@ namespace Rescue.Unity.Presentation.Tests
                 DockPresenter = dockPresenter;
                 FxRouter = fxRouter;
                 AudioRouter = audioRouter;
+                HapticRouter = hapticRouter;
                 ContentRoot = contentRoot;
                 WaterRoot = waterRoot;
                 DockPieceContainer = dockPieceContainer;
@@ -1620,6 +1666,8 @@ namespace Rescue.Unity.Presentation.Tests
             public FxEventRouter FxRouter { get; }
 
             public AudioEventRouter? AudioRouter { get; }
+
+            public HapticEventRouter? HapticRouter { get; }
 
             public Transform ContentRoot { get; }
 
@@ -1689,6 +1737,18 @@ namespace Rescue.Unity.Presentation.Tests
                 _ = entry;
                 _ = worldPosition;
                 throw new InvalidOperationException("Synthetic audio failure.");
+            }
+        }
+
+        private sealed class SpyHapticEventRouter : HapticEventRouter
+        {
+            private readonly List<HapticEventId> playedIds = new List<HapticEventId>();
+
+            public IReadOnlyList<HapticEventId> PlayedIds => playedIds;
+
+            protected override void PlayHaptic(HapticFeedbackSignal signal)
+            {
+                playedIds.Add(signal.Id);
             }
         }
     }

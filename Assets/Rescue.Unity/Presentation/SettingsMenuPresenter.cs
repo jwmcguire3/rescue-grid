@@ -32,11 +32,13 @@ namespace Rescue.Unity.Presentation
         private DropdownField? levelDropdown;
         private Slider? musicSlider;
         private Slider? fxSlider;
+        private Slider? hapticsStrengthSlider;
         private Toggle? muteMusicToggle;
         private Toggle? muteFxToggle;
         private Toggle? hapticsToggle;
         private Label? musicValueLabel;
         private Label? fxValueLabel;
+        private Label? hapticsStrengthValueLabel;
         private float lastNonZeroMusicVolume = 1.0f;
         private float lastNonZeroFxVolume = 1.0f;
         private bool isOpen;
@@ -50,6 +52,8 @@ namespace Rescue.Unity.Presentation
         public bool IsFxMuted => ResolveAudioSettings()?.FxVolume <= 0f;
 
         public bool HapticsEnabled => ResolveAudioSettings()?.HapticsEnabled ?? true;
+
+        public float HapticsStrength => ResolveAudioSettings()?.HapticsStrength ?? 1.0f;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Bootstrap()
@@ -490,6 +494,24 @@ namespace Rescue.Unity.Presentation
             hapticsToggle.style.marginTop = 4f;
             hapticsToggle.style.marginBottom = 4f;
 
+            VisualElement hapticsStrengthRow = CreateSliderRow(
+                "settings-haptics-strength-row",
+                "Touch",
+                "settings-haptics-strength-slider",
+                out hapticsStrengthSlider,
+                out hapticsStrengthValueLabel);
+            hapticsStrengthSlider.RegisterValueChangedCallback(evt =>
+            {
+                if (IsTerminalScreenVisible())
+                {
+                    RefreshAudioControls();
+                    return;
+                }
+
+                ResolveAudioSettings()?.SetHapticsStrength(evt.newValue);
+                RefreshAudioControls();
+            });
+
             panel.Add(headerRow);
             panel.Add(restartButton);
             panel.Add(levelDropdown);
@@ -498,6 +520,7 @@ namespace Rescue.Unity.Presentation
             panel.Add(fxRow);
             panel.Add(muteRow);
             panel.Add(hapticsToggle);
+            panel.Add(hapticsStrengthRow);
             anchor.Add(toggleButton);
             anchor.Add(panel);
             root.Add(anchor);
@@ -659,11 +682,13 @@ namespace Rescue.Unity.Presentation
 
             musicSlider?.SetValueWithoutNotify(settings.MusicVolume);
             fxSlider?.SetValueWithoutNotify(settings.FxVolume);
+            hapticsStrengthSlider?.SetValueWithoutNotify(settings.HapticsStrength);
             muteMusicToggle?.SetValueWithoutNotify(settings.MusicVolume <= 0f);
             muteFxToggle?.SetValueWithoutNotify(settings.FxVolume <= 0f);
             hapticsToggle?.SetValueWithoutNotify(settings.HapticsEnabled);
             UpdateValueLabel(musicValueLabel, settings.MusicVolume);
             UpdateValueLabel(fxValueLabel, settings.FxVolume);
+            UpdateValueLabel(hapticsStrengthValueLabel, settings.HapticsStrength);
         }
 
         private void RefreshValues()

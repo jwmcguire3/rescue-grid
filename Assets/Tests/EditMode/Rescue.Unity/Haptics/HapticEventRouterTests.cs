@@ -5,6 +5,7 @@ using Rescue.Core.Pipeline;
 using Rescue.Core.Rng;
 using Rescue.Core.State;
 using Rescue.Unity.Audio;
+using Rescue.Unity.Presentation;
 using UnityEngine;
 using UnityObject = UnityEngine.Object;
 
@@ -38,13 +39,21 @@ namespace Rescue.Unity.Haptics.Tests
         }
 
         [TestCaseSource(nameof(SupportedEventCases))]
-        public void HapticEventClassifier_MapsSupportedEvents(ActionEvent actionEvent, HapticEventId expectedId, float expectedIntensity)
+        public void HapticEventClassifier_MapsSupportedEvents(
+            ActionEvent actionEvent,
+            HapticEventId expectedId,
+            HapticPatternStyle expectedStyle,
+            float expectedIntensity,
+            int expectedDurationMs)
         {
             bool classified = HapticEventClassifier.TryClassify(actionEvent, out HapticFeedbackSignal signal);
 
             Assert.That(classified, Is.True);
             Assert.That(signal.Id, Is.EqualTo(expectedId));
-            Assert.That(signal.Intensity, Is.EqualTo(expectedIntensity).Within(0.001f));
+            Assert.That(signal.Pattern.Style, Is.EqualTo(expectedStyle));
+            Assert.That(signal.Pattern.Intensity, Is.EqualTo(expectedIntensity).Within(0.001f));
+            Assert.That(signal.Pattern.DurationMs, Is.EqualTo(expectedDurationMs));
+            Assert.That(signal.Priority, Is.GreaterThan(0));
         }
 
         [TestCaseSource(nameof(UnmappedEventCases))]
@@ -69,7 +78,8 @@ namespace Rescue.Unity.Haptics.Tests
 
             Assert.That(classified, Is.True);
             Assert.That(signal.Id, Is.EqualTo(HapticEventId.DockOverflow));
-            Assert.That(signal.Intensity, Is.EqualTo(0.90f).Within(0.001f));
+            Assert.That(signal.Pattern.Intensity, Is.EqualTo(0.90f).Within(0.001f));
+            Assert.That(signal.Pattern.Style, Is.EqualTo(HapticPatternStyle.Failure));
         }
 
         [Test]
@@ -84,7 +94,9 @@ namespace Rescue.Unity.Haptics.Tests
 
             Assert.That(classified, Is.True);
             Assert.That(signal.Id, Is.EqualTo(HapticEventId.Win));
-            Assert.That(signal.Intensity, Is.EqualTo(0.55f).Within(0.001f));
+            Assert.That(signal.Pattern.Style, Is.EqualTo(HapticPatternStyle.Success));
+            Assert.That(signal.Pattern.Intensity, Is.EqualTo(0.45f).Within(0.001f));
+            Assert.That(signal.Pattern.SecondPulseIntensity, Is.EqualTo(0.30f).Within(0.001f));
         }
 
         [Test]
@@ -102,44 +114,83 @@ namespace Rescue.Unity.Haptics.Tests
         }
 
         [Test]
-        public void HapticEventRouter_RoutesManualUndoAndRetrySignals()
+        public void HapticEventRouter_RoutesManualSignalsWithCooldownSuppression()
         {
             SpyHapticEventRouter router = CreateRouter();
 
             router.RouteManual(HapticEventId.UndoUsed);
             router.RouteManual(HapticEventId.RetryConfirmed);
 
-            Assert.That(router.PlayedSignals.Count, Is.EqualTo(2));
+            Assert.That(router.PlayedSignals.Count, Is.EqualTo(1));
             Assert.That(router.PlayedSignals[0].Id, Is.EqualTo(HapticEventId.UndoUsed));
-            Assert.That(router.PlayedSignals[0].Intensity, Is.EqualTo(0.20f).Within(0.001f));
-            Assert.That(router.PlayedSignals[1].Id, Is.EqualTo(HapticEventId.RetryConfirmed));
-            Assert.That(router.PlayedSignals[1].Intensity, Is.EqualTo(0.25f).Within(0.001f));
+            Assert.That(router.PlayedSignals[0].Pattern.Intensity, Is.EqualTo(0.20f).Within(0.001f));
+        }
+
+        [Test]
+        public void HapticEventRouter_AppliesStrengthMultiplierBeforeAdapterPlayback()
+        {
+            RecordingAdapter adapter = new RecordingAdapter();
+            AdapterHapticEventRouter router = CreateAdapterRouter(adapter);
+            AudioSettingsController settings = CreateSettings();
+            settings.SetHapticsStrength(0.5f);
+            router.SettingsController = settings;
+
+            router.Route(HapticEventClassifier.CreateManual(HapticEventId.RetryConfirmed));
+
+            Assert.That(adapter.PlayedPatterns.Count, Is.EqualTo(1));
+            Assert.That(adapter.PlayedPatterns[0].Intensity, Is.EqualTo(0.125f).Within(0.001f));
+            Assert.That(adapter.PlayedPatterns[0].DurationMs, Is.EqualTo(40));
+        }
+
+        [Test]
+        public void HapticEventRouter_RoutesPlaybackBeatAndSuppressesTargetExtractWhenWinIsHeadline()
+        {
+            SpyHapticEventRouter router = CreateRouter();
+            ActionResult result = CreateResult(
+                ActionOutcome.Win,
+                new TargetExtracted("pup-1", new TileCoord(2, 1)),
+                new Won("pup-1", TotalActions: 4, ExtractedTargetOrder: ImmutableArray.Create("pup-1")));
+            router.BeginActionRoute(result);
+
+            router.RoutePlaybackBeat(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                result.State,
+                CreatePlaybackStep(new TargetExtracted("pup-1", new TileCoord(2, 1))));
+            router.RoutePlaybackBeat(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                result.State,
+                CreatePlaybackStep(new Won("pup-1", TotalActions: 4, ExtractedTargetOrder: ImmutableArray.Create("pup-1"))));
+
+            Assert.That(router.PlayedSignals.Count, Is.EqualTo(1));
+            Assert.That(router.PlayedSignals[0].Id, Is.EqualTo(HapticEventId.Win));
         }
 
         private static IEnumerable<TestCaseData> SupportedEventCases()
         {
-            yield return new TestCaseData(new InvalidInput(new TileCoord(0, 0), InvalidInputReason.SingleTile), HapticEventId.InvalidTap, 0.15f);
-            yield return new TestCaseData(new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1))), HapticEventId.GroupClear, 0.20f);
-            yield return new TestCaseData(new BlockerBroken(new TileCoord(1, 1), BlockerType.Crate), HapticEventId.BlockerBreak, 0.30f);
-            yield return new TestCaseData(new IceRevealed(new TileCoord(1, 2), DebrisType.B), HapticEventId.BlockerBreak, 0.30f);
-            yield return new TestCaseData(new DockWarningChanged(DockWarningLevel.Safe, DockWarningLevel.Caution), HapticEventId.DockCaution, 0.25f);
-            yield return new TestCaseData(new DockWarningChanged(DockWarningLevel.Caution, DockWarningLevel.Acute), HapticEventId.DockAcute, 0.65f);
-            yield return new TestCaseData(new DockJamTriggered(OverflowCount: 1), HapticEventId.DockJam, 0.70f);
-            yield return new TestCaseData(new DockOverflowTriggered(OverflowCount: 1), HapticEventId.DockOverflow, 0.90f);
-            yield return new TestCaseData(new TargetProgressed("pup-1", new TileCoord(2, 1)), HapticEventId.TargetNearRescue, 0.25f);
-            yield return new TestCaseData(new TargetOneClearAway("pup-1", new TileCoord(2, 1)), HapticEventId.TargetNearRescue, 0.25f);
-            yield return new TestCaseData(new TargetExtracted("pup-1", new TileCoord(2, 1)), HapticEventId.TargetExtract, 0.40f);
-            yield return new TestCaseData(new WaterWarning(ActionsUntilRise: 1, NextFloodRow: 4), HapticEventId.WaterWarning, 0.35f);
-            yield return new TestCaseData(new WaterRose(FloodedRow: 4), HapticEventId.WaterRise, 0.50f);
-            yield return new TestCaseData(new Lost(ActionOutcome.LossWaterOnTarget), HapticEventId.WaterLoss, 0.90f);
-            yield return new TestCaseData(new VinePreviewChanged(new TileCoord(3, 2)), HapticEventId.VinePreview, 0.25f);
-            yield return new TestCaseData(new VineGrown(new TileCoord(3, 2)), HapticEventId.VineGrow, 0.45f);
-            yield return new TestCaseData(new Won("pup-1", TotalActions: 4, ExtractedTargetOrder: ImmutableArray.Create("pup-1")), HapticEventId.Win, 0.55f);
+            yield return new TestCaseData(new InvalidInput(new TileCoord(0, 0), InvalidInputReason.SingleTile), HapticEventId.InvalidTap, HapticPatternStyle.Tick, 0.12f, 25);
+            yield return new TestCaseData(new BlockerBroken(new TileCoord(1, 1), BlockerType.Crate), HapticEventId.BlockerBreak, HapticPatternStyle.Pop, 0.30f, 40);
+            yield return new TestCaseData(new IceRevealed(new TileCoord(1, 2), DebrisType.B), HapticEventId.BlockerBreak, HapticPatternStyle.Pop, 0.30f, 40);
+            yield return new TestCaseData(new DockWarningChanged(DockWarningLevel.Safe, DockWarningLevel.Caution), HapticEventId.DockCaution, HapticPatternStyle.Tick, 0.22f, 35);
+            yield return new TestCaseData(new DockWarningChanged(DockWarningLevel.Caution, DockWarningLevel.Acute), HapticEventId.DockAcute, HapticPatternStyle.Pulse, 0.65f, 70);
+            yield return new TestCaseData(new DockJamTriggered(OverflowCount: 1), HapticEventId.DockJam, HapticPatternStyle.Warning, 0.65f, 70);
+            yield return new TestCaseData(new DockOverflowTriggered(OverflowCount: 1), HapticEventId.DockOverflow, HapticPatternStyle.Failure, 0.90f, 125);
+            yield return new TestCaseData(new TargetProgressed("pup-1", new TileCoord(2, 1)), HapticEventId.TargetNearRescue, HapticPatternStyle.Lift, 0.22f, 40);
+            yield return new TestCaseData(new TargetOneClearAway("pup-1", new TileCoord(2, 1)), HapticEventId.TargetNearRescue, HapticPatternStyle.Lift, 0.22f, 40);
+            yield return new TestCaseData(new TargetExtracted("pup-1", new TileCoord(2, 1)), HapticEventId.TargetExtract, HapticPatternStyle.Pop, 0.38f, 50);
+            yield return new TestCaseData(new WaterWarning(ActionsUntilRise: 1, NextFloodRow: 4), HapticEventId.WaterWarning, HapticPatternStyle.Warning, 0.30f, 45);
+            yield return new TestCaseData(new WaterRose(FloodedRow: 4), HapticEventId.WaterRise, HapticPatternStyle.Pulse, 0.45f, 75);
+            yield return new TestCaseData(new Lost(ActionOutcome.LossWaterOnTarget), HapticEventId.WaterLoss, HapticPatternStyle.Failure, 0.90f, 125);
+            yield return new TestCaseData(new VinePreviewChanged(new TileCoord(3, 2)), HapticEventId.VinePreview, HapticPatternStyle.Tick, 0.20f, 35);
+            yield return new TestCaseData(new VineGrown(new TileCoord(3, 2)), HapticEventId.VineGrow, HapticPatternStyle.Warning, 0.40f, 60);
+            yield return new TestCaseData(new Won("pup-1", TotalActions: 4, ExtractedTargetOrder: ImmutableArray.Create("pup-1")), HapticEventId.Win, HapticPatternStyle.Success, 0.45f, 55);
         }
 
         private static IEnumerable<TestCaseData> UnmappedEventCases()
         {
             yield return new TestCaseData(new BlockerDamaged(new TileCoord(1, 0), BlockerType.Crate, RemainingHp: 1));
+            yield return new TestCaseData(new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1))));
             yield return new TestCaseData(new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 1, OverflowCount: 0));
             yield return new TestCaseData(new DockCleared(DebrisType.A, SetsCleared: 1, OccupancyAfterClear: 0));
             yield return new TestCaseData(new GravitySettled(ImmutableArray.Create((new TileCoord(0, 0), new TileCoord(1, 0)))));
@@ -152,6 +203,15 @@ namespace Rescue.Unity.Haptics.Tests
             GameObject gameObject = new GameObject("SpyHapticRouter");
             createdObjects.Add(gameObject);
             return gameObject.AddComponent<SpyHapticEventRouter>();
+        }
+
+        private AdapterHapticEventRouter CreateAdapterRouter(RecordingAdapter adapter)
+        {
+            GameObject gameObject = new GameObject("AdapterHapticRouter");
+            createdObjects.Add(gameObject);
+            AdapterHapticEventRouter router = gameObject.AddComponent<AdapterHapticEventRouter>();
+            router.Adapter = adapter;
+            return router;
         }
 
         private AudioSettingsController CreateSettings()
@@ -168,6 +228,11 @@ namespace Rescue.Unity.Haptics.Tests
                 ImmutableArray.CreateRange(events),
                 outcome,
                 Snapshot: null);
+        }
+
+        private static ActionPlaybackStep CreatePlaybackStep(ActionEvent actionEvent)
+        {
+            return new ActionPlaybackStep(ActionPlaybackStepType.RemoveGroup, actionEvent.GetType().Name, actionEvent);
         }
 
         private static GameState CreateState()
@@ -217,6 +282,30 @@ namespace Rescue.Unity.Haptics.Tests
             protected override void PlayHaptic(HapticFeedbackSignal signal)
             {
                 playedSignals.Add(signal);
+            }
+        }
+
+        private sealed class AdapterHapticEventRouter : HapticEventRouter
+        {
+            public IHapticPlatformAdapter? Adapter { get; set; }
+
+            protected override IHapticPlatformAdapter CreatePlatformAdapter()
+            {
+                return Adapter ?? base.CreatePlatformAdapter();
+            }
+        }
+
+        private sealed class RecordingAdapter : IHapticPlatformAdapter
+        {
+            private readonly List<HapticPattern> playedPatterns = new List<HapticPattern>();
+
+            public IReadOnlyList<HapticPattern> PlayedPatterns => playedPatterns;
+
+            public bool SupportsAdvancedPatterns => true;
+
+            public void Play(HapticPattern pattern)
+            {
+                playedPatterns.Add(pattern);
             }
         }
     }
