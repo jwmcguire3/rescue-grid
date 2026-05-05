@@ -13,6 +13,7 @@ namespace Rescue.Unity.Audio.Tests
         {
             PlayerPrefs.DeleteKey(AudioSettingsController.MusicVolumePrefsKey);
             PlayerPrefs.DeleteKey(AudioSettingsController.FxVolumePrefsKey);
+            PlayerPrefs.DeleteKey(AudioSettingsController.HapticsEnabledPrefsKey);
             PlayerPrefs.Save();
         }
 
@@ -27,6 +28,7 @@ namespace Rescue.Unity.Audio.Tests
 
             PlayerPrefs.DeleteKey(AudioSettingsController.MusicVolumePrefsKey);
             PlayerPrefs.DeleteKey(AudioSettingsController.FxVolumePrefsKey);
+            PlayerPrefs.DeleteKey(AudioSettingsController.HapticsEnabledPrefsKey);
             PlayerPrefs.Save();
         }
 
@@ -39,6 +41,7 @@ namespace Rescue.Unity.Audio.Tests
 
             Assert.That(controller.MusicVolume, Is.EqualTo(1.0f));
             Assert.That(controller.FxVolume, Is.EqualTo(1.0f));
+            Assert.That(controller.HapticsEnabled, Is.True);
         }
 
         [Test]
@@ -48,11 +51,14 @@ namespace Rescue.Unity.Audio.Tests
 
             controller.SetMusicVolume(1.5f);
             controller.SetFxVolume(-0.25f);
+            controller.SetHapticsEnabled(false);
 
             Assert.That(controller.MusicVolume, Is.EqualTo(1.0f));
             Assert.That(controller.FxVolume, Is.EqualTo(0.0f));
+            Assert.That(controller.HapticsEnabled, Is.False);
             Assert.That(PlayerPrefs.GetFloat(AudioSettingsController.MusicVolumePrefsKey), Is.EqualTo(1.0f));
             Assert.That(PlayerPrefs.GetFloat(AudioSettingsController.FxVolumePrefsKey), Is.EqualTo(0.0f));
+            Assert.That(PlayerPrefs.GetInt(AudioSettingsController.HapticsEnabledPrefsKey), Is.EqualTo(0));
         }
 
         [Test]
@@ -60,6 +66,7 @@ namespace Rescue.Unity.Audio.Tests
         {
             PlayerPrefs.SetFloat(AudioSettingsController.MusicVolumePrefsKey, 0.35f);
             PlayerPrefs.SetFloat(AudioSettingsController.FxVolumePrefsKey, 0.65f);
+            PlayerPrefs.SetInt(AudioSettingsController.HapticsEnabledPrefsKey, 0);
             PlayerPrefs.Save();
             AudioSettingsController controller = CreateController();
 
@@ -67,6 +74,7 @@ namespace Rescue.Unity.Audio.Tests
 
             Assert.That(controller.MusicVolume, Is.EqualTo(0.35f).Within(0.001f));
             Assert.That(controller.FxVolume, Is.EqualTo(0.65f).Within(0.001f));
+            Assert.That(controller.HapticsEnabled, Is.False);
         }
 
         private AudioSettingsController CreateController()

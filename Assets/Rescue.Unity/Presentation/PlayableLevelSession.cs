@@ -4,6 +4,7 @@ using Rescue.Content;
 using Rescue.Core.Pipeline;
 using Rescue.Core.State;
 using Rescue.Core.Undo;
+using Rescue.Unity.Haptics;
 using Rescue.Unity.Input;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -43,6 +44,7 @@ namespace Rescue.Unity.Presentation
         [SerializeField] private VictoryScreenPresenter? victoryScreen;
         [SerializeField] private LossScreenPresenter? lossScreen;
         [SerializeField] private L00IntroImagePresenter? l00IntroImage;
+        [SerializeField] private HapticEventRouter? hapticEventRouter;
         [SerializeField] private string startingLevelId = InitialLevelId;
         [SerializeField] private int seed = InitialSeed;
 
@@ -102,6 +104,7 @@ namespace Rescue.Unity.Presentation
             }
 
             LoadLevel(currentLevelId, seed);
+            RouteManualHaptic(HapticEventId.RetryConfirmed);
         }
 
         public bool LoadNextLevel()
@@ -147,6 +150,7 @@ namespace Rescue.Unity.Presentation
             GameState restored = UndoGuard.PerformUndo(current, snapshot);
             gameStateView?.Rebuild(restored);
             boardInput?.SetCurrentState(restored, refreshView: false);
+            RouteManualHaptic(HapticEventId.UndoUsed);
             return true;
         }
 
@@ -285,8 +289,37 @@ namespace Rescue.Unity.Presentation
                 l00IntroImage = L00IntroImagePresenter.EnsureInstance();
             }
 
+            if (hapticEventRouter is null)
+            {
+                hapticEventRouter = FindAnyObjectByType<HapticEventRouter>();
+            }
+
+            if (hapticEventRouter is null && gameStateView is not null)
+            {
+                hapticEventRouter = gameStateView.GetComponent<HapticEventRouter>();
+                if (hapticEventRouter is null)
+                {
+                    hapticEventRouter = gameStateView.gameObject.AddComponent<HapticEventRouter>();
+                }
+            }
+
             BindTerminalButtons();
             BindL00IntroImage();
+        }
+
+        private void RouteManualHaptic(HapticEventId eventId)
+        {
+            ResolveSceneReferences();
+            try
+            {
+                hapticEventRouter?.RouteManual(eventId);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning(
+                    $"{nameof(PlayableLevelSession)} skipped manual haptic '{eventId}' after an exception: {exception.Message}",
+                    this);
+            }
         }
 
         private void BindTerminalButtons()

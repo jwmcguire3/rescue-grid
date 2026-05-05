@@ -4,6 +4,7 @@ using System.Reflection;
 using Rescue.Content;
 using Rescue.Unity.Audio;
 using Rescue.Unity.Feedback;
+using Rescue.Unity.Haptics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
@@ -33,6 +34,7 @@ namespace Rescue.Unity.Presentation
         private Slider? fxSlider;
         private Toggle? muteMusicToggle;
         private Toggle? muteFxToggle;
+        private Toggle? hapticsToggle;
         private Label? musicValueLabel;
         private Label? fxValueLabel;
         private float lastNonZeroMusicVolume = 1.0f;
@@ -46,6 +48,8 @@ namespace Rescue.Unity.Presentation
         public bool IsMusicMuted => ResolveAudioSettings()?.MusicVolume <= 0f;
 
         public bool IsFxMuted => ResolveAudioSettings()?.FxVolume <= 0f;
+
+        public bool HapticsEnabled => ResolveAudioSettings()?.HapticsEnabled ?? true;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Bootstrap()
@@ -201,6 +205,18 @@ namespace Rescue.Unity.Presentation
             RefreshValues();
         }
 
+        public void SetHapticsEnabled(bool enabled)
+        {
+            if (IsTerminalScreenVisible())
+            {
+                RefreshAudioControls();
+                return;
+            }
+
+            ResolveAudioSettings()?.SetHapticsEnabled(enabled);
+            RefreshAudioControls();
+        }
+
         private void Awake()
         {
             EnsureDocument();
@@ -277,6 +293,12 @@ namespace Rescue.Unity.Presentation
             if (audioRouter is not null)
             {
                 audioRouter.SettingsController = audioSettings;
+            }
+
+            HapticEventRouter? hapticRouter = FindAnyObjectByType<HapticEventRouter>();
+            if (hapticRouter is not null)
+            {
+                hapticRouter.SettingsController = audioSettings;
             }
         }
 
@@ -463,6 +485,11 @@ namespace Rescue.Unity.Presentation
             muteRow.Add(muteMusicToggle);
             muteRow.Add(muteFxToggle);
 
+            hapticsToggle = CreateMuteToggle("settings-haptics-toggle", "Haptics");
+            hapticsToggle.RegisterValueChangedCallback(evt => SetHapticsEnabled(evt.newValue));
+            hapticsToggle.style.marginTop = 4f;
+            hapticsToggle.style.marginBottom = 4f;
+
             panel.Add(headerRow);
             panel.Add(restartButton);
             panel.Add(levelDropdown);
@@ -470,6 +497,7 @@ namespace Rescue.Unity.Presentation
             panel.Add(musicRow);
             panel.Add(fxRow);
             panel.Add(muteRow);
+            panel.Add(hapticsToggle);
             anchor.Add(toggleButton);
             anchor.Add(panel);
             root.Add(anchor);
@@ -633,6 +661,7 @@ namespace Rescue.Unity.Presentation
             fxSlider?.SetValueWithoutNotify(settings.FxVolume);
             muteMusicToggle?.SetValueWithoutNotify(settings.MusicVolume <= 0f);
             muteFxToggle?.SetValueWithoutNotify(settings.FxVolume <= 0f);
+            hapticsToggle?.SetValueWithoutNotify(settings.HapticsEnabled);
             UpdateValueLabel(musicValueLabel, settings.MusicVolume);
             UpdateValueLabel(fxValueLabel, settings.FxVolume);
         }

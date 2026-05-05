@@ -8,17 +8,22 @@ namespace Rescue.Unity.Audio
     {
         public const string MusicVolumePrefsKey = "rescue.settings.musicVolume";
         public const string FxVolumePrefsKey = "rescue.settings.fxVolume";
+        public const string HapticsEnabledPrefsKey = "rescue.settings.hapticsEnabled";
 
         private const float DefaultVolume = 1.0f;
+        private const bool DefaultHapticsEnabled = true;
 
         [SerializeField] [Range(0f, 1f)] private float musicVolume = DefaultVolume;
         [SerializeField] [Range(0f, 1f)] private float fxVolume = DefaultVolume;
+        [SerializeField] private bool hapticsEnabled = DefaultHapticsEnabled;
 
         public event Action? SettingsChanged;
 
         public float MusicVolume => Mathf.Clamp01(musicVolume);
 
         public float FxVolume => Mathf.Clamp01(fxVolume);
+
+        public bool HapticsEnabled => hapticsEnabled;
 
         public static AudioSettingsController EnsureInstance()
         {
@@ -39,6 +44,7 @@ namespace Rescue.Unity.Audio
         {
             musicVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(MusicVolumePrefsKey, DefaultVolume));
             fxVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(FxVolumePrefsKey, DefaultVolume));
+            hapticsEnabled = PlayerPrefs.GetInt(HapticsEnabledPrefsKey, DefaultHapticsEnabled ? 1 : 0) != 0;
             SettingsChanged?.Invoke();
         }
 
@@ -66,6 +72,19 @@ namespace Rescue.Unity.Audio
 
             fxVolume = clamped;
             PlayerPrefs.SetFloat(FxVolumePrefsKey, fxVolume);
+            PlayerPrefs.Save();
+            SettingsChanged?.Invoke();
+        }
+
+        public void SetHapticsEnabled(bool enabled)
+        {
+            if (hapticsEnabled == enabled && PlayerPrefs.HasKey(HapticsEnabledPrefsKey))
+            {
+                return;
+            }
+
+            hapticsEnabled = enabled;
+            PlayerPrefs.SetInt(HapticsEnabledPrefsKey, hapticsEnabled ? 1 : 0);
             PlayerPrefs.Save();
             SettingsChanged?.Invoke();
         }

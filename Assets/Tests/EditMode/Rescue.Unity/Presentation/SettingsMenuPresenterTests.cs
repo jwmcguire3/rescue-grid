@@ -18,6 +18,7 @@ namespace Rescue.Unity.Presentation.Tests
         {
             PlayerPrefs.DeleteKey(AudioSettingsController.MusicVolumePrefsKey);
             PlayerPrefs.DeleteKey(AudioSettingsController.FxVolumePrefsKey);
+            PlayerPrefs.DeleteKey(AudioSettingsController.HapticsEnabledPrefsKey);
             PlayerPrefs.Save();
         }
 
@@ -44,6 +45,7 @@ namespace Rescue.Unity.Presentation.Tests
 
             PlayerPrefs.DeleteKey(AudioSettingsController.MusicVolumePrefsKey);
             PlayerPrefs.DeleteKey(AudioSettingsController.FxVolumePrefsKey);
+            PlayerPrefs.DeleteKey(AudioSettingsController.HapticsEnabledPrefsKey);
             PlayerPrefs.Save();
         }
 
@@ -65,6 +67,7 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(root.Q<DropdownField>("settings-level-dropdown"), Is.Not.Null);
             Assert.That(root.Q<Toggle>("settings-mute-music-toggle"), Is.Not.Null);
             Assert.That(root.Q<Toggle>("settings-mute-fx-toggle"), Is.Not.Null);
+            Assert.That(root.Q<Toggle>("settings-haptics-toggle"), Is.Not.Null);
             Assert.That(root.Q<Label>("settings-music-slider-value-label"), Is.Not.Null);
             Assert.That(root.Q<Label>("settings-fx-slider-value-label"), Is.Not.Null);
 
@@ -94,6 +97,28 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(root.Q<Label>("settings-fx-slider-value-label")!.text, Is.EqualTo("62%"));
             Assert.That(root.Q<Toggle>("settings-mute-music-toggle")!.value, Is.False);
             Assert.That(root.Q<Toggle>("settings-mute-fx-toggle")!.value, Is.False);
+            Assert.That(root.Q<Toggle>("settings-haptics-toggle")!.value, Is.True);
+        }
+
+        [Test]
+        public void SettingsMenuPresenter_HapticsTogglePersistsSeparatelyFromAudio()
+        {
+            SettingsMenuPresenter presenter = CreatePresenter(out AudioSettingsController audioSettings);
+            audioSettings.SetMusicVolume(0.37f);
+            audioSettings.SetFxVolume(0.62f);
+
+            presenter.SetOpen(true);
+            presenter.SetHapticsEnabled(false);
+
+            VisualElement root = RootElement();
+            Assert.That(audioSettings.MusicVolume, Is.EqualTo(0.37f).Within(0.001f));
+            Assert.That(audioSettings.FxVolume, Is.EqualTo(0.62f).Within(0.001f));
+            Assert.That(audioSettings.HapticsEnabled, Is.False);
+            Assert.That(root.Q<Toggle>("settings-haptics-toggle")!.value, Is.False);
+
+            presenter.SetHapticsEnabled(true);
+            Assert.That(audioSettings.HapticsEnabled, Is.True);
+            Assert.That(root.Q<Toggle>("settings-haptics-toggle")!.value, Is.True);
         }
 
         [Test]
