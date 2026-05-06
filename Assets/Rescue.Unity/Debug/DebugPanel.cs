@@ -1823,14 +1823,7 @@ namespace Rescue.Unity.Debugging
                 _waterActionsValue, _waterRiseIntervalValue, _waterNextFloodRowValue, _waterForecastValue, _ruleTeachValue, _vineActionsValue, _vineThresholdValue, _vinePendingValue,
                 _dockOccupancyValue, _dockWarningValue, _dockContentsValue, _dockJamUsedValue, _dockJamEnabledValue, _nearRescueTargetsValue, _rngStateValue, _consecutiveEmergencyValue, _spawnRecoveryValue);
 
-            if (_eventLogList is not null)
-            {
-                _eventLogList.Clear();
-                for (int i = 0; i < _eventLog.Count; i++)
-                {
-                    _eventLogList.Add(CreateLogEntryElement(_eventLog[i]));
-                }
-            }
+            DebugPanelEventLogView.Render(_eventLogList, _eventLog);
         }
 
         private void SyncLevelSelectorChoices(string selectedLevel)
@@ -1879,26 +1872,6 @@ namespace Rescue.Unity.Debugging
                     _ => "Auto",
                 });
             }
-        }
-
-        private VisualElement CreateLogEntryElement(DebugActionLogEntry entry)
-        {
-            VisualElement container = new VisualElement();
-            container.AddToClassList("event-log-entry");
-
-            Label header = new Label($"{entry.ActionLabel} -> {entry.Outcome}");
-            header.style.unityFontStyleAndWeight = FontStyle.Bold;
-            container.Add(header);
-
-            for (int i = 0; i < entry.Lines.Length; i++)
-            {
-                DebugEventLogLine line = entry.Lines[i];
-                Label label = new Label(line.DevOnly ? $"[dev] {line.Message}" : line.Message);
-                label.style.color = line.Color;
-                container.Add(label);
-            }
-
-            return container;
         }
 
         private void SetStatus(string message)
