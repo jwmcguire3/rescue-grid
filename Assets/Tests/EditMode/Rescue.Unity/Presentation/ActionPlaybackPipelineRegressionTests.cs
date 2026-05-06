@@ -27,8 +27,7 @@ namespace Rescue.Unity.Presentation.Tests
                 new TileCoord(0, 0),
                 ActionOutcome.Ok,
                 nameof(GroupRemoved),
-                nameof(DockInserted),
-                nameof(DockInserted),
+                nameof(ActionPlaybackStepType.DockInsertionTravel),
                 nameof(GravitySettled),
                 nameof(Spawned));
         }
@@ -49,8 +48,7 @@ namespace Rescue.Unity.Presentation.Tests
                 ActionOutcome.Ok,
                 nameof(GroupRemoved),
                 nameof(BlockerBroken),
-                nameof(DockInserted),
-                nameof(DockInserted),
+                nameof(ActionPlaybackStepType.DockInsertionTravel),
                 nameof(Spawned));
         }
 
@@ -70,8 +68,7 @@ namespace Rescue.Unity.Presentation.Tests
                 ActionOutcome.Ok,
                 nameof(GroupRemoved),
                 "BlockerResolutionBatch",
-                nameof(DockInserted),
-                nameof(DockInserted),
+                nameof(ActionPlaybackStepType.DockInsertionTravel),
                 nameof(GravitySettled),
                 nameof(Spawned));
         }
@@ -94,8 +91,7 @@ namespace Rescue.Unity.Presentation.Tests
                 "BlockerDamageBatch",
                 nameof(TargetRescuePathLocked),
                 nameof(TargetExtractionLatched),
-                nameof(DockInserted),
-                nameof(DockInserted),
+                nameof(ActionPlaybackStepType.DockInsertionTravel),
                 nameof(TargetExtracted),
                 nameof(Won));
         }
@@ -118,8 +114,7 @@ namespace Rescue.Unity.Presentation.Tests
                 nameof(GroupRemoved),
                 nameof(TargetRescuePathLocked),
                 nameof(TargetOneClearAway),
-                nameof(DockInserted),
-                nameof(DockInserted),
+                nameof(ActionPlaybackStepType.DockInsertionTravel),
                 nameof(Spawned),
                 nameof(WaterRose));
         }
@@ -140,8 +135,7 @@ namespace Rescue.Unity.Presentation.Tests
                 new TileCoord(0, 0),
                 ActionOutcome.Ok,
                 nameof(GroupRemoved),
-                nameof(DockInserted),
-                nameof(DockInserted),
+                nameof(ActionPlaybackStepType.DockInsertionTravel),
                 nameof(DockCleared),
                 nameof(Spawned));
         }
@@ -163,8 +157,7 @@ namespace Rescue.Unity.Presentation.Tests
                 new TileCoord(0, 0),
                 ActionOutcome.Ok,
                 nameof(GroupRemoved),
-                nameof(DockInserted),
-                nameof(DockInserted),
+                nameof(ActionPlaybackStepType.DockInsertionTravel),
                 nameof(DockOverflowTriggered),
                 nameof(DockWarningChanged),
                 nameof(DockJamTriggered));
@@ -193,8 +186,7 @@ namespace Rescue.Unity.Presentation.Tests
                 "BlockerDamageBatch",
                 nameof(TargetRescuePathLocked),
                 nameof(TargetExtractionLatched),
-                nameof(DockInserted),
-                nameof(DockInserted),
+                nameof(ActionPlaybackStepType.DockInsertionTravel),
                 nameof(TargetExtracted),
                 nameof(Won),
             }));
@@ -217,8 +209,7 @@ namespace Rescue.Unity.Presentation.Tests
                 new TileCoord(0, 0),
                 ActionOutcome.LossDockOverflow,
                 nameof(GroupRemoved),
-                nameof(DockInserted),
-                nameof(DockInserted),
+                nameof(ActionPlaybackStepType.DockInsertionTravel),
                 nameof(DockOverflowTriggered),
                 nameof(DockWarningChanged),
                 nameof(Lost));
@@ -240,8 +231,7 @@ namespace Rescue.Unity.Presentation.Tests
                 new TileCoord(0, 0),
                 ActionOutcome.LossWaterOnTarget,
                 nameof(GroupRemoved),
-                nameof(DockInserted),
-                nameof(DockInserted),
+                nameof(ActionPlaybackStepType.DockInsertionTravel),
                 nameof(Spawned),
                 nameof(WaterRose),
                 nameof(Lost));
@@ -265,8 +255,7 @@ namespace Rescue.Unity.Presentation.Tests
                 nameof(GroupRemoved),
                 nameof(TargetRescuePathLocked),
                 nameof(TargetOneClearAway),
-                nameof(DockInserted),
-                nameof(DockInserted),
+                nameof(ActionPlaybackStepType.DockInsertionTravel),
                 nameof(Spawned),
                 nameof(WaterRose),
                 nameof(TargetRescuePathFlooded),

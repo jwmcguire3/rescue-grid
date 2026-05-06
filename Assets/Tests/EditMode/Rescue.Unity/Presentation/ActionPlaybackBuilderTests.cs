@@ -45,7 +45,7 @@ namespace Rescue.Unity.Presentation.Tests
                 ActionPlaybackStepType.WaterRise,
                 ActionPlaybackStepType.Spawn,
                 ActionPlaybackStepType.TargetExtract,
-                ActionPlaybackStepType.DockFeedback,
+                ActionPlaybackStepType.DockInsertionTravel,
                 ActionPlaybackStepType.BreakBlockerOrReveal,
                 ActionPlaybackStepType.RemoveGroup,
                 ActionPlaybackStepType.Gravity,
@@ -139,20 +139,44 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(plan.Take(plan.Count - 1).Select(step => step.SourceEventName), Is.EqualTo(new[]
             {
                 nameof(BlockerDamaged),
-                nameof(DockInserted),
+                nameof(ActionPlaybackStepType.DockInsertionTravel),
             }));
         }
 
         [Test]
-        public void Build_DockInsertedMapsToDockFeedback()
+        public void Build_DockInsertedMapsToDockInsertionTravel()
         {
             ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
                 CreateState(),
                 new ActionInput(new TileCoord(0, 0)),
                 CreateResult(new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 1, OverflowCount: 0)));
 
-            Assert.That(plan[0].SourceEventName, Is.EqualTo(nameof(DockInserted)));
-            Assert.That(plan[0].StepType, Is.EqualTo(ActionPlaybackStepType.DockFeedback));
+            Assert.That(plan[0].SourceEventName, Is.EqualTo(nameof(ActionPlaybackStepType.DockInsertionTravel)));
+            Assert.That(plan[0].StepType, Is.EqualTo(ActionPlaybackStepType.DockInsertionTravel));
+            Assert.That(plan[0].Events.Select(actionEvent => actionEvent.GetType().Name), Is.EqualTo(new[] { nameof(DockInserted) }));
+        }
+
+        [Test]
+        public void Build_ContiguousDockInsertedEventsBatchIntoSingleDockInsertionTravel()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(
+                    new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 1, OverflowCount: 0),
+                    new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 2, OverflowCount: 0),
+                    new DockWarningChanged(DockWarningLevel.Safe, DockWarningLevel.Caution)));
+
+            Assert.That(plan.Take(plan.Count - 1).Select(step => (step.SourceEventName, step.StepType)), Is.EqualTo(new[]
+            {
+                (nameof(ActionPlaybackStepType.DockInsertionTravel), ActionPlaybackStepType.DockInsertionTravel),
+                (nameof(DockWarningChanged), ActionPlaybackStepType.DockFeedback),
+            }));
+            Assert.That(plan[0].Events.Select(actionEvent => actionEvent.GetType().Name), Is.EqualTo(new[]
+            {
+                nameof(DockInserted),
+                nameof(DockInserted),
+            }));
         }
 
         [Test]
@@ -205,7 +229,7 @@ namespace Rescue.Unity.Presentation.Tests
 
             Assert.That(plan.Take(plan.Count - 1).Select(step => (step.SourceEventName, step.StepType)), Is.EqualTo(new[]
             {
-                (nameof(DockInserted), ActionPlaybackStepType.DockFeedback),
+                (nameof(ActionPlaybackStepType.DockInsertionTravel), ActionPlaybackStepType.DockInsertionTravel),
                 (nameof(DockCleared), ActionPlaybackStepType.DockFeedback),
                 (nameof(DockWarningChanged), ActionPlaybackStepType.DockFeedback),
                 (nameof(DockJamTriggered), ActionPlaybackStepType.DockFeedback),
@@ -456,7 +480,7 @@ namespace Rescue.Unity.Presentation.Tests
 
             Assert.That(plan.Take(plan.Count - 1).Select(step => (step.SourceEventName, step.StepType)), Is.EqualTo(new[]
             {
-                (nameof(DockInserted), ActionPlaybackStepType.DockFeedback),
+                (nameof(ActionPlaybackStepType.DockInsertionTravel), ActionPlaybackStepType.DockInsertionTravel),
                 (nameof(DockJamTriggered), ActionPlaybackStepType.DockFeedback),
                 (nameof(Lost), ActionPlaybackStepType.TerminalOutcome),
             }));
@@ -517,7 +541,7 @@ namespace Rescue.Unity.Presentation.Tests
                 ("TargetRescuePathLocked", ActionPlaybackStepType.TargetReaction),
                 ("TargetOneClearAway", ActionPlaybackStepType.TargetReaction),
                 ("TargetExtractionLatched", ActionPlaybackStepType.TargetLatch),
-                ("DockInserted", ActionPlaybackStepType.DockFeedback),
+                ("DockInsertionTravel", ActionPlaybackStepType.DockInsertionTravel),
                 ("DockCleared", ActionPlaybackStepType.DockFeedback),
                 ("DockOverflowTriggered", ActionPlaybackStepType.DockOverflow),
                 ("DockWarningChanged", ActionPlaybackStepType.DockFeedback),
@@ -554,7 +578,7 @@ namespace Rescue.Unity.Presentation.Tests
                 (nameof(TargetProgressed), ActionPlaybackStepType.TargetReaction),
                 (nameof(TargetOneClearAway), ActionPlaybackStepType.TargetReaction),
                 (nameof(TargetExtractionLatched), ActionPlaybackStepType.TargetLatch),
-                (nameof(DockInserted), ActionPlaybackStepType.DockFeedback),
+                (nameof(ActionPlaybackStepType.DockInsertionTravel), ActionPlaybackStepType.DockInsertionTravel),
                 (nameof(TargetExtracted), ActionPlaybackStepType.TargetExtract),
             }));
         }

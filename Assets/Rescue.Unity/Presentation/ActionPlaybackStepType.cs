@@ -5,6 +5,7 @@ namespace Rescue.Unity.Presentation
         RemoveGroup,
         BreakBlockerOrReveal,
         TargetReaction,
+        DockInsertionTravel,
         DockFeedback,
         DockOverflow,
         TargetLatch,

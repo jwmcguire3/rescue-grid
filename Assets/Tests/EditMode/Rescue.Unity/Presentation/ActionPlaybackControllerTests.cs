@@ -118,6 +118,7 @@ namespace Rescue.Unity.Presentation.Tests
             SetPrivateField(settings, "breakBlockerOrRevealDurationSeconds", 0.09f);
             SetPrivateField(settings, "blockerBreakCascadeStaggerSeconds", 0.03f);
             SetPrivateField(settings, "dockFeedbackDurationSeconds", 0.10f);
+            SetPrivateField(settings, "dockInsertionTravelDurationSeconds", 0.12f);
             SetPrivateField(settings, "dockInsertFeedbackDurationSeconds", 0.08f);
             SetPrivateField(settings, "dockClearFeedbackDurationSeconds", 0.07f);
             SetPrivateField(settings, "dockWarningCautionDurationSeconds", 0.42f);
@@ -145,6 +146,11 @@ namespace Rescue.Unity.Presentation.Tests
                     new BlockerBroken(new TileCoord(0, 2), BlockerType.Crate)))),
                 Is.EqualTo(0.30f));
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.DockFeedback), Is.EqualTo(0.20f));
+            Assert.That(GetStepDuration(controller, new ActionPlaybackStep(
+                ActionPlaybackStepType.DockInsertionTravel,
+                nameof(ActionPlaybackStepType.DockInsertionTravel),
+                new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 1, OverflowCount: 0))),
+                Is.EqualTo(0.24f));
             Assert.That(GetStepDuration(controller, new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 1, OverflowCount: 0)), Is.EqualTo(0.16f));
             Assert.That(GetStepDuration(controller, new DockCleared(DebrisType.A, SetsCleared: 1, OccupancyAfterClear: 0)), Is.EqualTo(0.14f));
             Assert.That(GetStepDuration(controller, new DockWarningChanged(DockWarningLevel.Safe, DockWarningLevel.Caution)), Is.EqualTo(0.84f));
@@ -188,6 +194,11 @@ namespace Rescue.Unity.Presentation.Tests
             ActionPlaybackController controller = CreateController(settings);
 
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.RemoveGroup), Is.EqualTo(ActionPlaybackSettings.DefaultRemoveDurationSeconds / 2.0f));
+            Assert.That(GetStepDuration(controller, new ActionPlaybackStep(
+                ActionPlaybackStepType.DockInsertionTravel,
+                nameof(ActionPlaybackStepType.DockInsertionTravel),
+                new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 1, OverflowCount: 0))),
+                Is.EqualTo(ActionPlaybackSettings.DefaultDockInsertionTravelDurationSeconds / 4.0f));
             Assert.That(GetStepDuration(controller, new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 1, OverflowCount: 0)), Is.EqualTo(ActionPlaybackSettings.DefaultDockInsertFeedbackDurationSeconds / 4.0f));
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.TargetExtract), Is.EqualTo(ActionPlaybackSettings.DefaultTargetExtractDurationSeconds / 0.5f));
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.WaterRise), Is.EqualTo(ActionPlaybackSettings.DefaultWaterRiseDurationSeconds / 2.0f));
@@ -358,6 +369,37 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
+        public void ActionPlaybackController_InfersDockInsertionSourceFromRemovedGroup()
+        {
+            ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
+            GameState previousState = CreateState();
+            harness.GridPresenter.RebuildGrid(previousState);
+
+            ActionResult result = CreateResult(
+                previousState,
+                actionCount: 5,
+                new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1))),
+                new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 1, OverflowCount: 0));
+
+            bool handled = harness.Controller.TryPlayAction(
+                previousState,
+                new ActionInput(new TileCoord(2, 0)),
+                result,
+                _ => { });
+
+            Vector3 expectedPosition =
+                (harness.GridPresenter.GetCellWorldPosition(new TileCoord(0, 0)) +
+                 harness.GridPresenter.GetCellWorldPosition(new TileCoord(0, 1))) * 0.5f;
+
+            Assert.That(handled, Is.True);
+            Assert.That(harness.Controller.CurrentPlan[1].StepType, Is.EqualTo(ActionPlaybackStepType.DockInsertionTravel));
+            Assert.That(
+                TryResolveDockInsertionSource(harness.Controller, stepIndex: 1, new ActionInput(new TileCoord(2, 0)), out Vector3 sourcePosition),
+                Is.True);
+            AssertVector3Equal(expectedPosition, sourcePosition);
+        }
+
+        [Test]
         public void ActionPlaybackController_RoutesTerminalWinBeforeFinalSync()
         {
             ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
@@ -453,7 +495,7 @@ namespace Rescue.Unity.Presentation.Tests
                 harness.Controller.CurrentPlan[1].StepType,
             }, Is.EqualTo(new[]
             {
-                ActionPlaybackStepType.DockFeedback,
+                ActionPlaybackStepType.DockInsertionTravel,
                 ActionPlaybackStepType.TerminalOutcome,
             }));
             Assert.That(harness.Controller.CurrentPlan[^1].StepType, Is.EqualTo(ActionPlaybackStepType.FinalSync));
@@ -1130,7 +1172,7 @@ namespace Rescue.Unity.Presentation.Tests
 
             Assert.That(handled, Is.True);
             Assert.That(finalSyncCalls, Is.EqualTo(1));
-            Assert.That(harness.Controller.CurrentPlan[1].StepType, Is.EqualTo(ActionPlaybackStepType.DockFeedback));
+            Assert.That(harness.Controller.CurrentPlan[1].StepType, Is.EqualTo(ActionPlaybackStepType.DockInsertionTravel));
             Assert.That(harness.Controller.CurrentPlan[2].StepType, Is.EqualTo(ActionPlaybackStepType.DockFeedback));
             Assert.That(materialAtFinalSync, Is.SameAs(harness.CautionMaterial));
             Assert.That(harness.DockPieceContainer.childCount, Is.EqualTo(5));
@@ -1645,6 +1687,23 @@ namespace Rescue.Unity.Presentation.Tests
 
             Assert.That(method, Is.Not.Null, "Expected private method 'GetStepDurationSeconds'.");
             return (float)(method?.Invoke(controller, new object[] { step }) ?? 0f);
+        }
+
+        private static bool TryResolveDockInsertionSource(
+            ActionPlaybackController controller,
+            int stepIndex,
+            ActionInput input,
+            out Vector3 sourcePosition)
+        {
+            System.Reflection.MethodInfo? method = controller.GetType().GetMethod(
+                "TryResolveDockInsertionSource",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+            Assert.That(method, Is.Not.Null, "Expected private method 'TryResolveDockInsertionSource'.");
+            object[] arguments = { stepIndex, input, Vector3.zero };
+            bool resolved = (bool)(method?.Invoke(controller, arguments) ?? false);
+            sourcePosition = (Vector3)arguments[2];
+            return resolved;
         }
 
         private static void AssertVector3Equal(Vector3 expected, Vector3 actual, float tolerance = 0.0001f)

@@ -161,7 +161,7 @@ namespace Rescue.Unity.Presentation
 
                     ActionPlaybackStep step = CurrentPlan[i];
                     currentStepName = ActionPlaybackRouting.GetDebugLabel(step);
-                    PlayStep(step, previousState, input, result.State);
+                    PlayStep(i, step, previousState, input, result.State);
                     yield return CreateStepYield(step);
                 }
             }
@@ -187,7 +187,7 @@ namespace Rescue.Unity.Presentation
 
                     ActionPlaybackStep step = CurrentPlan[i];
                     currentStepName = ActionPlaybackRouting.GetDebugLabel(step);
-                    PlayStep(step, previousState, input, result.State);
+                    PlayStep(i, step, previousState, input, result.State);
                 }
             }
             finally
@@ -196,7 +196,7 @@ namespace Rescue.Unity.Presentation
             }
         }
 
-        private void PlayStep(ActionPlaybackStep step, GameState previousState, ActionInput input, GameState resultState)
+        private void PlayStep(int stepIndex, ActionPlaybackStep step, GameState previousState, ActionInput input, GameState resultState)
         {
             ImmutableArray<ActionEvent> sourceEvents = step.Events;
             if (sourceEvents.IsDefaultOrEmpty)
@@ -204,7 +204,11 @@ namespace Rescue.Unity.Presentation
                 return;
             }
 
-            if (step.StepType == ActionPlaybackStepType.BreakBlockerOrReveal && sourceEvents.Length > 1)
+            if (step.StepType == ActionPlaybackStepType.DockInsertionTravel)
+            {
+                PlayDockInsertionTravel(stepIndex, sourceEvents, input);
+            }
+            else if (step.StepType == ActionPlaybackStepType.BreakBlockerOrReveal && sourceEvents.Length > 1)
             {
                 PlayBlockerBatch(sourceEvents);
             }
@@ -284,6 +288,27 @@ namespace Rescue.Unity.Presentation
             }
         }
 
+        private void PlayDockInsertionTravel(int stepIndex, ImmutableArray<ActionEvent> sourceEvents, ActionInput input)
+        {
+            if (!TryResolveDockInsertionSource(stepIndex, input, out Vector3 sourceWorldPosition))
+            {
+                for (int i = 0; i < sourceEvents.Length; i++)
+                {
+                    if (sourceEvents[i] is DockInserted inserted)
+                    {
+                        ResolveDockView()?.PlayInsertFeedback(inserted);
+                    }
+                }
+
+                return;
+            }
+
+            ResolveDockView()?.PlayInsertionTravelFeedback(
+                sourceEvents,
+                sourceWorldPosition,
+                settings.DockInsertionTravelDurationSeconds);
+        }
+
         private void PlayBlockerBatch(ImmutableArray<ActionEvent> sourceEvents)
         {
             ImmutableArray<BlockerBroken>.Builder brokenBlockers = ImmutableArray.CreateBuilder<BlockerBroken>();
@@ -345,7 +370,9 @@ namespace Rescue.Unity.Presentation
                     case Lost:
                         return settings.LossFxDurationSeconds;
                     case DockInserted:
-                        return settings.DockInsertFeedbackDurationSeconds;
+                        return step.StepType == ActionPlaybackStepType.DockInsertionTravel
+                            ? settings.DockInsertionTravelDurationSeconds
+                            : settings.DockInsertFeedbackDurationSeconds;
                     case DockCleared:
                         return settings.DockClearFeedbackDurationSeconds;
                     case DockWarningChanged warningChanged:
@@ -370,6 +397,8 @@ namespace Rescue.Unity.Presentation
                 case ActionPlaybackStepType.TargetReaction:
                 case ActionPlaybackStepType.TargetLatch:
                     return settings.TargetReactionDurationSeconds;
+                case ActionPlaybackStepType.DockInsertionTravel:
+                    return settings.DockInsertionTravelDurationSeconds;
                 case ActionPlaybackStepType.DockFeedback:
                     return settings.DockFeedbackDurationSeconds;
                 case ActionPlaybackStepType.DockOverflow:
@@ -406,6 +435,68 @@ namespace Rescue.Unity.Presentation
             return brokenCount > 1
                 ? (brokenCount - 1) * settings.BlockerBreakCascadeStaggerSeconds
                 : 0f;
+        }
+
+        private bool TryResolveDockInsertionSource(int stepIndex, ActionInput input, out Vector3 sourceWorldPosition)
+        {
+            for (int i = stepIndex - 1; i >= 0; i--)
+            {
+                ImmutableArray<ActionEvent> events = CurrentPlan[i].Events;
+                for (int eventIndex = events.Length - 1; eventIndex >= 0; eventIndex--)
+                {
+                    if (events[eventIndex] is GroupRemoved removed &&
+                        TryResolveGroupWorldPosition(removed.Coords, out sourceWorldPosition))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return TryResolveCellWorldPosition(input.TappedCoord, out sourceWorldPosition);
+        }
+
+        private bool TryResolveGroupWorldPosition(ImmutableArray<TileCoord> coords, out Vector3 worldPosition)
+        {
+            if (coords.IsDefaultOrEmpty)
+            {
+                worldPosition = Vector3.zero;
+                return false;
+            }
+
+            Vector3 accumulated = Vector3.zero;
+            int resolvedCount = 0;
+            for (int i = 0; i < coords.Length; i++)
+            {
+                if (!TryResolveCellWorldPosition(coords[i], out Vector3 cellWorldPosition))
+                {
+                    continue;
+                }
+
+                accumulated += cellWorldPosition;
+                resolvedCount++;
+            }
+
+            if (resolvedCount <= 0)
+            {
+                worldPosition = Vector3.zero;
+                return false;
+            }
+
+            worldPosition = accumulated / resolvedCount;
+            return true;
+        }
+
+        private bool TryResolveCellWorldPosition(TileCoord coord, out Vector3 worldPosition)
+        {
+            BoardGridViewPresenter? resolvedBoardGrid = ResolveBoardGrid();
+            if (resolvedBoardGrid is not null &&
+                resolvedBoardGrid.TryGetCellWorldPosition(coord, out worldPosition))
+            {
+                return true;
+            }
+
+            worldPosition = Vector3.zero;
+            return false;
         }
 
         private void CompletePlayback(int sessionId, ActionResult result, Action<ActionResult> finalSync)

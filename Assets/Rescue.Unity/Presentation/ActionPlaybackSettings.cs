@@ -10,6 +10,7 @@ namespace Rescue.Unity.Presentation
         public const float DefaultBreakBlockerOrRevealDurationSeconds = 0.10f;
         public const float DefaultBlockerBreakCascadeStaggerSeconds = 0.08f;
         public const float DefaultDockFeedbackDurationSeconds = 0.10f;
+        public const float DefaultDockInsertionTravelDurationSeconds = 0.12f;
         public const float DefaultDockInsertFeedbackDurationSeconds = 0.08f;
         public const float DefaultDockClearFeedbackDurationSeconds = 0.08f;
         public const float DefaultDockWarningCautionDurationSeconds = 0.50f;
@@ -49,6 +50,7 @@ namespace Rescue.Unity.Presentation
         [SerializeField] private float breakBlockerOrRevealDurationSeconds = DefaultBreakBlockerOrRevealDurationSeconds;
         [SerializeField] private float blockerBreakCascadeStaggerSeconds = DefaultBlockerBreakCascadeStaggerSeconds;
         [SerializeField] private float dockFeedbackDurationSeconds = DefaultDockFeedbackDurationSeconds;
+        [SerializeField] private float dockInsertionTravelDurationSeconds = DefaultDockInsertionTravelDurationSeconds;
         [SerializeField] private float dockInsertFeedbackDurationSeconds = DefaultDockInsertFeedbackDurationSeconds;
         [SerializeField] private float dockClearFeedbackDurationSeconds = DefaultDockClearFeedbackDurationSeconds;
         [SerializeField] private float dockWarningCautionDurationSeconds = DefaultDockWarningCautionDurationSeconds;
@@ -102,6 +104,10 @@ namespace Rescue.Unity.Presentation
             BoardActionSpeedMultiplier);
 
         public float DockFeedbackDurationSeconds => ScaleGameplayDuration(dockFeedbackDurationSeconds, DockSpeedMultiplier);
+
+        public float DockInsertionTravelDurationSeconds => ScaleGameplayDuration(
+            dockInsertionTravelDurationSeconds,
+            DockSpeedMultiplier);
 
         public float DockInsertFeedbackDurationSeconds => ScaleGameplayDuration(
             dockInsertFeedbackDurationSeconds,

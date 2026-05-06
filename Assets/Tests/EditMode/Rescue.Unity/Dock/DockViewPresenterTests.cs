@@ -451,6 +451,101 @@ namespace Rescue.Unity.UI.Tests
         }
 
         [Test]
+        public void DockViewPresenter_PlayInsertionTravelFeedbackTracksDestinationSlots()
+        {
+            GameObject presenterObject = CreateTrackedObject("DockPresenter");
+            DockViewPresenter presenter = presenterObject.AddComponent<DockViewPresenter>();
+            Transform pieceContainer = new GameObject("DockPieces").transform;
+            pieceContainer.SetParent(presenterObject.transform, false);
+            Track(pieceContainer.gameObject);
+
+            for (int i = 0; i < 7; i++)
+            {
+                CreateTrackedAnchor(presenterObject.transform, i);
+            }
+
+            GameObject fallbackPrefab = CreateTrackedObject("FallbackPiecePrefab");
+            SetPrivateField(presenter, "pieceContainer", pieceContainer);
+            SetPrivateField(presenter, "fallbackPiecePrefab", fallbackPrefab);
+
+            presenter.Rebuild(CreateState(DebrisType.A, DebrisType.B, null, null, null, null, null));
+
+            presenter.PlayInsertionTravelFeedback(
+                ImmutableArray.Create<ActionEvent>(
+                    new DockInserted(ImmutableArray.Create(DebrisType.C), OccupancyAfterInsert: 3, OverflowCount: 0),
+                    new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 4, OverflowCount: 0)),
+                new Vector3(-3f, 2f, 0f),
+                durationSeconds: 0f);
+
+            Assert.That(presenter.GetTrackedSlotType(2), Is.EqualTo(DebrisType.C));
+            Assert.That(presenter.GetTrackedSlotType(3), Is.EqualTo(DebrisType.A));
+            Assert.That(presenter.GetTrackedSlotObject(2), Is.Not.Null);
+            Assert.That(presenter.GetTrackedSlotObject(3), Is.Not.Null);
+            Assert.That(pieceContainer.childCount, Is.EqualTo(4));
+        }
+
+        [Test]
+        public void DockViewPresenter_PlayInsertionTravelFeedbackSkipsZeroPieceInsertions()
+        {
+            GameObject presenterObject = CreateTrackedObject("DockPresenter");
+            DockViewPresenter presenter = presenterObject.AddComponent<DockViewPresenter>();
+            Transform pieceContainer = new GameObject("DockPieces").transform;
+            pieceContainer.SetParent(presenterObject.transform, false);
+            Track(pieceContainer.gameObject);
+
+            for (int i = 0; i < 7; i++)
+            {
+                CreateTrackedAnchor(presenterObject.transform, i);
+            }
+
+            GameObject fallbackPrefab = CreateTrackedObject("FallbackPiecePrefab");
+            SetPrivateField(presenter, "pieceContainer", pieceContainer);
+            SetPrivateField(presenter, "fallbackPiecePrefab", fallbackPrefab);
+
+            presenter.Rebuild(CreateState(null, null, null, null, null, null, null));
+
+            presenter.PlayInsertionTravelFeedback(
+                ImmutableArray.Create<ActionEvent>(
+                    new DockInserted(ImmutableArray<DebrisType>.Empty, OccupancyAfterInsert: 0, OverflowCount: 0)),
+                new Vector3(-3f, 2f, 0f),
+                durationSeconds: 0f);
+
+            Assert.That(pieceContainer.childCount, Is.EqualTo(0));
+            Assert.That(presenter.GetTrackedSlotType(0), Is.Null);
+        }
+
+        [Test]
+        public void DockViewPresenter_PlayInsertionTravelFeedbackFallsBackWithoutSource()
+        {
+            GameObject presenterObject = CreateTrackedObject("DockPresenter");
+            DockViewPresenter presenter = presenterObject.AddComponent<DockViewPresenter>();
+            Transform pieceContainer = new GameObject("DockPieces").transform;
+            pieceContainer.SetParent(presenterObject.transform, false);
+            Track(pieceContainer.gameObject);
+
+            for (int i = 0; i < 7; i++)
+            {
+                CreateTrackedAnchor(presenterObject.transform, i);
+            }
+
+            GameObject fallbackPrefab = CreateTrackedObject("FallbackPiecePrefab");
+            SetPrivateField(presenter, "pieceContainer", pieceContainer);
+            SetPrivateField(presenter, "fallbackPiecePrefab", fallbackPrefab);
+
+            presenter.Rebuild(CreateState(null, null, null, null, null, null, null));
+
+            presenter.PlayInsertionTravelFeedback(
+                ImmutableArray.Create<ActionEvent>(
+                    new DockInserted(ImmutableArray.Create(DebrisType.B), OccupancyAfterInsert: 1, OverflowCount: 0)),
+                sourceWorldPosition: null,
+                durationSeconds: 0f);
+
+            Assert.That(presenter.GetTrackedSlotType(0), Is.EqualTo(DebrisType.B));
+            Assert.That(presenter.GetTrackedSlotObject(0), Is.Not.Null);
+            Assert.That(pieceContainer.childCount, Is.EqualTo(1));
+        }
+
+        [Test]
         public void DockViewPresenter_PlayClearFeedbackRemovesTriplesAndCompactsRemainingPieces()
         {
             GameObject presenterObject = CreateTrackedObject("DockPresenter");

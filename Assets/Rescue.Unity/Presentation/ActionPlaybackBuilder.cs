@@ -39,6 +39,12 @@ namespace Rescue.Unity.Presentation
                     continue;
                 }
 
+                if (actionEvent is DockInserted)
+                {
+                    i = MapDockInsertionTravelStep(result.Events, i, mappedSteps);
+                    continue;
+                }
+
                 MapSteps(actionEvent, mappedSteps);
             }
 
@@ -78,7 +84,6 @@ namespace Rescue.Unity.Presentation
                     mappedSteps.Add(CreateStep(ActionPlaybackStepType.TargetLatch, actionEvent));
                     return;
 
-                case DockInserted:
                 case DockCleared:
                 case DockWarningChanged:
                 case DockJamTriggered:
@@ -168,6 +173,28 @@ namespace Rescue.Unity.Presentation
 
             AddBlockerBatch(mappedSteps, "BlockerDamageBatch", damageEvents.ToImmutable());
             AddBlockerBatch(mappedSteps, "BlockerResolutionBatch", breakEvents.ToImmutable());
+            return endIndex - 1;
+        }
+
+        private static int MapDockInsertionTravelStep(
+            ImmutableArray<ActionEvent> sourceEvents,
+            int startIndex,
+            List<ActionPlaybackStep> mappedSteps)
+        {
+            int endIndex = startIndex;
+            ImmutableArray<ActionEvent>.Builder insertEvents = ImmutableArray.CreateBuilder<ActionEvent>();
+            while (endIndex < sourceEvents.Length && sourceEvents[endIndex] is DockInserted)
+            {
+                insertEvents.Add(sourceEvents[endIndex]);
+                endIndex++;
+            }
+
+            ImmutableArray<ActionEvent> events = insertEvents.ToImmutable();
+            mappedSteps.Add(new ActionPlaybackStep(
+                ActionPlaybackStepType.DockInsertionTravel,
+                nameof(ActionPlaybackStepType.DockInsertionTravel),
+                events[0],
+                events));
             return endIndex - 1;
         }
 

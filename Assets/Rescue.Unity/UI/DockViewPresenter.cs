@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Rescue.Core.Pipeline;
 using Rescue.Core.State;
 using Rescue.Unity.Art.Registries;
@@ -560,6 +561,56 @@ namespace Rescue.Unity.UI
             feedback.PlayInsertFeedback();
         }
 
+        public void PlayInsertionTravelFeedback(
+            ImmutableArray<ActionEvent> dockInsertedEvents,
+            Vector3? sourceWorldPosition,
+            float durationSeconds)
+        {
+            if (dockInsertedEvents.IsDefaultOrEmpty)
+            {
+                return;
+            }
+
+            int insertedPieceCount = CountInsertedPieces(dockInsertedEvents);
+            if (insertedPieceCount <= 0)
+            {
+                return;
+            }
+
+            if (!sourceWorldPosition.HasValue)
+            {
+                for (int i = 0; i < dockInsertedEvents.Length; i++)
+                {
+                    if (dockInsertedEvents[i] is DockInserted inserted && inserted.Pieces.Length > 0)
+                    {
+                        PlayInsertFeedback(inserted);
+                    }
+                }
+
+                return;
+            }
+
+            DockFeedbackPresenter feedback = PrepareFeedbackPresenter();
+            int traveledPieceIndex = 0;
+            for (int i = 0; i < dockInsertedEvents.Length; i++)
+            {
+                if (dockInsertedEvents[i] is not DockInserted inserted || inserted.Pieces.Length <= 0)
+                {
+                    continue;
+                }
+
+                SetDockVisualState(DockVisualStateResolver.FromOccupancy(inserted.OccupancyAfterInsert, Phase1DockSize));
+                ApplyInsertionTravelVisual(
+                    inserted,
+                    sourceWorldPosition.Value,
+                    durationSeconds,
+                    ref traveledPieceIndex,
+                    insertedPieceCount);
+            }
+
+            feedback.PlayInsertFeedback();
+        }
+
         public void PlayClearFeedback(DockCleared dockCleared)
         {
             if (dockCleared is null)
@@ -909,6 +960,43 @@ namespace Rescue.Unity.UI
             }
         }
 
+        private void ApplyInsertionTravelVisual(
+            DockInserted dockInserted,
+            Vector3 sourceWorldPosition,
+            float durationSeconds,
+            ref int traveledPieceIndex,
+            int totalTraveledPieces)
+        {
+            Transform[] anchors = ResolveSlotAnchors();
+            if (anchors.Length == 0)
+            {
+                return;
+            }
+
+            int insertedCount = dockInserted.Pieces.Length;
+            int firstInsertedSlot = Mathf.Max(0, dockInserted.OccupancyAfterInsert - insertedCount);
+            int maxSlotCount = Mathf.Min(_trackedSlots.Capacity, anchors.Length);
+
+            for (int pieceIndex = 0; pieceIndex < insertedCount; pieceIndex++)
+            {
+                int slotIndex = firstInsertedSlot + pieceIndex;
+                if (slotIndex < 0 || slotIndex >= maxSlotCount)
+                {
+                    traveledPieceIndex++;
+                    continue;
+                }
+
+                AssignTrackedSlot(slotIndex, dockInserted.Pieces[pieceIndex], anchors[slotIndex]);
+                AnimateInsertedSlotTravel(
+                    slotIndex,
+                    sourceWorldPosition,
+                    durationSeconds,
+                    traveledPieceIndex,
+                    totalTraveledPieces);
+                traveledPieceIndex++;
+            }
+        }
+
         private void ApplyClearVisual(DockCleared dockCleared)
         {
             Transform[] anchors = ResolveSlotAnchors();
@@ -1038,6 +1126,48 @@ namespace Rescue.Unity.UI
                 dockInsertDurationSeconds));
         }
 
+        private void AnimateInsertedSlotTravel(
+            int slotIndex,
+            Vector3 sourceWorldPosition,
+            float durationSeconds,
+            int traveledPieceIndex,
+            int totalTraveledPieces)
+        {
+            GameObject? trackedObject = _trackedSlots.GetSlotObject(slotIndex);
+            if (trackedObject is null)
+            {
+                return;
+            }
+
+            Transform pieceTransform = trackedObject.transform;
+            Vector3 finalPosition = pieceTransform.position;
+            Quaternion finalRotation = pieceTransform.rotation;
+            Vector3 finalScale = pieceTransform.localScale;
+
+            if (!Application.isPlaying || !isActiveAndEnabled || durationSeconds <= 0f)
+            {
+                pieceTransform.SetPositionAndRotation(finalPosition, finalRotation);
+                pieceTransform.localScale = finalScale;
+                SetVisualAlpha(trackedObject, 1f);
+                return;
+            }
+
+            float centeredIndex = traveledPieceIndex - ((Mathf.Max(1, totalTraveledPieces) - 1) * 0.5f);
+            Vector3 startPosition = sourceWorldPosition + (transform.right * centeredIndex * 0.06f);
+            pieceTransform.position = startPosition;
+            pieceTransform.rotation = finalRotation;
+            pieceTransform.localScale = DockPiecePoseHelper.ResolveRaisedScale(finalScale);
+            SetVisualAlpha(trackedObject, 0.85f);
+
+            StartCoroutine(AnimateDockPieceTravelRoutine(
+                trackedObject,
+                startPosition,
+                finalPosition,
+                finalRotation,
+                finalScale,
+                durationSeconds));
+        }
+
         private void AnimateClearedDockPieces(List<GameObject> clearedObjects)
         {
             for (int i = 0; i < clearedObjects.Count; i++)
@@ -1092,6 +1222,46 @@ namespace Rescue.Unity.UI
                 Transform pieceTransform = pieceObject.transform;
                 pieceTransform.position = finalPosition;
                 pieceTransform.rotation = finalRotation;
+                pieceTransform.localScale = finalScale;
+                SetVisualAlpha(pieceObject, 1f);
+            }
+        }
+
+        private System.Collections.IEnumerator AnimateDockPieceTravelRoutine(
+            GameObject pieceObject,
+            Vector3 startPosition,
+            Vector3 finalPosition,
+            Quaternion finalRotation,
+            Vector3 finalScale,
+            float durationSeconds)
+        {
+            float clampedDuration = Mathf.Max(0.01f, durationSeconds);
+            float elapsed = 0f;
+            Vector3 raisedScale = DockPiecePoseHelper.ResolveRaisedScale(finalScale);
+
+            while (elapsed < clampedDuration)
+            {
+                if (pieceObject is null)
+                {
+                    yield break;
+                }
+
+                elapsed += Time.deltaTime;
+                float normalized = Mathf.Clamp01(elapsed / clampedDuration);
+                float eased = 1f - Mathf.Pow(1f - normalized, 3f);
+                float arc = Mathf.Sin(normalized * Mathf.PI) * 0.18f;
+                Transform pieceTransform = pieceObject.transform;
+                pieceTransform.position = Vector3.LerpUnclamped(startPosition, finalPosition, eased) + (transform.up * arc);
+                pieceTransform.rotation = finalRotation;
+                pieceTransform.localScale = Vector3.LerpUnclamped(raisedScale, finalScale, eased);
+                SetVisualAlpha(pieceObject, Mathf.Lerp(0.85f, 1f, normalized));
+                yield return null;
+            }
+
+            if (pieceObject is not null)
+            {
+                Transform pieceTransform = pieceObject.transform;
+                pieceTransform.SetPositionAndRotation(finalPosition, finalRotation);
                 pieceTransform.localScale = finalScale;
                 SetVisualAlpha(pieceObject, 1f);
             }
@@ -1160,6 +1330,20 @@ namespace Rescue.Unity.UI
                 color.a = clampedAlpha;
                 graphic.color = color;
             }
+        }
+
+        private static int CountInsertedPieces(ImmutableArray<ActionEvent> dockInsertedEvents)
+        {
+            int count = 0;
+            for (int i = 0; i < dockInsertedEvents.Length; i++)
+            {
+                if (dockInsertedEvents[i] is DockInserted inserted)
+                {
+                    count += inserted.Pieces.Length;
+                }
+            }
+
+            return count;
         }
 
         private Quaternion ResolveDockRotationOffset(DebrisType debrisType)
