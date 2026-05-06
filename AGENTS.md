@@ -15,8 +15,10 @@ rescue order is the central puzzle.
   - EditMode tests for anything in Rescue.Core and Rescue.Content.
   - PlayMode tests only for integration and smoke tests that need the
     Unity runtime.
-- CLI test command: `Unity -batchmode -runTests -testPlatform EditMode -projectPath .`
-  (wrapped in scripts/test.sh for convenience).
+- CLI test wrappers:
+  - Windows: `powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1 -Platforms EditMode`
+  - Windows PlayMode: `powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1 -Platforms PlayMode`
+  - Bash wrapper: `scripts/test.sh` forwards to `scripts/test.ps1`.
 - Unity compiler language version is pinned via `Assets/csc.rsp`; keep it
   at C# 10+ unless the project is deliberately migrated and verified.
 - `Assets/csc.rsp` also carries the global nullable setting and any
@@ -25,8 +27,20 @@ rescue order is the central puzzle.
   `Assets/Plugins/System.Collections.Immutable.dll` plugin; do not remove
   it unless Unity package/runtime support is replaced intentionally.
 - Formatting and analyzer preferences are defined in the root `.editorconfig`.
-  Do not assume all analyzer warnings are CI-blocking unless the project or CI
-  configuration explicitly says so.
+  Treat it as the repository style source; do not assume analyzer warnings are
+  warnings-as-errors unless a script, project, or CI configuration explicitly
+  wires that behavior.
+
+## Source-of-truth locations
+- Gameplay/design authority: `docs/phase_1_spec.md`.
+- Main playable/player scene: `Assets/Scenes/Game.unity`.
+- Debug/testing/playback scene: `Assets/Scenes/DebugGameplay.unity`.
+- Authored playable level JSON: `Assets/StreamingAssets/Levels/`.
+- Authored solve/replay JSON: `Assets/Resources/Levels/`.
+- Content pipeline notes: `Assets/Rescue.Content/README.md` and
+  `Assets/Rescue.Content/AUTHORING.md`.
+- Scene membership authority: `ProjectSettings/EditorBuildSettings.asset` plus
+  the files present under `Assets/Scenes/`.
 
 ## Architecture rules (non-negotiable)
 
@@ -70,9 +84,11 @@ rescue order is the central puzzle.
 - No `Time.time`, `Time.deltaTime`, `Time.frameCount` in Rescue.Core.
   If timing matters (it shouldn't, since the pipeline is action-driven,
   not time-driven), that timing belongs in Rescue.Unity.
-- Scenes: one main scene `Game.unity` for play, one `DebugSandbox.unity`
-  for isolated debug work. Levels are data (JSON in StreamingAssets), not
-  scenes.
+- Scenes: `Game.unity` is the main playable/player scene.
+  `DebugGameplay.unity` is the existing debug/testing/playback scene. Levels
+  are data in `Assets/StreamingAssets/Levels/`, not scenes.
+- Do not edit, rename, or reorganize scenes, prefabs, art assets, or level JSON
+  unless the current task explicitly scopes that work.
 - Meta files: commit .meta files. Never delete them manually. If you
   rename or move a script, use Unity's rename, not a raw file system
   rename — Unity regenerates GUIDs otherwise and references break.
@@ -83,14 +99,24 @@ rescue order is the central puzzle.
 
 ## Testing rules
 
-- Every pipeline step has an EditMode unit test that exercises it in
-  isolation.
-- Every rule has a determinism test: given a seed and an input sequence,
-  the final state must be byte-identical on repeated runs.
-- Smoke tests (PlayMode) must pass headless: load level → take 3 actions
-  → undo → retry → complete.
+- When changing pipeline behavior, keep or add focused EditMode coverage for
+  the affected step.
+- When changing deterministic rules, keep or add a determinism test: given a
+  seed and an input sequence, repeated runs must produce the same final state.
+- PlayMode tests are for Unity integration and smoke coverage that needs the
+  runtime.
 - Core tests do NOT create GameObjects or reference UnityEngine.
   If a Core test needs a MonoBehaviour, the design is wrong.
+- Do not treat the current L03 Phase 1 validator warning as a blocker unless a
+  task explicitly asks to retune L03; it is an accepted content-policy warning.
+
+## Agent workflow
+- Read `docs/phase_1_spec.md` before planning implementation work.
+- Prefer the implementation for repository paths and scene names; prefer
+  `docs/phase_1_spec.md` for gameplay rules.
+- Keep documentation edits targeted. Do not rewrite broad sections when a small
+  correction is enough.
+- Do not perform broad refactors or cleanup while making scoped fixes.
 
 ## Commit style
 - One logical change per commit. Reference the task ID in the message

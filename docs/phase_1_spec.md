@@ -861,6 +861,8 @@ If a level is too sparse, add meaningful board material that supports route choi
 
 Existing L00–L15 JSON layouts are draft/proof layouts until they pass the start-state density and readability rules.
 
+Authored playable level JSON lives in `Assets/StreamingAssets/Levels/`. Authored solve/replay JSON lives in `Assets/Resources/Levels/`. Repository onboarding, scene names, and command details belong in `README.md` and `AGENTS.md`; this document remains the gameplay/design authority.
+
 When rebuilding them, preserve each level's purpose, expected path, expected fail mode, water/dock/vine tuning, and proof target unless explicitly changed.
 
 Do not preserve sparse tutorial-diagram geometry merely because it exists in the current JSON.

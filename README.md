@@ -136,7 +136,7 @@ Current scenes:
 - `Assets/Scenes/Game.unity`
 - `Assets/Scenes/DebugGameplay.unity`
 
-`Game.unity` is the clean player/capture entry point. It boots L00 through the player-facing level session, progresses through L01-L15 from the victory screen, and keeps the debug panel out of the default player flow. `DebugGameplay.unity` remains the development scene for tuning, replay, and debug UI work.
+Open the project with Unity `6000.4.3f1`. `Game.unity` is the main playable/player scene and clean capture entry point. It boots L00 through the player-facing level session, progresses through L01-L15 from the victory screen, and keeps the debug panel out of the default player flow. `DebugGameplay.unity` is the existing debug/testing/playback scene for tuning, replay, and debug UI work.
 
 Unity implementation areas:
 
@@ -217,6 +217,8 @@ Windows test wrapper:
 powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1 -Platforms EditMode
 powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1 -Platforms PlayMode
 ```
+
+Level validation may print Phase 1 policy warnings separately from validation errors. The current L03 policy warning is accepted for this prototype state and is not an unresolved blocker by itself.
 
 Tool projects:
 
