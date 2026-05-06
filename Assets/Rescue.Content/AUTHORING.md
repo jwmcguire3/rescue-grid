@@ -24,6 +24,27 @@ The filename must match the `id` field inside the JSON.
 
 An explicit authoring template with the current standard fields is at [`scripts/level-template.json`](../../scripts/level-template.json). Copy it, rename it to the target level id, and fill in all values before authoring the tile grid.
 
+## Recommended authoring workflow
+
+Use this sequence for level edits. Validation is required, but it is not acceptance.
+
+1. Pick the manifest level and brief in `docs/level-packets/phase1.packet.json` and `docs/level-briefs/<levelId>.brief.json`.
+2. Edit the playable JSON in `Assets/StreamingAssets/Levels/<levelId>.json`.
+3. Validate core content, Phase 1 policy, and brief conformance.
+4. Preview the board as ASCII, and use SVG preview when visual layout review matters.
+5. Run `design-report` for the edited level.
+6. Verify the solve script, golden path, and expected fail path when one exists.
+7. Compare assisted and unassisted solve behavior.
+8. Write or update review markdown in `docs/level-reviews/`.
+9. Run the packet acceptance gate before calling the packet accepted or playtest-ready.
+
+## Status terms
+
+- `valid`: schema, core validation, Phase 1 packet policy, and brief conformance pass. A valid level can still be unreadable, unproven, or unaccepted.
+- `reviewable`: valid, previewed, checked by readability analysis, and covered by `design-report` output for human design review.
+- `accepted`: a manifest-expected level has an approved golden path and passes `--verify-acceptance` against `docs/level-packets/phase1.packet.json`.
+- `playtest-ready`: the accepted packet passes `scripts/verify-level-authoring.ps1`, with current review markdown and replay artifacts.
+
 ## Final authoring gate
 
 Before opening a PR or preparing a playtest build that changes authored levels, briefs, solve scripts, golden paths, fail paths, or level-authoring tools, run the final local gate:

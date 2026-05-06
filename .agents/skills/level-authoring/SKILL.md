@@ -28,7 +28,7 @@ Before authoring or modifying levels, read the relevant sources:
 - `references/LEVEL_DESIGN_PRINCIPLES.md` for rescue-first design rules, fairness, and common mistakes.
 - `references/LEVEL_ROLES_AND_ARCHETYPES.md` when choosing the level role or reviewing pacing.
 - `references/DENSITY_AND_READABILITY.md` when checking start-state density, first-move readability, empty cells, or required authoring discipline.
-- `references/PHASE1_LEVEL_INTENTS.md` when modifying L00-L15 prototype levels.
+- `references/PHASE1_LEVEL_INTENTS.md` when modifying production onboarding levels covered by that reference.
 - `references/FIRST_100_ROADMAP.md` when designing production campaign levels beyond the Phase 1 packet.
 - `references/FIRST_100_PACING_MODEL.md` when designing production campaign flow, level-set sequencing, or retention/tension curves.
 - `references/DIFFICULTY_TARGETS.md` when setting or reviewing difficulty, telemetry, fail-rate targets, bot outcomes, or tuning recommendations.
@@ -41,7 +41,9 @@ If a referenced file is missing, proceed from the current project docs and note 
 
 ### 1. Identify the level brief
 
-Before editing the grid, identify:
+Before editing the grid, identify the matching brief in `docs/level-briefs/<levelId>.brief.json` and, for Phase 1 packet levels, confirm the level is expected by `docs/level-packets/phase1.packet.json`.
+
+From the brief, identify:
 
 - level id or range,
 - level role,
@@ -57,6 +59,8 @@ Before editing the grid, identify:
 - density target.
 
 If the user has not supplied these, infer reasonable defaults from the level range, Phase 1 intents, or roadmap. Ask only if the missing information would materially change the design.
+
+After editing, verify brief-to-level conformance with the current `validate-brief` or `validate-brief-all` command from `Assets/Rescue.Content/AUTHORING.md`.
 
 ### 2. Respect current rules
 
@@ -114,7 +118,7 @@ At minimum:
 
 Write meta so another designer can debug the level without asking you.
 
-### 6. Validate and preview
+### 6. Validate, preview, and prove
 
 Run the project validator after level JSON edits. Use the current commands in `Assets/Rescue.Content/AUTHORING.md`.
 
@@ -125,7 +129,30 @@ Typical commands:
 ./scripts/preview-level.sh L03
 ```
 
-Validation passing is required but not sufficient.
+Validation passing is required but not sufficient. After editing levels, run or explicitly report why you did not run the relevant current commands:
+
+- core and Phase 1 validation,
+- brief conformance,
+- ASCII preview, plus SVG preview when visual layout review matters,
+- readability analysis,
+- `design-report` for the edited level before calling it done,
+- solve script verification,
+- golden path verification for accepted packet levels,
+- fail-path verification when a `.fail.json` file exists or the brief/review expects a fail path,
+- assistance comparison before acceptance,
+- review markdown generation or update.
+
+For broad packet changes or playtest readiness, run the full authoring gate:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\verify-level-authoring.ps1
+```
+
+For accepted manifest levels, a designer-approved golden path is required. Solver-found solves are useful proof, but they are not acceptance by themselves.
+
+Expected fail paths should be verified wherever available. If a fail path is expected but missing, call that out as a review gap instead of treating the level as fully proven.
+
+Update review markdown with `write-review` or `write-review-all`, or explain why review markdown was not applicable to the task.
 
 ### 7. Design-review before finalizing
 
@@ -162,10 +189,18 @@ Do not ask merely because the level number is beyond L15.
 
 ## Definition of done
 
-A level or level set is done only when:
+A level or level set is valid only when:
 
 - JSON validates,
+- Phase 1 policy validation passes when the level belongs to the Phase 1 packet,
+- brief-to-level conformance passes.
+
+A level is reviewable only when:
+
+- validation passes,
 - preview is readable,
+- readability analysis has been run,
+- `design-report` has been run,
 - density is acceptable or justified,
 - the primary skill is clear,
 - expected path is playable,
@@ -176,4 +211,16 @@ A level or level set is done only when:
 - hazards are readable,
 - the level has a satisfying move,
 - the level fits pacing,
-- meta explains the design clearly.
+- meta explains the design clearly,
+- review markdown is updated or the task clearly does not require it.
+
+A Phase 1 packet level is accepted only when:
+
+- it is expected by `docs/level-packets/phase1.packet.json`,
+- solve verification passes,
+- a designer-approved golden path exists and verifies,
+- expected fail paths verify where available,
+- assistance comparison has been reviewed,
+- `--verify-acceptance` passes.
+
+A packet is playtest-ready only when the full `scripts/verify-level-authoring.ps1` gate passes.
