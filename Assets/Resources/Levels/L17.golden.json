@@ -1,0 +1,51 @@
+{
+  "levelId": "L17",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 7,
+  "actions": [
+    {
+      "row": 6,
+      "col": 4,
+      "intent": "Take the initial dock-cost route clear."
+    },
+    {
+      "row": 5,
+      "col": 2,
+      "intent": "Progress the lower target while stabilizing the route."
+    },
+    {
+      "row": 1,
+      "col": 2,
+      "intent": "Start the upper target route value."
+    },
+    {
+      "row": 3,
+      "col": 0,
+      "intent": "Extract the upper target first."
+    },
+    {
+      "row": 6,
+      "col": 0,
+      "intent": "Push the lower target to one-clear-away."
+    },
+    {
+      "row": 7,
+      "col": 1,
+      "intent": "Extract the lower target and win."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "1",
+    "0"
+  ],
+  "notes": "Designer-approved dock pressure choice route: one costly route clear, upper rescue first, then lower rescue finish."
+}

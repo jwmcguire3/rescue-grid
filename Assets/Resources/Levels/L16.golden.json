@@ -1,0 +1,46 @@
+{
+  "levelId": "L16",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 6,
+  "actions": [
+    {
+      "row": 4,
+      "col": 0,
+      "intent": "Rescue the lower target first with the clean lower C route."
+    },
+    {
+      "row": 2,
+      "col": 3,
+      "intent": "Open upper route progress while accepting controlled dock residue."
+    },
+    {
+      "row": 1,
+      "col": 2,
+      "intent": "Move the upper target to one-clear-away."
+    },
+    {
+      "row": 6,
+      "col": 4,
+      "intent": "Clear dock-neutral route pressure before finalizing."
+    },
+    {
+      "row": 2,
+      "col": 0,
+      "intent": "Extract the upper target and win."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "0",
+    "1"
+  ],
+  "notes": "Designer-approved dock remainder variation route: lower puppy first, then controlled upper rescue with accepted dock residue."
+}

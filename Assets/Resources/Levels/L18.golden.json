@@ -1,0 +1,56 @@
+{
+  "levelId": "L18",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 8,
+  "actions": [
+    {
+      "row": 7,
+      "col": 2,
+      "intent": "Open the lower route and pay dock residue."
+    },
+    {
+      "row": 4,
+      "col": 2,
+      "intent": "Break shared blockers and move the lower target near rescue."
+    },
+    {
+      "row": 2,
+      "col": 4,
+      "intent": "Clear vine and crate pressure while progressing the upper route."
+    },
+    {
+      "row": 0,
+      "col": 0,
+      "intent": "Cash the planned B dock triple."
+    },
+    {
+      "row": 4,
+      "col": 0,
+      "intent": "Extract the lower target."
+    },
+    {
+      "row": 1,
+      "col": 3,
+      "intent": "Set the upper target one-clear-away and clear E dock pressure."
+    },
+    {
+      "row": 0,
+      "col": 3,
+      "intent": "Extract the upper target and win."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "0",
+    "1"
+  ],
+  "notes": "Designer-approved dock discipline exam route: lower rescue first, planned dock triple during pivot, then upper rescue finish."
+}
