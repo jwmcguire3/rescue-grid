@@ -8,6 +8,7 @@ namespace Rescue.Unity.FX
         IceReveal,
         VineClear,
         VineGrowthPreview,
+        VineGrowth,
         DockInsert,
         DockTripleClear,
         DockWarning,

@@ -22,6 +22,7 @@ namespace Rescue.Unity.Art.Tests
         private const string Phase1DebrisDPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Pieces/Debris_D_Phase1.prefab";
         private const string Phase1IceBlockPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Blockers/Ice_Block_Phase1.prefab";
         private const string Phase1VinePrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Blockers/Vine_Phase1.prefab";
+        private const string Phase1VineOverlayPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Blockers/Vine_Overlay_Phase1.prefab";
         private const string Phase1FloodedRowPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/Water/FloodedRowOverlay_Phase1.prefab";
         private const string Phase1IceRevealFxPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/FX/IceRevealFx_Phase1.prefab";
         private const string Phase1VineGrowPreviewFxPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/FX/VineGrowPreviewFx.prefab";
@@ -194,6 +195,7 @@ namespace Rescue.Unity.Art.Tests
         {
             Assert.That(LoadAsset<GameObject>(Phase1IceBlockPrefabPath), Is.Not.Null);
             Assert.That(LoadAsset<GameObject>(Phase1VinePrefabPath), Is.Not.Null);
+            Assert.That(LoadAsset<GameObject>(Phase1VineOverlayPrefabPath), Is.Not.Null);
             Assert.That(LoadAsset<GameObject>(Phase1FloodedRowPrefabPath), Is.Not.Null);
             Assert.That(LoadAsset<GameObject>(Phase1IceRevealFxPrefabPath), Is.Not.Null);
         }
@@ -207,6 +209,7 @@ namespace Rescue.Unity.Art.Tests
 
             Assert.That(blockerRegistry.GetPrefab(BlockerType.Ice), Is.SameAs(LoadAsset<GameObject>(Phase1IceBlockPrefabPath)));
             Assert.That(blockerRegistry.GetPrefab(BlockerType.Vine), Is.SameAs(LoadAsset<GameObject>(Phase1VinePrefabPath)));
+            Assert.That(blockerRegistry.VineOverlayPrefab, Is.SameAs(LoadAsset<GameObject>(Phase1VineOverlayPrefabPath)));
             Assert.That(tileRegistry.GetFloodedRowOverlayPrefab(), Is.SameAs(LoadAsset<GameObject>(Phase1FloodedRowPrefabPath)));
             Assert.That(fxRegistry.IceRevealFx, Is.SameAs(LoadAsset<GameObject>(Phase1IceRevealFxPrefabPath)));
         }

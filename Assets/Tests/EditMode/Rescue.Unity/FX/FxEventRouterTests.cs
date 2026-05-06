@@ -204,6 +204,11 @@ namespace Rescue.Unity.FX.Tests
                 state,
                 new ActionInput(new TileCoord(0, 0)),
                 state,
+                CreatePlaybackStep(ActionPlaybackStepType.VineGrowth, new VineGrown(new TileCoord(1, 1))));
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
                 CreatePlaybackStep(ActionPlaybackStepType.TerminalOutcome, new Won("pup-1", TotalActions: 4, ExtractedTargetOrder: ImmutableArray.Create("pup-1"))));
             router.RoutePlaybackBeat(
                 state,
@@ -228,6 +233,7 @@ namespace Rescue.Unity.FX.Tests
             Assert.That(router.TargetExtractionCount, Is.EqualTo(1));
             Assert.That(router.WaterRiseCount, Is.EqualTo(1));
             Assert.That(router.VineGrowthPreviewCount, Is.EqualTo(1));
+            Assert.That(router.VineGrowthCount, Is.EqualTo(1));
             Assert.That(router.WinCount, Is.EqualTo(1));
             Assert.That(router.LossDockOverflowCount, Is.EqualTo(1));
             Assert.That(router.LossWaterOnTargetCount, Is.EqualTo(1));
@@ -243,11 +249,6 @@ namespace Rescue.Unity.FX.Tests
                 state,
                 new ActionInput(new TileCoord(0, 0)),
                 state,
-                CreatePlaybackStep(ActionPlaybackStepType.WaterRise, new VineGrown(new TileCoord(1, 1)))));
-            Assert.DoesNotThrow(() => router.RoutePlaybackBeat(
-                state,
-                new ActionInput(new TileCoord(0, 0)),
-                state,
                 CreatePlaybackStep(ActionPlaybackStepType.WaterRise, new VinePreviewChanged(PendingTile: null))));
             Assert.DoesNotThrow(() => router.RoutePlaybackBeat(
                 state,
@@ -255,7 +256,8 @@ namespace Rescue.Unity.FX.Tests
                 state,
                 CreatePlaybackStep(ActionPlaybackStepType.DockFeedback, new DockWarningChanged(DockWarningLevel.Caution, DockWarningLevel.Safe))));
 
-            Assert.That(router.VineGrowthPreviewCount, Is.EqualTo(1));
+            Assert.That(router.VineGrowthPreviewCount, Is.EqualTo(0));
+            Assert.That(router.VineGrowthCount, Is.EqualTo(0));
             Assert.That(router.DockWarningCount, Is.EqualTo(0));
         }
 
@@ -989,6 +991,7 @@ namespace Rescue.Unity.FX.Tests
                 new IceRevealed(new TileCoord(0, 1), DebrisType.B),
                 new BlockerBroken(new TileCoord(0, 2), BlockerType.Vine),
                 new VinePreviewChanged(new TileCoord(1, 1)),
+                new VineGrown(new TileCoord(1, 1)),
                 new DockWarningChanged(DockWarningLevel.Safe, DockWarningLevel.Caution),
                 new WaterRose(FloodedRow: 4),
                 new TargetOneClearAway("pup-1", new TileCoord(2, 2)),
@@ -1006,6 +1009,7 @@ namespace Rescue.Unity.FX.Tests
                 FxEventHook.IceReveal,
                 FxEventHook.VineClear,
                 FxEventHook.VineGrowthPreview,
+                FxEventHook.VineGrowth,
                 FxEventHook.DockWarning,
                 FxEventHook.WaterRise,
                 FxEventHook.NearRescueRelief,
@@ -1282,6 +1286,8 @@ namespace Rescue.Unity.FX.Tests
 
             public int VineGrowthPreviewCount { get; private set; }
 
+            public int VineGrowthCount { get; private set; }
+
             public int WinCount { get; private set; }
 
             public int LossDockOverflowCount { get; private set; }
@@ -1366,6 +1372,11 @@ namespace Rescue.Unity.FX.Tests
             protected override void PlayVineGrowthPreview(Vector3 worldPosition)
             {
                 VineGrowthPreviewCount++;
+            }
+
+            protected override void PlayVineGrowth(Vector3 worldPosition)
+            {
+                VineGrowthCount++;
             }
 
             protected override void PlayNearRescueRelief(Vector3 worldPosition)

@@ -123,6 +123,9 @@ namespace Rescue.Unity.FX
                     case FxEventHook.VineGrowthPreview:
                         PlayVineGrowthPreview();
                         break;
+                    case FxEventHook.VineGrowth:
+                        PlayVineGrowth();
+                        break;
                     case FxEventHook.DockWarning:
                         PlayDockWarning();
                         break;
@@ -215,8 +218,7 @@ namespace Rescue.Unity.FX
                         PlayVineGrowthPreview(ResolveCellWorldPosition(previewChanged.PendingTile.Value));
                         break;
                     case VineGrown grown:
-                        // Placeholder until final art exists: reuse the authored pressure preview hook at the grown tile.
-                        PlayVineGrowthPreview(ResolveCellWorldPosition(grown.Coord));
+                        PlayVineGrowth(ResolveCellWorldPosition(grown.Coord));
                         break;
                     case Won:
                         PlayWin();
@@ -288,6 +290,7 @@ namespace Rescue.Unity.FX
                 FxEventHook.IceReveal => fxRegistry?.IceRevealFx,
                 FxEventHook.VineClear => fxRegistry?.VineClearFx,
                 FxEventHook.VineGrowthPreview => fxRegistry?.VineGrowPreviewFx,
+                FxEventHook.VineGrowth => fxRegistry?.VineGrowPreviewFx,
                 FxEventHook.DockInsert => fxRegistry?.DockInsertFx,
                 FxEventHook.DockTripleClear => fxRegistry?.DockTripleClearFx,
                 FxEventHook.WaterRise => fxRegistry?.WaterRiseFx,
@@ -309,6 +312,7 @@ namespace Rescue.Unity.FX
                 FxEventHook.LossDockOverflow => fxRegistry?.LossFx,
                 FxEventHook.LossWaterOnTarget => fxRegistry?.LossFx,
                 FxEventHook.VineGrowthPreview => fxRegistry?.VineGrowPreviewFx,
+                FxEventHook.VineGrowth => fxRegistry?.VineGrowPreviewFx,
                 _ => null,
             };
         }
@@ -388,6 +392,16 @@ namespace Rescue.Unity.FX
         protected virtual void PlayVineGrowthPreview(Vector3 worldPosition)
         {
             TrySpawn(fxRegistry?.VineGrowPreviewFx, nameof(FxVisualRegistry.VineGrowPreviewFx), FxEventHook.VineGrowthPreview, worldPosition);
+        }
+
+        protected virtual void PlayVineGrowth()
+        {
+            PlayVineGrowth(GetSafeFallbackPosition());
+        }
+
+        protected virtual void PlayVineGrowth(Vector3 worldPosition)
+        {
+            TrySpawn(fxRegistry?.VineGrowPreviewFx, nameof(FxVisualRegistry.VineGrowPreviewFx), FxEventHook.VineGrowth, worldPosition);
         }
 
         protected virtual void PlayDockInsert()
@@ -485,6 +499,8 @@ namespace Rescue.Unity.FX
                 SpawnDiagnosticFx(fxRegistry?.VineClearFx, nameof(FxVisualRegistry.VineClearFx), FxEventHook.VineClear, worldPosition);
                 yield return new WaitForSeconds(spacingSeconds);
                 SpawnDiagnosticFx(fxRegistry?.VineGrowPreviewFx, nameof(FxVisualRegistry.VineGrowPreviewFx), FxEventHook.VineGrowthPreview, worldPosition);
+                yield return new WaitForSeconds(spacingSeconds);
+                SpawnDiagnosticFx(fxRegistry?.VineGrowPreviewFx, $"{nameof(FxVisualRegistry.VineGrowPreviewFx)}_Growth", FxEventHook.VineGrowth, worldPosition);
                 yield return new WaitForSeconds(spacingSeconds);
                 SpawnDiagnosticFx(fxRegistry?.DockInsertFx, nameof(FxVisualRegistry.DockInsertFx), FxEventHook.DockInsert, worldPosition);
                 yield return new WaitForSeconds(spacingSeconds);

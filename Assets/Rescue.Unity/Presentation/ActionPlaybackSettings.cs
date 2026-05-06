@@ -30,7 +30,7 @@ namespace Rescue.Unity.Presentation
         public const float DefaultWaterForecastPulseDurationSeconds = 0.25f;
         public const float DefaultWaterlinePulseDurationSeconds = 0.20f;
         public const float DefaultVinePreviewDurationSeconds = 0.18f;
-        public const float DefaultVineGrowthDurationSeconds = 0.18f;
+        public const float DefaultVineGrowthDurationSeconds = 0.30f;
         public const float DefaultPlaybackSpeedMultiplier = 0.5f;
         public const float DefaultGroupSpeedMultiplier = 1.0f;
         public const float DefaultGravitySpawnSpeedMultiplier = 4.0f;

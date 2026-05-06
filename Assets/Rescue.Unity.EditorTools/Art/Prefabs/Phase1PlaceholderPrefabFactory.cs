@@ -475,6 +475,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 cratePrefab,
                 iceBlockPrefab ?? iceOverlayPrefab,
                 vineMeshPrefab ?? vineOverlayPrefab,
+                vineOverlayPrefab,
                 puppyPrefab,
                 floodedRowOverlayPrefab,
                 iceRevealFxPrefab,
@@ -528,6 +529,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             blockerRegistry.CratePrefab = productionAssets.CratePrefab ?? placeholderAssets.CratePrefab;
             blockerRegistry.IcePrefab = productionAssets.IcePrefab ?? placeholderAssets.IcePrefab;
             blockerRegistry.VinePrefab = productionAssets.VinePrefab ?? placeholderAssets.VinePrefab;
+            blockerRegistry.VineOverlayPrefab = productionAssets.VineOverlayPrefab ?? productionAssets.VinePrefab ?? placeholderAssets.VinePrefab;
             blockerRegistry.FallbackBlockerPrefab = productionAssets.CratePrefab ?? placeholderAssets.CratePrefab;
             EditorUtility.SetDirty(blockerRegistry);
 
@@ -1280,6 +1282,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 GameObject? cratePrefab,
                 GameObject icePrefab,
                 GameObject vinePrefab,
+                GameObject? vineOverlayPrefab,
                 GameObject? puppyPrefab,
                 GameObject? floodedRowOverlayPrefab,
                 GameObject? iceRevealFxPrefab,
@@ -1304,6 +1307,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 CratePrefab = cratePrefab;
                 IcePrefab = icePrefab;
                 VinePrefab = vinePrefab;
+                VineOverlayPrefab = vineOverlayPrefab;
                 PuppyPrefab = puppyPrefab;
                 FloodedRowOverlayPrefab = floodedRowOverlayPrefab;
                 IceRevealFxPrefab = iceRevealFxPrefab;
@@ -1329,6 +1333,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             public GameObject? CratePrefab { get; }
             public GameObject IcePrefab { get; }
             public GameObject VinePrefab { get; }
+            public GameObject? VineOverlayPrefab { get; }
             public GameObject? PuppyPrefab { get; }
             public GameObject? FloodedRowOverlayPrefab { get; }
             public GameObject? IceRevealFxPrefab { get; }

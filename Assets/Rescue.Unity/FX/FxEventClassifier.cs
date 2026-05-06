@@ -53,6 +53,9 @@ namespace Rescue.Unity.FX
                     case VinePreviewChanged vinePreviewChanged when vinePreviewChanged.PendingTile.HasValue:
                         hooks.Add(FxEventHook.VineGrowthPreview);
                         break;
+                    case VineGrown:
+                        hooks.Add(FxEventHook.VineGrowth);
+                        break;
                     case Won:
                         sawWin = true;
                         hooks.Add(FxEventHook.Win);

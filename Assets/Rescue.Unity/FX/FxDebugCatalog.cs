@@ -139,6 +139,7 @@ namespace Rescue.Unity.FX
                 FxEventHook.IceReveal => registry?.IceRevealFx,
                 FxEventHook.VineClear => registry?.VineClearFx,
                 FxEventHook.VineGrowthPreview => registry?.VineGrowPreviewFx,
+                FxEventHook.VineGrowth => registry?.VineGrowPreviewFx,
                 FxEventHook.DockInsert => registry?.DockInsertFx,
                 FxEventHook.DockTripleClear => registry?.DockTripleClearFx,
                 FxEventHook.WaterRise => registry?.WaterRiseFx,

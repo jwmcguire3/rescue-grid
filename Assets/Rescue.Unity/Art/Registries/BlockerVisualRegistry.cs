@@ -10,6 +10,7 @@ namespace Rescue.Unity.Art.Registries
         [SerializeField] private GameObject? cratePrefab;
         [SerializeField] private GameObject? icePrefab;
         [SerializeField] private GameObject? vinePrefab;
+        [SerializeField] private GameObject? vineOverlayPrefab;
         [SerializeField] private GameObject? fallbackBlockerPrefab;
 
         public GameObject? CratePrefab
@@ -28,6 +29,12 @@ namespace Rescue.Unity.Art.Registries
         {
             get => vinePrefab;
             set => vinePrefab = value;
+        }
+
+        public GameObject? VineOverlayPrefab
+        {
+            get => vineOverlayPrefab;
+            set => vineOverlayPrefab = value;
         }
 
         public GameObject? FallbackBlockerPrefab

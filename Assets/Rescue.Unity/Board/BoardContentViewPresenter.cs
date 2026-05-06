@@ -24,6 +24,11 @@ namespace Rescue.Unity.BoardPresentation
         private const float MinimumTimelineDurationSeconds = 0.01f;
         private const float MoveLandingPhaseRatio = 0.35f;
         private const string VinePreviewLabel = "VineGrowthPreview";
+        private const float VinePreviewYOffsetRatio = 0.45f;
+        private static readonly Vector3 VinePreviewRestScale = new Vector3(0.64f, 0.64f, 0.64f);
+        private static readonly Vector3 VinePreviewStartScale = new Vector3(0.46f, 0.46f, 0.46f);
+        private static readonly Vector3 VinePreviewPulseScale = new Vector3(0.72f, 0.72f, 0.72f);
+        private static readonly Vector3 VineGrowthFullScale = Vector3.one;
         private const string LastObstacleLabel = "TargetLastObstacle";
         private const string RescuePathLabel = "RescuePath";
         private const float MinimumRescuePathYOffset = 0.18f;
@@ -50,6 +55,8 @@ namespace Rescue.Unity.BoardPresentation
         private readonly List<GameObject> targetObstacleMarkers = new List<GameObject>();
         private GameObject? vinePreviewObject;
         private TileCoord? vinePreviewCoord;
+        private Vector3 vinePreviewFullLocalScale = Vector3.one;
+        private Quaternion vinePreviewBaseLocalRotation = Quaternion.identity;
         private float removeDurationSeconds = Presentation.ActionPlaybackSettings.DefaultRemoveDurationSeconds;
         private float gravityDurationSeconds = Presentation.ActionPlaybackSettings.DefaultGravityDurationSeconds;
         private float blockerDamageDurationSeconds = Presentation.ActionPlaybackSettings.DefaultBreakBlockerOrRevealDurationSeconds;
@@ -58,6 +65,8 @@ namespace Rescue.Unity.BoardPresentation
         private float iceRevealDurationSeconds = Presentation.ActionPlaybackSettings.DefaultBreakBlockerOrRevealDurationSeconds;
         private float spawnDurationSeconds = Presentation.ActionPlaybackSettings.DefaultSpawnDurationSeconds;
         private float targetExtractDurationSeconds = Presentation.ActionPlaybackSettings.DefaultTargetExtractDurationSeconds;
+        private float vinePreviewDurationSeconds = Presentation.ActionPlaybackSettings.DefaultVinePreviewDurationSeconds;
+        private float vineGrowthDurationSeconds = Presentation.ActionPlaybackSettings.DefaultVineGrowthDurationSeconds;
         private float boardPieceLandingSquashXScale = Presentation.ActionPlaybackSettings.DefaultBoardPieceLandingSquashXScale;
         private float boardPieceLandingSquashYScale = Presentation.ActionPlaybackSettings.DefaultBoardPieceLandingSquashYScale;
         private float boardPieceLandingBounceDistance = Presentation.ActionPlaybackSettings.DefaultBoardPieceLandingBounceDistance;
@@ -77,6 +86,8 @@ namespace Rescue.Unity.BoardPresentation
             iceRevealDurationSeconds = settings.BreakBlockerOrRevealDurationSeconds;
             spawnDurationSeconds = settings.SpawnDurationSeconds;
             targetExtractDurationSeconds = settings.TargetExtractDurationSeconds;
+            vinePreviewDurationSeconds = settings.VinePreviewDurationSeconds;
+            vineGrowthDurationSeconds = settings.VineGrowthDurationSeconds;
             boardPieceLandingSquashXScale = settings.BoardPieceLandingSquashXScale;
             boardPieceLandingSquashYScale = settings.BoardPieceLandingSquashYScale;
             boardPieceLandingBounceDistance = settings.BoardPieceLandingBounceDistance;
@@ -334,6 +345,8 @@ namespace Rescue.Unity.BoardPresentation
             targetObstacleMarkers.Clear();
             vinePreviewObject = null;
             vinePreviewCoord = null;
+            vinePreviewFullLocalScale = Vector3.one;
+            vinePreviewBaseLocalRotation = Quaternion.identity;
         }
 
         public void RemoveDebrisGroup(GroupRemoved removal)
@@ -620,6 +633,64 @@ namespace Rescue.Unity.BoardPresentation
             }
         }
 
+        public void AnimateVinePreview(VinePreviewChanged previewChanged, float? durationSeconds = null)
+        {
+            if (!previewChanged.PendingTile.HasValue ||
+                !TryGetAnchor(previewChanged.PendingTile.Value, out Transform anchor))
+            {
+                ClearVinePreview();
+                return;
+            }
+
+            float effectiveDurationSeconds = durationSeconds ?? vinePreviewDurationSeconds;
+            TileCoord pendingTile = previewChanged.PendingTile.Value;
+            if (!EnsureVinePreviewObject(pendingTile, anchor, VinePreviewStartScale))
+            {
+                return;
+            }
+
+            if (vinePreviewObject is null)
+            {
+                return;
+            }
+
+            if (!Application.isPlaying || !isActiveAndEnabled || effectiveDurationSeconds <= 0f)
+            {
+                ApplyVinePreviewCoverage(VinePreviewRestScale);
+                return;
+            }
+
+            StartCoroutine(AnimateVinePreviewRoutine(vinePreviewObject, effectiveDurationSeconds));
+        }
+
+        public void AnimateVineGrowth(VineGrown grown, float? durationSeconds = null)
+        {
+            if (!TryGetAnchor(grown.Coord, out Transform anchor))
+            {
+                ClearVinePreview();
+                return;
+            }
+
+            float effectiveDurationSeconds = durationSeconds ?? vineGrowthDurationSeconds;
+            if (!EnsureVinePreviewObject(grown.Coord, anchor, VinePreviewRestScale))
+            {
+                return;
+            }
+
+            if (vinePreviewObject is null)
+            {
+                return;
+            }
+
+            if (!Application.isPlaying || !isActiveAndEnabled || effectiveDurationSeconds <= 0f)
+            {
+                ApplyVinePreviewCoverage(VineGrowthFullScale);
+                return;
+            }
+
+            StartCoroutine(AnimateVineGrowthRoutine(vinePreviewObject, effectiveDurationSeconds));
+        }
+
         public bool TryGetTargetInstance(string targetId, out GameObject? targetObject)
         {
             if (string.IsNullOrWhiteSpace(targetId))
@@ -728,6 +799,74 @@ namespace Rescue.Unity.BoardPresentation
             if (debrisObject is not null)
             {
                 DestroyContentObject(debrisObject);
+            }
+        }
+
+        private System.Collections.IEnumerator AnimateVinePreviewRoutine(GameObject previewObject, float durationSeconds)
+        {
+            if (previewObject is null)
+            {
+                yield break;
+            }
+
+            float clampedDuration = Mathf.Max(MinimumTimelineDurationSeconds, durationSeconds);
+            float elapsed = 0f;
+
+            while (elapsed < clampedDuration)
+            {
+                if (previewObject is null || previewObject != vinePreviewObject)
+                {
+                    yield break;
+                }
+
+                elapsed += Time.deltaTime;
+                float normalized = Mathf.Clamp01(elapsed / clampedDuration);
+                float pulse = Mathf.Sin(normalized * Mathf.PI);
+                Vector3 coverage = Vector3.LerpUnclamped(VinePreviewStartScale, VinePreviewPulseScale, pulse);
+                if (normalized > 0.5f)
+                {
+                    coverage = Vector3.LerpUnclamped(VinePreviewPulseScale, VinePreviewRestScale, (normalized - 0.5f) * 2f);
+                }
+
+                ApplyVinePreviewCoverage(coverage);
+                yield return null;
+            }
+
+            if (previewObject is not null && previewObject == vinePreviewObject)
+            {
+                ApplyVinePreviewCoverage(VinePreviewRestScale);
+            }
+        }
+
+        private System.Collections.IEnumerator AnimateVineGrowthRoutine(GameObject previewObject, float durationSeconds)
+        {
+            if (previewObject is null)
+            {
+                yield break;
+            }
+
+            Vector3 startScale = previewObject.transform.localScale;
+            Vector3 fullScale = Vector3.Scale(vinePreviewFullLocalScale, VineGrowthFullScale);
+            float clampedDuration = Mathf.Max(MinimumTimelineDurationSeconds, durationSeconds);
+            float elapsed = 0f;
+
+            while (elapsed < clampedDuration)
+            {
+                if (previewObject is null || previewObject != vinePreviewObject)
+                {
+                    yield break;
+                }
+
+                elapsed += Time.deltaTime;
+                float normalized = Mathf.Clamp01(elapsed / clampedDuration);
+                float eased = 1f - Mathf.Pow(1f - normalized, 3f);
+                previewObject.transform.localScale = Vector3.LerpUnclamped(startScale, fullScale, eased);
+                yield return null;
+            }
+
+            if (previewObject is not null && previewObject == vinePreviewObject)
+            {
+                previewObject.transform.localScale = fullScale;
             }
         }
 
@@ -1268,25 +1407,60 @@ namespace Rescue.Unity.BoardPresentation
                 return;
             }
 
+            if (EnsureVinePreviewObject(pendingTile.Value, anchor, VinePreviewRestScale))
+            {
+                ApplyVinePreviewCoverage(VinePreviewRestScale);
+            }
+        }
+
+        private bool EnsureVinePreviewObject(TileCoord coord, Transform anchor, Vector3 coverageScale)
+        {
+            if (vinePreviewObject is not null
+                && vinePreviewCoord.HasValue
+                && vinePreviewCoord.Value != coord)
+            {
+                ClearVinePreview();
+            }
+
             if (vinePreviewObject is null)
             {
                 vinePreviewObject = SpawnAtAnchor(
-                    pendingTile.Value,
+                    coord,
                     VinePreviewLabel,
-                    ResolveFallbackPrefab("vine growth preview"),
+                    ResolveVineOverlayPrefab(),
                     anchor,
-                    contentYOffset * 0.5f,
-                    new Vector3(0.64f, 0.08f, 0.64f));
+                    contentYOffset * VinePreviewYOffsetRatio,
+                    Vector3.one);
+                if (vinePreviewObject is null)
+                {
+                    return false;
+                }
+
+                vinePreviewFullLocalScale = vinePreviewObject.transform.localScale;
+                vinePreviewBaseLocalRotation = vinePreviewObject.transform.localRotation;
             }
 
+            vinePreviewCoord = coord;
+            MoveContentObjectToAnchor(
+                vinePreviewObject,
+                anchor,
+                coord,
+                VinePreviewLabel,
+                contentYOffset * VinePreviewYOffsetRatio,
+                vinePreviewBaseLocalRotation);
+            ApplyTint(vinePreviewObject, VinePreviewColor);
+            ApplyVinePreviewCoverage(coverageScale);
+            return true;
+        }
+
+        private void ApplyVinePreviewCoverage(Vector3 coverageScale)
+        {
             if (vinePreviewObject is null)
             {
                 return;
             }
 
-            vinePreviewCoord = pendingTile.Value;
-            MoveContentObjectToAnchor(vinePreviewObject, anchor, pendingTile.Value, VinePreviewLabel, contentYOffset * 0.5f);
-            ApplyTint(vinePreviewObject, VinePreviewColor);
+            vinePreviewObject.transform.localScale = Vector3.Scale(vinePreviewFullLocalScale, coverageScale);
         }
 
         private void ClearVinePreview()
@@ -1301,6 +1475,8 @@ namespace Rescue.Unity.BoardPresentation
             DestroyContentObject(vinePreviewObject, immediate: true);
             vinePreviewObject = null;
             vinePreviewCoord = null;
+            vinePreviewFullLocalScale = Vector3.one;
+            vinePreviewBaseLocalRotation = Quaternion.identity;
         }
 
         private void SyncLastObstacleMarkers(GameState state)
@@ -2033,6 +2209,22 @@ namespace Rescue.Unity.BoardPresentation
             }
 
             return ResolveFallbackPrefab($"blocker type {blockerType}");
+        }
+
+        private GameObject? ResolveVineOverlayPrefab()
+        {
+            if (blockerRegistry?.VineOverlayPrefab != null)
+            {
+                return blockerRegistry.VineOverlayPrefab;
+            }
+
+            GameObject? vinePrefab = blockerRegistry?.GetPrefab(BlockerType.Vine);
+            if (vinePrefab != null)
+            {
+                return vinePrefab;
+            }
+
+            return ResolveFallbackPrefab("vine growth preview");
         }
 
         private GameObject? ResolveTargetPrefab(string targetId)

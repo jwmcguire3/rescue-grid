@@ -285,6 +285,12 @@ namespace Rescue.Unity.Presentation
                         resultState,
                         rose.FloodedRow);
                     break;
+                case VinePreviewChanged previewChanged:
+                    boardContent?.AnimateVinePreview(previewChanged, settings.VinePreviewDurationSeconds);
+                    break;
+                case VineGrown grown:
+                    boardContent?.AnimateVineGrowth(grown, settings.VineGrowthDurationSeconds);
+                    break;
             }
         }
 

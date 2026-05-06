@@ -94,6 +94,17 @@ namespace Rescue.Unity.Art.Tests
         }
 
         [Test]
+        public void BlockerVisualRegistry_StoresOptionalVineOverlayPrefab()
+        {
+            BlockerVisualRegistry registry = CreateScriptableObject<BlockerVisualRegistry>();
+            GameObject overlayPrefab = CreatePrefab("VineOverlay");
+
+            registry.VineOverlayPrefab = overlayPrefab;
+
+            Assert.That(registry.VineOverlayPrefab, Is.SameAs(overlayPrefab));
+        }
+
+        [Test]
         public void BlockerVisualRegistry_ReturnsFallbackWhenMissing()
         {
             BlockerVisualRegistry registry = CreateScriptableObject<BlockerVisualRegistry>();

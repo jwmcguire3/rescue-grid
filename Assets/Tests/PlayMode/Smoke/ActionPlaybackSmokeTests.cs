@@ -151,7 +151,32 @@ namespace Rescue.PlayMode.Tests.Smoke
 
             Assert.That(FindChildContaining(harness.ContentRoot, "VineGrowthPreview"), Is.Not.Null);
 
-            harness.ViewPresenter.ForceSyncToState(grownState);
+            ActionResult growthResult = new ActionResult(
+                grownState,
+                ImmutableArray.Create<ActionEvent>(new VineGrown(new TileCoord(0, 0))),
+                ActionOutcome.Ok,
+                Snapshot: null);
+            bool playbackStarted = harness.PlaybackController.TryPlayAction(
+                previewState,
+                new ActionInput(new TileCoord(0, 0)),
+                growthResult,
+                result => harness.ViewPresenter.ForceSyncToState(
+                    result.State,
+                    "vine growth smoke final sync",
+                    cancelActivePlayback: false,
+                    clearPlaybackPlan: false));
+
+            Assert.That(playbackStarted, Is.True);
+            yield return null;
+
+            Assert.That(FindChildContaining(harness.ContentRoot, "VineGrowthPreview"), Is.Not.Null);
+            Assert.That(FindChildByName(harness.ContentRoot, "Content_00_00_Blocker_Vine"), Is.Null);
+
+            while (harness.PlaybackController.IsPlaying)
+            {
+                yield return null;
+            }
+
             yield return null;
 
             Assert.That(FindChildContaining(harness.ContentRoot, "VineGrowthPreview"), Is.Null);
