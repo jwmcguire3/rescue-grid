@@ -1,0 +1,19 @@
+{
+  "id": "L02",
+  "title": "Dock Discipline Serves Rescue",
+  "campaignBand": "production_onboarding",
+  "role": "practice",
+  "primarySkill": "dock_discipline",
+  "secondarySkill": "first_rescue",
+  "allowedMechanics": ["debris", "dock", "crate", "target_states", "dock_jam"],
+  "forbiddenMechanics": ["ice", "vine", "reinforced_crate"],
+  "boardSize": { "width": 6, "height": 7 },
+  "targetCount": 1,
+  "densityTarget": "70-80%",
+  "targetFirstAttemptWinRate": "80-90%",
+  "intendedTensionBeat": "Dock pressure appears without water so the player can attribute mistakes to rack sequencing.",
+  "intendedReleaseBeat": "Disciplined dock play opens the puppy route cleanly.",
+  "expectedPath": "Clear groups in an order that avoids mismatched dock buildup while opening the central rescue lane.",
+  "expectedFailMode": "Player hoards mismatched side groups, triggers Dock Jam, and learns the dock is not free storage.",
+  "designNotes": "The dock must serve the rescue route. Do not let this read as a pure rack-management level."
+}

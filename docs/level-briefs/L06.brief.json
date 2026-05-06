@@ -1,0 +1,19 @@
+{
+  "id": "L06",
+  "title": "First Bigger Read",
+  "campaignBand": "production_onboarding",
+  "role": "choice",
+  "primarySkill": "larger_board_read",
+  "secondarySkill": "mixed_blocker_sequencing",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "ice", "target_states"],
+  "forbiddenMechanics": ["vine", "reinforced_crate"],
+  "boardSize": { "width": 7, "height": 8 },
+  "targetCount": 2,
+  "densityTarget": "75-85%",
+  "targetFirstAttemptWinRate": "65-80%",
+  "intendedTensionBeat": "Broad side clears look productive while the true rescue progress is in the central lane.",
+  "intendedReleaseBeat": "Reading the central route correctly makes the larger board feel manageable.",
+  "expectedPath": "Prioritize the central lane and rescue sequence instead of farming side groups.",
+  "expectedFailMode": "Player takes satisfying broad side clears and wastes the action budget.",
+  "designNotes": "This is a readability test. Do not make it visually mushy."
+}

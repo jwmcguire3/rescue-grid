@@ -1,0 +1,19 @@
+{
+  "id": "L08",
+  "title": "Vine Growth Tutorial",
+  "campaignBand": "production_onboarding",
+  "role": "practice",
+  "primarySkill": "vine_growth_read",
+  "secondarySkill": "water_timing",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "vine", "target_states"],
+  "forbiddenMechanics": ["ice", "reinforced_crate"],
+  "boardSize": { "width": 7, "height": 8 },
+  "targetCount": 1,
+  "densityTarget": "75-85%",
+  "targetFirstAttemptWinRate": "70-85%",
+  "intendedTensionBeat": "The vine preview shows a future cost if ignored.",
+  "intendedReleaseBeat": "Clipping the warned vine preserves the route and makes the player feel ahead of the system.",
+  "expectedPath": "Notice the vine warning, clear or clip vine before growth worsens the lane, then continue the rescue.",
+  "expectedFailMode": "Player ignores the preview and lets the route become slower.",
+  "designNotes": "The growth must feel warned, authored, and attributable."
+}

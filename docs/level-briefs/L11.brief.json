@@ -1,0 +1,19 @@
+{
+  "id": "L11",
+  "title": "False-Easy Target Choice",
+  "campaignBand": "production_onboarding",
+  "role": "recovery",
+  "primarySkill": "false_easy_target",
+  "secondarySkill": "rescue_order",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "ice", "vine", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate"],
+  "boardSize": { "width": 7, "height": 9 },
+  "targetCount": 2,
+  "densityTarget": "75-85%",
+  "targetFirstAttemptWinRate": "65-80%",
+  "intendedTensionBeat": "A visually open high target tempts the player after the L10 exam.",
+  "intendedReleaseBeat": "Recognizing the buried lower target's priority feels like improved judgment.",
+  "expectedPath": "Route into the lower or more urgent puppy first, then finish the visually open target.",
+  "expectedFailMode": "Player commits too long to the open target and loses tempo on the lower target.",
+  "designNotes": "This is recovery/choice, not punishment. Give enough margin to understand the mistake."
+}

@@ -1,0 +1,19 @@
+{
+  "id": "L01",
+  "title": "First Rescue",
+  "campaignBand": "production_onboarding",
+  "role": "teach",
+  "primarySkill": "first_rescue",
+  "secondarySkill": "dock_awareness",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "target_states", "dock_jam"],
+  "forbiddenMechanics": ["ice", "vine", "reinforced_crate"],
+  "boardSize": { "width": 6, "height": 7 },
+  "targetCount": 1,
+  "densityTarget": "70-80%",
+  "targetFirstAttemptWinRate": "85-95%",
+  "intendedTensionBeat": "Water exists but is forgiving; the dock is visible but not yet harsh.",
+  "intendedReleaseBeat": "First clear target progress and first puppy extraction.",
+  "expectedPath": "Clear route-supporting groups near the puppy, see target progress, open the rescue lane, and extract before water becomes threatening.",
+  "expectedFailMode": "Player chases easy side groups and creates dock pressure instead of opening the rescue route.",
+  "designNotes": "This level must sell the emotional premise before it feels like abstract clearing."
+}

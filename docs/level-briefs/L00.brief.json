@@ -1,0 +1,19 @@
+{
+  "id": "L00",
+  "title": "Rule Teach",
+  "campaignBand": "production_onboarding",
+  "role": "rule_teach",
+  "primarySkill": "action_hazard_literacy",
+  "secondarySkill": "valid_group_clearing",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "target_states"],
+  "forbiddenMechanics": ["ice", "vine", "reinforced_crate"],
+  "boardSize": { "width": 6, "height": 7 },
+  "targetCount": 1,
+  "densityTarget": "60-75%",
+  "targetFirstAttemptWinRate": "90-98%",
+  "intendedTensionBeat": "The first valid action visibly advances water, proving that acting advances danger while thinking is free.",
+  "intendedReleaseBeat": "The puppy is rescued quickly after the rule is understood.",
+  "expectedPath": "Take the clearly framed opening group, observe water advance because of the action, then take the next readable rescue-route clear to extract the puppy.",
+  "expectedFailMode": "Failure is not the lesson; if the player fails, the board is too punishing or unclear.",
+  "designNotes": "L00 may be sparser than normal, but it must still look like real gameplay, not isolated teaching moves."
+}

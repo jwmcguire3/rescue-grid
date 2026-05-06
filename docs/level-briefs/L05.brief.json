@@ -1,0 +1,19 @@
+{
+  "id": "L05",
+  "title": "Ice Practice With Rescue Order",
+  "campaignBand": "production_onboarding",
+  "role": "release",
+  "primarySkill": "ice_future_value",
+  "secondarySkill": "rescue_order",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "ice", "target_states"],
+  "forbiddenMechanics": ["vine", "reinforced_crate"],
+  "boardSize": { "width": 6, "height": 8 },
+  "targetCount": 2,
+  "densityTarget": "75-85%",
+  "targetFirstAttemptWinRate": "75-90%",
+  "intendedTensionBeat": "The lower rescue is urgent but the ice route looks slower than a cleaner upper route.",
+  "intendedReleaseBeat": "Correctly using ice creates a satisfying route payoff before the larger-board challenge.",
+  "expectedPath": "Open the lower puppy through ice first, then pivot to the upper target.",
+  "expectedFailMode": "Player spends early actions on the tidier crate side and loses tempo.",
+  "designNotes": "This should feel like successful practice, not an exam. Keep enough margin for recovery."
+}

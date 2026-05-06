@@ -1,0 +1,19 @@
+{
+  "id": "L04",
+  "title": "Ice Introduction",
+  "campaignBand": "production_onboarding",
+  "role": "teach",
+  "primarySkill": "ice_future_value",
+  "secondarySkill": "rescue_order",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "ice", "target_states"],
+  "forbiddenMechanics": ["vine", "reinforced_crate"],
+  "boardSize": { "width": 6, "height": 7 },
+  "targetCount": 1,
+  "densityTarget": "70-80%",
+  "targetFirstAttemptWinRate": "75-90%",
+  "intendedTensionBeat": "The obvious rescue route is gated by ice that must be invested in early.",
+  "intendedReleaseBeat": "Breaking ice reveals useful future value and makes the rescue route feel clever.",
+  "expectedPath": "Break ice on the rescue lane before spending actions on cleaner but lower-value groups.",
+  "expectedFailMode": "Player ignores the frozen lane and runs out of tempo opening the real route.",
+  "designNotes": "Ice must matter. The level fails if ice can be ignored cleanly."
+}

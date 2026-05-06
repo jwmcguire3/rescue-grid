@@ -1,0 +1,19 @@
+{
+  "id": "L13",
+  "title": "Vine Pressure Exam",
+  "campaignBand": "production_onboarding",
+  "role": "pressure",
+  "primarySkill": "vine_pressure",
+  "secondarySkill": "rescue_order",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "ice", "vine", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate"],
+  "boardSize": { "width": 7, "height": 9 },
+  "targetCount": 2,
+  "densityTarget": "80-90%",
+  "targetFirstAttemptWinRate": "50-70%",
+  "intendedTensionBeat": "Vine threatens to tax the efficient route if ignored.",
+  "intendedReleaseBeat": "Clipping vine early keeps the shortcut open and confirms the player understands future cost.",
+  "expectedPath": "Clip the authored vine lane early enough to preserve the rescue route, then complete the urgent rescue.",
+  "expectedFailMode": "Player lets vine grow, then becomes action-starved or dock-stressed while rerouting.",
+  "designNotes": "Vine must support rescue order, not become a side mechanic."
+}

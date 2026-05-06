@@ -1,0 +1,19 @@
+{
+  "id": "L12",
+  "title": "Three-Target Readability Test",
+  "campaignBand": "production_onboarding",
+  "role": "choice",
+  "primarySkill": "multi_target_triage",
+  "secondarySkill": "rescue_order",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "ice", "vine", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate"],
+  "boardSize": { "width": 7, "height": 9 },
+  "targetCount": 3,
+  "densityTarget": "75-85%",
+  "targetFirstAttemptWinRate": "55-75%",
+  "intendedTensionBeat": "Three puppies create broad triage, but their order must still be readable.",
+  "intendedReleaseBeat": "Saving the first correct target should make the next pivot feel clear.",
+  "expectedPath": "Rescue the most water-threatened or route-critical target first, pivot through the center, then finish the safest target.",
+  "expectedFailMode": "Player half-solves all three and saves none efficiently.",
+  "designNotes": "This is the first true triage board. Avoid making it feel like simultaneous chores."
+}

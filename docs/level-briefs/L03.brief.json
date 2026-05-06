@@ -1,0 +1,19 @@
+{
+  "id": "L03",
+  "title": "Rescue Order Arrives",
+  "campaignBand": "production_onboarding",
+  "role": "choice",
+  "primarySkill": "rescue_order",
+  "secondarySkill": "water_timing",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "target_states"],
+  "forbiddenMechanics": ["ice", "vine", "reinforced_crate"],
+  "boardSize": { "width": 6, "height": 7 },
+  "targetCount": 2,
+  "densityTarget": "70-80%",
+  "targetFirstAttemptWinRate": "70-85%",
+  "intendedTensionBeat": "One puppy is closer to water while the safer puppy looks easier.",
+  "intendedReleaseBeat": "Saving the urgent puppy first makes the second rescue feel controlled.",
+  "expectedPath": "Rescue the lower or water-near puppy first, then pivot to the safer puppy.",
+  "expectedFailMode": "Player saves the visually easier puppy first and loses tempo on the urgent rescue.",
+  "designNotes": "This is the key early identity level. The wrong choice must be tempting, but the lesson must be readable."
+}

@@ -1,0 +1,19 @@
+{
+  "id": "L10",
+  "title": "Mid-Onboarding Exam",
+  "campaignBand": "production_onboarding",
+  "role": "exam",
+  "primarySkill": "mixed_system_exam",
+  "secondarySkill": "rescue_order",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "ice", "vine", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate"],
+  "boardSize": { "width": 7, "height": 8 },
+  "targetCount": 2,
+  "densityTarget": "75-85%",
+  "targetFirstAttemptWinRate": "50-70%",
+  "intendedTensionBeat": "The central choke must be opened before dock, water, and blockers compound.",
+  "intendedReleaseBeat": "Taking the choke early makes the board branch cleanly into two rescues.",
+  "expectedPath": "Open the central choke, rescue the urgent target, then pivot to the safer target.",
+  "expectedFailMode": "Player over-collects dock value or side clears before opening the choke.",
+  "designNotes": "This is the first real exam. Do not introduce new rules here."
+}

@@ -1,0 +1,19 @@
+{
+  "id": "L07",
+  "title": "Vine Introduction",
+  "campaignBand": "production_onboarding",
+  "role": "teach",
+  "primarySkill": "vine_static_read",
+  "secondarySkill": "rescue_order",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "vine", "target_states"],
+  "forbiddenMechanics": ["ice", "reinforced_crate"],
+  "boardSize": { "width": 7, "height": 8 },
+  "targetCount": 1,
+  "densityTarget": "75-85%",
+  "targetFirstAttemptWinRate": "75-90%",
+  "intendedTensionBeat": "Vine visibly blocks the shortest route but does not yet grow aggressively.",
+  "intendedReleaseBeat": "Cutting the vine lane makes the direct rescue path feel obvious and satisfying.",
+  "expectedPath": "Take the central or shortest vine lane because it is visibly the rescue route.",
+  "expectedFailMode": "Player treats vine as background clutter and detours too slowly.",
+  "designNotes": "Vine should enter as route readability, not punishment."
+}

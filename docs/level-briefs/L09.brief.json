@@ -1,0 +1,19 @@
+{
+  "id": "L09",
+  "title": "Order Plus Vine Pressure",
+  "campaignBand": "production_onboarding",
+  "role": "pressure",
+  "primarySkill": "water_vine_priority",
+  "secondarySkill": "rescue_order",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "vine", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate"],
+  "boardSize": { "width": 7, "height": 8 },
+  "targetCount": 2,
+  "densityTarget": "75-85%",
+  "targetFirstAttemptWinRate": "60-75%",
+  "intendedTensionBeat": "The player must choose between the lower water threat and a route vine is about to worsen.",
+  "intendedReleaseBeat": "Saving the water-near puppy first while clipping vine creates the first real triage success.",
+  "expectedPath": "Prioritize the lower/water-near puppy, clipping vine only when it protects the route.",
+  "expectedFailMode": "Player tunnels on the vine-threatened upper side and loses the lower puppy or dock tempo.",
+  "designNotes": "This is pressure, but it must remain readable. Avoid making vine feel like the main enemy."
+}

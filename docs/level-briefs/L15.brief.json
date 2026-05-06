@@ -1,0 +1,19 @@
+{
+  "id": "L15",
+  "title": "Onboarding Spectacle Hero Rescue",
+  "campaignBand": "production_onboarding",
+  "role": "spectacle",
+  "primarySkill": "hero_rescue_spectacle",
+  "secondarySkill": "dock_rescue_discipline",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "ice", "vine", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate"],
+  "boardSize": { "width": 8, "height": 9 },
+  "targetCount": 2,
+  "densityTarget": "80-90%",
+  "targetFirstAttemptWinRate": "60-80%",
+  "intendedTensionBeat": "A hero puppy is visibly threatened, but the urgent route is readable within seconds.",
+  "intendedReleaseBeat": "The hero rescue lands as the emotional capstone of onboarding.",
+  "expectedPath": "Identify the urgent hero route quickly, make disciplined route clears, rescue the hero puppy, then finish the secondary rescue.",
+  "expectedFailMode": "Player chases a tempting low-value side route and loses hero tempo.",
+  "designNotes": "L15 should be memorable and readable, not simply the hardest board. Prioritize sightline clarity without using empty-board shortcuts."
+}

@@ -1,0 +1,19 @@
+{
+  "id": "L14",
+  "title": "Late Onboarding Stress Test",
+  "campaignBand": "production_onboarding",
+  "role": "exam",
+  "primarySkill": "late_mixed_pressure",
+  "secondarySkill": "multi_target_triage",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "ice", "vine", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate"],
+  "boardSize": { "width": 8, "height": 9 },
+  "targetCount": 3,
+  "densityTarget": "80-90%",
+  "targetFirstAttemptWinRate": "40-65%",
+  "intendedTensionBeat": "Dense mixed blockers and multiple rescues require commitment instead of broad cleanup.",
+  "intendedReleaseBeat": "A correct full commitment to the first rescue creates a readable pivot to the second.",
+  "expectedPath": "Commit fully to the most urgent rescue, pivot hard to the second, and ignore tempting low-value clears.",
+  "expectedFailMode": "Player brute-force clears or hesitates and suffers dock or water failure.",
+  "designNotes": "This is the hardest onboarding exam, but failure must still be attributable."
+}
