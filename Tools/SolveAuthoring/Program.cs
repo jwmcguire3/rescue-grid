@@ -12,7 +12,17 @@ using Rescue.Core.State;
 
 namespace Rescue.SolveAuthoringTool
 {
+#if !SOLVE_AUTHORING_TESTS
     internal static class Program
+    {
+        private static int Main(string[] args)
+        {
+            return SolveAuthoringRunner.Run(args);
+        }
+    }
+#endif
+
+    internal static class SolveAuthoringRunner
     {
         private const int FirstSeed = 1;
         private const int LastSeed = 200;
@@ -24,7 +34,7 @@ namespace Rescue.SolveAuthoringTool
         private static readonly string LevelsDirectory = Path.Combine("Assets", "StreamingAssets", "Levels");
         private static readonly string OutputDirectory = Path.Combine("Assets", "Resources", "Levels");
 
-        private static int Main(string[] args)
+        public static int Run(string[] args)
         {
             try
             {
