@@ -96,11 +96,11 @@
 <rect class="cell cell-debris" data-row="5" data-col="1" x="66" y="326" width="48" height="48" />
 <text class="tile-code" x="90" y="350">A</text>
 <rect class="cell cell-debris" data-row="5" data-col="2" x="114" y="326" width="48" height="48" />
-<text class="tile-code" x="138" y="350">A</text>
+<text class="tile-code" x="138" y="350">E</text>
 <rect class="cell cell-vine" data-row="5" data-col="3" x="162" y="326" width="48" height="48" />
 <text class="tile-code" x="186" y="350">V</text>
-<rect class="cell cell-empty" data-row="5" data-col="4" x="210" y="326" width="48" height="48" />
-<text class="tile-code" x="234" y="350">.</text>
+<rect class="cell cell-debris" data-row="5" data-col="4" x="210" y="326" width="48" height="48" />
+<text class="tile-code" x="234" y="350">F</text>
 <rect class="cell cell-debris" data-row="5" data-col="5" x="258" y="326" width="48" height="48" />
 <text class="tile-code" x="282" y="350">F</text>
 <rect class="cell cell-debris" data-row="5" data-col="6" x="306" y="326" width="48" height="48" />
