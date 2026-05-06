@@ -256,10 +256,10 @@ namespace Rescue.PlayMode.Tests.Debug
         }
 
         [UnityTest]
-        public System.Collections.IEnumerator VictoryNextLevelDisabledOnL15()
+        public System.Collections.IEnumerator VictoryNextLevelDisabledOnFinalAuthoredLevel()
         {
             DebugPanel panel = DebugPanel.EnsureInstance();
-            panel.LoadLevel(Loader.LoadLevelDefinition("L15"), seed: 7);
+            panel.LoadLevel(Loader.LoadLevelDefinition("L20"), seed: 7);
             VictoryScreenPresenter victoryScreen = VictoryScreenPresenter.EnsureInstance();
 
             yield return null;
@@ -272,7 +272,7 @@ namespace Rescue.PlayMode.Tests.Debug
 
             yield return null;
 
-            Assert.That(panel.CurrentLevelId, Is.EqualTo("L15"));
+            Assert.That(panel.CurrentLevelId, Is.EqualTo("L20"));
         }
 
         [UnityTest]
@@ -486,4 +486,3 @@ namespace Rescue.PlayMode.Tests.Debug
     }
 }
 #endif
-

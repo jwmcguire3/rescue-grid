@@ -418,7 +418,9 @@ namespace Rescue.LevelTelemetryTool.Tests
             Assert.That(output, Does.Contain("final outcome: Win"));
             Assert.That(output, Does.Contain("action count: 4"));
             Assert.That(output, Does.Contain("extraction order: 0>1"));
-            Assert.That(output, Does.Contain("missing optional data"));
+            Assert.That(output, Does.Contain("fail path:"));
+            Assert.That(output, Does.Contain("expected outcome: LossDockOverflow"));
+            Assert.That(output, Does.Contain("final outcome: LossDockOverflow"));
         }
 
         [Test]

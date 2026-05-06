@@ -35,6 +35,11 @@ namespace Rescue.Unity.Presentation
             "L13",
             "L14",
             "L15",
+            "L16",
+            "L17",
+            "L18",
+            "L19",
+            "L20",
         };
 
         public static IReadOnlyList<string> LevelIds { get; } = Array.AsReadOnly(PacketLevelIds);
