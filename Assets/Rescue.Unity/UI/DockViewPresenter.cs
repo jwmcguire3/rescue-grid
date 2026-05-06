@@ -699,51 +699,14 @@ namespace Rescue.Unity.UI
 
         public bool TryGetSlotWorldPosition(int slotIndex, out Vector3 position)
         {
-            position = Vector3.zero;
-            if (slotIndex < 0)
-            {
-                return false;
-            }
-
             Transform[] anchors = ResolveSlotAnchors();
-            if (slotIndex >= anchors.Length || anchors[slotIndex] is null)
-            {
-                return false;
-            }
-
-            position = anchors[slotIndex].position;
-            return true;
+            return DockAnchorResolver.TryGetSlotWorldPosition(anchors, slotIndex, out position);
         }
 
         public bool TryGetDockCenterWorldPosition(out Vector3 position)
         {
-            position = Vector3.zero;
             Transform[] anchors = ResolveSlotAnchors();
-            if (anchors.Length == 0)
-            {
-                return false;
-            }
-
-            Vector3 accumulated = Vector3.zero;
-            int resolvedCount = 0;
-            for (int i = 0; i < anchors.Length; i++)
-            {
-                if (anchors[i] is null)
-                {
-                    continue;
-                }
-
-                accumulated += anchors[i].position;
-                resolvedCount++;
-            }
-
-            if (resolvedCount == 0)
-            {
-                return false;
-            }
-
-            position = accumulated / resolvedCount;
-            return true;
+            return DockAnchorResolver.TryGetCenterWorldPosition(anchors, out position);
         }
 
         public string DescribeTrackedSlots()
@@ -820,38 +783,13 @@ namespace Rescue.Unity.UI
 
         private Transform[] ResolveSlotAnchors()
         {
-            Transform[] configAnchors = FindSharedDockAnchors();
-            if (IsValidAnchorArray(configAnchors))
-            {
-                slotAnchors = configAnchors;
-                return configAnchors;
-            }
-
-            if (IsValidAnchorArray(slotAnchors))
-            {
-                Transform[] assignedAnchors = slotAnchors ?? System.Array.Empty<Transform>();
-                return assignedAnchors;
-            }
-
-            List<Transform> anchors = new List<Transform>(Phase1DockSize);
-            for (int slotIndex = 0; slotIndex < Phase1DockSize; slotIndex++)
-            {
-                string anchorName = $"Slot_{slotIndex:00}";
-                Transform? anchor = transform.Find(anchorName);
-                if (anchor is null)
-                {
-                    GameObject anchorObject = new GameObject(anchorName);
-                    anchor = anchorObject.transform;
-                    anchor.SetParent(transform, false);
-                    Debug.LogWarning(
-                        $"{nameof(DockViewPresenter)} could not find anchor '{anchorName}'. Created a fallback anchor; prefer anchors provided by the shared dock prefab.",
-                        this);
-                }
-
-                anchors.Add(anchor);
-            }
-
-            slotAnchors = anchors.ToArray();
+            slotAnchors = DockAnchorResolver.ResolveSlotAnchors(
+                transform,
+                _sharedDockInstance?.transform,
+                slotAnchors,
+                Phase1DockSize,
+                this,
+                nameof(DockViewPresenter));
             return slotAnchors;
         }
 
@@ -887,7 +825,9 @@ namespace Rescue.Unity.UI
                 sharedDockTransform.localScale = Vector3.one;
             }
 
-            if (sharedDockRenderer != null && _sharedDockInstance != null && !IsChildOf(sharedDockRenderer.transform, _sharedDockInstance.transform))
+            if (sharedDockRenderer != null
+                && _sharedDockInstance != null
+                && !DockAnchorResolver.IsChildOf(sharedDockRenderer.transform, _sharedDockInstance.transform))
             {
                 sharedDockRenderer.enabled = false;
             }
@@ -959,64 +899,6 @@ namespace Rescue.Unity.UI
             };
         }
 
-        private Transform[] FindSharedDockAnchors()
-        {
-            if (_sharedDockInstance is null)
-            {
-                return System.Array.Empty<Transform>();
-            }
-
-            List<Transform> anchors = new List<Transform>(Phase1DockSize);
-            for (int slotIndex = 0; slotIndex < Phase1DockSize; slotIndex++)
-            {
-                Transform? anchor = FindChildRecursive(_sharedDockInstance.transform, $"Slot_{slotIndex:00}");
-                if (anchor is null)
-                {
-                    return System.Array.Empty<Transform>();
-                }
-
-                anchors.Add(anchor);
-            }
-
-            return anchors.ToArray();
-        }
-
-        private static Transform? FindChildRecursive(Transform root, string name)
-        {
-            if (root.name == name)
-            {
-                return root;
-            }
-
-            for (int childIndex = 0; childIndex < root.childCount; childIndex++)
-            {
-                Transform child = root.GetChild(childIndex);
-                Transform? match = FindChildRecursive(child, name);
-                if (match is not null)
-                {
-                    return match;
-                }
-            }
-
-            return null;
-        }
-
-        private static bool IsChildOf(Transform child, Transform parent)
-        {
-            Transform? current = child;
-            while (current is not null)
-            {
-                if (current == parent)
-                {
-                    return true;
-                }
-
-                current = current.parent;
-            }
-
-            return false;
-        }
-
         private GameObject? ResolvePiecePrefab(DebrisType debrisType)
         {
             GameObject? registryPrefab = pieceRegistry?.GetPrefab(debrisType);
@@ -1034,24 +916,6 @@ namespace Rescue.Unity.UI
                 $"{nameof(DockViewPresenter)} is missing both a registry entry and {nameof(fallbackPiecePrefab)} for debris type {debrisType}.",
                 this);
             return null;
-        }
-
-        private static bool IsValidAnchorArray(Transform[]? anchors)
-        {
-            if (anchors is null || anchors.Length != Phase1DockSize)
-            {
-                return false;
-            }
-
-            for (int i = 0; i < anchors.Length; i++)
-            {
-                if (anchors[i] is null)
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
 
         private void ApplyInsertVisual(DockInserted dockInserted)
@@ -1414,32 +1278,7 @@ namespace Rescue.Unity.UI
 
         private Transform ResolveAnchorForSlot(int slotIndex, Transform[] anchors)
         {
-            if (slotIndex >= 0 && slotIndex < anchors.Length)
-            {
-                return anchors[slotIndex];
-            }
-
-            string anchorName = OverflowAnchorPrefix + slotIndex.ToString("00");
-            Transform? existingAnchor = transform.Find(anchorName);
-            if (existingAnchor is not null)
-            {
-                return existingAnchor;
-            }
-
-            GameObject anchorObject = new GameObject(anchorName);
-            Transform anchor = anchorObject.transform;
-            anchor.SetParent(transform, false);
-
-            if (anchors.Length > 0)
-            {
-                Transform lastAnchor = anchors[anchors.Length - 1];
-                anchor.position = lastAnchor.position + new Vector3(slotIndex - anchors.Length + 1, 0f, 0f);
-                anchor.rotation = lastAnchor.rotation;
-                return anchor;
-            }
-
-            anchor.localPosition = new Vector3(slotIndex, 0f, 0f);
-            return anchor;
+            return DockAnchorResolver.ResolveAnchorForSlot(slotIndex, anchors, transform, OverflowAnchorPrefix);
         }
     }
 }
