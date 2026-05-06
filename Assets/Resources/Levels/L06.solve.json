@@ -7,35 +7,27 @@
   "Actions": [
     {
       "Row": 0,
-      "Col": 4
+      "Col": 0
     },
     {
       "Row": 5,
       "Col": 2
     },
     {
-      "Row": 5,
+      "Row": 2,
       "Col": 4
-    },
-    {
-      "Row": 3,
-      "Col": 4
-    },
-    {
-      "Row": 1,
-      "Col": 0
     },
     {
       "Row": 2,
       "Col": 2
     },
     {
-      "Row": 0,
-      "Col": 6
+      "Row": 2,
+      "Col": 1
     },
     {
-      "Row": 1,
-      "Col": 2
+      "Row": 3,
+      "Col": 1
     }
   ]
 }

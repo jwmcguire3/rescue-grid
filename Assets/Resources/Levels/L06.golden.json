@@ -3,32 +3,22 @@
   "seed": 1,
   "pathType": "golden",
   "expectedOutcome": "Win",
-  "maxActions": 8,
+  "maxActions": 6,
   "actions": [
     {
       "row": 0,
-      "col": 4,
-      "intent": "Start with the upper-right centerline support group instead of broad side farming."
+      "col": 0,
+      "intent": "Start with the upper-left support pair, keeping the route focused without committing to broad side farming."
     },
     {
       "row": 5,
       "col": 2,
-      "intent": "Open the lower puppy's left side and cash a dock-safe B triple on the intended route."
+      "intent": "Open the lower puppy's final side and extract the urgent lower target early."
     },
     {
-      "row": 5,
+      "row": 2,
       "col": 4,
-      "intent": "Open the lower puppy's right side and extract the urgent lower target first."
-    },
-    {
-      "row": 3,
-      "col": 4,
-      "intent": "Pivot upward through the shared center lane after the lower rescue resolves."
-    },
-    {
-      "row": 1,
-      "col": 0,
-      "intent": "Clear a left-side support group that breaks ice and keeps dock pressure controlled."
+      "intent": "Pivot upward through the center-right blockers and start the upper rescue route."
     },
     {
       "row": 2,
@@ -36,14 +26,14 @@
       "intent": "Bring the upper puppy to one-clear-away through the center-left route."
     },
     {
-      "row": 0,
-      "col": 6,
-      "intent": "Take a controlled support clear while preserving the final upper route."
+      "row": 2,
+      "col": 1,
+      "intent": "Use the revealed ice value to clear the left approach without overfilling the dock."
     },
     {
-      "row": 1,
-      "col": 2,
-      "intent": "Open the final upper side and complete the lower-first central lane solve."
+      "row": 3,
+      "col": 1,
+      "intent": "Open the final upper side and complete the lower-first central route solve."
     }
   ],
   "expectedEventsInOrder": [
@@ -55,5 +45,5 @@
     "0",
     "1"
   ],
-  "notes": "Designer-approved intended path after telemetry tuning: central route work first, lower puppy before upper, no reliance on broad side farming."
+  "notes": "Designer-approved intended path after second telemetry tuning: lower puppy extracts early, then the solve pivots through the center-left upper route without broad side farming."
 }

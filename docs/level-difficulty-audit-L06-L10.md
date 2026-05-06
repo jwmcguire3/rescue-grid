@@ -14,6 +14,7 @@ Confidence run settings:
 Retune follow-up:
 
 - `Reports/LevelTelemetry/L06-L08-Tuned-Final-Confidence/`
+- `Reports/LevelTelemetry/L06-Tuned-SecondPass-Confidence/`
 - Samples per bot: 500
 - Max actions: 40
 
@@ -23,7 +24,7 @@ Bot telemetry is a comparative diagnostic, not a direct human win-rate predictio
 
 | Level | Role | Rescue-focused | Greedy-clear | Dock-safe | Random-legal | Verdict |
 |---|---:|---:|---:|---:|---:|---|
-| L06 | choice | 52.6% | 26.4% | 24.8% | 9.6% | Improved, still hard |
+| L06 | choice | 77.2% | 22.8% | 52.6% | 13.0% | On target |
 | L07 | teach | 100.0% | 100.0% | 100.0% | 81.4% | Retuned easy teach |
 | L08 | practice | 100.0% | 58.8% | 91.4% | 73.4% | Retuned very easy |
 | L09 | pressure | 65.2% | 25.2% | 36.6% | 31.6% | On target, monitor random win rate |
@@ -39,20 +40,20 @@ Expected fail mode: Player takes satisfying broad side clears and wastes the act
 
 Telemetry summary:
 
-- `rescue_focused`: 52.6% win rate, median win at 11 actions
-- `greedy_clear`: 26.4% win rate
-- `dock_safe`: 24.8% win rate
-- `random_legal`: 9.6% win rate
+- `rescue_focused`: 77.2% win rate, median win at 7 actions
+- `greedy_clear`: 22.8% win rate
+- `dock_safe`: 52.6% win rate
+- `random_legal`: 13.0% win rate
 
 Dominant rescue-focused terminal reason: `Win`
 
-Difficulty verdict: improved, still_hard
+Difficulty verdict: on_target
 
-Design verdict: rewards_rescue, but over-tightened
+Design verdict: rewards_rescue
 
-Recommended change: soften
+Recommended change: none
 
-Reason: Tuning raised the water interval, increased assistance, and opened two central route spaces. Rescue-focused play now wins most often and still beats generic clearing, but remains below the `choice` bot target. Further softening should focus on dock residue along the intended route rather than adding more water margin.
+Reason: Second-pass tuning opened one additional lower route side, letting the first puppy extract earlier and reducing route residue. Rescue-focused play is now inside the `choice` bot target, generic clearing remains meaningfully lower, and the telemetry tool emits no difficulty signals for L06.
 
 ## L07
 
