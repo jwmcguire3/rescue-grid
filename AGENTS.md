@@ -115,6 +115,11 @@ rescue order is the central puzzle.
 - Use the repository test wrapper for routine Unity validation:
   - `powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1 -Platforms EditMode`
   - `powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1 -Platforms PlayMode`
+- In Codex desktop, run the PlayMode wrapper with escalated permissions rather
+  than from the default sandbox. Unity 6000.4.3f1 has repeatedly hit a Windows
+  breakpoint dialog before emitting `playmode-results.xml` or
+  `playmode-tests.log` from the sandbox, while the same wrapper succeeds
+  outside it.
 - Do not invoke `Unity.exe` directly for routine validation unless explicitly
   instructed by the user. Avoid manual Unity commands such as
   `Unity.exe -batchmode -nographics -projectPath ... -runTests ...`, including

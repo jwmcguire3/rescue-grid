@@ -5,7 +5,7 @@ namespace Rescue.Unity.Presentation
 {
     internal static class ActionPlaybackRouting
     {
-        public static string GetDebugLabel(ActionPlaybackStep step)
+        internal static string GetDebugLabel(ActionPlaybackStep step)
         {
             string? sourceEventName = step.SourceEventName;
             return string.IsNullOrWhiteSpace(sourceEventName)
@@ -13,23 +13,23 @@ namespace Rescue.Unity.Presentation
                 : sourceEventName;
         }
 
-        public static ActionPlaybackStep CreateRoutedStep(ActionPlaybackStep sourceStep, ActionEvent sourceEvent)
+        internal static ActionPlaybackStep CreateRoutedStep(ActionPlaybackStep sourceStep, ActionEvent sourceEvent)
         {
             return CreateRoutedStep(sourceStep.StepType, sourceEvent);
         }
 
-        public static ActionPlaybackStep CreateRoutedStep(ActionPlaybackStepType stepType, ActionEvent sourceEvent)
+        internal static ActionPlaybackStep CreateRoutedStep(ActionPlaybackStepType stepType, ActionEvent sourceEvent)
         {
             return new ActionPlaybackStep(stepType, sourceEvent.GetType().Name, sourceEvent);
         }
 
-        public static bool IsMultiBreakBlockerBatch(ActionPlaybackStep step, ImmutableArray<ActionEvent> sourceEvents)
+        internal static bool IsMultiBreakBlockerBatch(ActionPlaybackStep step, ImmutableArray<ActionEvent> sourceEvents)
         {
             return step.StepType == ActionPlaybackStepType.BreakBlockerOrReveal
                 && CountBlockerBreaks(sourceEvents) > 1;
         }
 
-        public static int CountBlockerBreaks(ImmutableArray<ActionEvent> sourceEvents)
+        internal static int CountBlockerBreaks(ImmutableArray<ActionEvent> sourceEvents)
         {
             if (sourceEvents.IsDefaultOrEmpty)
             {
@@ -48,7 +48,7 @@ namespace Rescue.Unity.Presentation
             return brokenCount;
         }
 
-        public static bool IsAudioPlaybackBeat(ActionEvent? actionEvent)
+        internal static bool IsAudioPlaybackBeat(ActionEvent? actionEvent)
         {
             return actionEvent is GroupRemoved
                 or BlockerDamaged
