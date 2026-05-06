@@ -1,6 +1,6 @@
 # Rescue Grid
 
-Rescue Grid is a Unity `6000.4.3f1` Phase 1 prototype for a tactical animal-rescue puzzle game.
+Rescue Grid is a Unity `6000.4.3f1` tactical animal-rescue puzzle prototype.
 
 The prototype is scoped to prove the core seed:
 
@@ -13,7 +13,9 @@ The authoritative design source is `docs/phase_1_spec.md`. Do not pull mechanics
 
 ## Current State
 
-The repository is a playable, near-complete Phase 1 prototype with a deterministic core, authored packet, player scene, debug scene, tooling, first-pass presentation, and dev build scripts for Android, iOS, WebGL, and capture builds. It should not be treated as a finished product, but the main Phase 1 systems and content packet are present. The strongest areas are:
+Phase 1 is complete as an engineering/prototype milestone: EditMode and PlayMode pass, level validation and solve verification pass, L00-L15 can be played in order, and the APK works on device. It should not be treated as a finished product.
+
+The active focus is Phase 2A: readability, animation/feedback, level-authoring tools, and capture proof without expanding mechanics. The current repository has a deterministic core, authored packet, player scene, debug scene, tooling, first-pass presentation, and dev build scripts for Android, iOS, WebGL, and capture builds. The strongest areas are:
 
 - Immutable `Rescue.Core` state and deterministic rules.
 - A fixed action pipeline with isolated steps and regression tests.
@@ -22,7 +24,7 @@ The repository is a playable, near-complete Phase 1 prototype with a determinist
 - A functional Unity player flow in `Game.unity` and a tuning/debug flow in `DebugGameplay.unity`, with board, dock, water forecast, target, playback, Mae reaction, victory, and loss presentation.
 - Phase 1 visual assets, audio feedback, prefabs, registries, and FX hooks for the presentation path.
 
-The remaining Phase 1 risk is proof quality: a cold player should be able to read water pressure, dock failures, vine pressure, rescue order, and the puppy extraction beat without relying on debug context. That is a playtest/presentation-readability risk, not evidence that those systems are absent.
+The remaining risk is Phase 2A proof quality: a cold player should be able to read water pressure, dock failures, vine pressure, rescue order, and the puppy extraction beat without relying on debug context. That is a playtest/presentation-readability risk, not evidence that those systems are absent.
 
 Generated build, Android, capture, and test outputs are intentionally ignored. Source control should stay focused on authored content, code, Unity settings, docs, scripts, and committed solve data rather than local result logs or build products.
 
@@ -278,6 +280,7 @@ See `docs/distribution.md` for platform install notes and telemetry collection, 
 ## Repository Map
 
 - `docs/phase_1_spec.md`: authoritative Phase 1 design and playtest contract.
+- `docs/phase_2a_plan.md`: active Phase 2A readability, animation, tooling, and capture plan.
 - `docs/tuning.md`: tuning notes.
 - `docs/distribution.md`: distribution notes.
 - `docs/capture.md`: L15 capture build and recording workflow.
@@ -298,26 +301,21 @@ See `docs/distribution.md` for platform install notes and telemetry collection, 
 - `scripts/`: local automation.
 - `Build/`, `Artifacts/`, `.utmp/`, root `capture/`, and root test result/log files: ignored generated output.
 
-## Remaining Phase 1 Work
+## Phase 2A Focus
 
-No current README-level blocker is known for L01 solve/replay or the accepted L03 validator warnings. Before declaring Phase 1 fully done, verify the latest EditMode, PlayMode, level validation, Phase 1 policy validation, and solve verification results from the commands above.
+Phase 2A is the active workstream. It is about readability, animation/feedback, level-authoring throughput, and one capture-quality proof moment; it should not add mechanics. See `docs/phase_2a_plan.md`.
 
-Phase 1 must-have finish work:
-
-- Keep EditMode and PlayMode green after any final presentation, scene wiring, or content-status documentation changes.
-- Verify L00-L15 as a player-facing progression, not just as deterministic content.
-- Confirm a cold player can understand rescue order, dock failure causality, water pressure, vine pressure, and the final rescue beat without debug context.
-
-Phase 1 polish within the locked scope:
+Near-term Phase 2A work:
 
 - Strengthen `TargetOneClearAway`, `WaterWarning`, `VinePreviewChanged`, and `VineGrown` as player-facing presentation where playtesting shows ambiguity.
 - Tune persistent next-flood-row forecast readability across L00-L15.
 - Make dock overflow, Dock Jam, win, and loss causality unmistakable.
 - Tune invalid-tap reject bump/audio while preserving zero state change.
 - Strengthen target extraction so it reads as a rescue beat.
-- Extend Mae reaction and aftercare support beyond the current presenter hook.
+- Improve Mae reaction and aftercare support only where it improves clarity or emotional grounding.
+- Improve level-authoring and capture workflows where they are fragile or slow.
 
-Future Phase 2 work:
+Out of scope for Phase 2A:
 
 - Fire, freeze fog, overgrowth, tools, keys, relics, switches, resource pieces, or tool-gated rescues.
 - Insertion preview, continuation offers, shop, pass, cosmetics, economy, live ops, or sanctuary meta-loop.

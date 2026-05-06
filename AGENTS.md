@@ -1,9 +1,11 @@
 # Rescue Grid — Agent Instructions
 
 ## Project
-Phase 1 prototype of a puzzle game. The authoritative design spec is at
-/docs/phase_1_spec.md. Read it before planning any task. Do not reference
-or pull mechanics from any other design document.
+Rescue Grid is a Phase 1-complete prototype puzzle game now focused on Phase
+2A readability, animation/feedback, authoring throughput, and capture proof.
+The authoritative gameplay design spec remains at /docs/phase_1_spec.md. Read
+it before planning any task. Do not reference or pull mechanics from any other
+design document.
 
 Core purpose: prove that acting advances danger, thinking is free, and
 rescue order is the central puzzle.
@@ -144,6 +146,24 @@ rescue order is the central puzzle.
 - Keep documentation edits targeted. Do not rewrite broad sections when a small
   correction is enough.
 - Do not perform broad refactors or cleanup while making scoped fixes.
+
+## Phase 2A Scope Guard
+
+Phase 1 is closed as an engineering/prototype milestone unless current tests,
+authored levels, APK/device playability, or core progression break. Active
+Phase 2A work focuses on readability, animation/feedback, level-authoring
+tools, and capture proof; it must not expand mechanics.
+
+Do not add new mechanics, meta systems, monetization, shop/economy, new hazards,
+new blockers, District 2, or broad art/UI replacement unless explicitly
+requested. Do not continue broad refactors just because files are large; tie
+refactors to a concrete bug, feature, test-backed seam, or maintainability
+blocker.
+
+After Unity-facing Phase 2A changes, use the documented EditMode and PlayMode
+test wrappers. If Unity shows a breakpoint launch dialog and no result XML/log
+exists, report it as an environment launch failure, not a gameplay or test
+failure.
 
 ## Refactor boundary
 
