@@ -1,23 +1,41 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Rescue.Content
 {
     public static class Phase1PolicyValidator
     {
+        private const string DefaultManifestRelativePath = "docs/level-packets/phase1.packet.json";
+
         public static ValidationResult Validate(LevelJson level)
+        {
+            return Validate(level, LoadDefaultManifest());
+        }
+
+        public static ValidationResult Validate(LevelJson level, LevelPacketManifest manifest)
         {
             if (level is null)
             {
                 throw new ArgumentNullException(nameof(level));
             }
 
+            if (manifest is null)
+            {
+                throw new ArgumentNullException(nameof(manifest));
+            }
+
             List<ValidationError> warnings = new List<ValidationError>();
-            AddWarnings(level, warnings);
+            AddWarnings(level, manifest, warnings);
 
             return warnings.Count == 0
                 ? ValidationResult.Success()
                 : ValidationResult.FromErrors(warnings);
+        }
+
+        public static LevelPacketManifest LoadDefaultManifest()
+        {
+            return LevelPacketManifestLoader.Load(ResolveDefaultManifestPath());
         }
 
         public static IReadOnlyList<ValidationError> GetWarnings(LevelJson level)
@@ -25,48 +43,64 @@ namespace Rescue.Content
             return Validate(level).Errors;
         }
 
-        private static void AddWarnings(LevelJson level, List<ValidationError> warnings)
+        public static IReadOnlyList<ValidationError> GetWarnings(LevelJson level, LevelPacketManifest manifest)
         {
-            if (TryGetPhase1LevelNumber(level.Id, out int levelNumber))
+            return Validate(level, manifest).Errors;
+        }
+
+        private static void AddWarnings(LevelJson level, LevelPacketManifest manifest, List<ValidationError> warnings)
+        {
+            if (!Contains(manifest.ExpectedLevelIds, level.Id))
             {
-                bool expectedDockJam = levelNumber is 1 or 2;
-                if (level.Dock.JamEnabled != expectedDockJam)
-                {
-                    warnings.Add(new ValidationError(
-                        ValidationSeverity.Warning,
-                        "phase1.dockJamLevel",
-                        "Dock Jam should be enabled only on L01 and L02 for Phase 1.",
-                        "$.dock.jamEnabled"));
-                }
-
-                int expectedPoolSize = levelNumber <= 4 ? 5 : 6;
-                if (level.DebrisTypePool.Length != expectedPoolSize)
-                {
-                    warnings.Add(new ValidationError(
-                        ValidationSeverity.Warning,
-                        "phase1.debrisPoolSize",
-                        $"L{levelNumber:00} should use a debrisTypePool size of {expectedPoolSize} for Phase 1.",
-                        "$.debrisTypePool"));
-                }
-
-                if (levelNumber == 7
-                    && level.Vine.GrowthPriority.Length > 0
-                    && level.Vine.GrowthThreshold < 999)
-                {
-                    warnings.Add(new ValidationError(
-                        ValidationSeverity.Warning,
-                        "phase1.l07VineGrowth",
-                        "L07 is the static vine introduction; vine growth should be disabled.",
-                        "$.vine"));
-                }
+                warnings.Add(new ValidationError(
+                    ValidationSeverity.Warning,
+                    "phase1.packet.levelNotInManifest",
+                    $"Level '{level.Id}' is not in packet manifest '{manifest.PacketId}'; Phase 1 packet policy checks were skipped.",
+                    "$.id"));
+                return;
             }
 
-            if (!level.Meta.IsRuleTeach && level.Water.RiseInterval > 0 && level.Water.RiseInterval < 6)
+            bool expectedDockJam = Contains(manifest.DockJamLevelIds, level.Id);
+            if (level.Dock.JamEnabled != expectedDockJam)
+            {
+                warnings.Add(new ValidationError(
+                    ValidationSeverity.Warning,
+                    "phase1.dockJamLevel",
+                    $"Dock Jam should be enabled only on configured packet levels ({FormatIds(manifest.DockJamLevelIds)}) for Phase 1.",
+                    "$.dock.jamEnabled"));
+            }
+
+            DebrisPoolBand? debrisPoolBand = FindDebrisPoolBand(level.Id, manifest);
+            if (debrisPoolBand is not null
+                && level.DebrisTypePool.Length != debrisPoolBand.DebrisTypePoolSize)
+            {
+                warnings.Add(new ValidationError(
+                    ValidationSeverity.Warning,
+                    "phase1.debrisPoolSize",
+                    $"{level.Id} should use a debrisTypePool size of {debrisPoolBand.DebrisTypePoolSize} for Phase 1.",
+                    "$.debrisTypePool"));
+            }
+
+            if (Contains(manifest.StaticVineIntroLevelIds, level.Id)
+                && level.Vine.GrowthPriority.Length > 0
+                && level.Vine.GrowthThreshold < 999)
+            {
+                warnings.Add(new ValidationError(
+                    ValidationSeverity.Warning,
+                    "phase1.l07VineGrowth",
+                    "Configured static vine introduction levels should have vine growth disabled.",
+                    "$.vine"));
+            }
+
+            if (!IsRuleTeach(level, manifest)
+                && level.Water.RiseInterval > 0
+                && manifest.WaterIntervalMinimum > 0
+                && level.Water.RiseInterval < manifest.WaterIntervalMinimum)
             {
                 warnings.Add(new ValidationError(
                     ValidationSeverity.Warning,
                     "phase1.waterIntervalBelow6",
-                    "Phase 1 water.riseInterval should not be below 6 outside the L00 rule-teach special case.",
+                    $"Phase 1 water.riseInterval should not be below {manifest.WaterIntervalMinimum} outside configured rule-teach special cases.",
                     "$.water.riseInterval"));
             }
 
@@ -100,15 +134,95 @@ namespace Rescue.Content
             }
         }
 
-        private static bool TryGetPhase1LevelNumber(string id, out int levelNumber)
+        private static DebrisPoolBand? FindDebrisPoolBand(string levelId, LevelPacketManifest manifest)
         {
-            levelNumber = 0;
-            if (id.Length != 3 || id[0] != 'L')
+            DebrisPoolBand[] bands = manifest.DebrisPoolBands ?? Array.Empty<DebrisPoolBand>();
+            for (int i = 0; i < bands.Length; i++)
             {
-                return false;
+                DebrisPoolBand band = bands[i];
+                if (IsLevelInRange(levelId, band.FirstLevelId, band.LastLevelId, manifest.ExpectedLevelIds))
+                {
+                    return band;
+                }
             }
 
-            return int.TryParse(id[1..], out levelNumber) && levelNumber >= 0 && levelNumber <= 15;
+            return null;
+        }
+
+        private static bool IsLevelInRange(string levelId, string firstLevelId, string lastLevelId, string[] expectedLevelIds)
+        {
+            int levelIndex = IndexOf(expectedLevelIds, levelId);
+            int firstIndex = IndexOf(expectedLevelIds, firstLevelId);
+            int lastIndex = IndexOf(expectedLevelIds, lastLevelId);
+            return levelIndex >= 0
+                && firstIndex >= 0
+                && lastIndex >= firstIndex
+                && levelIndex >= firstIndex
+                && levelIndex <= lastIndex;
+        }
+
+        private static bool IsRuleTeach(LevelJson level, LevelPacketManifest manifest)
+        {
+            return level.Meta.IsRuleTeach || Contains(manifest.RuleTeachLevelIds, level.Id);
+        }
+
+        private static bool Contains(string[]? ids, string id)
+        {
+            return IndexOf(ids, id) >= 0;
+        }
+
+        private static int IndexOf(string[]? ids, string id)
+        {
+            string[] values = ids ?? Array.Empty<string>();
+            for (int i = 0; i < values.Length; i++)
+            {
+                if (string.Equals(values[i], id, StringComparison.Ordinal))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private static string FormatIds(string[]? ids)
+        {
+            string[] values = ids ?? Array.Empty<string>();
+            return values.Length == 0 ? "none" : string.Join(", ", values);
+        }
+
+        private static string ResolveDefaultManifestPath()
+        {
+            string? currentDirectoryMatch = FindManifestFromDirectory(Directory.GetCurrentDirectory());
+            if (currentDirectoryMatch is not null)
+            {
+                return currentDirectoryMatch;
+            }
+
+            string? baseDirectoryMatch = FindManifestFromDirectory(AppContext.BaseDirectory);
+            if (baseDirectoryMatch is not null)
+            {
+                return baseDirectoryMatch;
+            }
+
+            throw new FileNotFoundException($"Could not locate default Phase 1 packet manifest at '{DefaultManifestRelativePath}'.");
+        }
+
+        private static string? FindManifestFromDirectory(string startDirectory)
+        {
+            DirectoryInfo? directory = new DirectoryInfo(startDirectory);
+            while (directory is not null)
+            {
+                string candidate = Path.Combine(directory.FullName, DefaultManifestRelativePath);
+                if (File.Exists(candidate))
+                {
+                    return candidate;
+                }
+
+                directory = directory.Parent;
+            }
+
+            return null;
         }
 
         private static bool ContainsReinforcedCrate(LevelJson level)

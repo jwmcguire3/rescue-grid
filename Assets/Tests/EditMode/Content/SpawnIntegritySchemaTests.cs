@@ -60,7 +60,7 @@ namespace Rescue.Content.Tests
                 },
             };
 
-            ValidationResult result = Phase1PolicyValidator.Validate(level);
+            ValidationResult result = Phase1PolicyValidator.Validate(level, TestManifest());
 
             Assert.That(result.HasErrors, Is.False);
             Assert.That(result.Errors.Select(error => error.Code), Has.Member("phase1.spawnIntegrity.exactTripleException"));
@@ -103,6 +103,32 @@ namespace Rescue.Content.Tests
                 ExpectedPath = "N/A",
                 ExpectedFailMode = "N/A",
                 WhatItProves = "Spawn integrity policy loads and validates.",
+            };
+        }
+
+        private static LevelPacketManifest TestManifest()
+        {
+            return new LevelPacketManifest
+            {
+                PacketId = "phase1-test",
+                DisplayName = "Phase 1 Test Packet",
+                FirstLevelId = "LX",
+                LastLevelId = "LX",
+                ExpectedLevelIds = new[] { "LX" },
+                RuleTeachLevelIds = Array.Empty<string>(),
+                DockJamLevelIds = Array.Empty<string>(),
+                StaticVineIntroLevelIds = Array.Empty<string>(),
+                DebrisPoolBands = new[]
+                {
+                    new DebrisPoolBand
+                    {
+                        FirstLevelId = "LX",
+                        LastLevelId = "LX",
+                        DebrisTypePoolSize = 5,
+                    },
+                },
+                WaterIntervalMinimum = 6,
+                Notes = "Test manifest.",
             };
         }
     }

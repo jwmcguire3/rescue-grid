@@ -52,6 +52,7 @@
     <Compile Include="Assets\Rescue.Content\Validator.cs" />
     <Compile Include="Assets\Rescue.Content\Compatibility\IsExternalInit.cs" />
     <Compile Include="Assets\Rescue.Content\Schema.cs" />
+    <Compile Include="Assets\Rescue.Content\BriefConformanceValidator.cs" />
     <Compile Include="Assets\Rescue.Content\ContentJson.cs" />
     <Compile Include="Assets\Rescue.Content\LevelBrief.cs" />
     <Compile Include="Assets\Rescue.Content\Loader.cs" />

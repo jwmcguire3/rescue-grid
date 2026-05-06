@@ -18,7 +18,7 @@ Executable behavior lives in code:
 
 Authored playable levels live in `Assets/StreamingAssets/Levels/`.
 
-The current authored playable content contains `L00.json` through `L20.json`. Phase 1 packet-specific policy checks remain scoped to `L00.json` through `L15.json`.
+The current authored playable content contains `L00.json` through `L20.json`. Phase 1 packet-specific policy checks are driven by `docs/level-packets/phase1.packet.json`.
 
 The filename must match the `id` field inside the JSON.
 
@@ -73,7 +73,7 @@ Exit code `0` = valid (warnings may still print). Exit code `1` = errors. Exit c
 
 ## Validate Phase 1 packet policy
 
-Phase 1 policy validation runs core validation plus packet-specific warnings for L00-L15 tuning expectations, such as Dock Jam placement, debris pool bands, L07 static vine setup, Phase 1 water interval floor, reinforced crate usage, and spawn-integrity exception notes.
+Phase 1 policy validation runs core validation plus manifest-driven packet warnings, such as Dock Jam placement, debris pool bands, static vine intro setup, Phase 1 water interval floor, reinforced crate usage, and spawn-integrity exception notes.
 
 Use it when editing or reviewing the Phase 1 packet:
 
@@ -147,7 +147,7 @@ For the current Phase 1 packet, also run:
 dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- validate-phase1-all Assets/StreamingAssets/Levels
 ```
 
-Use core validation for general content validity. Use Phase 1 policy validation when the content is expected to remain aligned with the L00-L15 prototype packet.
+Use core validation for general content validity. Use Phase 1 policy validation when the content is expected to remain aligned with the configured Phase 1 packet manifest.
 
 ## Verify solve scripts
 

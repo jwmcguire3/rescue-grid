@@ -52,7 +52,7 @@ Smoke, replay, and capture tools consume solve scripts from `Assets/Resources/Le
 
 ## Current content status
 
-The current authored playable content is `L00` through `L20`. Phase 1 packet policy checks remain scoped to `L00` through `L15`.
+The current authored playable content is `L00` through `L20`. Phase 1 packet policy checks are driven by `docs/level-packets/phase1.packet.json`.
 
 Do not hardcode stale validation results here. If status needs to be reported, run:
 
