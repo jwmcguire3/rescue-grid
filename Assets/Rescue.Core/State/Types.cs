@@ -57,7 +57,10 @@ namespace Rescue.Core.State
         int GrowthThreshold,
         ImmutableArray<TileCoord> GrowthPriorityList,
         int PriorityCursor,
-        TileCoord? PendingGrowthTile);
+        TileCoord? PendingGrowthTile,
+        TileCoord? PlannedGrowthTile = null,
+        TileCoord? GrowthSourceTile = null,
+        TileCoord? GrowthGoalTile = null);
 
     public sealed record SpawnOverride(
         bool? ForceEmergency,

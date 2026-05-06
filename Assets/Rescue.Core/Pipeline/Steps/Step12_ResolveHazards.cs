@@ -77,6 +77,9 @@ namespace Rescue.Core.Pipeline.Steps
                         {
                             ActionsSinceLastClear = 0,
                             PendingGrowthTile = null,
+                            PlannedGrowthTile = null,
+                            GrowthSourceTile = null,
+                            GrowthGoalTile = null,
                             PriorityCursor = nextCursor,
                         },
                     };
@@ -89,6 +92,9 @@ namespace Rescue.Core.Pipeline.Steps
                         Vine = updatedState.Vine with
                         {
                             PendingGrowthTile = null,
+                            PlannedGrowthTile = null,
+                            GrowthSourceTile = null,
+                            GrowthGoalTile = null,
                         },
                     };
                 }

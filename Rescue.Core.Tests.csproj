@@ -57,6 +57,7 @@
     <Compile Include="Assets\Rescue.Core.Tests\State\ImmutabilityTests.cs" />
     <Compile Include="Assets\Rescue.Core.Tests\Undo\SnapshotTests.cs" />
     <Compile Include="Assets\Rescue.Core.Tests\Pipeline\LossTests.cs" />
+    <Compile Include="Assets\Rescue.Core.Tests\Rules\VineGrowthPlannerTests.cs" />
     <Compile Include="Assets\Rescue.Core.Tests\Integration\RescueRaceTests.cs" />
     <Compile Include="Assets\Rescue.Core.Tests\Integration\FullActionTests.cs" />
     <Compile Include="Assets\Rescue.Core.Tests\Rules\ExtractionTests.cs" />

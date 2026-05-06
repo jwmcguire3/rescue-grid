@@ -55,6 +55,9 @@ namespace Rescue.Core.Pipeline.Steps
                 {
                     ActionsSinceLastClear = 0,
                     PendingGrowthTile = null,
+                    PlannedGrowthTile = null,
+                    GrowthSourceTile = null,
+                    GrowthGoalTile = null,
                 };
                 updatedContext = updatedContext with
                 {

@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Rescue.Core\Rules\Spawn.cs" />
+    <Compile Include="Assets\Rescue.Core\Rules\VineGrowthPlanner.cs" />
     <Compile Include="Assets\Rescue.Core\Pipeline\Pipeline.cs" />
     <Compile Include="Assets\Rescue.Core\Compatibility\IsExternalInit.cs" />
     <Compile Include="Assets\Rescue.Core\Rules\DeadboardRepair.cs" />

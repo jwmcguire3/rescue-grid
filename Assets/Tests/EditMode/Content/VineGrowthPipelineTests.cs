@@ -5,11 +5,79 @@ using Rescue.Core.Pipeline;
 using Rescue.Core.Rng;
 using Rescue.Core.Rules;
 using Rescue.Core.State;
+using Rescue.Core.Undo;
 
 namespace Rescue.Content.Tests
 {
     public sealed class VineGrowthPipelineTests
     {
+        [Test]
+        public void VineState_DefaultPlanningFieldsAreNull()
+        {
+            VineState vine = new VineState(
+                ActionsSinceLastClear: 0,
+                GrowthThreshold: 4,
+                GrowthPriorityList: ImmutableArray<TileCoord>.Empty,
+                PriorityCursor: 0,
+                PendingGrowthTile: null);
+
+            Assert.That(vine.PlannedGrowthTile, Is.Null);
+            Assert.That(vine.GrowthSourceTile, Is.Null);
+            Assert.That(vine.GrowthGoalTile, Is.Null);
+        }
+
+        [Test]
+        public void Loader_LoadsExistingVineJsonWithNullPlanningFields()
+        {
+            GameState state = Loader.LoadLevel("L08", seed: 1);
+
+            Assert.That(state.Vine.GrowthPriorityList, Is.Not.Empty);
+            Assert.That(state.Vine.PendingGrowthTile, Is.Null);
+            Assert.That(state.Vine.PlannedGrowthTile, Is.Null);
+            Assert.That(state.Vine.GrowthSourceTile, Is.Null);
+            Assert.That(state.Vine.GrowthGoalTile, Is.Null);
+        }
+
+        [Test]
+        public void Undo_RestoresManuallyPresentVinePlanningFields()
+        {
+            TileCoord planned = new TileCoord(0, 2);
+            TileCoord source = new TileCoord(1, 0);
+            TileCoord goal = new TileCoord(2, 2);
+            GameState state = CreateVineState(
+                CreateBoard(
+                    Row(new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new EmptyTile()),
+                    Row(new BlockerTile(BlockerType.Vine, 1, null), new DebrisTile(DebrisType.B), new DebrisTile(DebrisType.B)),
+                    Row(new DebrisTile(DebrisType.C), new DebrisTile(DebrisType.C), new EmptyTile())),
+                growthThreshold: 4,
+                growthPriority: ImmutableArray.Create(planned)) with
+            {
+                Vine = new VineState(
+                    ActionsSinceLastClear: 1,
+                    GrowthThreshold: 4,
+                    GrowthPriorityList: ImmutableArray.Create(planned),
+                    PriorityCursor: 0,
+                    PendingGrowthTile: null,
+                    PlannedGrowthTile: planned,
+                    GrowthSourceTile: source,
+                    GrowthGoalTile: goal),
+            };
+
+            ActionResult result = Pipeline.RunAction(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                new RunOptions(RecordSnapshot: true));
+            Assert.That(result.Snapshot, Is.Not.Null);
+            Snapshot snapshot = result.Snapshot ?? throw new AssertionException("Expected undo snapshot.");
+            GameState restored = UndoGuard.PerformUndo(result.State, snapshot);
+
+            Assert.That(restored.Vine.PlannedGrowthTile, Is.EqualTo(planned));
+            Assert.That(restored.Vine.GrowthSourceTile, Is.EqualTo(source));
+            Assert.That(restored.Vine.GrowthGoalTile, Is.EqualTo(goal));
+            Assert.That(restored.Vine.PendingGrowthTile, Is.Null);
+            Assert.That(restored.UndoAvailable, Is.False);
+        }
+
         [Test]
         public void RunAction_PreviewsVineOneActionBeforeThreshold()
         {
@@ -25,6 +93,9 @@ namespace Rescue.Content.Tests
             ActionResult result = Pipeline.RunAction(state, new ActionInput(new TileCoord(1, 0)), new RunOptions(RecordSnapshot: false));
 
             Assert.That(result.State.Vine.PendingGrowthTile, Is.EqualTo(new TileCoord(2, 2)));
+            Assert.That(result.State.Vine.PlannedGrowthTile, Is.Null);
+            Assert.That(result.State.Vine.GrowthSourceTile, Is.Null);
+            Assert.That(result.State.Vine.GrowthGoalTile, Is.Null);
             Assert.That(result.Events, Has.Some.EqualTo(new VinePreviewChanged(new TileCoord(2, 2))));
         }
 
