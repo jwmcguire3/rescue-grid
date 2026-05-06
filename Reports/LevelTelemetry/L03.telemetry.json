@@ -1,0 +1,182 @@
+{
+  "levelId": "L03",
+  "samplesPerBot": 50,
+  "maxActions": 30,
+  "seedStart": 1,
+  "seedEnd": 50,
+  "generatedAtUtc": "2026-05-06T16:24:25.7677963Z",
+  "bots": {
+    "random_legal": {
+      "sampleCount": 50,
+      "winCount": 2,
+      "winRate": 0.04,
+      "lossCount": 48,
+      "stalledCount": 0,
+      "maxActionsReachedCount": 0,
+      "medianActionsToWin": 8,
+      "medianActionsToTerminal": 3,
+      "averageActionsToTerminal": 3.3,
+      "terminalReasonCounts": {
+        "LossWaterOnTarget": 47,
+        "Win": 2,
+        "LossDockOverflow": 1
+      },
+      "dockOverflowCount": 1,
+      "waterLossCount": 47,
+      "averageTargetsExtracted": 0.12,
+      "targetExtractionOrderCounts": {
+        "1": 1,
+        "0\u003E1": 2,
+        "0": 1
+      },
+      "eventCounts": {
+        "GroupRemoved": 165,
+        "BlockerDamaged": 120,
+        "BlockerBroken": 120,
+        "TargetRescuePathLocked": 96,
+        "DockInserted": 249,
+        "GravitySettled": 990,
+        "DiagonalSettlingApplied": 90,
+        "Spawned": 162,
+        "TargetOneClearAway": 40,
+        "WaterWarning": 54,
+        "DockCleared": 25,
+        "WaterRose": 53,
+        "Lost": 48,
+        "DockWarningChanged": 11,
+        "TargetProgressed": 15,
+        "TargetExtractionLatched": 6,
+        "TargetExtracted": 6,
+        "Won": 2,
+        "DeadboardDiagnosticDetected": 2,
+        "DockOverflowTriggered": 1
+      }
+    },
+    "greedy_clear": {
+      "sampleCount": 50,
+      "winCount": 3,
+      "winRate": 0.06,
+      "lossCount": 47,
+      "stalledCount": 0,
+      "maxActionsReachedCount": 0,
+      "medianActionsToWin": 15,
+      "medianActionsToTerminal": 3,
+      "averageActionsToTerminal": 5.8,
+      "terminalReasonCounts": {
+        "LossWaterOnTarget": 37,
+        "Win": 3,
+        "LossRescuePathFlooded": 8,
+        "LossDockOverflow": 2
+      },
+      "dockOverflowCount": 2,
+      "waterLossCount": 37,
+      "averageTargetsExtracted": 0.32,
+      "targetExtractionOrderCounts": {
+        "0\u003E1": 3,
+        "0": 10
+      },
+      "eventCounts": {
+        "GroupRemoved": 290,
+        "BlockerDamaged": 198,
+        "BlockerBroken": 198,
+        "TargetRescuePathLocked": 149,
+        "TargetOneClearAway": 55,
+        "GravitySettled": 1880,
+        "DiagonalSettlingApplied": 286,
+        "Spawned": 285,
+        "WaterWarning": 96,
+        "WaterRose": 92,
+        "Lost": 47,
+        "TargetProgressed": 28,
+        "DockInserted": 290,
+        "TargetExtractionLatched": 16,
+        "TargetExtracted": 16,
+        "DockCleared": 66,
+        "Won": 3,
+        "DockWarningChanged": 27,
+        "TargetRescuePathFlooded": 8,
+        "DeadboardDiagnosticDetected": 26,
+        "DockOverflowTriggered": 2
+      }
+    },
+    "rescue_focused": {
+      "sampleCount": 50,
+      "winCount": 50,
+      "winRate": 1,
+      "lossCount": 0,
+      "stalledCount": 0,
+      "maxActionsReachedCount": 0,
+      "medianActionsToWin": 4,
+      "medianActionsToTerminal": 4,
+      "averageActionsToTerminal": 4.82,
+      "terminalReasonCounts": {
+        "Win": 50
+      },
+      "dockOverflowCount": 0,
+      "waterLossCount": 0,
+      "averageTargetsExtracted": 2,
+      "targetExtractionOrderCounts": {
+        "0\u003E1": 50
+      },
+      "eventCounts": {
+        "GroupRemoved": 241,
+        "BlockerDamaged": 236,
+        "BlockerBroken": 236,
+        "TargetRescuePathLocked": 250,
+        "TargetOneClearAway": 96,
+        "GravitySettled": 1624,
+        "DiagonalSettlingApplied": 259,
+        "Spawned": 191,
+        "TargetExtractionLatched": 100,
+        "DockInserted": 333,
+        "TargetExtracted": 100,
+        "WaterWarning": 65,
+        "DockCleared": 67,
+        "WaterRose": 55,
+        "Won": 50,
+        "TargetProgressed": 4,
+        "DeadboardDiagnosticDetected": 41,
+        "DockWarningChanged": 16
+      }
+    },
+    "dock_safe": {
+      "sampleCount": 50,
+      "winCount": 0,
+      "winRate": 0,
+      "lossCount": 50,
+      "stalledCount": 0,
+      "maxActionsReachedCount": 0,
+      "medianActionsToWin": null,
+      "medianActionsToTerminal": 3,
+      "averageActionsToTerminal": 3,
+      "terminalReasonCounts": {
+        "LossWaterOnTarget": 50
+      },
+      "dockOverflowCount": 0,
+      "waterLossCount": 50,
+      "averageTargetsExtracted": 0,
+      "targetExtractionOrderCounts": {},
+      "eventCounts": {
+        "GroupRemoved": 150,
+        "BlockerDamaged": 158,
+        "BlockerBroken": 158,
+        "TargetRescuePathLocked": 113,
+        "TargetOneClearAway": 52,
+        "GravitySettled": 1297,
+        "DiagonalSettlingApplied": 197,
+        "Spawned": 150,
+        "WaterWarning": 50,
+        "WaterRose": 50,
+        "Lost": 50,
+        "TargetProgressed": 11,
+        "DockInserted": 16
+      }
+    }
+  },
+  "difficultySignals": [],
+  "notes": [],
+  "briefRole": "choice",
+  "briefPrimarySkill": "rescue_order",
+  "briefTargetFirstAttemptWinRate": "70-85%",
+  "briefExpectedFailMode": "Player saves the visually easier puppy first and loses tempo on the urgent rescue."
+}

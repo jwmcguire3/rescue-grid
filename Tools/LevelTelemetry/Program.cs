@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Rescue.Content;
 using Rescue.Core.Pipeline;
 using Rescue.Core.Rules;
@@ -31,6 +32,17 @@ namespace Rescue.LevelTelemetryTool
         {
             WriteIndented = true,
         };
+        private static readonly JsonSerializerOptions BriefJsonOptions = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+        };
+        private static readonly string[] BotNames =
+        {
+            "random_legal",
+            "greedy_clear",
+            "rescue_focused",
+            "dock_safe",
+        };
 
         public static int Run(string[] args)
         {
@@ -41,51 +53,61 @@ namespace Rescue.LevelTelemetryTool
                 string outputPath = Path.GetFullPath(options.OutputDirectory);
                 Directory.CreateDirectory(outputPath);
 
-                List<RunReport> runs = new List<RunReport>();
                 SortedSet<string> terminalReasons = new SortedSet<string>(StringComparer.Ordinal);
-                SortedSet<string> outcomeNames = new SortedSet<string>(StringComparer.Ordinal);
                 SortedSet<string> eventNames = new SortedSet<string>(StringComparer.Ordinal);
+                List<LevelTelemetryReport> reports = new List<LevelTelemetryReport>(levelIds.Count);
                 for (int levelIndex = 0; levelIndex < levelIds.Count; levelIndex++)
                 {
                     string levelId = levelIds[levelIndex];
-                    for (int seed = 1; seed <= options.Samples; seed++)
+                    Dictionary<string, BotRunResult[]> botRuns = new Dictionary<string, BotRunResult[]>(StringComparer.Ordinal);
+                    for (int botIndex = 0; botIndex < BotNames.Length; botIndex++)
                     {
-                        RunReport run = RunBot(levelId, seed, options.BotName, options.MaxActions);
-                        runs.Add(run);
-                        terminalReasons.Add(run.TerminalReason);
-                        outcomeNames.Add(run.Outcome);
-                        for (int eventIndex = 0; eventIndex < run.EventTypeNames.Length; eventIndex++)
+                        string botName = BotNames[botIndex];
+                        BotRunResult[] runs = new BotRunResult[options.Samples];
+                        for (int seed = 1; seed <= options.Samples; seed++)
                         {
-                            eventNames.Add(run.EventTypeNames[eventIndex]);
+                            BotRunResult run = RunBot(levelId, seed, botName, options.MaxActions);
+                            runs[seed - 1] = run;
+                            terminalReasons.Add(run.TerminalReason);
+                            for (int eventIndex = 0; eventIndex < run.EventTypeNames.Length; eventIndex++)
+                            {
+                                eventNames.Add(run.EventTypeNames[eventIndex]);
+                            }
                         }
+
+                        botRuns.Add(botName, runs);
                     }
+
+                    LevelJson level = Loader.LoadLevelDefinition(levelId);
+                    LevelTelemetryReport report = BuildReport(
+                        levelId,
+                        options.Samples,
+                        options.MaxActions,
+                        seedStart: 1,
+                        seedEnd: options.Samples,
+                        botRuns,
+                        DateTimeOffset.UtcNow,
+                        Path.Combine("docs", "level-briefs"),
+                        level.Targets.Length);
+                    reports.Add(report);
+
+                    string reportPath = WriteReport(outputPath, report);
+                    Console.WriteLine($"Wrote {reportPath}");
                 }
 
-                TelemetryReport report = new TelemetryReport(
-                    Bot: options.BotName,
-                    Levels: levelIds.ToArray(),
-                    SamplesPerLevel: options.Samples,
-                    MaxActions: options.MaxActions,
-                    Runs: runs.ToArray(),
-                    TerminalReasons: terminalReasons.ToArray(),
-                    Outcomes: outcomeNames.ToArray(),
-                    EventTypeNames: eventNames.ToArray());
-
-                string reportPath = Path.Combine(
-                    outputPath,
-                    $"{options.BotName}_{BuildReportName(levelIds, options.Samples, options.MaxActions)}.json");
-                File.WriteAllText(reportPath, JsonSerializer.Serialize(report, JsonOptions));
-
-                Console.WriteLine($"LevelTelemetry {options.BotName} simulation complete.");
-                Console.WriteLine($"Bot: {options.BotName}");
+                Console.WriteLine("LevelTelemetry simulation complete.");
                 Console.WriteLine($"Levels: {string.Join(", ", levelIds)}");
-                Console.WriteLine($"Samples per level: {options.Samples}");
+                Console.WriteLine($"Samples per bot: {options.Samples}");
                 Console.WriteLine($"Max actions: {options.MaxActions}");
-                Console.WriteLine($"Output path: {reportPath}");
-                Console.WriteLine($"Runs: {runs.Count}");
+                Console.WriteLine($"Output directory: {outputPath}");
+                Console.WriteLine($"Reports: {reports.Count}");
                 Console.WriteLine($"Terminal reasons: {string.Join(", ", terminalReasons)}");
-                Console.WriteLine($"Outcomes: {string.Join(", ", outcomeNames)}");
                 Console.WriteLine($"Event type names: {string.Join(", ", eventNames)}");
+                for (int reportIndex = 0; reportIndex < reports.Count; reportIndex++)
+                {
+                    LevelTelemetryReport report = reports[reportIndex];
+                    Console.WriteLine($"{report.LevelId} difficultySignals: {string.Join(", ", report.DifficultySignals)}");
+                }
 
                 return 0;
             }
@@ -294,8 +316,8 @@ namespace Rescue.LevelTelemetryTool
         private static void PrintUsage()
         {
             Console.Error.WriteLine("Usage:");
-            Console.Error.WriteLine("  dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --level L01 [--bot random_legal] [--samples 200] [--max-actions 30] [--output Reports/LevelTelemetry]");
-            Console.Error.WriteLine("  dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --range L00-L15 [--bot random_legal] [--samples 200] [--max-actions 30] [--output Reports/LevelTelemetry]");
+            Console.Error.WriteLine("  dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --level L01 [--samples 200] [--max-actions 30] [--output Reports/LevelTelemetry]");
+            Console.Error.WriteLine("  dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --range L00-L15 [--samples 200] [--max-actions 30] [--output Reports/LevelTelemetry]");
         }
 
         private static string BuildReportName(IReadOnlyList<string> levelIds, int samples, int maxActions)
@@ -306,11 +328,141 @@ namespace Rescue.LevelTelemetryTool
             return $"{levelPart}_samples{samples}_max{maxActions}";
         }
 
-        private static RunReport RunBot(string levelId, int seed, string botName, int maxActions)
+        internal static LevelTelemetryReport BuildReport(
+            string levelId,
+            int samplesPerBot,
+            int maxActions,
+            int seedStart,
+            int seedEnd,
+            IReadOnlyDictionary<string, BotRunResult[]> botRuns,
+            DateTimeOffset generatedAtUtc,
+            string briefDirectory,
+            int targetCount)
+        {
+            Dictionary<string, BotReport> bots = new Dictionary<string, BotReport>(StringComparer.Ordinal);
+            for (int botIndex = 0; botIndex < BotNames.Length; botIndex++)
+            {
+                string botName = BotNames[botIndex];
+                BotRunResult[] runs = botRuns.TryGetValue(botName, out BotRunResult[]? foundRuns)
+                    ? foundRuns
+                    : Array.Empty<BotRunResult>();
+                bots.Add(botName, AggregateBot(runs));
+            }
+
+            List<string> notes = new List<string>();
+            LevelBrief? brief = ReadBrief(levelId, briefDirectory, notes);
+            List<string> difficultySignals = BuildDifficultySignals(bots, brief, targetCount, notes);
+            return new LevelTelemetryReport(
+                LevelId: levelId,
+                SamplesPerBot: samplesPerBot,
+                MaxActions: maxActions,
+                SeedStart: seedStart,
+                SeedEnd: seedEnd,
+                GeneratedAtUtc: generatedAtUtc.UtcDateTime.ToString("O"),
+                Bots: bots,
+                DifficultySignals: difficultySignals,
+                Notes: notes,
+                BriefRole: brief?.Role,
+                BriefPrimarySkill: brief?.PrimarySkill,
+                BriefTargetFirstAttemptWinRate: brief?.TargetFirstAttemptWinRate,
+                BriefExpectedFailMode: brief?.ExpectedFailMode);
+        }
+
+        internal static BotReport AggregateBot(IReadOnlyList<BotRunResult> runs)
+        {
+            int sampleCount = runs.Count;
+            int winCount = 0;
+            int stalledCount = 0;
+            int maxActionsReachedCount = 0;
+            int dockOverflowCount = 0;
+            int waterLossCount = 0;
+            int targetCountTotal = 0;
+            int actionCountTotal = 0;
+            List<int> winActionCounts = new List<int>();
+            List<int> terminalActionCounts = new List<int>();
+            Dictionary<string, int> terminalReasonCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+            Dictionary<string, int> extractionOrderCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+            Dictionary<string, int> eventCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+
+            for (int i = 0; i < runs.Count; i++)
+            {
+                BotRunResult run = runs[i];
+                Increment(terminalReasonCounts, run.TerminalReason);
+                terminalActionCounts.Add(run.ActionsTaken);
+                actionCountTotal += run.ActionsTaken;
+                targetCountTotal += run.TargetsExtracted;
+
+                if (IsWin(run.TerminalReason))
+                {
+                    winCount++;
+                    winActionCounts.Add(run.ActionsTaken);
+                }
+                else
+                {
+                    if (IsDockOverflowReason(run.TerminalReason))
+                    {
+                        dockOverflowCount++;
+                    }
+
+                    if (IsWaterLossReason(run.TerminalReason))
+                    {
+                        waterLossCount++;
+                    }
+                }
+
+                if (string.Equals(run.TerminalReason, "StalledNoLegalMoves", StringComparison.Ordinal))
+                {
+                    stalledCount++;
+                }
+
+                if (string.Equals(run.TerminalReason, "MaxActionsReached", StringComparison.Ordinal))
+                {
+                    maxActionsReachedCount++;
+                }
+
+                if (run.TargetExtractionOrder.Length > 0)
+                {
+                    Increment(extractionOrderCounts, string.Join(">", run.TargetExtractionOrder));
+                }
+
+                for (int eventIndex = 0; eventIndex < run.EventTypeNames.Length; eventIndex++)
+                {
+                    Increment(eventCounts, run.EventTypeNames[eventIndex]);
+                }
+            }
+
+            int lossCount = sampleCount - winCount - stalledCount - maxActionsReachedCount;
+            return new BotReport(
+                SampleCount: sampleCount,
+                WinCount: winCount,
+                WinRate: sampleCount == 0 ? 0.0d : (double)winCount / sampleCount,
+                LossCount: lossCount,
+                StalledCount: stalledCount,
+                MaxActionsReachedCount: maxActionsReachedCount,
+                MedianActionsToWin: winActionCounts.Count == 0 ? null : Median(winActionCounts),
+                MedianActionsToTerminal: terminalActionCounts.Count == 0 ? 0.0d : Median(terminalActionCounts),
+                AverageActionsToTerminal: sampleCount == 0 ? 0.0d : (double)actionCountTotal / sampleCount,
+                TerminalReasonCounts: terminalReasonCounts,
+                DockOverflowCount: dockOverflowCount,
+                WaterLossCount: waterLossCount,
+                AverageTargetsExtracted: sampleCount == 0 ? 0.0d : (double)targetCountTotal / sampleCount,
+                TargetExtractionOrderCounts: extractionOrderCounts,
+                EventCounts: eventCounts);
+        }
+
+        internal static string WriteReport(string outputDirectory, LevelTelemetryReport report)
+        {
+            Directory.CreateDirectory(outputDirectory);
+            string reportPath = Path.Combine(outputDirectory, $"{report.LevelId}.telemetry.json");
+            File.WriteAllText(reportPath, JsonSerializer.Serialize(report, JsonOptions));
+            return reportPath;
+        }
+
+        internal static BotRunResult RunBot(string levelId, int seed, string botName, int maxActions)
         {
             GameState state = Loader.LoadLevel(levelId, seed);
             List<ActionReport> actions = new List<ActionReport>(maxActions);
-            SortedSet<string> eventTypeNames = new SortedSet<string>(StringComparer.Ordinal);
+            List<string> eventTypeNames = new List<string>();
             string terminalReason = "MaxActionsReached";
             ActionOutcome outcome = ActionOutcome.Ok;
 
@@ -362,7 +514,7 @@ namespace Rescue.LevelTelemetryTool
                 }
             }
 
-            return new RunReport(
+            return new BotRunResult(
                 LevelId: levelId,
                 Seed: seed,
                 Bot: botName,
@@ -370,6 +522,8 @@ namespace Rescue.LevelTelemetryTool
                 TerminalReason: terminalReason,
                 Outcome: outcome.ToString(),
                 EventTypeNames: eventTypeNames.ToArray(),
+                TargetsExtracted: state.ExtractedTargetOrder.Length,
+                TargetExtractionOrder: state.ExtractedTargetOrder.ToArray(),
                 Actions: actions.ToArray());
         }
 
@@ -682,6 +836,197 @@ namespace Rescue.LevelTelemetryTool
             }
         }
 
+        private static LevelBrief? ReadBrief(string levelId, string briefDirectory, List<string> notes)
+        {
+            string briefPath = Path.Combine(briefDirectory, $"{levelId}.brief.json");
+            if (!File.Exists(briefPath))
+            {
+                notes.Add("No level brief found.");
+                return null;
+            }
+
+            try
+            {
+                LevelBrief? brief = JsonSerializer.Deserialize<LevelBrief>(File.ReadAllText(briefPath), BriefJsonOptions);
+                if (brief is null)
+                {
+                    notes.Add("Level brief could not be parsed.");
+                    return null;
+                }
+
+                return brief;
+            }
+            catch (JsonException ex)
+            {
+                notes.Add($"Level brief parse failed: {ex.Message}");
+                return null;
+            }
+        }
+
+        private static List<string> BuildDifficultySignals(
+            Dictionary<string, BotReport> bots,
+            LevelBrief? brief,
+            int targetCount,
+            List<string> notes)
+        {
+            List<string> signals = new List<string>();
+            BotReport random = bots["random_legal"];
+            BotReport greedy = bots["greedy_clear"];
+            BotReport rescue = bots["rescue_focused"];
+            BotReport dock = bots["dock_safe"];
+            string? role = brief?.Role;
+
+            if (rescue.WinRate < greedy.WinRate)
+            {
+                signals.Add("greedy_clear_outperforms_rescue_focused");
+            }
+
+            if (rescue.WinRate < 0.60d)
+            {
+                signals.Add("rescue_focused_low_win_rate");
+            }
+
+            if (random.WinRate > 0.50d && !IsRandomHighWinRateAllowedRole(role))
+            {
+                signals.Add("random_legal_high_win_rate");
+            }
+
+            if (dock.WinRate - rescue.WinRate >= 0.20d)
+            {
+                signals.Add("dock_safety_may_dominate_rescue");
+            }
+
+            if (IsDockSensitiveRole(role) && IsDominantNonWinReason(rescue, IsDockOverflowReason))
+            {
+                signals.Add("dock_overflow_too_prominent_for_role");
+            }
+
+            if (IsWaterSensitiveRole(role) && IsDominantNonWinReason(rescue, IsWaterLossReason))
+            {
+                if (brief?.ExpectedFailMode is null)
+                {
+                    notes.Add("Water prominence checked without brief expectedFailMode.");
+                }
+                else if (brief.ExpectedFailMode.IndexOf("water", StringComparison.OrdinalIgnoreCase) < 0)
+                {
+                    signals.Add("water_loss_too_prominent_for_role");
+                }
+            }
+
+            if (CountTargetProgressEvents(rescue.EventCounts) == 0 && targetCount > 0)
+            {
+                signals.Add("no_target_progress_events_seen");
+            }
+
+            if (rescue.MaxActionsReachedCount > rescue.SampleCount * 0.25d)
+            {
+                signals.Add("many_runs_reach_max_actions");
+            }
+
+            return signals;
+        }
+
+        private static bool IsDominantNonWinReason(BotReport bot, Func<string, bool> predicate)
+        {
+            int matchingCount = 0;
+            int highestNonWinCount = 0;
+            foreach (KeyValuePair<string, int> entry in bot.TerminalReasonCounts)
+            {
+                if (IsWin(entry.Key))
+                {
+                    continue;
+                }
+
+                highestNonWinCount = Math.Max(highestNonWinCount, entry.Value);
+                if (predicate(entry.Key))
+                {
+                    matchingCount += entry.Value;
+                }
+            }
+
+            return matchingCount > 0 && matchingCount >= highestNonWinCount;
+        }
+
+        private static bool IsRandomHighWinRateAllowedRole(string? role)
+        {
+            return string.Equals(role, "rule_teach", StringComparison.Ordinal)
+                || string.Equals(role, "teach", StringComparison.Ordinal)
+                || string.Equals(role, "release", StringComparison.Ordinal)
+                || string.Equals(role, "recovery", StringComparison.Ordinal)
+                || string.Equals(role, "spectacle", StringComparison.Ordinal);
+        }
+
+        private static bool IsDockSensitiveRole(string? role)
+        {
+            return string.Equals(role, "teach", StringComparison.Ordinal)
+                || string.Equals(role, "practice", StringComparison.Ordinal)
+                || string.Equals(role, "release", StringComparison.Ordinal)
+                || string.Equals(role, "recovery", StringComparison.Ordinal);
+        }
+
+        private static bool IsWaterSensitiveRole(string? role)
+        {
+            return string.Equals(role, "rule_teach", StringComparison.Ordinal)
+                || string.Equals(role, "teach", StringComparison.Ordinal)
+                || string.Equals(role, "practice", StringComparison.Ordinal);
+        }
+
+        private static bool IsWin(string terminalReason)
+        {
+            return string.Equals(terminalReason, "Win", StringComparison.Ordinal);
+        }
+
+        private static bool IsDockOverflowReason(string terminalReason)
+        {
+            return !IsWin(terminalReason)
+                && terminalReason.IndexOf("Dock", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private static bool IsWaterLossReason(string terminalReason)
+        {
+            return !IsWin(terminalReason)
+                && terminalReason.IndexOf("Water", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private static int CountTargetProgressEvents(IReadOnlyDictionary<string, int> eventCounts)
+        {
+            int count = 0;
+            foreach (KeyValuePair<string, int> entry in eventCounts)
+            {
+                if (string.Equals(entry.Key, "TargetProgressed", StringComparison.Ordinal)
+                    || entry.Key.IndexOf("TargetProgress", StringComparison.Ordinal) >= 0)
+                {
+                    count += entry.Value;
+                }
+            }
+
+            return count;
+        }
+
+        private static double Median(List<int> values)
+        {
+            values.Sort();
+            int middle = values.Count / 2;
+            if (values.Count % 2 == 1)
+            {
+                return values[middle];
+            }
+
+            return (values[middle - 1] + values[middle]) / 2.0d;
+        }
+
+        private static void Increment(Dictionary<string, int> counts, string key)
+        {
+            if (counts.TryGetValue(key, out int count))
+            {
+                counts[key] = count + 1;
+            }
+            else
+            {
+                counts.Add(key, 1);
+            }
+        }
+
         private sealed record TelemetryOptions(
             string? LevelId,
             string? Range,
@@ -702,17 +1047,47 @@ namespace Rescue.LevelTelemetryTool
             public int LowestCol => Group.Min(static coord => coord.Col);
         }
 
-        private sealed record TelemetryReport(
-            string Bot,
-            string[] Levels,
-            int SamplesPerLevel,
-            int MaxActions,
-            RunReport[] Runs,
-            string[] TerminalReasons,
-            string[] Outcomes,
-            string[] EventTypeNames);
+        internal sealed record LevelTelemetryReport(
+            [property: JsonPropertyName("levelId")] string LevelId,
+            [property: JsonPropertyName("samplesPerBot")] int SamplesPerBot,
+            [property: JsonPropertyName("maxActions")] int MaxActions,
+            [property: JsonPropertyName("seedStart")] int SeedStart,
+            [property: JsonPropertyName("seedEnd")] int SeedEnd,
+            [property: JsonPropertyName("generatedAtUtc")] string GeneratedAtUtc,
+            [property: JsonPropertyName("bots")] Dictionary<string, BotReport> Bots,
+            [property: JsonPropertyName("difficultySignals")] List<string> DifficultySignals,
+            [property: JsonPropertyName("notes")] List<string> Notes,
+            [property: JsonPropertyName("briefRole")]
+            [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            string? BriefRole,
+            [property: JsonPropertyName("briefPrimarySkill")]
+            [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            string? BriefPrimarySkill,
+            [property: JsonPropertyName("briefTargetFirstAttemptWinRate")]
+            [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            string? BriefTargetFirstAttemptWinRate,
+            [property: JsonPropertyName("briefExpectedFailMode")]
+            [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            string? BriefExpectedFailMode);
 
-        private sealed record RunReport(
+        internal sealed record BotReport(
+            [property: JsonPropertyName("sampleCount")] int SampleCount,
+            [property: JsonPropertyName("winCount")] int WinCount,
+            [property: JsonPropertyName("winRate")] double WinRate,
+            [property: JsonPropertyName("lossCount")] int LossCount,
+            [property: JsonPropertyName("stalledCount")] int StalledCount,
+            [property: JsonPropertyName("maxActionsReachedCount")] int MaxActionsReachedCount,
+            [property: JsonPropertyName("medianActionsToWin")] double? MedianActionsToWin,
+            [property: JsonPropertyName("medianActionsToTerminal")] double MedianActionsToTerminal,
+            [property: JsonPropertyName("averageActionsToTerminal")] double AverageActionsToTerminal,
+            [property: JsonPropertyName("terminalReasonCounts")] Dictionary<string, int> TerminalReasonCounts,
+            [property: JsonPropertyName("dockOverflowCount")] int DockOverflowCount,
+            [property: JsonPropertyName("waterLossCount")] int WaterLossCount,
+            [property: JsonPropertyName("averageTargetsExtracted")] double AverageTargetsExtracted,
+            [property: JsonPropertyName("targetExtractionOrderCounts")] Dictionary<string, int> TargetExtractionOrderCounts,
+            [property: JsonPropertyName("eventCounts")] Dictionary<string, int> EventCounts);
+
+        internal sealed record BotRunResult(
             string LevelId,
             int Seed,
             string Bot,
@@ -720,9 +1095,17 @@ namespace Rescue.LevelTelemetryTool
             string TerminalReason,
             string Outcome,
             string[] EventTypeNames,
+            int TargetsExtracted,
+            string[] TargetExtractionOrder,
             ActionReport[] Actions);
 
-        private sealed record ActionReport(
+        internal sealed record LevelBrief(
+            string? Role,
+            string? PrimarySkill,
+            string? TargetFirstAttemptWinRate,
+            string? ExpectedFailMode);
+
+        internal sealed record ActionReport(
             int ActionIndex,
             int CandidateCount,
             int Row,

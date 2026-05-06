@@ -1,0 +1,178 @@
+{
+  "levelId": "L00",
+  "samplesPerBot": 50,
+  "maxActions": 30,
+  "seedStart": 1,
+  "seedEnd": 50,
+  "generatedAtUtc": "2026-05-06T16:24:24.5684885Z",
+  "bots": {
+    "random_legal": {
+      "sampleCount": 50,
+      "winCount": 23,
+      "winRate": 0.46,
+      "lossCount": 27,
+      "stalledCount": 0,
+      "maxActionsReachedCount": 0,
+      "medianActionsToWin": 2,
+      "medianActionsToTerminal": 4,
+      "averageActionsToTerminal": 3.32,
+      "terminalReasonCounts": {
+        "LossRescuePathFlooded": 26,
+        "Win": 23,
+        "LossDockOverflow": 1
+      },
+      "dockOverflowCount": 1,
+      "waterLossCount": 0,
+      "averageTargetsExtracted": 0.46,
+      "targetExtractionOrderCounts": {
+        "0": 23
+      },
+      "eventCounts": {
+        "GroupRemoved": 166,
+        "BlockerDamaged": 154,
+        "BlockerBroken": 154,
+        "TargetRescuePathLocked": 88,
+        "DockInserted": 273,
+        "GravitySettled": 1249,
+        "DiagonalSettlingApplied": 139,
+        "Spawned": 142,
+        "WaterRose": 142,
+        "DockWarningChanged": 14,
+        "TargetOneClearAway": 30,
+        "DockCleared": 38,
+        "TargetRescuePathFlooded": 26,
+        "Lost": 27,
+        "TargetExtractionLatched": 23,
+        "TargetExtracted": 23,
+        "Won": 23,
+        "DockOverflowTriggered": 2,
+        "DeadboardDiagnosticDetected": 10
+      }
+    },
+    "greedy_clear": {
+      "sampleCount": 50,
+      "winCount": 10,
+      "winRate": 0.2,
+      "lossCount": 40,
+      "stalledCount": 0,
+      "maxActionsReachedCount": 0,
+      "medianActionsToWin": 3,
+      "medianActionsToTerminal": 4,
+      "averageActionsToTerminal": 3.88,
+      "terminalReasonCounts": {
+        "LossRescuePathFlooded": 40,
+        "Win": 10
+      },
+      "dockOverflowCount": 0,
+      "waterLossCount": 0,
+      "averageTargetsExtracted": 0.2,
+      "targetExtractionOrderCounts": {
+        "0": 10
+      },
+      "eventCounts": {
+        "GroupRemoved": 194,
+        "TargetRescuePathLocked": 109,
+        "DockInserted": 270,
+        "GravitySettled": 1330,
+        "DiagonalSettlingApplied": 323,
+        "Spawned": 184,
+        "WaterRose": 184,
+        "BlockerDamaged": 220,
+        "BlockerBroken": 220,
+        "TargetOneClearAway": 49,
+        "DockCleared": 47,
+        "DeadboardDiagnosticDetected": 29,
+        "TargetRescuePathFlooded": 40,
+        "Lost": 40,
+        "TargetExtractionLatched": 10,
+        "TargetExtracted": 10,
+        "Won": 10,
+        "DockWarningChanged": 6
+      }
+    },
+    "rescue_focused": {
+      "sampleCount": 50,
+      "winCount": 50,
+      "winRate": 1,
+      "lossCount": 0,
+      "stalledCount": 0,
+      "maxActionsReachedCount": 0,
+      "medianActionsToWin": 2,
+      "medianActionsToTerminal": 2,
+      "averageActionsToTerminal": 2,
+      "terminalReasonCounts": {
+        "Win": 50
+      },
+      "dockOverflowCount": 0,
+      "waterLossCount": 0,
+      "averageTargetsExtracted": 1,
+      "targetExtractionOrderCounts": {
+        "0": 50
+      },
+      "eventCounts": {
+        "GroupRemoved": 100,
+        "BlockerDamaged": 202,
+        "BlockerBroken": 202,
+        "TargetRescuePathLocked": 100,
+        "TargetOneClearAway": 50,
+        "DockInserted": 169,
+        "GravitySettled": 950,
+        "DiagonalSettlingApplied": 50,
+        "Spawned": 50,
+        "WaterRose": 50,
+        "TargetExtractionLatched": 50,
+        "TargetExtracted": 50,
+        "Won": 50,
+        "DockCleared": 5
+      }
+    },
+    "dock_safe": {
+      "sampleCount": 50,
+      "winCount": 30,
+      "winRate": 0.6,
+      "lossCount": 20,
+      "stalledCount": 0,
+      "maxActionsReachedCount": 0,
+      "medianActionsToWin": 2,
+      "medianActionsToTerminal": 3,
+      "averageActionsToTerminal": 3.12,
+      "terminalReasonCounts": {
+        "LossRescuePathFlooded": 20,
+        "Win": 30
+      },
+      "dockOverflowCount": 0,
+      "waterLossCount": 0,
+      "averageTargetsExtracted": 0.6,
+      "targetExtractionOrderCounts": {
+        "0": 30
+      },
+      "eventCounts": {
+        "GroupRemoved": 156,
+        "BlockerDamaged": 197,
+        "BlockerBroken": 197,
+        "TargetRescuePathLocked": 80,
+        "TargetOneClearAway": 50,
+        "DockInserted": 161,
+        "GravitySettled": 1056,
+        "DiagonalSettlingApplied": 50,
+        "Spawned": 126,
+        "WaterRose": 126,
+        "DockCleared": 30,
+        "DeadboardDiagnosticDetected": 15,
+        "TargetRescuePathFlooded": 20,
+        "Lost": 20,
+        "TargetExtractionLatched": 30,
+        "TargetExtracted": 30,
+        "Won": 30
+      }
+    }
+  },
+  "difficultySignals": [
+    "no_target_progress_events_seen"
+  ],
+  "notes": [],
+  "briefRole": "rule_teach",
+  "briefPrimarySkill": "action_hazard_literacy",
+  "briefTargetFirstAttemptWinRate": "90-98%",
+  "briefExpectedFailMode": "Failure is not the lesson; if the player fails, the board is too punishing or unclear."
+}

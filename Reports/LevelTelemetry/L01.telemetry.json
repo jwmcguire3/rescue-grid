@@ -1,0 +1,182 @@
+{
+  "levelId": "L01",
+  "samplesPerBot": 50,
+  "maxActions": 30,
+  "seedStart": 1,
+  "seedEnd": 50,
+  "generatedAtUtc": "2026-05-06T16:24:25.0577665Z",
+  "bots": {
+    "random_legal": {
+      "sampleCount": 50,
+      "winCount": 47,
+      "winRate": 0.94,
+      "lossCount": 3,
+      "stalledCount": 0,
+      "maxActionsReachedCount": 0,
+      "medianActionsToWin": 10,
+      "medianActionsToTerminal": 10,
+      "averageActionsToTerminal": 10.74,
+      "terminalReasonCounts": {
+        "LossDockOverflow": 3,
+        "Win": 47
+      },
+      "dockOverflowCount": 3,
+      "waterLossCount": 0,
+      "averageTargetsExtracted": 0.94,
+      "targetExtractionOrderCounts": {
+        "0": 47
+      },
+      "eventCounts": {
+        "GroupRemoved": 537,
+        "BlockerDamaged": 296,
+        "BlockerBroken": 296,
+        "TargetRescuePathLocked": 159,
+        "TargetProgressed": 45,
+        "GravitySettled": 3574,
+        "DiagonalSettlingApplied": 672,
+        "Spawned": 481,
+        "DockInserted": 711,
+        "TargetOneClearAway": 44,
+        "DockWarningChanged": 137,
+        "DockOverflowTriggered": 10,
+        "DockJamTriggered": 6,
+        "Lost": 3,
+        "DockCleared": 171,
+        "WaterWarning": 22,
+        "WaterRose": 18,
+        "TargetExtractionLatched": 47,
+        "TargetExtracted": 47,
+        "Won": 47,
+        "DeadboardDiagnosticDetected": 21
+      }
+    },
+    "greedy_clear": {
+      "sampleCount": 50,
+      "winCount": 46,
+      "winRate": 0.92,
+      "lossCount": 1,
+      "stalledCount": 0,
+      "maxActionsReachedCount": 3,
+      "medianActionsToWin": 11.5,
+      "medianActionsToTerminal": 13,
+      "averageActionsToTerminal": 13.8,
+      "terminalReasonCounts": {
+        "Win": 46,
+        "MaxActionsReached": 3,
+        "LossDockOverflow": 1
+      },
+      "dockOverflowCount": 1,
+      "waterLossCount": 0,
+      "averageTargetsExtracted": 0.92,
+      "targetExtractionOrderCounts": {
+        "0": 46
+      },
+      "eventCounts": {
+        "GroupRemoved": 690,
+        "DockInserted": 709,
+        "GravitySettled": 5943,
+        "DiagonalSettlingApplied": 1165,
+        "Spawned": 637,
+        "BlockerDamaged": 289,
+        "BlockerBroken": 289,
+        "TargetRescuePathLocked": 147,
+        "TargetProgressed": 45,
+        "DockWarningChanged": 154,
+        "DockCleared": 173,
+        "TargetExtractionLatched": 46,
+        "TargetExtracted": 46,
+        "Won": 46,
+        "TargetOneClearAway": 45,
+        "WaterWarning": 34,
+        "WaterRose": 32,
+        "DeadboardDiagnosticDetected": 54,
+        "DockOverflowTriggered": 7,
+        "DockJamTriggered": 6,
+        "DeadboardMinimalShuffleApplied": 1,
+        "Lost": 1
+      }
+    },
+    "rescue_focused": {
+      "sampleCount": 50,
+      "winCount": 50,
+      "winRate": 1,
+      "lossCount": 0,
+      "stalledCount": 0,
+      "maxActionsReachedCount": 0,
+      "medianActionsToWin": 3,
+      "medianActionsToTerminal": 3,
+      "averageActionsToTerminal": 3.08,
+      "terminalReasonCounts": {
+        "Win": 50
+      },
+      "dockOverflowCount": 0,
+      "waterLossCount": 0,
+      "averageTargetsExtracted": 1,
+      "targetExtractionOrderCounts": {
+        "0": 50
+      },
+      "eventCounts": {
+        "GroupRemoved": 154,
+        "BlockerDamaged": 300,
+        "BlockerBroken": 300,
+        "TargetRescuePathLocked": 150,
+        "TargetProgressed": 50,
+        "GravitySettled": 1448,
+        "DiagonalSettlingApplied": 313,
+        "Spawned": 104,
+        "TargetOneClearAway": 50,
+        "DockInserted": 184,
+        "TargetExtractionLatched": 50,
+        "TargetExtracted": 50,
+        "Won": 50,
+        "DockCleared": 10,
+        "DeadboardDiagnosticDetected": 4
+      }
+    },
+    "dock_safe": {
+      "sampleCount": 50,
+      "winCount": 50,
+      "winRate": 1,
+      "lossCount": 0,
+      "stalledCount": 0,
+      "maxActionsReachedCount": 0,
+      "medianActionsToWin": 8,
+      "medianActionsToTerminal": 8,
+      "averageActionsToTerminal": 8.82,
+      "terminalReasonCounts": {
+        "Win": 50
+      },
+      "dockOverflowCount": 0,
+      "waterLossCount": 0,
+      "averageTargetsExtracted": 1,
+      "targetExtractionOrderCounts": {
+        "0": 50
+      },
+      "eventCounts": {
+        "GroupRemoved": 441,
+        "BlockerDamaged": 299,
+        "BlockerBroken": 299,
+        "TargetRescuePathLocked": 145,
+        "TargetProgressed": 50,
+        "GravitySettled": 3764,
+        "DiagonalSettlingApplied": 611,
+        "Spawned": 391,
+        "TargetOneClearAway": 45,
+        "DockInserted": 207,
+        "DockCleared": 40,
+        "TargetExtractionLatched": 50,
+        "TargetExtracted": 50,
+        "Won": 50,
+        "DeadboardDiagnosticDetected": 13,
+        "WaterWarning": 8,
+        "WaterRose": 4
+      }
+    }
+  },
+  "difficultySignals": [],
+  "notes": [],
+  "briefRole": "teach",
+  "briefPrimarySkill": "first_rescue",
+  "briefTargetFirstAttemptWinRate": "85-95%",
+  "briefExpectedFailMode": "Player chases easy side groups and creates dock pressure instead of opening the rescue route."
+}

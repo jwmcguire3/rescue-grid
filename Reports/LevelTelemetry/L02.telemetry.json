@@ -1,0 +1,177 @@
+{
+  "levelId": "L02",
+  "samplesPerBot": 50,
+  "maxActions": 30,
+  "seedStart": 1,
+  "seedEnd": 50,
+  "generatedAtUtc": "2026-05-06T16:24:25.5514589Z",
+  "bots": {
+    "random_legal": {
+      "sampleCount": 50,
+      "winCount": 41,
+      "winRate": 0.82,
+      "lossCount": 6,
+      "stalledCount": 0,
+      "maxActionsReachedCount": 3,
+      "medianActionsToWin": 13,
+      "medianActionsToTerminal": 13,
+      "averageActionsToTerminal": 13.86,
+      "terminalReasonCounts": {
+        "Win": 41,
+        "LossDockOverflow": 6,
+        "MaxActionsReached": 3
+      },
+      "dockOverflowCount": 6,
+      "waterLossCount": 0,
+      "averageTargetsExtracted": 0.82,
+      "targetExtractionOrderCounts": {
+        "0": 41
+      },
+      "eventCounts": {
+        "GroupRemoved": 693,
+        "BlockerDamaged": 334,
+        "BlockerBroken": 334,
+        "TargetRescuePathLocked": 122,
+        "DockInserted": 1029,
+        "GravitySettled": 4134,
+        "DiagonalSettlingApplied": 726,
+        "Spawned": 633,
+        "DeadboardDiagnosticDetected": 234,
+        "DockWarningChanged": 242,
+        "DockCleared": 276,
+        "TargetOneClearAway": 44,
+        "TargetExtractionLatched": 41,
+        "TargetExtracted": 41,
+        "Won": 41,
+        "DockOverflowTriggered": 20,
+        "DockJamTriggered": 13,
+        "Lost": 6
+      }
+    },
+    "greedy_clear": {
+      "sampleCount": 50,
+      "winCount": 10,
+      "winRate": 0.2,
+      "lossCount": 5,
+      "stalledCount": 0,
+      "maxActionsReachedCount": 35,
+      "medianActionsToWin": 21.5,
+      "medianActionsToTerminal": 30,
+      "averageActionsToTerminal": 26.64,
+      "terminalReasonCounts": {
+        "MaxActionsReached": 35,
+        "Win": 10,
+        "LossDockOverflow": 5
+      },
+      "dockOverflowCount": 5,
+      "waterLossCount": 0,
+      "averageTargetsExtracted": 0.2,
+      "targetExtractionOrderCounts": {
+        "0": 10
+      },
+      "eventCounts": {
+        "GroupRemoved": 1332,
+        "BlockerDamaged": 339,
+        "BlockerBroken": 339,
+        "TargetRescuePathLocked": 100,
+        "GravitySettled": 10538,
+        "DiagonalSettlingApplied": 2047,
+        "Spawned": 1306,
+        "DockInserted": 1273,
+        "DeadboardDiagnosticDetected": 412,
+        "DockWarningChanged": 306,
+        "DockCleared": 357,
+        "TargetOneClearAway": 40,
+        "DockOverflowTriggered": 19,
+        "DockJamTriggered": 11,
+        "TargetExtractionLatched": 10,
+        "TargetExtracted": 10,
+        "Won": 10,
+        "Lost": 5
+      }
+    },
+    "rescue_focused": {
+      "sampleCount": 50,
+      "winCount": 50,
+      "winRate": 1,
+      "lossCount": 0,
+      "stalledCount": 0,
+      "maxActionsReachedCount": 0,
+      "medianActionsToWin": 2,
+      "medianActionsToTerminal": 2,
+      "averageActionsToTerminal": 2.42,
+      "terminalReasonCounts": {
+        "Win": 50
+      },
+      "dockOverflowCount": 0,
+      "waterLossCount": 0,
+      "averageTargetsExtracted": 1,
+      "targetExtractionOrderCounts": {
+        "0": 50
+      },
+      "eventCounts": {
+        "GroupRemoved": 121,
+        "BlockerDamaged": 240,
+        "BlockerBroken": 240,
+        "TargetRescuePathLocked": 100,
+        "TargetOneClearAway": 50,
+        "DockInserted": 219,
+        "GravitySettled": 1136,
+        "DiagonalSettlingApplied": 137,
+        "Spawned": 71,
+        "TargetExtractionLatched": 50,
+        "DockCleared": 42,
+        "TargetExtracted": 50,
+        "Won": 50,
+        "DeadboardDiagnosticDetected": 21
+      }
+    },
+    "dock_safe": {
+      "sampleCount": 50,
+      "winCount": 48,
+      "winRate": 0.96,
+      "lossCount": 0,
+      "stalledCount": 0,
+      "maxActionsReachedCount": 2,
+      "medianActionsToWin": 11.5,
+      "medianActionsToTerminal": 12,
+      "averageActionsToTerminal": 14.32,
+      "terminalReasonCounts": {
+        "Win": 48,
+        "MaxActionsReached": 2
+      },
+      "dockOverflowCount": 0,
+      "waterLossCount": 0,
+      "averageTargetsExtracted": 0.96,
+      "targetExtractionOrderCounts": {
+        "0": 48
+      },
+      "eventCounts": {
+        "GroupRemoved": 716,
+        "BlockerDamaged": 345,
+        "BlockerBroken": 345,
+        "TargetRescuePathLocked": 144,
+        "GravitySettled": 4798,
+        "DiagonalSettlingApplied": 960,
+        "Spawned": 668,
+        "TargetOneClearAway": 46,
+        "DockInserted": 591,
+        "DeadboardDiagnosticDetected": 221,
+        "DockCleared": 166,
+        "TargetExtractionLatched": 48,
+        "TargetExtracted": 48,
+        "Won": 48,
+        "DockWarningChanged": 5
+      }
+    }
+  },
+  "difficultySignals": [
+    "random_legal_high_win_rate",
+    "no_target_progress_events_seen"
+  ],
+  "notes": [],
+  "briefRole": "practice",
+  "briefPrimarySkill": "dock_discipline",
+  "briefTargetFirstAttemptWinRate": "80-90%",
+  "briefExpectedFailMode": "Player hoards mismatched side groups, triggers Dock Jam, and learns the dock is not free storage."
+}
