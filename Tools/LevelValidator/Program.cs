@@ -41,6 +41,9 @@ internal static class LevelValidatorRunner
                 "readability-all" => args.Length >= 3 ? ReadabilityAll(args[1], args[2]) : MissingCommandArguments("readability-all"),
                 "design-report" => args.Length >= 3 ? DesignReportSingle(args[1], args[2]) : MissingCommandArguments("design-report"),
                 "design-report-all" => args.Length >= 3 ? DesignReportAll(args[1], args[2]) : MissingCommandArguments("design-report-all"),
+                "packet-report" => args.Length >= 4 ? PacketReport(args[1], args[2], args[3]) : MissingCommandArguments("packet-report"),
+                "write-review" => args.Length >= 4 ? WriteReview(args[1], args[2], args[3]) : MissingCommandArguments("write-review"),
+                "write-review-all" => args.Length >= 4 ? WriteReviewAll(args[1], args[2], args[3]) : MissingCommandArguments("write-review-all"),
                 _ => UnknownCommand(args[0]),
             };
         }
@@ -316,6 +319,31 @@ internal static class LevelValidatorRunner
         return batch.HasErrors ? 1 : 0;
     }
 
+    private static int PacketReport(string manifestPath, string levelsDir, string briefsDir)
+    {
+        LevelPacketDesignReport report = LevelPacketDesignReportBuilder.Build(manifestPath, levelsDir, briefsDir);
+        Console.Write(report.Text);
+        return report.HasErrors ? 1 : 0;
+    }
+
+    private static int WriteReview(string levelPath, string briefPath, string outputPath)
+    {
+        LevelReviewWriteResult result = LevelReviewWriter.Write(levelPath, briefPath, outputPath);
+        Console.WriteLine($"Review written: {result.OutputPath}");
+        return result.HasErrors ? 1 : 0;
+    }
+
+    private static int WriteReviewAll(string levelsDir, string briefsDir, string reviewsDir)
+    {
+        LevelReviewWriteBatchResult batch = LevelReviewWriter.WriteAll(levelsDir, briefsDir, reviewsDir);
+        for (int i = 0; i < batch.Results.Count; i++)
+        {
+            Console.WriteLine($"Review written: {batch.Results[i].OutputPath}");
+        }
+
+        return batch.HasErrors ? 1 : 0;
+    }
+
     private static ReadabilityRunResult RunReadability(string levelPath, string briefPath)
     {
         string json = File.ReadAllText(levelPath);
@@ -530,6 +558,9 @@ internal static class LevelValidatorRunner
         Console.WriteLine("  readability-all <levels-dir> <briefs-dir>");
         Console.WriteLine("  design-report <level-json-path> <brief-json-path>");
         Console.WriteLine("  design-report-all <levels-dir> <briefs-dir>");
+        Console.WriteLine("  packet-report <manifest-path> <levels-dir> <briefs-dir>");
+        Console.WriteLine("  write-review <level-json-path> <brief-json-path> <output-review-path>");
+        Console.WriteLine("  write-review-all <levels-dir> <briefs-dir> <reviews-dir>");
     }
 
     private sealed record ReadabilityRunResult(ValidationResult Validation, LevelReadabilityMetrics? Metrics);

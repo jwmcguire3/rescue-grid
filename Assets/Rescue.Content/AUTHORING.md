@@ -40,7 +40,15 @@ On bash-compatible shells, run the equivalent wrapper:
 
 This is the pre-commit/pre-build level authoring gate. It answers whether the current Phase 1 packet is acceptable for design review or a playtest build.
 
-The gate runs in this order: core validation, Phase 1 packet policy validation, brief validation, readability checks, design reports, solve verification, golden path verification, fail-path verification when fail paths exist, assistance comparison, packet report, and manifest-driven acceptance.
+The gate runs in this order: core validation, Phase 1 packet policy validation, brief validation, readability checks, design reports, packet design report, solve verification, golden path verification, fail-path verification when fail paths exist, assistance comparison, packet report, and manifest-driven acceptance.
+
+`packet-design-report` is the gate label for the sequence-level design pacing report:
+
+```bash
+dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- packet-report docs/level-packets/phase1.packet.json Assets/StreamingAssets/Levels docs/level-briefs
+```
+
+Use it when designers need to review the packet as a campaign sequence, including level/brief coverage, tuning progression, mechanic introductions, role and primary-skill runs, density jumps, and pacing warnings clustered by level.
 
 `packet-report` is the gate label for the replay packet summary:
 
@@ -79,6 +87,16 @@ dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- design-report
 ```
 
 `design-report` is the preferred single-level review command before accepting authored content. The full authoring gate above is still required before PRs.
+
+## Packet design review
+
+Use the packet-level design report when reviewing Phase 1 pacing across the whole manifest:
+
+```powershell
+dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- packet-report docs/level-packets/phase1.packet.json Assets/StreamingAssets/Levels docs/level-briefs
+```
+
+The report follows `docs/level-packets/phase1.packet.json` order and prints sequence metrics, mechanic introduction order, role and primary skill sequence, density progression, and rule-based packet warnings. Missing or malformed levels/briefs fail the command; pacing warnings are designer review signals and do not fail the command by themselves.
 
 ## ASCII symbol legend
 

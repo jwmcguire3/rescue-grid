@@ -40,6 +40,7 @@ namespace Rescue.SolveAuthoringTool.Tests
                 "validate-brief-all",
                 "readability-all",
                 "design-report-all",
+                "packet-design-report",
                 "--verify-solves",
                 "--verify-golden",
                 "--verify-failpaths",

@@ -83,6 +83,9 @@ add_stage "readability-all" \
 add_stage "design-report-all" \
   "dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- design-report-all Assets/StreamingAssets/Levels docs/level-briefs" \
   "dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- design-report-all Assets/StreamingAssets/Levels docs/level-briefs"
+add_stage "packet-design-report" \
+  "dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- packet-report docs/level-packets/phase1.packet.json Assets/StreamingAssets/Levels docs/level-briefs" \
+  "dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- packet-report docs/level-packets/phase1.packet.json Assets/StreamingAssets/Levels docs/level-briefs"
 add_stage "verify-solves" \
   "dotnet run --project Tools/SolveAuthoring/SolveAuthoring.csproj -- --verify-solves" \
   "dotnet run --project Tools/SolveAuthoring/SolveAuthoring.csproj -- --verify-solves"

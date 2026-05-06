@@ -66,9 +66,11 @@
     <Compile Include="Assets\Rescue.Content\ContentTileParser.cs" />
     <Compile Include="Assets\Rescue.Content\Phase1PolicyValidator.cs" />
     <Compile Include="Assets\Rescue.Content\ReadabilityPolicyValidator.cs" />
+    <Compile Include="Assets\Rescue.Content\LevelPacketDesignReportBuilder.cs" />
     <Compile Include="Assets\Rescue.Content\LevelAssistanceComparisonAnalyzer.cs" />
     <Compile Include="Assets\Rescue.Content\LevelReadabilityAnalyzer.cs" />
     <Compile Include="Assets\Rescue.Content\LevelPacketManifestLoader.cs" />
+    <Compile Include="Assets\Rescue.Content\LevelReviewWriter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Rescue.Content\Rescue.Content.asmdef" />

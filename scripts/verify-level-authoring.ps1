@@ -176,6 +176,10 @@ try {
             -Command @("dotnet", "run", "--project", "Tools/LevelValidator/LevelValidator.csproj", "--", "design-report-all", "Assets/StreamingAssets/Levels", "docs/level-briefs") `
             -DetailsCommand "dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- design-report-all Assets/StreamingAssets/Levels docs/level-briefs"),
         (New-Stage `
+            -Name "packet-design-report" `
+            -Command @("dotnet", "run", "--project", "Tools/LevelValidator/LevelValidator.csproj", "--", "packet-report", "docs/level-packets/phase1.packet.json", "Assets/StreamingAssets/Levels", "docs/level-briefs") `
+            -DetailsCommand "dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- packet-report docs/level-packets/phase1.packet.json Assets/StreamingAssets/Levels docs/level-briefs"),
+        (New-Stage `
             -Name "verify-solves" `
             -Command @("dotnet", "run", "--project", "Tools/SolveAuthoring/SolveAuthoring.csproj", "--", "--verify-solves") `
             -DetailsCommand "dotnet run --project Tools/SolveAuthoring/SolveAuthoring.csproj -- --verify-solves"),
