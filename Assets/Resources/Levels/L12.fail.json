@@ -1,0 +1,46 @@
+{
+  "levelId": "L12",
+  "seed": 1,
+  "pathType": "expected_fail",
+  "expectedOutcome": "LossDockOverflow",
+  "expectedLossReason": "LossDockOverflow",
+  "maxActions": 6,
+  "actions": [
+    {
+      "row": 0,
+      "col": 0,
+      "intent": "Start with broad top-side cleanup instead of committing to the lower-left urgent puppy."
+    },
+    {
+      "row": 0,
+      "col": 0,
+      "intent": "Continue clearing the refreshed top lane and spread attention away from any single rescue."
+    },
+    {
+      "row": 0,
+      "col": 1,
+      "intent": "Spend another action on general board value rather than finishing a route."
+    },
+    {
+      "row": 0,
+      "col": 2,
+      "intent": "Half-open the safer upper side while the lower-left route remains unfinished."
+    },
+    {
+      "row": 0,
+      "col": 5,
+      "intent": "Push progress on another target lane instead of converting earlier progress into a rescue."
+    },
+    {
+      "row": 5,
+      "col": 4,
+      "intent": "Touch a third lane and overflow the dock before any puppy is extracted."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetOneClearAway",
+    "DockOverflowTriggered",
+    "Lost"
+  ],
+  "notes": "Verified triage fail: broad partial progress creates target-readiness events but no extraction before dock overflow."
+}

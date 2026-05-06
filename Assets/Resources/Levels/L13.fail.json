@@ -1,0 +1,47 @@
+{
+  "levelId": "L13",
+  "seed": 1,
+  "pathType": "expected_fail",
+  "expectedOutcome": "LossDockOverflow",
+  "expectedLossReason": "LossDockOverflow",
+  "maxActions": 6,
+  "actions": [
+    {
+      "row": 0,
+      "col": 0,
+      "intent": "Open with generic top cleanup instead of clipping the authored vine lane."
+    },
+    {
+      "row": 0,
+      "col": 0,
+      "intent": "Keep spending actions away from the vine lane and urgent lower route."
+    },
+    {
+      "row": 0,
+      "col": 5,
+      "intent": "Chase the safer upper target while the vine-pressure route remains unmanaged."
+    },
+    {
+      "row": 1,
+      "col": 0,
+      "intent": "Add dock residue with neither the vine lane nor the lower rescue under control."
+    },
+    {
+      "row": 3,
+      "col": 0,
+      "intent": "Start rerouting toward the lower puppy late, after dock pressure is already acute."
+    },
+    {
+      "row": 7,
+      "col": 1,
+      "intent": "Try to recover the lower route too late and overflow the dock."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetOneClearAway",
+    "TargetProgressed",
+    "DockOverflowTriggered",
+    "Lost"
+  ],
+  "notes": "Verified vine-exam fail branch: ignoring the early vine/urgent route creates reroute pressure and dock overflow. Current replay does not produce a clean VineGrown event before loss."
+}

@@ -1,0 +1,36 @@
+{
+  "levelId": "L18",
+  "seed": 1,
+  "pathType": "expected_fail",
+  "expectedOutcome": "LossDockOverflow",
+  "expectedLossReason": "LossDockOverflow",
+  "maxActions": 4,
+  "actions": [
+    {
+      "row": 0,
+      "col": 0,
+      "intent": "Take a top-row pair instead of opening the shared lower choke."
+    },
+    {
+      "row": 0,
+      "col": 2,
+      "intent": "Continue generic top-row clearing and add singleton-heavy dock residue."
+    },
+    {
+      "row": 0,
+      "col": 4,
+      "intent": "Keep cashing broad value instead of planning the lower rescue and dock triple."
+    },
+    {
+      "row": 0,
+      "col": 6,
+      "intent": "Overflow the dock before the shared rescue route is complete."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetProgressed",
+    "DockOverflowTriggered",
+    "Lost"
+  ],
+  "notes": "Verified dock-discipline exam fail: generic clearing overflows the dock before the lower route is complete."
+}

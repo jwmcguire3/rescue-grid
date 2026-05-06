@@ -1,0 +1,36 @@
+{
+  "levelId": "L14",
+  "seed": 1,
+  "pathType": "expected_fail",
+  "expectedOutcome": "LossDockOverflow",
+  "expectedLossReason": "LossDockOverflow",
+  "maxActions": 4,
+  "actions": [
+    {
+      "row": 0,
+      "col": 0,
+      "intent": "Begin with broad cleanup instead of committing to the lower-left urgent rescue."
+    },
+    {
+      "row": 0,
+      "col": 2,
+      "intent": "Continue top-side value collection and split attention away from the first rescue."
+    },
+    {
+      "row": 0,
+      "col": 5,
+      "intent": "Take another tempting low-commitment clear while dock residue stacks."
+    },
+    {
+      "row": 1,
+      "col": 1,
+      "intent": "Overflow the dock before a committed rescue route has paid off."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetProgressed",
+    "DockOverflowTriggered",
+    "Lost"
+  ],
+  "notes": "Verified late-stress fail: brute-force broad clears produce dock failure before any rescue."
+}

@@ -1,0 +1,51 @@
+{
+  "levelId": "L10",
+  "seed": 1,
+  "pathType": "expected_fail",
+  "expectedOutcome": "LossDockOverflow",
+  "expectedLossReason": "LossDockOverflow",
+  "maxActions": 7,
+  "actions": [
+    {
+      "row": 0,
+      "col": 0,
+      "intent": "Take an obvious side clear before opening the central choke."
+    },
+    {
+      "row": 0,
+      "col": 5,
+      "intent": "Continue side-value collection on the upper branch instead of committing to the choke."
+    },
+    {
+      "row": 0,
+      "col": 0,
+      "intent": "Keep clearing the refreshed side lane and build dock residue."
+    },
+    {
+      "row": 0,
+      "col": 0,
+      "intent": "Spend another action on non-choke cleanup while water and vine pressure begin to compound."
+    },
+    {
+      "row": 0,
+      "col": 0,
+      "intent": "Over-collect broad value instead of opening the lower rescue route."
+    },
+    {
+      "row": 1,
+      "col": 0,
+      "intent": "Add more side residue with the central choke still late."
+    },
+    {
+      "row": 4,
+      "col": 6,
+      "intent": "Overflow the dock after delaying the exam's required choke-first route."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetProgressed",
+    "DockOverflowTriggered",
+    "Lost"
+  ],
+  "notes": "Verified midpoint-exam fail: side clears before the central choke create dock overflow with no rescue completed."
+}
