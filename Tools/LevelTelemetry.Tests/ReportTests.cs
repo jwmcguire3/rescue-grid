@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
 using NUnit.Framework;
+using Rescue.Core.Pipeline;
+using Rescue.Core.State;
 using Rescue.LevelTelemetryTool;
 
 namespace Rescue.LevelTelemetryTool.Tests
@@ -350,6 +353,8 @@ namespace Rescue.LevelTelemetryTool.Tests
             Assert.That(authoring, Does.Contain("## Generate difficulty telemetry"));
             Assert.That(authoring, Does.Contain("dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --level L01"));
             Assert.That(authoring, Does.Contain("dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --range L00-L20 --samples 200 --max-actions 30"));
+            Assert.That(authoring, Does.Contain("dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- summarize-level L03"));
+            Assert.That(authoring, Does.Contain("dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- summarize-all"));
             Assert.That(authoring, Does.Contain("Telemetry reports are offline design diagnostics, not runtime analytics."));
             Assert.That(authoring, Does.Contain("Telemetry does not replace human playtest."));
         }
@@ -399,6 +404,156 @@ namespace Rescue.LevelTelemetryTool.Tests
             Assert.That(combinedOutput, Does.Contain("Specify only one of --level or --range"));
             Assert.That(reversedExitCode, Is.EqualTo(2), reversedOutput);
             Assert.That(reversedOutput, Does.Contain("--range end must be greater than or equal to the start"));
+        }
+
+        [Test]
+        public void SummarizeLevel_L03CapturesWinningReplaySummary()
+        {
+            int exitCode = RunTelemetry(new[] { "summarize-level", "L03" }, out string output);
+
+            Assert.That(exitCode, Is.EqualTo(0), output);
+            Assert.That(output, Does.Contain("LevelTelemetry replay summary: L03"));
+            Assert.That(output, Does.Contain("golden path:"));
+            Assert.That(output, Does.Contain("solve path:"));
+            Assert.That(output, Does.Contain("final outcome: Win"));
+            Assert.That(output, Does.Contain("action count: 4"));
+            Assert.That(output, Does.Contain("extraction order: 0>1"));
+            Assert.That(output, Does.Contain("missing optional data"));
+        }
+
+        [Test]
+        public void BuildSummaryFromEvents_CountsReplayEventDetails()
+        {
+            LevelTelemetryRunner.ReplaySummary summary = LevelTelemetryRunner.BuildSummaryFromEvents(
+                "L99",
+                LevelTelemetryRunner.ReplayArtifactKind.Golden,
+                "L99.golden.json",
+                seed: 1,
+                expectedOutcome: "Win",
+                actionCount: 3,
+                finalOutcome: ActionOutcome.Win,
+                extractionOrder: ImmutableArray.Create("a", "b"),
+                events: new ActionEvent[]
+                {
+                    new DockCleared(DebrisType.A, SetsCleared: 1, OccupancyAfterClear: 0),
+                    new WaterRose(FloodedRow: 4),
+                    new TargetProgressed("a", new TileCoord(1, 1)),
+                    new TargetOneClearAway("a", new TileCoord(1, 1)),
+                    new TargetExtractionLatched("a", new TileCoord(1, 1)),
+                    new TargetExtracted("a", new TileCoord(1, 1)),
+                    new TargetDistressedEntered("b", new TileCoord(2, 2)),
+                    new DockJamTriggered(OverflowCount: 1),
+                });
+
+            Assert.That(summary.ExtractionOrder, Is.EqualTo(new[] { "a", "b" }));
+            Assert.That(summary.DockClears, Is.EqualTo(1));
+            Assert.That(summary.WaterRises, Is.EqualTo(1));
+            Assert.That(summary.TargetProgressed, Is.EqualTo(1));
+            Assert.That(summary.TargetOneClearAway, Is.EqualTo(1));
+            Assert.That(summary.TargetLatched, Is.EqualTo(1));
+            Assert.That(summary.TargetExtracted, Is.EqualTo(1));
+            Assert.That(summary.TargetDistressed, Is.EqualTo(1));
+            Assert.That(summary.DockJamEvents, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void BuildSummaryFromEvents_CapturesLossReason()
+        {
+            LevelTelemetryRunner.ReplaySummary summary = LevelTelemetryRunner.BuildSummaryFromEvents(
+                "L99",
+                LevelTelemetryRunner.ReplayArtifactKind.Fail,
+                "L99.fail.json",
+                seed: 1,
+                expectedOutcome: "LossWaterOnTarget",
+                actionCount: 6,
+                finalOutcome: ActionOutcome.LossWaterOnTarget,
+                extractionOrder: ImmutableArray<string>.Empty,
+                events: new ActionEvent[] { new Lost(ActionOutcome.LossWaterOnTarget) });
+
+            Assert.That(summary.FinalOutcome, Is.EqualTo("LossWaterOnTarget"));
+            Assert.That(summary.LossReason, Is.EqualTo("LossWaterOnTarget"));
+        }
+
+        [Test]
+        public void BuildSummaryFromEvents_DistinguishesAssistedSpawnZeroAndUnavailable()
+        {
+            LevelTelemetryRunner.ReplaySummary zero = LevelTelemetryRunner.BuildSummaryFromEvents(
+                "L99",
+                LevelTelemetryRunner.ReplayArtifactKind.Solve,
+                "L99.solve.json",
+                seed: 1,
+                expectedOutcome: "Win",
+                actionCount: 1,
+                finalOutcome: ActionOutcome.Win,
+                extractionOrder: ImmutableArray<string>.Empty,
+                events: Array.Empty<ActionEvent>());
+
+            LevelTelemetryRunner.ReplaySummary unavailable = LevelTelemetryRunner.BuildSummaryFromEvents(
+                "L99",
+                LevelTelemetryRunner.ReplayArtifactKind.Solve,
+                "L99.solve.json",
+                seed: 1,
+                expectedOutcome: "Win",
+                actionCount: 1,
+                finalOutcome: ActionOutcome.Win,
+                extractionOrder: ImmutableArray<string>.Empty,
+                events: new ActionEvent[]
+                {
+                    new Spawned(ImmutableArray.Create((new TileCoord(0, 0), DebrisType.A))),
+                });
+
+            Assert.That(zero.AssistedSpawnDetailAvailable, Is.True);
+            Assert.That(zero.AssistedSpawnEvents, Is.EqualTo(0));
+            Assert.That(unavailable.AssistedSpawnDetailAvailable, Is.False);
+        }
+
+        [Test]
+        public void BuildSummaryFromEvents_CapturesAssistedSpawnDetails()
+        {
+            SpawnedPiece piece = new SpawnedPiece(
+                new TileCoord(0, 0),
+                DebrisType.A,
+                LineageId: 42,
+                Reasons: ImmutableArray.Create(SpawnAssistReason.RouteAdjacency, SpawnAssistReason.EmergencyDockPressure),
+                TriggerContext: ImmutableArray.Create("dock=6/7"),
+                UrgentTargetId: "target",
+                UrgentTargetCoord: new TileCoord(2, 2),
+                WaterRisesRemaining: 1,
+                DockOccupancy: 6,
+                RecoveryCounterBefore: 0,
+                EmergencyRequested: true,
+                EmergencyApplied: true,
+                EffectiveAssistanceChance: 0.75d);
+
+            LevelTelemetryRunner.ReplaySummary summary = LevelTelemetryRunner.BuildSummaryFromEvents(
+                "L99",
+                LevelTelemetryRunner.ReplayArtifactKind.Solve,
+                "L99.solve.json",
+                seed: 1,
+                expectedOutcome: "Win",
+                actionCount: 1,
+                finalOutcome: ActionOutcome.Win,
+                extractionOrder: ImmutableArray<string>.Empty,
+                events: new ActionEvent[] { new Spawned(ImmutableArray.Create(piece)) });
+
+            Assert.That(summary.AssistedSpawnDetailAvailable, Is.True);
+            Assert.That(summary.AssistedSpawnEvents, Is.EqualTo(1));
+            Assert.That(summary.AssistedSpawnPieces, Is.EqualTo(1));
+            Assert.That(summary.EmergencyRequestedPieces, Is.EqualTo(1));
+            Assert.That(summary.EmergencyAppliedPieces, Is.EqualTo(1));
+            Assert.That(summary.MaxEffectiveAssistanceChance, Is.EqualTo(0.75d));
+            Assert.That(summary.AssistedSpawnReasons["route_adjacency"], Is.EqualTo(1));
+            Assert.That(summary.AssistedSpawnReasons["emergency_dock_pressure"], Is.EqualTo(1));
+        }
+
+        [Test]
+        public void SummarizeAll_SucceedsWithMissingOptionalFailPaths()
+        {
+            int exitCode = RunTelemetry(new[] { "summarize-all" }, out string output);
+
+            Assert.That(exitCode, Is.EqualTo(0), output);
+            Assert.That(output, Does.Contain("LevelTelemetry replay summary: L00"));
+            Assert.That(output, Does.Contain("missing optional data"));
         }
 
         private LevelTelemetryRunner.LevelTelemetryReport BuildReport(

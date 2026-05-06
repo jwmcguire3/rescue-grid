@@ -6,7 +6,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-    <DefineConstants>$(DefineConstants);SOLVE_AUTHORING_TESTS</DefineConstants>
+    <DefineConstants>$(DefineConstants);LEVEL_VALIDATOR_TESTS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,12 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="AcceptanceVerifierTests.cs" />
-    <Compile Include="AssistanceComparisonTests.cs" />
-    <Compile Include="FailPathVerifierTests.cs" />
-    <Compile Include="GoldenVerifierTests.cs" />
-    <Compile Include="..\SolveAuthoring\AcceptanceVerifier.cs" Link="SolveAuthoring\AcceptanceVerifier.cs" />
-    <Compile Include="..\SolveAuthoring\Program.cs" Link="SolveAuthoring\Program.cs" />
+    <Compile Include="LevelValidatorCommandTests.cs" />
+    <Compile Include="..\LevelValidator\Program.cs" Link="LevelValidator\Program.cs" />
     <Compile Include="..\..\Assets\Rescue.Core\**\*.cs" Exclude="..\..\Assets\Rescue.Core\**\*.meta" LinkBase="Rescue.Core" />
     <Compile Include="..\..\Assets\Rescue.Content\*.cs" LinkBase="Rescue.Content" />
   </ItemGroup>

@@ -1,0 +1,41 @@
+{
+  "levelId": "L03",
+  "seed": 1,
+  "pathType": "expected_fail",
+  "expectedOutcome": "LossDockOverflow",
+  "expectedLossReason": "LossDockOverflow",
+  "maxActions": 5,
+  "actions": [
+    {
+      "row": 0,
+      "col": 4,
+      "intent": "Chase the visually easier upper target side first instead of the water-near rescue."
+    },
+    {
+      "row": 5,
+      "col": 4,
+      "intent": "Keep clearing away from the urgent lower puppy."
+    },
+    {
+      "row": 4,
+      "col": 3,
+      "intent": "Add dock residue while still avoiding the lower route."
+    },
+    {
+      "row": 4,
+      "col": 5,
+      "intent": "Push the dock into acute pressure."
+    },
+    {
+      "row": 6,
+      "col": 4,
+      "intent": "Overflow the dock before rescuing the urgent lower puppy."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetOneClearAway",
+    "DockOverflowTriggered",
+    "Lost"
+  ],
+  "notes": "Verified current L03 wrong-priority dock failure path."
+}

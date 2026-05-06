@@ -189,6 +189,15 @@ Unity-facing refactors should be narrow and behavior-aware. Avoid casual reshapi
 - tuning changes
 - action taken with RNG before/after state, assisted spawn follow-up, final rescue overrides, skipped hazard advance, and deadboard-like diagnostics
 
+`Tools/LevelTelemetry/` has two authoring surfaces. The existing `--level` and `--range` commands run offline bot difficulty diagnostics and write ignored JSON reports under `Reports/LevelTelemetry/`. The replay summary commands inspect committed golden, solve, and optional fail paths without inventing missing data:
+
+```bash
+dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- summarize-level L03
+dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- summarize-all
+```
+
+Replay summaries report action count, final outcome, extraction order, dock clears, water rises, target readiness events, dock jams, loss reasons, and assisted spawn details when current `ActionEvent` data exposes them. Runtime telemetry sessions remain the `Assets/Rescue.Telemetry/` surface used by development playtest/capture flows.
+
 `Assets/Rescue.Unity/Debug/` provides a development-only panel with:
 
 - level and seed selection
@@ -248,7 +257,7 @@ Tool projects:
 - `Tools/LevelValidator/`: validates authored level JSON.
 - `Tools/Replay/`: replays deterministic trajectories.
 - `Tools/SolveAuthoring/`: searches and replays authored solves.
-- `Tools/LevelTelemetry/`: runs offline authoring bot telemetry and difficulty signals.
+- `Tools/LevelTelemetry/`: runs offline authoring bot telemetry, difficulty signals, and replay summary telemetry.
 - `Tools/TelemetryReport/`: summarizes telemetry output.
 
 Capture verification:

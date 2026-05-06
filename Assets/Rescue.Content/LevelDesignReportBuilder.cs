@@ -24,6 +24,17 @@ namespace Rescue.Content
             string? goldenPath,
             string? repoRoot)
         {
+            return Build(levelPath, briefPath, solvePath, goldenPath, failPath: null, repoRoot);
+        }
+
+        public static LevelDesignReport Build(
+            string levelPath,
+            string briefPath,
+            string? solvePath,
+            string? goldenPath,
+            string? failPath,
+            string? repoRoot)
+        {
             if (!File.Exists(levelPath))
             {
                 return MissingLevelReport(levelPath, briefPath);
@@ -67,6 +78,7 @@ namespace Rescue.Content
             string? resolvedRepoRoot = repoRoot ?? SolveArtifactVerifier.FindRepoRoot(levelPath, briefPath, Directory.GetCurrentDirectory());
             string resolvedSolvePath = solvePath ?? ResolveArtifactPath(resolvedRepoRoot, levelId, ".solve.json");
             string resolvedGoldenPath = goldenPath ?? ResolveArtifactPath(resolvedRepoRoot, levelId, ".golden.json");
+            string resolvedFailPath = failPath ?? ResolveArtifactPath(resolvedRepoRoot, levelId, ".fail.json");
 
             SolveArtifactVerificationResult? solveResult = level is null
                 ? null
@@ -74,18 +86,23 @@ namespace Rescue.Content
             SolveArtifactVerificationResult? goldenResult = level is null
                 ? null
                 : SolveArtifactVerifier.VerifyGoldenPath(resolvedGoldenPath, resolvedRepoRoot);
+            SolveArtifactVerificationResult? failPathResult = level is null
+                ? null
+                : SolveArtifactVerifier.VerifyFailPath(resolvedFailPath, resolvedRepoRoot);
 
             List<string> risks = BuildRisks(
                 level,
+                brief,
                 phase1Result,
                 briefConformanceResult,
                 readabilityResult,
                 metrics,
-                goldenResult);
+                goldenResult,
+                failPathResult);
 
             StringBuilder builder = new StringBuilder();
             AppendHeader(builder, levelId, levelName);
-            AppendIdentity(builder, levelPath, briefPath, resolvedSolvePath, resolvedGoldenPath);
+            AppendIdentity(builder, levelPath, briefPath, resolvedSolvePath, resolvedGoldenPath, resolvedFailPath);
             AppendValidation(builder, "Core validation", coreResult);
             AppendValidation(builder, "Phase 1 policy", phase1Result);
             AppendValidation(builder, "Brief conformance", Combine(briefReadResult, briefConformanceResult));
@@ -94,6 +111,8 @@ namespace Rescue.Content
             AppendSystems(builder, level);
             AppendArtifactStatus(builder, "Solve", solveResult);
             AppendArtifactStatus(builder, "Golden", goldenResult);
+            AppendArtifactStatus(builder, "Fail Path", failPathResult);
+            AppendReplaySummaryStatus(builder, levelId, resolvedFailPath);
             AppendRisks(builder, risks);
 
             bool hasErrors = coreResult.HasErrors
@@ -102,7 +121,8 @@ namespace Rescue.Content
                 || briefConformanceResult.HasErrors
                 || readabilityResult.HasErrors
                 || (solveResult?.Failed ?? false)
-                || (goldenResult?.Failed ?? false);
+                || (goldenResult?.Failed ?? false)
+                || (failPathResult?.Failed ?? false);
 
             return new LevelDesignReport(levelId, builder.ToString(), hasErrors);
         }
@@ -167,7 +187,7 @@ namespace Rescue.Content
             string id = Path.GetFileNameWithoutExtension(levelPath);
             StringBuilder builder = new StringBuilder();
             AppendHeader(builder, id, "<missing>");
-            AppendIdentity(builder, levelPath, briefPath, solvePath: "<not checked>", goldenPath: "<not checked>");
+            AppendIdentity(builder, levelPath, briefPath, solvePath: "<not checked>", goldenPath: "<not checked>", failPath: "<not checked>");
             AppendValidation(builder, "Core validation", ValidationResult.FromErrors(new[]
             {
                 new ValidationError(
@@ -221,11 +241,13 @@ namespace Rescue.Content
 
         private static List<string> BuildRisks(
             LevelJson? level,
+            LevelBrief? brief,
             ValidationResult phase1Result,
             ValidationResult briefConformanceResult,
             ValidationResult readabilityResult,
             LevelReadabilityMetrics? metrics,
-            SolveArtifactVerificationResult? goldenResult)
+            SolveArtifactVerificationResult? goldenResult,
+            SolveArtifactVerificationResult? failPathResult)
         {
             List<string> risks = new List<string>();
             if (goldenResult is null || goldenResult.Missing || goldenResult.Failed)
@@ -254,9 +276,16 @@ namespace Rescue.Content
                 risks.Add("Brief forbids a mechanic used by this level.");
             }
 
-            if (level is not null && !string.IsNullOrWhiteSpace(level.Meta.ExpectedFailMode))
+            if (ShouldRecommendFailPath(level, brief))
             {
-                risks.Add("Expected fail mode is not executable yet.");
+                if (failPathResult is null || failPathResult.Missing)
+                {
+                    risks.Add("Expected fail path recommended but not found.");
+                }
+                else if (failPathResult.Failed)
+                {
+                    risks.Add("Expected fail path is failing verification.");
+                }
             }
 
             if (level is not null && level.Assistance.Chance > HighAssistanceChance)
@@ -264,7 +293,31 @@ namespace Rescue.Content
                 risks.Add("Assistance chance high; compare no-assistance solve before accepting.");
             }
 
+            if (level is not null && HasAssistanceDependencyWarning(level))
+            {
+                risks.Add(LevelAssistanceComparisonAnalyzer.DependencyWarning);
+            }
+
             return risks;
+        }
+
+        private static bool HasAssistanceDependencyWarning(LevelJson level)
+        {
+            try
+            {
+                AssistanceComparisonResult comparison = LevelAssistanceComparisonAnalyzer.Compare(
+                    level,
+                    new AssistanceComparisonOptions(
+                        Seed: LevelAssistanceComparisonAnalyzer.DefaultFirstSeed,
+                        MaxDepth: LevelAssistanceComparisonAnalyzer.DefaultMaxDepth,
+                        FirstSeed: LevelAssistanceComparisonAnalyzer.DefaultFirstSeed,
+                        LastSeed: LevelAssistanceComparisonAnalyzer.DefaultFirstSeed));
+                return comparison.NoAssistanceFailsAuthoredSucceeds;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         private static void AppendHeader(StringBuilder builder, string levelId, string levelName)
@@ -273,13 +326,15 @@ namespace Rescue.Content
             builder.AppendLine(new string('=', 18 + levelId.Length + levelName.Length));
         }
 
-        private static void AppendIdentity(StringBuilder builder, string levelPath, string briefPath, string solvePath, string goldenPath)
+        private static void AppendIdentity(StringBuilder builder, string levelPath, string briefPath, string solvePath, string goldenPath, string failPath)
         {
             builder.AppendLine("Identity:");
             builder.AppendLine($"  Level file: {levelPath}");
             builder.AppendLine($"  Brief file: {briefPath}");
             builder.AppendLine($"  Solve file: {solvePath}");
             builder.AppendLine($"  Golden file: {goldenPath}");
+            builder.AppendLine($"  Fail path file: {failPath}");
+            builder.AppendLine($"  SVG preview: run preview-svg {levelPath} <output-svg-path>");
         }
 
         private static void AppendValidation(StringBuilder builder, string label, ValidationResult result)
@@ -352,6 +407,14 @@ namespace Rescue.Content
             builder.AppendLine($"  expected {result.ExpectedOutcome}, got {result.ActualOutcome} -> {(result.Passed ? "PASS" : "FAIL")}{FormatFailure(result.Failure)}");
         }
 
+        private static void AppendReplaySummaryStatus(StringBuilder builder, string levelId, string failPath)
+        {
+            builder.AppendLine("Replay Summary Telemetry:");
+            builder.AppendLine($"  command: dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- summarize-level {levelId}");
+            builder.AppendLine($"  optional fail file: {failPath}");
+            builder.AppendLine($"  fail replay: {(File.Exists(failPath) ? "present" : "missing optional data")}");
+        }
+
         private static void AppendRisks(StringBuilder builder, IReadOnlyList<string> risks)
         {
             builder.AppendLine("Top Design Risks:");
@@ -375,6 +438,28 @@ namespace Rescue.Content
             }
 
             return Path.Combine("Assets", "Resources", "Levels", levelId + suffix);
+        }
+
+        private static bool ShouldRecommendFailPath(LevelJson? level, LevelBrief? brief)
+        {
+            if (level is null || !IsPacketLevelAtOrAfter(level.Id, 3))
+            {
+                return false;
+            }
+
+            return !string.IsNullOrWhiteSpace(level.Meta.ExpectedFailMode)
+                || !string.IsNullOrWhiteSpace(brief?.ExpectedFailMode);
+        }
+
+        private static bool IsPacketLevelAtOrAfter(string levelId, int firstRecommendedLevel)
+        {
+            if (levelId.Length != 3 || levelId[0] != 'L')
+            {
+                return false;
+            }
+
+            return int.TryParse(levelId.AsSpan(1), NumberStyles.None, CultureInfo.InvariantCulture, out int index)
+                && index >= firstRecommendedLevel;
         }
 
         private static Dictionary<string, string> GetLevelPathsById(string levelsDir)

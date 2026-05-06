@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="AcceptanceVerifier.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="..\..\Assets\Rescue.Core\**\*.cs" Exclude="..\..\Assets\Rescue.Core\**\*.meta" LinkBase="Rescue.Core" />
     <Compile Include="..\..\Assets\Rescue.Content\*.cs" LinkBase="Rescue.Content" />

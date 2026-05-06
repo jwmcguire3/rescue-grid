@@ -13,6 +13,9 @@ namespace Rescue.Content
 {
     public static class SolveArtifactVerifier
     {
+        private const string GoldenPathType = "golden";
+        private const string ExpectedFailPathType = "expected_fail";
+
         public static SolveArtifactVerificationResult VerifySolvePath(string path, string? repoRoot = null)
         {
             if (!File.Exists(path))
@@ -78,83 +81,88 @@ namespace Rescue.Content
                     return SolveArtifactVerificationResult.Fail(label, golden.ExpectedOutcome ?? "<missing>", "NotRun", schemaFailure);
                 }
 
-                if (golden.Actions.Length > golden.MaxActions)
-                {
-                    return SolveArtifactVerificationResult.Fail(
-                        golden.LevelId,
-                        golden.ExpectedOutcome,
-                        "NotRun",
-                        $"actions used {golden.Actions.Length} exceeds maxActions {golden.MaxActions}");
-                }
-
                 LevelJson level = LoadLevel(golden.LevelId, repoRoot);
-                GameState state = Loader.LoadLevel(level, golden.Seed);
-                ActionOutcome outcome = ActionOutcome.Ok;
-                List<string> eventNames = new List<string>();
-
-                for (int i = 0; i < golden.Actions.Length; i++)
+                PathReplayVerification replay = VerifyReplay(
+                    level,
+                    golden.Seed,
+                    golden.Actions,
+                    golden.MaxActions,
+                    golden.ExpectedOutcome,
+                    golden.ExpectedEventsInOrder,
+                    "golden",
+                    golden.LevelId);
+                if (replay.Result is not null)
                 {
-                    GoldenActionJson action = golden.Actions[i];
-                    TileCoord coord = new TileCoord(action.Row, action.Col);
-                    ActionResult result = Pipeline.RunAction(state, new ActionInput(coord), new RunOptions(RecordSnapshot: false));
-
-                    for (int eventIndex = 0; eventIndex < result.Events.Length; eventIndex++)
-                    {
-                        ActionEvent actionEvent = result.Events[eventIndex];
-                        eventNames.Add(actionEvent.GetType().Name);
-                        if (actionEvent is InvalidInput)
-                        {
-                            return SolveArtifactVerificationResult.Fail(
-                                golden.LevelId,
-                                golden.ExpectedOutcome,
-                                result.Outcome.ToString(),
-                                $"step {i + 1} invalid input at {action.Row},{action.Col}");
-                        }
-                    }
-
-                    outcome = result.Outcome;
-                    state = result.State;
-
-                    if (outcome != ActionOutcome.Ok && i < golden.Actions.Length - 1)
-                    {
-                        return SolveArtifactVerificationResult.Fail(
-                            golden.LevelId,
-                            golden.ExpectedOutcome,
-                            outcome.ToString(),
-                            $"terminal outcome {outcome} occurred at step {i + 1} before final golden action");
-                    }
-                }
-
-                if (!string.Equals(outcome.ToString(), golden.ExpectedOutcome, StringComparison.Ordinal))
-                {
-                    return SolveArtifactVerificationResult.Fail(
-                        golden.LevelId,
-                        golden.ExpectedOutcome,
-                        outcome.ToString(),
-                        "final outcome mismatch");
-                }
-
-                if (golden.ExpectedEventsInOrder is { Length: > 0 }
-                    && !ContainsEventsInOrder(eventNames, golden.ExpectedEventsInOrder, out string? missingEvent))
-                {
-                    return SolveArtifactVerificationResult.Fail(
-                        golden.LevelId,
-                        golden.ExpectedOutcome,
-                        outcome.ToString(),
-                        $"expected event '{missingEvent}' was not found in order");
+                    return replay.Result;
                 }
 
                 if (golden.ExpectedExtractionOrder is { Length: > 0 }
-                    && !state.ExtractedTargetOrder.SequenceEqual(golden.ExpectedExtractionOrder, StringComparer.Ordinal))
+                    && !replay.RequireState().ExtractedTargetOrder.SequenceEqual(golden.ExpectedExtractionOrder, StringComparer.Ordinal))
                 {
+                    GameState replayState = replay.RequireState();
                     return SolveArtifactVerificationResult.Fail(
                         golden.LevelId,
                         golden.ExpectedOutcome,
-                        outcome.ToString(),
-                        $"expected extraction order [{string.Join(",", golden.ExpectedExtractionOrder)}], got [{string.Join(",", state.ExtractedTargetOrder)}]");
+                        replay.Outcome.ToString(),
+                        $"expected extraction order [{string.Join(",", golden.ExpectedExtractionOrder)}], got [{string.Join(",", replayState.ExtractedTargetOrder)}]");
                 }
 
-                return SolveArtifactVerificationResult.Pass(golden.LevelId, golden.ExpectedOutcome, outcome.ToString());
+                return SolveArtifactVerificationResult.Pass(golden.LevelId, golden.ExpectedOutcome, replay.Outcome.ToString());
+            }
+            catch (Exception ex)
+            {
+                return SolveArtifactVerificationResult.Fail(Path.GetFileName(path), "<unknown>", "NotRun", ex.Message);
+            }
+        }
+
+        public static SolveArtifactVerificationResult VerifyFailPath(string path, string? repoRoot = null)
+        {
+            if (!File.Exists(path))
+            {
+                return SolveArtifactVerificationResult.MissingResult(Path.GetFileName(path), $"Fail path file was not found at '{path}'.");
+            }
+
+            try
+            {
+                string json = File.ReadAllText(path);
+                FailPathJson failPath = DeserializeFailPath(json, path);
+                string label = string.IsNullOrWhiteSpace(failPath.LevelId) ? Path.GetFileNameWithoutExtension(path) : failPath.LevelId;
+
+                string? schemaFailure = ValidateFailPath(failPath);
+                if (schemaFailure is not null)
+                {
+                    return SolveArtifactVerificationResult.Fail(label, failPath.ExpectedOutcome ?? "<missing>", "NotRun", schemaFailure);
+                }
+
+                LevelJson level = LoadLevel(failPath.LevelId, repoRoot);
+                PathReplayVerification replay = VerifyReplay(
+                    level,
+                    failPath.Seed,
+                    failPath.Actions,
+                    failPath.MaxActions,
+                    failPath.ExpectedOutcome,
+                    failPath.ExpectedEventsInOrder,
+                    "fail path",
+                    failPath.LevelId);
+                if (replay.Result is not null)
+                {
+                    return replay.Result;
+                }
+
+                if (!string.IsNullOrWhiteSpace(failPath.ExpectedLossReason))
+                {
+                    string? actualLossReason = replay.LossReason?.ToString();
+                    if (!string.Equals(actualLossReason, failPath.ExpectedLossReason, StringComparison.Ordinal))
+                    {
+                        return SolveArtifactVerificationResult.Fail(
+                            failPath.LevelId,
+                            failPath.ExpectedOutcome,
+                            replay.Outcome.ToString(),
+                            $"expected loss reason {failPath.ExpectedLossReason}, got {actualLossReason ?? "<none>"}");
+                    }
+                }
+
+                return SolveArtifactVerificationResult.Pass(failPath.LevelId, failPath.ExpectedOutcome, replay.Outcome.ToString());
             }
             catch (Exception ex)
             {
@@ -200,43 +208,65 @@ namespace Rescue.Content
 
         private static GoldenPathJson DeserializeGoldenPath(string json, string path)
         {
-            ValidateRequiredGoldenProperties(json, path);
+            ValidateRequiredPathProperties(json, path, "Golden path");
             return JsonSerializer.Deserialize<GoldenPathJson>(json)
                 ?? throw new InvalidOperationException($"Could not deserialize golden path file '{path}'.");
         }
 
-        private static void ValidateRequiredGoldenProperties(string json, string path)
+        private static FailPathJson DeserializeFailPath(string json, string path)
+        {
+            ValidateRequiredPathProperties(json, path, "Fail path");
+            return JsonSerializer.Deserialize<FailPathJson>(json)
+                ?? throw new InvalidOperationException($"Could not deserialize fail path file '{path}'.");
+        }
+
+        private static void ValidateRequiredPathProperties(string json, string path, string artifactLabel)
         {
             using JsonDocument document = JsonDocument.Parse(json);
             JsonElement root = document.RootElement;
-            RequireProperty(root, "levelId", JsonValueKind.String, path);
-            RequireProperty(root, "seed", JsonValueKind.Number, path);
-            RequireProperty(root, "pathType", JsonValueKind.String, path);
-            RequireProperty(root, "expectedOutcome", JsonValueKind.String, path);
-            RequireProperty(root, "maxActions", JsonValueKind.Number, path);
-            JsonElement actions = RequireProperty(root, "actions", JsonValueKind.Array, path);
+            RequireProperty(root, "levelId", JsonValueKind.String, path, artifactLabel);
+            RequireProperty(root, "seed", JsonValueKind.Number, path, artifactLabel);
+            RequireProperty(root, "pathType", JsonValueKind.String, path, artifactLabel);
+            RequireProperty(root, "expectedOutcome", JsonValueKind.String, path, artifactLabel);
+            RequireProperty(root, "maxActions", JsonValueKind.Number, path, artifactLabel);
+            OptionalProperty(root, "expectedLossReason", JsonValueKind.String, path, artifactLabel);
+            OptionalProperty(root, "expectedEventsInOrder", JsonValueKind.Array, path, artifactLabel);
+            JsonElement actions = RequireProperty(root, "actions", JsonValueKind.Array, path, artifactLabel);
             for (int i = 0; i < actions.GetArrayLength(); i++)
             {
                 JsonElement action = actions[i];
-                RequireProperty(action, "row", JsonValueKind.Number, path);
-                RequireProperty(action, "col", JsonValueKind.Number, path);
-                RequireProperty(action, "intent", JsonValueKind.String, path);
+                RequireProperty(action, "row", JsonValueKind.Number, path, artifactLabel);
+                RequireProperty(action, "col", JsonValueKind.Number, path, artifactLabel);
+                RequireProperty(action, "intent", JsonValueKind.String, path, artifactLabel);
             }
         }
 
-        private static JsonElement RequireProperty(JsonElement root, string propertyName, JsonValueKind expectedKind, string path)
+        private static JsonElement RequireProperty(JsonElement root, string propertyName, JsonValueKind expectedKind, string path, string artifactLabel)
         {
             if (!root.TryGetProperty(propertyName, out JsonElement property))
             {
-                throw new InvalidOperationException($"Golden path file '{path}' is missing required property '{propertyName}'.");
+                throw new InvalidOperationException($"{artifactLabel} file '{path}' is missing required property '{propertyName}'.");
             }
 
             if (property.ValueKind != expectedKind)
             {
-                throw new InvalidOperationException($"Golden path file '{path}' property '{propertyName}' must be {expectedKind}.");
+                throw new InvalidOperationException($"{artifactLabel} file '{path}' property '{propertyName}' must be {expectedKind}.");
             }
 
             return property;
+        }
+
+        private static void OptionalProperty(JsonElement root, string propertyName, JsonValueKind expectedKind, string path, string artifactLabel)
+        {
+            if (!root.TryGetProperty(propertyName, out JsonElement property))
+            {
+                return;
+            }
+
+            if (property.ValueKind != expectedKind)
+            {
+                throw new InvalidOperationException($"{artifactLabel} file '{path}' property '{propertyName}' must be {expectedKind}.");
+            }
         }
 
         private static string? ValidateGoldenPath(GoldenPathJson golden)
@@ -246,7 +276,7 @@ namespace Rescue.Content
                 return "levelId is required";
             }
 
-            if (!string.Equals(golden.PathType, "golden", StringComparison.Ordinal))
+            if (!string.Equals(golden.PathType, GoldenPathType, StringComparison.Ordinal))
             {
                 return "pathType must equal 'golden'";
             }
@@ -275,6 +305,141 @@ namespace Rescue.Content
             }
 
             return null;
+        }
+
+        private static string? ValidateFailPath(FailPathJson failPath)
+        {
+            if (string.IsNullOrWhiteSpace(failPath.LevelId))
+            {
+                return "levelId is required";
+            }
+
+            if (!string.Equals(failPath.PathType, ExpectedFailPathType, StringComparison.Ordinal))
+            {
+                return "pathType must equal 'expected_fail'";
+            }
+
+            if (string.IsNullOrWhiteSpace(failPath.ExpectedOutcome))
+            {
+                return "expectedOutcome is required";
+            }
+
+            if (!Enum.TryParse(failPath.ExpectedOutcome, out ActionOutcome expectedOutcome) || !IsLossOutcome(expectedOutcome))
+            {
+                return "expectedOutcome must be a loss ActionOutcome";
+            }
+
+            if (failPath.MaxActions <= 0)
+            {
+                return "maxActions must be positive";
+            }
+
+            if (failPath.Actions.Length == 0)
+            {
+                return "actions must be non-empty";
+            }
+
+            for (int i = 0; i < failPath.Actions.Length; i++)
+            {
+                if (string.IsNullOrWhiteSpace(failPath.Actions[i].Intent))
+                {
+                    return $"action {i + 1} intent is required";
+                }
+            }
+
+            return null;
+        }
+
+        private static bool IsLossOutcome(ActionOutcome outcome)
+        {
+            return outcome is ActionOutcome.LossDockOverflow
+                or ActionOutcome.LossWaterOnTarget
+                or ActionOutcome.LossRescuePathFlooded
+                or ActionOutcome.LossDistressedExpired;
+        }
+
+        private static PathReplayVerification VerifyReplay(
+            LevelJson level,
+            int seed,
+            GoldenActionJson[] actions,
+            int maxActions,
+            string expectedOutcome,
+            string[]? expectedEventsInOrder,
+            string artifactKind,
+            string levelId)
+        {
+            if (actions.Length > maxActions)
+            {
+                return PathReplayVerification.Failed(SolveArtifactVerificationResult.Fail(
+                    levelId,
+                    expectedOutcome,
+                    "NotRun",
+                    $"actions used {actions.Length} exceeds maxActions {maxActions}"));
+            }
+
+            GameState state = Loader.LoadLevel(level, seed);
+            ActionOutcome outcome = ActionOutcome.Ok;
+            ActionOutcome? lossReason = null;
+            List<string> eventNames = new List<string>();
+
+            for (int i = 0; i < actions.Length; i++)
+            {
+                GoldenActionJson action = actions[i];
+                TileCoord coord = new TileCoord(action.Row, action.Col);
+                ActionResult result = Pipeline.RunAction(state, new ActionInput(coord), new RunOptions(RecordSnapshot: false));
+
+                for (int eventIndex = 0; eventIndex < result.Events.Length; eventIndex++)
+                {
+                    ActionEvent actionEvent = result.Events[eventIndex];
+                    eventNames.Add(actionEvent.GetType().Name);
+                    if (actionEvent is Lost lost)
+                    {
+                        lossReason = lost.Outcome;
+                    }
+
+                    if (actionEvent is InvalidInput)
+                    {
+                        return PathReplayVerification.Failed(SolveArtifactVerificationResult.Fail(
+                            levelId,
+                            expectedOutcome,
+                            result.Outcome.ToString(),
+                            $"step {i + 1} invalid input at {action.Row},{action.Col}"));
+                    }
+                }
+
+                outcome = result.Outcome;
+                state = result.State;
+
+                if (outcome != ActionOutcome.Ok && i < actions.Length - 1)
+                {
+                    return PathReplayVerification.Failed(SolveArtifactVerificationResult.Fail(
+                        levelId,
+                        expectedOutcome,
+                        outcome.ToString(),
+                        $"terminal outcome {outcome} occurred at step {i + 1} before final {artifactKind} action"));
+                }
+            }
+
+            if (!string.Equals(outcome.ToString(), expectedOutcome, StringComparison.Ordinal))
+            {
+                return PathReplayVerification.Failed(SolveArtifactVerificationResult.Fail(
+                    levelId,
+                    expectedOutcome,
+                    outcome.ToString(),
+                    "final outcome mismatch"));
+            }
+
+            if (expectedEventsInOrder is { Length: > 0 }
+                && !ContainsEventsInOrder(eventNames, expectedEventsInOrder, out string? missingEvent))
+            {
+                return PathReplayVerification.Failed(SolveArtifactVerificationResult.Fail(
+                    levelId,
+                    expectedOutcome,
+                    outcome.ToString(),
+                    $"expected event '{missingEvent}' was not found in order"));
+            }
+
+            return PathReplayVerification.Passed(state, outcome, lossReason);
         }
 
         private static bool ContainsEventsInOrder(List<string> actualEvents, string[] expectedEvents, out string? missingEvent)
@@ -463,8 +628,41 @@ namespace Rescue.Content
         [property: JsonPropertyName("expectedExtractionOrder")] string[]? ExpectedExtractionOrder,
         [property: JsonPropertyName("notes")] string? Notes);
 
+    public sealed record FailPathJson(
+        [property: JsonPropertyName("levelId")] string LevelId,
+        [property: JsonPropertyName("seed")] int Seed,
+        [property: JsonPropertyName("pathType")] string PathType,
+        [property: JsonPropertyName("expectedOutcome")] string ExpectedOutcome,
+        [property: JsonPropertyName("maxActions")] int MaxActions,
+        [property: JsonPropertyName("actions")] GoldenActionJson[] Actions,
+        [property: JsonPropertyName("expectedLossReason")] string? ExpectedLossReason,
+        [property: JsonPropertyName("expectedEventsInOrder")] string[]? ExpectedEventsInOrder,
+        [property: JsonPropertyName("notes")] string? Notes);
+
     public sealed record GoldenActionJson(
         [property: JsonPropertyName("row")] int Row,
         [property: JsonPropertyName("col")] int Col,
         [property: JsonPropertyName("intent")] string Intent);
+
+    internal readonly record struct PathReplayVerification(
+        GameState? State,
+        ActionOutcome Outcome,
+        ActionOutcome? LossReason,
+        SolveArtifactVerificationResult? Result)
+    {
+        public static PathReplayVerification Passed(GameState state, ActionOutcome outcome, ActionOutcome? lossReason)
+        {
+            return new PathReplayVerification(state, outcome, lossReason, Result: null);
+        }
+
+        public static PathReplayVerification Failed(SolveArtifactVerificationResult result)
+        {
+            return new PathReplayVerification(State: null, ActionOutcome.Ok, LossReason: null, result);
+        }
+
+        public GameState RequireState()
+        {
+            return State ?? throw new InvalidOperationException("Replay state is unavailable for a failed path verification.");
+        }
+    }
 }

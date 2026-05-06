@@ -17,10 +17,12 @@
     <Compile Include="..\..\Assets\Rescue.Content\ContentJson.cs" Link="Rescue.Content\ContentJson.cs" />
     <Compile Include="..\..\Assets\Rescue.Content\LevelBrief.cs" Link="Rescue.Content\LevelBrief.cs" />
     <Compile Include="..\..\Assets\Rescue.Content\LevelBriefLoader.cs" Link="Rescue.Content\LevelBriefLoader.cs" />
+    <Compile Include="..\..\Assets\Rescue.Content\LevelAssistanceComparisonAnalyzer.cs" Link="Rescue.Content\LevelAssistanceComparisonAnalyzer.cs" />
     <Compile Include="..\..\Assets\Rescue.Content\LevelDesignReportBuilder.cs" Link="Rescue.Content\LevelDesignReportBuilder.cs" />
     <Compile Include="..\..\Assets\Rescue.Content\LevelPacketManifest.cs" Link="Rescue.Content\LevelPacketManifest.cs" />
     <Compile Include="..\..\Assets\Rescue.Content\LevelPacketManifestLoader.cs" Link="Rescue.Content\LevelPacketManifestLoader.cs" />
     <Compile Include="..\..\Assets\Rescue.Content\LevelReadabilityAnalyzer.cs" Link="Rescue.Content\LevelReadabilityAnalyzer.cs" />
+    <Compile Include="..\..\Assets\Rescue.Content\LevelSvgPreview.cs" Link="Rescue.Content\LevelSvgPreview.cs" />
     <Compile Include="..\..\Assets\Rescue.Content\Schema.cs" Link="Rescue.Content\Schema.cs" />
     <Compile Include="..\..\Assets\Rescue.Content\Tuning.cs" Link="Rescue.Content\Tuning.cs" />
     <Compile Include="..\..\Assets\Rescue.Content\Validator.cs" Link="Rescue.Content\Validator.cs" />

@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Rescue.Content;
@@ -52,6 +54,29 @@ namespace Rescue.LevelTelemetryTool
         {
             try
             {
+                if (args.Length >= 1 && string.Equals(args[0], "summarize-level", StringComparison.Ordinal))
+                {
+                    if (args.Length != 2)
+                    {
+                        throw new ArgumentException("Usage: summarize-level <levelId>");
+                    }
+
+                    ValidateLevelId(args[1], "levelId");
+                    Console.Write(SummarizeLevelText(args[1], repoRoot: null, artifactDirectory: null));
+                    return 0;
+                }
+
+                if (args.Length >= 1 && string.Equals(args[0], "summarize-all", StringComparison.Ordinal))
+                {
+                    if (args.Length != 1)
+                    {
+                        throw new ArgumentException("Usage: summarize-all");
+                    }
+
+                    Console.Write(SummarizeAllText(repoRoot: null, artifactDirectory: null));
+                    return 0;
+                }
+
                 TelemetryOptions options = ParseOptions(args);
                 IReadOnlyList<string> levelIds = ResolveLevelIds(options);
                 string outputPath = ResolveOutputDirectory(options.OutputDirectory);
@@ -291,6 +316,8 @@ namespace Rescue.LevelTelemetryTool
         private static void PrintUsage()
         {
             Console.Error.WriteLine("Usage:");
+            Console.Error.WriteLine("  dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- summarize-level L03");
+            Console.Error.WriteLine("  dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- summarize-all");
             Console.Error.WriteLine("  dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --level L01 [--samples 200] [--max-actions 30] [--output Reports/LevelTelemetry]");
             Console.Error.WriteLine("  dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --range L00-L15 [--samples 200] [--max-actions 30] [--output Reports/LevelTelemetry]");
         }
@@ -431,6 +458,433 @@ namespace Rescue.LevelTelemetryTool
             string reportPath = Path.Combine(outputDirectory, $"{report.LevelId}.telemetry.json");
             File.WriteAllText(reportPath, JsonSerializer.Serialize(report, JsonOptions));
             return reportPath;
+        }
+
+        internal static string SummarizeLevelText(string levelId, string? repoRoot, string? artifactDirectory)
+        {
+            string root = ResolveRepoRoot(repoRoot);
+            string resolvedArtifactDirectory = artifactDirectory ?? Path.Combine(root, "Assets", "Resources", "Levels");
+            ReplaySummarySet summaries = SummarizeLevel(levelId, root, resolvedArtifactDirectory);
+            return FormatSummarySet(summaries);
+        }
+
+        internal static string SummarizeAllText(string? repoRoot, string? artifactDirectory)
+        {
+            string root = ResolveRepoRoot(repoRoot);
+            string levelsDirectory = Path.Combine(root, "Assets", "StreamingAssets", "Levels");
+            string resolvedArtifactDirectory = artifactDirectory ?? Path.Combine(root, "Assets", "Resources", "Levels");
+            string[] levelIds = Directory.GetFiles(levelsDirectory, "*.json", SearchOption.TopDirectoryOnly)
+                .Select(static path => Path.GetFileNameWithoutExtension(path))
+                .Where(static id => !string.IsNullOrWhiteSpace(id))
+                .OrderBy(static id => id, StringComparer.Ordinal)
+                .ToArray()!;
+
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < levelIds.Length; i++)
+            {
+                if (i > 0)
+                {
+                    builder.AppendLine();
+                }
+
+                builder.Append(FormatSummarySet(SummarizeLevel(levelIds[i], root, resolvedArtifactDirectory)));
+            }
+
+            return builder.ToString();
+        }
+
+        internal static ReplaySummarySet SummarizeLevel(string levelId, string repoRoot, string artifactDirectory)
+        {
+            string levelPath = SolveArtifactVerifier.ResolveLevelPath(levelId, repoRoot);
+            LevelJson level = ContentJson.DeserializeLevel(File.ReadAllText(levelPath));
+            return new ReplaySummarySet(
+                levelId,
+                new[]
+                {
+                    SummarizeArtifact(level, Path.Combine(artifactDirectory, levelId + ".golden.json"), ReplayArtifactKind.Golden, optional: false),
+                    SummarizeArtifact(level, Path.Combine(artifactDirectory, levelId + ".solve.json"), ReplayArtifactKind.Solve, optional: false),
+                    SummarizeArtifact(level, Path.Combine(artifactDirectory, levelId + ".fail.json"), ReplayArtifactKind.Fail, optional: true),
+                });
+        }
+
+        internal static ReplaySummary BuildSummaryFromEvents(
+            string levelId,
+            ReplayArtifactKind artifactKind,
+            string artifactPath,
+            int seed,
+            string expectedOutcome,
+            int actionCount,
+            ActionOutcome finalOutcome,
+            ImmutableArray<string> extractionOrder,
+            IReadOnlyList<ActionEvent> events)
+        {
+            int dockClears = 0;
+            int waterRises = 0;
+            int targetProgressed = 0;
+            int targetOneClearAway = 0;
+            int targetLatched = 0;
+            int targetExtracted = 0;
+            int targetDistressed = 0;
+            int dockJamEvents = 0;
+            int assistedSpawnEvents = 0;
+            int assistedSpawnPieces = 0;
+            int emergencyRequested = 0;
+            int emergencyApplied = 0;
+            bool sawSpawnDetail = false;
+            bool sawLegacySpawn = false;
+            double maxEffectiveAssistanceChance = 0.0d;
+            Dictionary<string, int> assistedSpawnReasons = new Dictionary<string, int>(StringComparer.Ordinal);
+
+            for (int eventIndex = 0; eventIndex < events.Count; eventIndex++)
+            {
+                ActionEvent actionEvent = events[eventIndex];
+                switch (actionEvent)
+                {
+                    case DockCleared:
+                        dockClears++;
+                        break;
+                    case WaterRose:
+                        waterRises++;
+                        break;
+                    case TargetProgressed:
+                        targetProgressed++;
+                        break;
+                    case TargetOneClearAway:
+                        targetOneClearAway++;
+                        break;
+                    case TargetExtractionLatched:
+                        targetLatched++;
+                        break;
+                    case TargetExtracted:
+                        targetExtracted++;
+                        break;
+                    case TargetDistressedEntered:
+                    case TargetDistressedRecovered:
+                    case TargetDistressedExpired:
+                        targetDistressed++;
+                        break;
+                    case DockJamTriggered:
+                        dockJamEvents++;
+                        break;
+                    case Spawned spawned:
+                        SummarizeSpawned(
+                            spawned,
+                            ref sawSpawnDetail,
+                            ref sawLegacySpawn,
+                            ref assistedSpawnEvents,
+                            ref assistedSpawnPieces,
+                            ref emergencyRequested,
+                            ref emergencyApplied,
+                            ref maxEffectiveAssistanceChance,
+                            assistedSpawnReasons);
+                        break;
+                }
+            }
+
+            bool assistedSpawnDetailAvailable = sawSpawnDetail || !sawLegacySpawn;
+            string? lossReason = IsLoss(finalOutcome) ? finalOutcome.ToString() : null;
+            return new ReplaySummary(
+                levelId,
+                artifactKind,
+                artifactPath,
+                Exists: true,
+                Optional: false,
+                Note: null,
+                seed,
+                expectedOutcome,
+                finalOutcome.ToString(),
+                actionCount,
+                extractionOrder.ToArray(),
+                dockClears,
+                waterRises,
+                targetProgressed,
+                targetOneClearAway,
+                targetLatched,
+                targetExtracted,
+                targetDistressed,
+                dockJamEvents,
+                lossReason,
+                assistedSpawnDetailAvailable,
+                assistedSpawnEvents,
+                assistedSpawnPieces,
+                emergencyRequested,
+                emergencyApplied,
+                maxEffectiveAssistanceChance,
+                assistedSpawnReasons);
+        }
+
+        private static void SummarizeSpawned(
+            Spawned spawned,
+            ref bool sawSpawnDetail,
+            ref bool sawLegacySpawn,
+            ref int assistedSpawnEvents,
+            ref int assistedSpawnPieces,
+            ref int emergencyRequested,
+            ref int emergencyApplied,
+            ref double maxEffectiveAssistanceChance,
+            Dictionary<string, int> assistedSpawnReasons)
+        {
+            if (spawned.Pieces.IsDefaultOrEmpty)
+            {
+                return;
+            }
+
+            bool eventHasAssistance = false;
+            for (int pieceIndex = 0; pieceIndex < spawned.Pieces.Length; pieceIndex++)
+            {
+                SpawnedPiece piece = spawned.Pieces[pieceIndex];
+                bool hasModernDetail = piece.LineageId != 0
+                    || !piece.TriggerContext.IsDefaultOrEmpty
+                    || piece.UrgentTargetId is not null
+                    || piece.EffectiveAssistanceChance > 0.0d
+                    || piece.EmergencyRequested
+                    || piece.EmergencyApplied
+                    || !piece.Reasons.IsDefaultOrEmpty;
+                sawSpawnDetail |= hasModernDetail;
+                sawLegacySpawn |= !hasModernDetail;
+
+                if (piece.EffectiveAssistanceChance > 0.0d || piece.EmergencyRequested || piece.EmergencyApplied)
+                {
+                    eventHasAssistance = true;
+                    assistedSpawnPieces++;
+                    maxEffectiveAssistanceChance = Math.Max(maxEffectiveAssistanceChance, piece.EffectiveAssistanceChance);
+                    if (piece.EmergencyRequested)
+                    {
+                        emergencyRequested++;
+                    }
+
+                    if (piece.EmergencyApplied)
+                    {
+                        emergencyApplied++;
+                    }
+
+                    if (piece.Reasons.IsDefaultOrEmpty)
+                    {
+                        Increment(assistedSpawnReasons, "assistance_active");
+                    }
+                    else
+                    {
+                        for (int reasonIndex = 0; reasonIndex < piece.Reasons.Length; reasonIndex++)
+                        {
+                            Increment(assistedSpawnReasons, ToReasonCode(piece.Reasons[reasonIndex]));
+                        }
+                    }
+                }
+            }
+
+            if (eventHasAssistance)
+            {
+                assistedSpawnEvents++;
+            }
+        }
+
+        private static ReplaySummary SummarizeArtifact(LevelJson level, string path, ReplayArtifactKind artifactKind, bool optional)
+        {
+            if (!File.Exists(path))
+            {
+                return ReplaySummary.Missing(level.Id, artifactKind, path, optional);
+            }
+
+            try
+            {
+                ReplayArtifact artifact = ReadReplayArtifact(path, artifactKind);
+                GameState state = Loader.LoadLevel(level, artifact.Seed);
+                ActionOutcome outcome = ActionOutcome.Ok;
+                List<ActionEvent> events = new List<ActionEvent>();
+                int actionsTaken = 0;
+
+                for (int actionIndex = 0; actionIndex < artifact.Actions.Length; actionIndex++)
+                {
+                    ReplayAction action = artifact.Actions[actionIndex];
+                    ActionResult result = Pipeline.RunAction(
+                        state,
+                        new ActionInput(new TileCoord(action.Row, action.Col)),
+                        new RunOptions(RecordSnapshot: false));
+                    events.AddRange(result.Events);
+                    outcome = result.Outcome;
+                    state = result.State;
+                    actionsTaken++;
+
+                    if (outcome != ActionOutcome.Ok)
+                    {
+                        break;
+                    }
+                }
+
+                return BuildSummaryFromEvents(
+                    artifact.LevelId,
+                    artifactKind,
+                    path,
+                    artifact.Seed,
+                    artifact.ExpectedOutcome,
+                    actionsTaken,
+                    outcome,
+                    state.ExtractedTargetOrder,
+                    events);
+            }
+            catch (Exception ex)
+            {
+                return ReplaySummary.Unavailable(level.Id, artifactKind, path, optional, ex.Message);
+            }
+        }
+
+        private static ReplayArtifact ReadReplayArtifact(string path, ReplayArtifactKind artifactKind)
+        {
+            using JsonDocument document = JsonDocument.Parse(File.ReadAllText(path));
+            JsonElement root = document.RootElement;
+            string levelId = ReadRequiredString(root, "levelId", path);
+            int seed = ReadRequiredInt(root, "seed", path);
+            string expectedOutcome = ReadRequiredString(root, "expectedOutcome", path);
+            JsonElement actionsElement = ReadRequiredProperty(root, "actions", path);
+            if (actionsElement.ValueKind != JsonValueKind.Array)
+            {
+                throw new InvalidOperationException($"Replay artifact '{path}' property 'actions' must be Array.");
+            }
+
+            ReplayAction[] actions = new ReplayAction[actionsElement.GetArrayLength()];
+            for (int i = 0; i < actions.Length; i++)
+            {
+                JsonElement action = actionsElement[i];
+                actions[i] = new ReplayAction(
+                    ReadRequiredInt(action, "row", path),
+                    ReadRequiredInt(action, "col", path));
+            }
+
+            return new ReplayArtifact(levelId, artifactKind, seed, expectedOutcome, actions);
+        }
+
+        private static JsonElement ReadRequiredProperty(JsonElement element, string camelName, string path)
+        {
+            string pascalName = char.ToUpperInvariant(camelName[0]) + camelName.Substring(1);
+            if (element.TryGetProperty(camelName, out JsonElement camelValue))
+            {
+                return camelValue;
+            }
+
+            if (element.TryGetProperty(pascalName, out JsonElement pascalValue))
+            {
+                return pascalValue;
+            }
+
+            throw new InvalidOperationException($"Replay artifact '{path}' is missing required property '{camelName}'.");
+        }
+
+        private static string ReadRequiredString(JsonElement element, string camelName, string path)
+        {
+            JsonElement property = ReadRequiredProperty(element, camelName, path);
+            if (property.ValueKind != JsonValueKind.String)
+            {
+                throw new InvalidOperationException($"Replay artifact '{path}' property '{camelName}' must be String.");
+            }
+
+            return property.GetString() ?? string.Empty;
+        }
+
+        private static int ReadRequiredInt(JsonElement element, string camelName, string path)
+        {
+            JsonElement property = ReadRequiredProperty(element, camelName, path);
+            if (property.ValueKind != JsonValueKind.Number || !property.TryGetInt32(out int value))
+            {
+                throw new InvalidOperationException($"Replay artifact '{path}' property '{camelName}' must be Int32.");
+            }
+
+            return value;
+        }
+
+        private static string FormatSummarySet(ReplaySummarySet summaries)
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine($"LevelTelemetry replay summary: {summaries.LevelId}");
+            for (int i = 0; i < summaries.Summaries.Length; i++)
+            {
+                AppendSummary(builder, summaries.Summaries[i]);
+            }
+
+            return builder.ToString();
+        }
+
+        private static void AppendSummary(StringBuilder builder, ReplaySummary summary)
+        {
+            builder.AppendLine($"{summary.ArtifactKind.ToString().ToLowerInvariant()} path:");
+            builder.AppendLine($"  file: {summary.ArtifactPath}");
+            if (!summary.Exists)
+            {
+                string label = summary.Optional ? "missing optional data" : "missing required data";
+                builder.AppendLine($"  {label}: {summary.Note}");
+                return;
+            }
+
+            if (summary.Note is not null)
+            {
+                builder.AppendLine($"  unavailable: {summary.Note}");
+                return;
+            }
+
+            builder.AppendLine($"  seed: {summary.Seed}");
+            builder.AppendLine($"  expected outcome: {summary.ExpectedOutcome}");
+            builder.AppendLine($"  final outcome: {summary.FinalOutcome}");
+            builder.AppendLine($"  action count: {summary.ActionCount}");
+            builder.AppendLine($"  extraction order: {FormatList(summary.ExtractionOrder)}");
+            builder.AppendLine($"  dock clears: {summary.DockClears}");
+            builder.AppendLine($"  water rises: {summary.WaterRises}");
+            builder.AppendLine($"  target readiness events: progressed={summary.TargetProgressed}, one-clear-away={summary.TargetOneClearAway}, latched={summary.TargetLatched}, extracted={summary.TargetExtracted}, distressed={summary.TargetDistressed}");
+            builder.AppendLine($"  dock jam events: {summary.DockJamEvents}");
+            builder.AppendLine($"  loss reason: {summary.LossReason ?? "none"}");
+            if (!summary.AssistedSpawnDetailAvailable)
+            {
+                builder.AppendLine("  assisted spawn event detail unavailable.");
+                return;
+            }
+
+            builder.AppendLine($"  assisted spawn events: {summary.AssistedSpawnEvents}");
+            builder.AppendLine($"  assisted spawn pieces: {summary.AssistedSpawnPieces}");
+            builder.AppendLine($"  assisted spawn reasons: {FormatCounts(summary.AssistedSpawnReasons)}");
+            builder.AppendLine($"  emergency requested pieces: {summary.EmergencyRequestedPieces}");
+            builder.AppendLine($"  emergency applied pieces: {summary.EmergencyAppliedPieces}");
+            builder.AppendLine($"  max effective assistance chance: {summary.MaxEffectiveAssistanceChance.ToString("0.###", CultureInfo.InvariantCulture)}");
+        }
+
+        private static string FormatList(IReadOnlyList<string> values)
+        {
+            return values.Count == 0 ? "none" : string.Join(">", values);
+        }
+
+        private static string FormatCounts(Dictionary<string, int> counts)
+        {
+            if (counts.Count == 0)
+            {
+                return "none";
+            }
+
+            return string.Join(", ", counts.OrderBy(static entry => entry.Key, StringComparer.Ordinal).Select(static entry => entry.Key + "=" + entry.Value));
+        }
+
+        private static string ResolveRepoRoot(string? repoRoot)
+        {
+            if (!string.IsNullOrWhiteSpace(repoRoot))
+            {
+                return Path.GetFullPath(repoRoot);
+            }
+
+            return SolveArtifactVerifier.FindRepoRoot(Directory.GetCurrentDirectory())
+                ?? throw new DirectoryNotFoundException("Could not locate repository root containing Assets/StreamingAssets/Levels.");
+        }
+
+        private static string ToReasonCode(SpawnAssistReason reason)
+        {
+            return reason switch
+            {
+                SpawnAssistReason.BaselineAssistance => "baseline_assistance",
+                SpawnAssistReason.DockCompletion => "dock_completion",
+                SpawnAssistReason.RouteHardPair => "route_hard_pair",
+                SpawnAssistReason.RouteSoftPair => "route_soft_pair",
+                SpawnAssistReason.RouteAdjacency => "route_adjacency",
+                SpawnAssistReason.SingletonRecovery => "singleton_recovery",
+                SpawnAssistReason.EmergencyWaterPressure => "emergency_water_pressure",
+                SpawnAssistReason.EmergencyDockPressure => "emergency_dock_pressure",
+                SpawnAssistReason.DebugOverride => "debug_override",
+                _ => reason.ToString(),
+            };
         }
 
         internal static BotRunResult RunBot(string levelId, int seed, string botName, int maxActions)
@@ -951,6 +1405,11 @@ namespace Rescue.LevelTelemetryTool
             return string.Equals(terminalReason, "Win", StringComparison.Ordinal);
         }
 
+        private static bool IsLoss(ActionOutcome outcome)
+        {
+            return outcome != ActionOutcome.Ok && outcome != ActionOutcome.Win;
+        }
+
         private static bool IsDockOverflowReason(string terminalReason)
         {
             return !IsWin(terminalReason)
@@ -1020,6 +1479,104 @@ namespace Rescue.LevelTelemetryTool
 
             public int LowestCol => Group.Min(static coord => coord.Col);
         }
+
+        internal enum ReplayArtifactKind
+        {
+            Golden,
+            Solve,
+            Fail,
+        }
+
+        internal sealed record ReplaySummarySet(
+            string LevelId,
+            ReplaySummary[] Summaries);
+
+        internal sealed record ReplaySummary(
+            string LevelId,
+            ReplayArtifactKind ArtifactKind,
+            string ArtifactPath,
+            bool Exists,
+            bool Optional,
+            string? Note,
+            int Seed,
+            string ExpectedOutcome,
+            string FinalOutcome,
+            int ActionCount,
+            string[] ExtractionOrder,
+            int DockClears,
+            int WaterRises,
+            int TargetProgressed,
+            int TargetOneClearAway,
+            int TargetLatched,
+            int TargetExtracted,
+            int TargetDistressed,
+            int DockJamEvents,
+            string? LossReason,
+            bool AssistedSpawnDetailAvailable,
+            int AssistedSpawnEvents,
+            int AssistedSpawnPieces,
+            int EmergencyRequestedPieces,
+            int EmergencyAppliedPieces,
+            double MaxEffectiveAssistanceChance,
+            Dictionary<string, int> AssistedSpawnReasons)
+        {
+            public static ReplaySummary Missing(string levelId, ReplayArtifactKind artifactKind, string artifactPath, bool optional)
+            {
+                return Unavailable(
+                    levelId,
+                    artifactKind,
+                    artifactPath,
+                    optional,
+                    $"Replay artifact was not found at '{artifactPath}'.",
+                    exists: false);
+            }
+
+            public static ReplaySummary Unavailable(string levelId, ReplayArtifactKind artifactKind, string artifactPath, bool optional, string note)
+            {
+                return Unavailable(levelId, artifactKind, artifactPath, optional, note, exists: true);
+            }
+
+            private static ReplaySummary Unavailable(string levelId, ReplayArtifactKind artifactKind, string artifactPath, bool optional, string note, bool exists)
+            {
+                return new ReplaySummary(
+                    levelId,
+                    artifactKind,
+                    artifactPath,
+                    exists,
+                    optional,
+                    note,
+                    Seed: 0,
+                    ExpectedOutcome: "<unavailable>",
+                    FinalOutcome: "NotRun",
+                    ActionCount: 0,
+                    ExtractionOrder: Array.Empty<string>(),
+                    DockClears: 0,
+                    WaterRises: 0,
+                    TargetProgressed: 0,
+                    TargetOneClearAway: 0,
+                    TargetLatched: 0,
+                    TargetExtracted: 0,
+                    TargetDistressed: 0,
+                    DockJamEvents: 0,
+                    LossReason: null,
+                    AssistedSpawnDetailAvailable: true,
+                    AssistedSpawnEvents: 0,
+                    AssistedSpawnPieces: 0,
+                    EmergencyRequestedPieces: 0,
+                    EmergencyAppliedPieces: 0,
+                    MaxEffectiveAssistanceChance: 0.0d,
+                    AssistedSpawnReasons: new Dictionary<string, int>(StringComparer.Ordinal));
+            }
+        }
+
+        private sealed record ReplayArtifact(
+            string LevelId,
+            ReplayArtifactKind ArtifactKind,
+            int Seed,
+            string ExpectedOutcome,
+            ReplayAction[] Actions);
+
+        private sealed record ReplayAction(int Row, int Col);
 
         internal sealed record LevelTelemetryReport(
             [property: JsonPropertyName("levelId")] string LevelId,

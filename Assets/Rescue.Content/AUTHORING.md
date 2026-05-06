@@ -34,7 +34,19 @@ powershell -ExecutionPolicy Bypass -File .\scripts\verify-level-authoring.ps1
 
 The same gate runs in CI. It checks level JSON validation, Phase 1 packet policy validation, solve verification, optional golden verification, brief/solve coverage for every level, telemetry bot smoke reports, and `Tools/LevelTelemetry.Tests`.
 
-Every playable level JSON must have a matching `docs/level-briefs/<levelId>.brief.json` and `Assets/Resources/Levels/<levelId>.solve.json`. Golden paths are optional designer-approved paths; every committed `<levelId>.golden.json` must verify.
+Every playable level JSON must have a matching `docs/level-briefs/<levelId>.brief.json` and `Assets/Resources/Levels/<levelId>.solve.json`. Golden paths are optional during exploration and iteration; every committed `<levelId>.golden.json` must verify.
+
+For command intent:
+
+- `validate` means structurally valid.
+- `design-report` means reviewable.
+- `verify-acceptance` means accepted into the packet.
+
+Packet acceptance is stricter than exploration. It requires a designer-approved golden path for every expected level in `docs/level-packets/phase1.packet.json`:
+
+```bash
+dotnet run --project Tools/SolveAuthoring/SolveAuthoring.csproj -- --verify-acceptance
+```
 
 ## Preferred design review command
 
@@ -183,13 +195,13 @@ If a solve script mismatch appears, determine whether the level changed, the scr
 
 Telemetry reports are offline design diagnostics, not runtime analytics.
 
-Run one level:
+Run one level through the offline bot difficulty diagnostic:
 
 ```bash
 dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --level L01
 ```
 
-Run onboarding:
+Run onboarding through the same bot diagnostic:
 
 ```bash
 dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --range L00-L20 --samples 200 --max-actions 30
@@ -199,9 +211,18 @@ Reports are written to `Reports/LevelTelemetry/` by default.
 
 Use telemetry to compare bot behavior, loss reasons, target progress events, dock overflow frequency, water loss frequency, and whether rescue-focused play outperforms generic clearing.
 
+Summarize committed replay artifacts for event-level proof:
+
+```bash
+dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- summarize-level L03
+dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- summarize-all
+```
+
+Replay summaries read `<levelId>.golden.json`, `<levelId>.solve.json`, and optional `<levelId>.fail.json` from `Assets/Resources/Levels/`. They report action count, final outcome, extraction order, dock clears, water rises, target readiness events, dock jams, losses, and assisted spawn detail when current events expose it. Missing fail paths are reported as missing optional data, not as fabricated telemetry.
+
 Telemetry does not replace human playtest.
 
-Offline bot telemetry is the authoring-gate surface. Runtime telemetry sessions are emitted by the development debug panel for playtest/replay capture; the main player session is not wired to runtime telemetry by default.
+Offline bot telemetry is the authoring-gate surface. Replay summary telemetry is for checking authored solve/golden/fail paths against current `ActionEvent` output. Runtime telemetry sessions are emitted by the development debug panel for playtest/replay capture; the main player session is not wired to runtime telemetry by default.
 
 ## Verify golden paths
 

@@ -1,4 +1,5 @@
 ﻿<Solution>
+  <Project Path="Rescue.Content.csproj" />
   <Project Path="Rescue.Core.Tests.csproj" />
   <Project Path="Rescue.Core.csproj" />
   <Project Path="Rescue.Unity.Board.EditMode.Tests.csproj" />
@@ -6,7 +7,6 @@
   <Project Path="Rescue.Unity.csproj" />
   <Project Path="Rescue.PlayMode.Tests.csproj" />
   <Project Path="Rescue.Unity.Presentation.EditMode.Tests.csproj" />
-  <Project Path="Rescue.Content.csproj" />
   <Project Path="Rescue.Unity.Haptics.EditMode.Tests.csproj" />
   <Project Path="Rescue.Unity.Art.Validation.EditMode.Tests.csproj" />
   <Project Path="Rescue.Unity.Art.Prefabization.EditMode.Tests.csproj" />

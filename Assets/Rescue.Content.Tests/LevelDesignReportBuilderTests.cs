@@ -36,6 +36,7 @@ namespace Rescue.Content.Tests
 
             Assert.That(report.Text, Does.Contain("Design Report: L03 - Rescue Order Arrives"));
             Assert.That(report.Text, Does.Contain("Identity:"));
+            Assert.That(report.Text, Does.Contain("SVG preview: run preview-svg"));
             Assert.That(report.Text, Does.Contain("Core validation:"));
             Assert.That(report.Text, Does.Contain("Phase 1 policy:"));
             Assert.That(report.Text, Does.Contain("Brief conformance:"));
@@ -44,6 +45,7 @@ namespace Rescue.Content.Tests
             Assert.That(report.Text, Does.Contain("Systems:"));
             Assert.That(report.Text, Does.Contain("Solve Status:"));
             Assert.That(report.Text, Does.Contain("Golden Status:"));
+            Assert.That(report.Text, Does.Contain("Fail Path Status:"));
             Assert.That(report.Text, Does.Contain("Top Design Risks:"));
         }
 
@@ -81,8 +83,61 @@ namespace Rescue.Content.Tests
             Assert.That(report.Text, Does.Contain("Density below target."));
             Assert.That(report.Text, Does.Contain("No legal starting group near a target route."));
             Assert.That(report.Text, Does.Contain("Brief forbids a mechanic used by this level."));
-            Assert.That(report.Text, Does.Contain("Expected fail mode is not executable yet."));
+            Assert.That(report.Text, Does.Contain("Expected fail path recommended but not found."));
             Assert.That(report.Text, Does.Contain("Assistance chance high; compare no-assistance solve before accepting."));
+        }
+
+        [Test]
+        public void Build_MissingRecommendedFailPath_WarnsWithoutReportError()
+        {
+            LevelDesignReport report = LevelDesignReportBuilder.Build(
+                Path.Combine(_repoRoot, "Assets", "StreamingAssets", "Levels", "L03.json"),
+                Path.Combine(_repoRoot, "docs", "level-briefs", "L03.brief.json"),
+                Path.Combine(_repoRoot, "Assets", "Resources", "Levels", "L03.solve.json"),
+                Path.Combine(_repoRoot, "Assets", "Resources", "Levels", "L03.golden.json"),
+                Path.Combine(_tempDir, "missing.fail.json"),
+                _repoRoot);
+
+            Assert.That(report.HasErrors, Is.False, report.Text);
+            Assert.That(report.Text, Does.Contain("Warning: Fail path file was not found"));
+            Assert.That(report.Text, Does.Contain("Expected fail path recommended but not found."));
+        }
+
+        [Test]
+        public void Build_FailingFailPath_SurfacesFailureAndReportError()
+        {
+            string failPath = WriteText("L03.bad.fail.json", ValidFailPathJson().Replace("LossDockOverflow", "LossWaterOnTarget"));
+
+            LevelDesignReport report = LevelDesignReportBuilder.Build(
+                Path.Combine(_repoRoot, "Assets", "StreamingAssets", "Levels", "L03.json"),
+                Path.Combine(_repoRoot, "docs", "level-briefs", "L03.brief.json"),
+                Path.Combine(_repoRoot, "Assets", "Resources", "Levels", "L03.solve.json"),
+                Path.Combine(_repoRoot, "Assets", "Resources", "Levels", "L03.golden.json"),
+                failPath,
+                _repoRoot);
+
+            Assert.That(report.HasErrors, Is.True);
+            Assert.That(report.Text, Does.Contain("Fail Path Status:"));
+            Assert.That(report.Text, Does.Contain("expected LossWaterOnTarget, got LossDockOverflow -> FAIL"));
+            Assert.That(report.Text, Does.Contain("Expected fail path is failing verification."));
+        }
+
+        [Test]
+        public void Build_PassingFailPath_SurfacesPass()
+        {
+            string failPath = WriteText("L03.pass.fail.json", ValidFailPathJson());
+
+            LevelDesignReport report = LevelDesignReportBuilder.Build(
+                Path.Combine(_repoRoot, "Assets", "StreamingAssets", "Levels", "L03.json"),
+                Path.Combine(_repoRoot, "docs", "level-briefs", "L03.brief.json"),
+                Path.Combine(_repoRoot, "Assets", "Resources", "Levels", "L03.solve.json"),
+                Path.Combine(_repoRoot, "Assets", "Resources", "Levels", "L03.golden.json"),
+                failPath,
+                _repoRoot);
+
+            Assert.That(report.Text, Does.Contain("Fail Path Status:"));
+            Assert.That(report.Text, Does.Contain("expected LossDockOverflow, got LossDockOverflow -> PASS"));
+            Assert.That(report.Text, Does.Not.Contain("Expected fail path recommended but not found."));
         }
 
         [Test]
@@ -131,6 +186,13 @@ namespace Rescue.Content.Tests
         {
             string path = Path.Combine(_tempDir, id + ".brief.json");
             File.WriteAllText(path, BriefJson(id, title, forbiddenMechanics, densityTarget));
+            return path;
+        }
+
+        private string WriteText(string fileName, string text)
+        {
+            string path = Path.Combine(_tempDir, fileName);
+            File.WriteAllText(path, text);
             return path;
         }
 
@@ -184,6 +246,31 @@ namespace Rescue.Content.Tests
                     SpawnIntegrity = new SpawnIntegrityJson(),
                 },
             };
+        }
+
+        private static string ValidFailPathJson()
+        {
+            return @"{
+  ""levelId"": ""L03"",
+  ""seed"": 1,
+  ""pathType"": ""expected_fail"",
+  ""expectedOutcome"": ""LossDockOverflow"",
+  ""expectedLossReason"": ""LossDockOverflow"",
+  ""maxActions"": 5,
+  ""actions"": [
+    { ""row"": 0, ""col"": 4, ""intent"": ""Chase the visually easier upper target side first instead of the water-near rescue."" },
+    { ""row"": 5, ""col"": 4, ""intent"": ""Keep clearing away from the urgent lower puppy."" },
+    { ""row"": 4, ""col"": 3, ""intent"": ""Add dock residue while still avoiding the lower route."" },
+    { ""row"": 4, ""col"": 5, ""intent"": ""Push the dock into acute pressure."" },
+    { ""row"": 6, ""col"": 4, ""intent"": ""Overflow the dock before rescuing the urgent lower puppy."" }
+  ],
+  ""expectedEventsInOrder"": [
+    ""TargetOneClearAway"",
+    ""DockOverflowTriggered"",
+    ""Lost""
+  ],
+  ""notes"": ""Verified current L03 wrong-priority dock failure path.""
+}";
         }
 
         private static string FindRepoRoot()

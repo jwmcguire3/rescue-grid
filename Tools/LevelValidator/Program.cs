@@ -1,12 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using Rescue.Core.State;
 using Rescue.Content;
 
+#if !LEVEL_VALIDATOR_TESTS
 internal static class Program
 {
-    public static int Main(string[] args)
+    private static int Main(string[] args)
+    {
+        return LevelValidatorRunner.Run(args);
+    }
+}
+#endif
+
+internal static class LevelValidatorRunner
+{
+    public static int Run(string[] args)
     {
         if (args.Length < 2)
         {
@@ -25,6 +36,7 @@ internal static class Program
                 "validate-brief" => args.Length >= 3 ? ValidateBriefSingle(args[1], args[2]) : MissingCommandArguments("validate-brief"),
                 "validate-brief-all" => args.Length >= 3 ? ValidateBriefAll(args[1], args[2]) : MissingCommandArguments("validate-brief-all"),
                 "preview" => Preview(args[1]),
+                "preview-svg" => args.Length >= 3 ? PreviewSvg(args[1], args[2]) : MissingCommandArguments("preview-svg"),
                 "readability" => args.Length >= 3 ? ReadabilitySingle(args[1], args[2]) : MissingCommandArguments("readability"),
                 "readability-all" => args.Length >= 3 ? ReadabilityAll(args[1], args[2]) : MissingCommandArguments("readability-all"),
                 "design-report" => args.Length >= 3 ? DesignReportSingle(args[1], args[2]) : MissingCommandArguments("design-report"),
@@ -229,6 +241,29 @@ internal static class Program
 
         Console.Write(AsciiPreview.Render(level));
         return result.HasErrors ? 1 : 0;
+    }
+
+    private static int PreviewSvg(string levelPath, string outputPath)
+    {
+        string json = File.ReadAllText(levelPath);
+        ValidationResult result = Validator.Validate(json);
+        WriteResult(levelPath, result);
+        if (result.HasErrors)
+        {
+            return 1;
+        }
+
+        LevelJson level = ContentJson.DeserializeLevel(json);
+        string svg = LevelSvgPreview.Render(level);
+        string? outputDir = Path.GetDirectoryName(outputPath);
+        if (!string.IsNullOrEmpty(outputDir))
+        {
+            Directory.CreateDirectory(outputDir);
+        }
+
+        File.WriteAllText(outputPath, svg, Encoding.UTF8);
+        Console.WriteLine($"SVG preview written: {outputPath}");
+        return 0;
     }
 
     private static int ReadabilitySingle(string levelPath, string briefPath)
@@ -490,6 +525,7 @@ internal static class Program
         Console.WriteLine("  validate-brief <level-json-path> <brief-json-path>");
         Console.WriteLine("  validate-brief-all <levels-dir> <briefs-dir>");
         Console.WriteLine("  preview <path>");
+        Console.WriteLine("  preview-svg <level-json-path> <output-svg-path>");
         Console.WriteLine("  readability <level-json-path> <brief-json-path>");
         Console.WriteLine("  readability-all <levels-dir> <briefs-dir>");
         Console.WriteLine("  design-report <level-json-path> <brief-json-path>");

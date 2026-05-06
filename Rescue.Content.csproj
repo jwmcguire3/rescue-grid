@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Rescue.Content\SolveArtifactVerifier.cs" />
+    <Compile Include="Assets\Rescue.Content\LevelSvgPreview.cs" />
     <Compile Include="Assets\Rescue.Content\Validator.cs" />
     <Compile Include="Assets\Rescue.Content\Compatibility\IsExternalInit.cs" />
     <Compile Include="Assets\Rescue.Content\Schema.cs" />
@@ -65,6 +66,7 @@
     <Compile Include="Assets\Rescue.Content\ContentTileParser.cs" />
     <Compile Include="Assets\Rescue.Content\Phase1PolicyValidator.cs" />
     <Compile Include="Assets\Rescue.Content\ReadabilityPolicyValidator.cs" />
+    <Compile Include="Assets\Rescue.Content\LevelAssistanceComparisonAnalyzer.cs" />
     <Compile Include="Assets\Rescue.Content\LevelReadabilityAnalyzer.cs" />
     <Compile Include="Assets\Rescue.Content\LevelPacketManifestLoader.cs" />
   </ItemGroup>

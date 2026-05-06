@@ -67,6 +67,26 @@ namespace Rescue.SolveAuthoringTool
                     return VerifyGoldenScript(args);
                 }
 
+                if (args.Length >= 1 && string.Equals(args[0], "--verify-failpaths", StringComparison.Ordinal))
+                {
+                    return VerifyFailPathsScript(args);
+                }
+
+                if (args.Length >= 1 && string.Equals(args[0], "--verify-acceptance", StringComparison.Ordinal))
+                {
+                    return AcceptanceVerifier.Run(args);
+                }
+
+                if (args.Length >= 1 && string.Equals(args[0], "--compare-assistance", StringComparison.Ordinal))
+                {
+                    return CompareAssistanceScript(args);
+                }
+
+                if (args.Length >= 1 && string.Equals(args[0], "--compare-assistance-all", StringComparison.Ordinal))
+                {
+                    return CompareAssistanceAllScript(args);
+                }
+
                 IReadOnlyList<string> levelIds = ParseLevelIds(args);
                 Directory.CreateDirectory(OutputDirectory);
 
@@ -167,6 +187,127 @@ namespace Rescue.SolveAuthoringTool
             }
 
             return failed ? 1 : 0;
+        }
+
+        private static int VerifyFailPathsScript(string[] args)
+        {
+            string[] failPaths = args.Length >= 2
+                ? args.Skip(1).ToArray()
+                : Directory.GetFiles(OutputDirectory, "*.fail.json", SearchOption.TopDirectoryOnly)
+                    .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+
+            bool failed = false;
+            for (int i = 0; i < failPaths.Length; i++)
+            {
+                string path = failPaths[i];
+                try
+                {
+                    SolveArtifactVerificationResult result = SolveArtifactVerifier.VerifyFailPath(path);
+                    Console.WriteLine($"{Path.GetFileName(path)}: expected {result.ExpectedOutcome}, got {result.ActualOutcome} -> {(result.Passed ? "PASS" : "FAIL")}{FormatFailure(result.Failure)}");
+                    failed |= !result.Passed;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"{Path.GetFileName(path)}: expected <unknown>, got NotRun -> FAIL ({ex.Message})");
+                    failed = true;
+                }
+            }
+
+            return failed ? 1 : 0;
+        }
+
+        private static int CompareAssistanceScript(string[] args)
+        {
+            if (args.Length < 2)
+            {
+                Console.Error.WriteLine("Usage: --compare-assistance <levelId> [seed] [maxDepth]");
+                return 2;
+            }
+
+            LevelJson level = LoadLevel(args[1]);
+            AssistanceComparisonOptions options = ParseAssistanceComparisonOptions(args, seedIndex: 2, depthIndex: 3);
+            AssistanceComparisonResult result = LevelAssistanceComparisonAnalyzer.Compare(level, options);
+            PrintAssistanceComparison(result);
+            return 0;
+        }
+
+        private static int CompareAssistanceAllScript(string[] args)
+        {
+            if (args.Length > 1)
+            {
+                Console.Error.WriteLine("Usage: --compare-assistance-all");
+                return 2;
+            }
+
+            string[] levelPaths = Directory.GetFiles(LevelsDirectory, "*.json", SearchOption.TopDirectoryOnly)
+                .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            for (int i = 0; i < levelPaths.Length; i++)
+            {
+                LevelJson level = ContentJson.DeserializeLevel(File.ReadAllText(levelPaths[i]));
+                AssistanceComparisonResult result = LevelAssistanceComparisonAnalyzer.Compare(level, AssistanceComparisonOptions.Default);
+                if (i > 0)
+                {
+                    Console.WriteLine();
+                }
+
+                PrintAssistanceComparison(result);
+            }
+
+            return 0;
+        }
+
+        private static AssistanceComparisonOptions ParseAssistanceComparisonOptions(
+            string[] args,
+            int seedIndex,
+            int depthIndex)
+        {
+            int? seed = args.Length > seedIndex ? int.Parse(args[seedIndex]) : null;
+            int maxDepth = args.Length > depthIndex
+                ? int.Parse(args[depthIndex])
+                : LevelAssistanceComparisonAnalyzer.DefaultMaxDepth;
+            return new AssistanceComparisonOptions(
+                seed,
+                maxDepth,
+                LevelAssistanceComparisonAnalyzer.DefaultFirstSeed,
+                LevelAssistanceComparisonAnalyzer.DefaultLastSeed);
+        }
+
+        private static void PrintAssistanceComparison(AssistanceComparisonResult result)
+        {
+            Console.WriteLine($"Assistance comparison: {result.LevelId}");
+            for (int i = 0; i < result.Modes.Length; i++)
+            {
+                AssistanceModeResult mode = result.Modes[i];
+                Console.WriteLine(
+                    $"  {FormatAssistanceMode(mode.Mode)}: winFound={mode.WinFound} seed={mode.SeedUsed} actions={mode.ActionCount} outcome={mode.Outcome} trajectoryDiverges={FormatNullableBool(mode.TrajectoryDivergesFromAuthored)}");
+            }
+
+            Console.WriteLine($"  noAssistanceFailsAuthoredSucceeds={result.NoAssistanceFailsAuthoredSucceeds}");
+            Console.WriteLine($"  authoredEmergencyOnlyWin={result.AuthoredEmergencyOnlyWin}");
+            if (result.NoAssistanceFailsAuthoredSucceeds)
+            {
+                Console.WriteLine("  Warning: " + LevelAssistanceComparisonAnalyzer.DependencyWarning);
+            }
+        }
+
+        private static string FormatAssistanceMode(AssistanceComparisonMode mode)
+        {
+            return mode switch
+            {
+                AssistanceComparisonMode.Authored => "authored",
+                AssistanceComparisonMode.NoAssistance => "no-assistance",
+                AssistanceComparisonMode.MaximumEmergency => "maximum-emergency",
+                AssistanceComparisonMode.AuthoredNoEmergency => "authored-no-emergency",
+                _ => mode.ToString(),
+            };
+        }
+
+        private static string FormatNullableBool(bool? value)
+        {
+            return value.HasValue ? value.Value.ToString() : "n/a";
         }
 
         private static string FormatFailure(string? failure)
