@@ -579,6 +579,100 @@ namespace Rescue.Unity.UI.Tests
         }
 
         [Test]
+        public void DockViewPresenter_PlayClearFeedbackClearsOnlyFirstThreeForFourOfAKind()
+        {
+            GameObject presenterObject = CreateTrackedObject("DockPresenter");
+            DockViewPresenter presenter = presenterObject.AddComponent<DockViewPresenter>();
+            Transform pieceContainer = new GameObject("DockPieces").transform;
+            pieceContainer.SetParent(presenterObject.transform, false);
+            Track(pieceContainer.gameObject);
+
+            for (int i = 0; i < 7; i++)
+            {
+                CreateTrackedAnchor(presenterObject.transform, i);
+            }
+
+            GameObject fallbackPrefab = CreateTrackedObject("FallbackPiecePrefab");
+            SetPrivateField(presenter, "pieceContainer", pieceContainer);
+            SetPrivateField(presenter, "fallbackPiecePrefab", fallbackPrefab);
+
+            presenter.Rebuild(CreateState(DebrisType.A, DebrisType.A, DebrisType.A, DebrisType.A, DebrisType.B, null, null));
+
+            GameObject? fourthA = presenter.GetTrackedSlotObject(3);
+            GameObject? trailingB = presenter.GetTrackedSlotObject(4);
+
+            presenter.PlayClearFeedback(new DockCleared(DebrisType.A, SetsCleared: 1, OccupancyAfterClear: 2));
+
+            Assert.That(presenter.GetTrackedSlotType(0), Is.EqualTo(DebrisType.A));
+            Assert.That(presenter.GetTrackedSlotType(1), Is.EqualTo(DebrisType.B));
+            Assert.That(presenter.GetTrackedSlotType(2), Is.Null);
+            Assert.That(presenter.GetTrackedSlotObject(0), Is.SameAs(fourthA));
+            Assert.That(presenter.GetTrackedSlotObject(1), Is.SameAs(trailingB));
+            Assert.That(pieceContainer.childCount, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void DockViewPresenter_PlayClearFeedbackWithTwoSetsClearsTwoTriples()
+        {
+            GameObject presenterObject = CreateTrackedObject("DockPresenter");
+            DockViewPresenter presenter = presenterObject.AddComponent<DockViewPresenter>();
+            Transform pieceContainer = new GameObject("DockPieces").transform;
+            pieceContainer.SetParent(presenterObject.transform, false);
+            Track(pieceContainer.gameObject);
+
+            for (int i = 0; i < 7; i++)
+            {
+                CreateTrackedAnchor(presenterObject.transform, i);
+            }
+
+            GameObject fallbackPrefab = CreateTrackedObject("FallbackPiecePrefab");
+            SetPrivateField(presenter, "pieceContainer", pieceContainer);
+            SetPrivateField(presenter, "fallbackPiecePrefab", fallbackPrefab);
+
+            presenter.Rebuild(CreateState(DebrisType.A, DebrisType.A, DebrisType.A, DebrisType.A, DebrisType.A, DebrisType.A, DebrisType.B));
+
+            GameObject? trailingB = presenter.GetTrackedSlotObject(6);
+
+            presenter.PlayClearFeedback(new DockCleared(DebrisType.A, SetsCleared: 2, OccupancyAfterClear: 1));
+
+            Assert.That(presenter.GetTrackedSlotType(0), Is.EqualTo(DebrisType.B));
+            Assert.That(presenter.GetTrackedSlotObject(0), Is.SameAs(trailingB));
+            Assert.That(presenter.GetTrackedSlotType(1), Is.Null);
+            Assert.That(pieceContainer.childCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void DockViewPresenter_PlayClearFeedbackHandlesSequentialClearBeats()
+        {
+            GameObject presenterObject = CreateTrackedObject("DockPresenter");
+            DockViewPresenter presenter = presenterObject.AddComponent<DockViewPresenter>();
+            Transform pieceContainer = new GameObject("DockPieces").transform;
+            pieceContainer.SetParent(presenterObject.transform, false);
+            Track(pieceContainer.gameObject);
+
+            for (int i = 0; i < 7; i++)
+            {
+                CreateTrackedAnchor(presenterObject.transform, i);
+            }
+
+            GameObject fallbackPrefab = CreateTrackedObject("FallbackPiecePrefab");
+            SetPrivateField(presenter, "pieceContainer", pieceContainer);
+            SetPrivateField(presenter, "fallbackPiecePrefab", fallbackPrefab);
+
+            presenter.Rebuild(CreateState(DebrisType.A, DebrisType.A, DebrisType.A, DebrisType.B, DebrisType.B, DebrisType.B, DebrisType.C));
+
+            GameObject? trailingC = presenter.GetTrackedSlotObject(6);
+
+            presenter.PlayClearFeedback(new DockCleared(DebrisType.A, SetsCleared: 1, OccupancyAfterClear: 4));
+            presenter.PlayClearFeedback(new DockCleared(DebrisType.B, SetsCleared: 1, OccupancyAfterClear: 1));
+
+            Assert.That(presenter.GetTrackedSlotType(0), Is.EqualTo(DebrisType.C));
+            Assert.That(presenter.GetTrackedSlotObject(0), Is.SameAs(trailingC));
+            Assert.That(presenter.GetTrackedSlotType(1), Is.Null);
+            Assert.That(pieceContainer.childCount, Is.EqualTo(1));
+        }
+
+        [Test]
         public void DockViewPresenter_WarningAndJamFeedbackDoNotCorruptTrackedSlots()
         {
             GameObject presenterObject = CreateTrackedObject("DockPresenter");

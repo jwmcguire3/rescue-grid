@@ -189,6 +189,15 @@ namespace Rescue.Unity.FX
                     case DockWarningChanged warningChanged when warningChanged.After != DockWarningLevel.Safe:
                         PlayDockWarning();
                         break;
+                    case DockCleared cleared:
+                        int clearFxCount = Mathf.Max(1, cleared.SetsCleared);
+                        Vector3 clearWorldPosition = ResolveDockClearWorldPosition(cleared);
+                        for (int clearIndex = 0; clearIndex < clearFxCount; clearIndex++)
+                        {
+                            PlayDockTripleClear(clearWorldPosition);
+                        }
+
+                        break;
                     case DockOverflowTriggered:
                         PlayLossDockOverflow();
                         break;
@@ -643,6 +652,11 @@ namespace Rescue.Unity.FX
             DockViewPresenter? resolvedDockView = ResolveDockView();
             if (resolvedDockView is not null)
             {
+                if (resolvedDockView.TryGetLastDockClearConvergenceWorldPosition(out Vector3 convergencePosition))
+                {
+                    return convergencePosition;
+                }
+
                 int piecesToClear = Mathf.Max(0, cleared.SetsCleared * 3);
                 Vector3 accumulated = Vector3.zero;
                 int resolvedCount = 0;

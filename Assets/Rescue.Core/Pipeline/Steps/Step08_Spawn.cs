@@ -9,7 +9,7 @@ namespace Rescue.Core.Pipeline.Steps
     {
         public static StepResult Run(GameState state, StepContext context)
         {
-            ImmutableArray<TileCoord> spawnCoords = FindSpawnCoords(state.Board, state.Water);
+            ImmutableArray<TileCoord> spawnCoords = FindSpawnCoords(state.Board, state.Water, state.Vine);
             if (spawnCoords.IsDefaultOrEmpty)
             {
                 return new StepResult(state, context, ImmutableArray<ActionEvent>.Empty);
@@ -75,7 +75,7 @@ namespace Rescue.Core.Pipeline.Steps
             return new StepResult(updatedState, context, events.ToImmutable());
         }
 
-        private static ImmutableArray<TileCoord> FindSpawnCoords(Board board, WaterState water)
+        private static ImmutableArray<TileCoord> FindSpawnCoords(Board board, WaterState water, VineState vine)
         {
             int dryHeight = board.Height - water.FloodedRows;
             ImmutableArray<TileCoord>.Builder coords = ImmutableArray.CreateBuilder<TileCoord>();
@@ -85,7 +85,8 @@ namespace Rescue.Core.Pipeline.Steps
                 for (int row = 0; row < dryHeight; row++)
                 {
                     TileCoord coord = new TileCoord(row, col);
-                    if (BoardHelpers.GetTile(board, coord) is EmptyTile)
+                    if (BoardHelpers.GetTile(board, coord) is EmptyTile
+                        && !VineGrowthTiles.IsReservedFutureGrowthTile(board, vine, coord))
                     {
                         coords.Add(coord);
                     }

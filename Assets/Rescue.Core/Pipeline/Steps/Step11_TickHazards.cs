@@ -71,7 +71,7 @@ namespace Rescue.Core.Pipeline.Steps
 
                 if (actionsSinceLastClear == updatedState.Vine.GrowthThreshold - 1)
                 {
-                    pendingGrowthTile = FindFirstValidGrowthTile(updatedState.Board, updatedState.Vine);
+                    pendingGrowthTile = FindFirstValidGrowthTile(updatedState.Board, updatedState.Vine, updatedState.Targets);
                     if (pendingGrowthTile is not null)
                     {
                         previewPending = true;
@@ -104,25 +104,19 @@ namespace Rescue.Core.Pipeline.Steps
             return new StepResult(updatedState, updatedContext, events.ToImmutable());
         }
 
-        private static TileCoord? FindFirstValidGrowthTile(Board board, VineState vine)
+        private static TileCoord? FindFirstValidGrowthTile(Board board, VineState vine, ImmutableArray<TargetState> targets)
         {
             int startIndex = vine.PriorityCursor < 0 ? 0 : vine.PriorityCursor;
             for (int i = startIndex; i < vine.GrowthPriorityList.Length; i++)
             {
                 TileCoord coord = vine.GrowthPriorityList[i];
-                if (IsValidGrowthTile(board, coord))
+                if (VineGrowthTiles.IsValidGrowthTile(board, vine, targets, coord))
                 {
                     return coord;
                 }
             }
 
             return null;
-        }
-
-        private static bool IsValidGrowthTile(Board board, TileCoord coord)
-        {
-            return BoardHelpers.InBounds(board, coord)
-                && BoardHelpers.GetTile(board, coord) is EmptyTile;
         }
     }
 }

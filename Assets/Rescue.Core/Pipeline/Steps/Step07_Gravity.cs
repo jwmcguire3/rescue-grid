@@ -12,20 +12,21 @@ namespace Rescue.Core.Pipeline.Steps
             ImmutableArray<ActionEvent>.Builder events = ImmutableArray.CreateBuilder<ActionEvent>();
             int dryHeight = state.Board.Height - state.Water.FloodedRows;
 
-            (updatedBoard, lineageByCoord) = CollapseVertically(updatedBoard, lineageByCoord, dryHeight, events);
+            (updatedBoard, lineageByCoord) = CollapseVertically(updatedBoard, state.Vine, lineageByCoord, dryHeight, events);
 
             bool movedDiagonally;
             do
             {
                 (updatedBoard, lineageByCoord, movedDiagonally) = SettleDiagonally(
                     updatedBoard,
+                    state.Vine,
                     lineageByCoord,
                     dryHeight,
                     events);
 
                 if (movedDiagonally)
                 {
-                    (updatedBoard, lineageByCoord) = CollapseVertically(updatedBoard, lineageByCoord, dryHeight, events);
+                    (updatedBoard, lineageByCoord) = CollapseVertically(updatedBoard, state.Vine, lineageByCoord, dryHeight, events);
                 }
             }
             while (movedDiagonally);
@@ -42,6 +43,7 @@ namespace Rescue.Core.Pipeline.Steps
 
         private static (Board Board, ImmutableDictionary<TileCoord, SpawnLineage> LineageByCoord) CollapseVertically(
             Board board,
+            VineState vine,
             ImmutableDictionary<TileCoord, SpawnLineage> lineageByCoord,
             int dryHeight,
             ImmutableArray<ActionEvent>.Builder events)
@@ -69,6 +71,7 @@ namespace Rescue.Core.Pipeline.Steps
                     int segmentStart = row + 1;
                     (updatedBoard, updatedLineage) = CollapseSegment(
                         updatedBoard,
+                        vine,
                         updatedLineage,
                         col,
                         segmentStart,
@@ -84,10 +87,11 @@ namespace Rescue.Core.Pipeline.Steps
             Board Board,
             ImmutableDictionary<TileCoord, SpawnLineage> LineageByCoord,
             bool Moved) SettleDiagonally(
-                Board board,
-                ImmutableDictionary<TileCoord, SpawnLineage> lineageByCoord,
-                int dryHeight,
-                ImmutableArray<ActionEvent>.Builder events)
+            Board board,
+            VineState vine,
+            ImmutableDictionary<TileCoord, SpawnLineage> lineageByCoord,
+            int dryHeight,
+            ImmutableArray<ActionEvent>.Builder events)
         {
             Board updatedBoard = board;
             ImmutableDictionary<TileCoord, SpawnLineage> updatedLineage = lineageByCoord;
@@ -98,7 +102,7 @@ namespace Rescue.Core.Pipeline.Steps
                 for (int col = 0; col < updatedBoard.Width; col++)
                 {
                     TileCoord destination = new TileCoord(row, col);
-                    if (!CanAcceptDiagonalSettling(updatedBoard, destination, dryHeight))
+                    if (!CanAcceptDiagonalSettling(updatedBoard, vine, destination, dryHeight))
                     {
                         continue;
                     }
@@ -145,6 +149,7 @@ namespace Rescue.Core.Pipeline.Steps
 
         private static (Board Board, ImmutableDictionary<TileCoord, SpawnLineage> LineageByCoord) CollapseSegment(
             Board board,
+            VineState vine,
             ImmutableDictionary<TileCoord, SpawnLineage> lineageByCoord,
             int col,
             int segmentStart,
@@ -153,7 +158,7 @@ namespace Rescue.Core.Pipeline.Steps
         {
             Board updatedBoard = board;
             ImmutableDictionary<TileCoord, SpawnLineage> updatedLineage = lineageByCoord;
-            int targetRow = FindNextFillableRow(updatedBoard, col, segmentEnd, segmentStart);
+            int targetRow = FindNextFillableRow(updatedBoard, vine, col, segmentEnd, segmentStart);
 
             for (int row = segmentEnd; row >= segmentStart; row--)
             {
@@ -176,7 +181,7 @@ namespace Rescue.Core.Pipeline.Steps
                     events.Add(new GravitySettled(ImmutableArray.Create((sourceCoord, targetCoord))));
                 }
 
-                targetRow = FindNextFillableRow(updatedBoard, col, targetRow - 1, segmentStart);
+                targetRow = FindNextFillableRow(updatedBoard, vine, col, targetRow - 1, segmentStart);
             }
 
             for (int row = targetRow; row >= segmentStart; row--)
@@ -197,12 +202,13 @@ namespace Rescue.Core.Pipeline.Steps
             return (updatedBoard, updatedLineage);
         }
 
-        private static int FindNextFillableRow(Board board, int col, int startRow, int segmentStart)
+        private static int FindNextFillableRow(Board board, VineState vine, int col, int startRow, int segmentStart)
         {
             for (int row = startRow; row >= segmentStart; row--)
             {
-                Tile tile = BoardHelpers.GetTile(board, new TileCoord(row, col));
-                if (tile is not RescuePathTile)
+                TileCoord coord = new TileCoord(row, col);
+                Tile tile = BoardHelpers.GetTile(board, coord);
+                if (tile is not RescuePathTile && !VineGrowthTiles.IsReservedFutureGrowthTile(board, vine, coord))
                 {
                     return row;
                 }
@@ -211,11 +217,12 @@ namespace Rescue.Core.Pipeline.Steps
             return segmentStart - 1;
         }
 
-        private static bool CanAcceptDiagonalSettling(Board board, TileCoord destination, int dryHeight)
+        private static bool CanAcceptDiagonalSettling(Board board, VineState vine, TileCoord destination, int dryHeight)
         {
             return destination.Row >= 0
                 && destination.Row < dryHeight
                 && BoardHelpers.InBounds(board, destination)
+                && !VineGrowthTiles.IsReservedFutureGrowthTile(board, vine, destination)
                 && BoardHelpers.GetTile(board, destination) is EmptyTile;
         }
 

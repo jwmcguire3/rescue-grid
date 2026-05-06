@@ -227,7 +227,7 @@ namespace Rescue.Unity.FX.Tests
             Assert.That(router.IceRevealCount, Is.EqualTo(1));
             Assert.That(router.VineClearCount, Is.EqualTo(1));
             Assert.That(router.DockInsertCount, Is.EqualTo(0));
-            Assert.That(router.DockTripleClearCount, Is.EqualTo(0));
+            Assert.That(router.DockTripleClearCount, Is.EqualTo(1));
             Assert.That(router.DockWarningCount, Is.EqualTo(2));
             Assert.That(router.NearRescueReliefCount, Is.EqualTo(1));
             Assert.That(router.TargetExtractionCount, Is.EqualTo(1));
@@ -311,8 +311,53 @@ namespace Rescue.Unity.FX.Tests
             AssertVector3Equal(expectedGroupPosition, router.LastGroupClearPosition);
             AssertVector3Equal(expectedTargetPosition, router.LastTargetExtractionPosition);
             Assert.That(router.DockInsertCount, Is.EqualTo(0));
-            Assert.That(router.DockTripleClearCount, Is.EqualTo(0));
+            Assert.That(router.DockTripleClearCount, Is.EqualTo(1));
             AssertVector3Equal(rowBounds.Center, router.LastWaterRisePosition);
+        }
+
+        [Test]
+        public void FxEventRouter_PlaybackBeatRoutesEachDockClearedToDockTripleClear()
+        {
+            GameState state = CreateState();
+            DockViewPresenter dock = CreateDockView(CreateDockState(DebrisType.A, DebrisType.A, DebrisType.A, DebrisType.B, DebrisType.B, DebrisType.B, null));
+            SpyFxEventRouter router = CreateRouter(dock: dock);
+
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.DockFeedback, new DockCleared(
+                    DebrisType.A,
+                    SetsCleared: 1,
+                    OccupancyAfterClear: 3)));
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.DockFeedback, new DockCleared(
+                    DebrisType.B,
+                    SetsCleared: 1,
+                    OccupancyAfterClear: 0)));
+
+            Assert.That(router.DockTripleClearCount, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void FxEventRouter_DockClearedWithTwoSetsRoutesTwoDockTripleClearFx()
+        {
+            GameState state = CreateState();
+            SpyFxEventRouter router = CreateRouter();
+
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.DockFeedback, new DockCleared(
+                    DebrisType.A,
+                    SetsCleared: 2,
+                    OccupancyAfterClear: 1)));
+
+            Assert.That(router.DockTripleClearCount, Is.EqualTo(2));
         }
 
         [Test]

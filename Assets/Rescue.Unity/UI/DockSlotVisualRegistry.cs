@@ -117,6 +117,50 @@ namespace Rescue.Unity.UI
             return removedObjects;
         }
 
+        public List<int> FindFirstMatchingSlotIndices(DebrisType debrisType, int count)
+        {
+            int remaining = Mathf.Max(0, count);
+            List<int> matchingSlots = new List<int>(remaining);
+
+            for (int slotIndex = 0; slotIndex < _slotTypes.Length && remaining > 0; slotIndex++)
+            {
+                if (_slotTypes[slotIndex] != debrisType)
+                {
+                    continue;
+                }
+
+                matchingSlots.Add(slotIndex);
+                remaining--;
+            }
+
+            return matchingSlots;
+        }
+
+        public List<GameObject> DetachSlots(List<int> slotIndices)
+        {
+            List<GameObject> detachedObjects = new List<GameObject>(slotIndices.Count);
+
+            for (int i = 0; i < slotIndices.Count; i++)
+            {
+                int slotIndex = slotIndices[i];
+                if (!IsInRange(slotIndex))
+                {
+                    continue;
+                }
+
+                GameObject? detachedObject = _slotObjects[slotIndex];
+                if (detachedObject is not null)
+                {
+                    detachedObjects.Add(detachedObject);
+                }
+
+                _slotTypes[slotIndex] = null;
+                _slotObjects[slotIndex] = null;
+            }
+
+            return detachedObjects;
+        }
+
         public void Compact(
             Transform[] anchors,
             Action<int, Transform> updateTransform,

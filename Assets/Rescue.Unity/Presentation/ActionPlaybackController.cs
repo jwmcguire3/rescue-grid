@@ -379,8 +379,8 @@ namespace Rescue.Unity.Presentation
                         return step.StepType == ActionPlaybackStepType.DockInsertionTravel
                             ? settings.DockInsertionTravelDurationSeconds
                             : settings.DockInsertFeedbackDurationSeconds;
-                    case DockCleared:
-                        return settings.DockClearFeedbackDurationSeconds;
+                    case DockCleared cleared:
+                        return settings.DockClearFeedbackDurationSeconds * Mathf.Max(1, cleared.SetsCleared);
                     case DockWarningChanged warningChanged:
                         return warningChanged.After switch
                         {

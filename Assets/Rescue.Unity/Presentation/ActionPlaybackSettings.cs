@@ -12,7 +12,7 @@ namespace Rescue.Unity.Presentation
         public const float DefaultDockFeedbackDurationSeconds = 0.10f;
         public const float DefaultDockInsertionTravelDurationSeconds = 0.12f;
         public const float DefaultDockInsertFeedbackDurationSeconds = 0.08f;
-        public const float DefaultDockClearFeedbackDurationSeconds = 0.08f;
+        public const float DefaultDockClearFeedbackDurationSeconds = 0.18f;
         public const float DefaultDockWarningCautionDurationSeconds = 0.50f;
         public const float DefaultDockWarningAcuteDurationSeconds = 0.40f;
         public const float DefaultDockJamFeedbackDurationSeconds = 0.70f;

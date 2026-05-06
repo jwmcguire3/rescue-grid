@@ -472,6 +472,10 @@ namespace Rescue.Unity.UI
         private const string DefaultPieceContainerName = "DockPieces";
         private const string SharedDockInstanceName = "SharedDockVisualInstance";
         private const string OverflowAnchorPrefix = "OverflowSlot_";
+        private const int DockTripleSize = 3;
+        private const float DockClearLiftFraction = 0.28f;
+        private const float DockClearConvergeFraction = 0.39f;
+        private const float DockClearCompactionDurationSeconds = 0.12f;
 
         [Header("Shared Dock")]
         [SerializeField] private DockVisualConfig? dockVisualConfig;
@@ -494,6 +498,8 @@ namespace Rescue.Unity.UI
         private GameObject? _sharedDockInstance;
         private float dockInsertDurationSeconds = ActionPlaybackSettings.DefaultDockInsertFeedbackDurationSeconds;
         private float dockClearDurationSeconds = ActionPlaybackSettings.DefaultDockClearFeedbackDurationSeconds;
+        private bool hasLastDockClearConvergenceWorldPosition;
+        private Vector3 lastDockClearConvergenceWorldPosition;
 
         public void Rebuild(GameState state)
         {
@@ -757,6 +763,12 @@ namespace Rescue.Unity.UI
             return DockAnchorResolver.TryGetCenterWorldPosition(anchors, out position);
         }
 
+        public bool TryGetLastDockClearConvergenceWorldPosition(out Vector3 position)
+        {
+            position = lastDockClearConvergenceWorldPosition;
+            return hasLastDockClearConvergenceWorldPosition;
+        }
+
         public string DescribeTrackedSlots()
         {
             return DockPiecePoseHelper.DescribeTrackedSlots(_trackedSlots);
@@ -1006,10 +1018,31 @@ namespace Rescue.Unity.UI
             }
 
             int piecesToClear = Mathf.Max(0, dockCleared.SetsCleared * 3);
-            List<GameObject> clearedObjects = _trackedSlots.RemoveFirstMatching(dockCleared.Type, piecesToClear);
+            List<int> selectedSlots = _trackedSlots.FindFirstMatchingSlotIndices(dockCleared.Type, piecesToClear);
+            int completeTripleSlotCount = selectedSlots.Count - (selectedSlots.Count % DockTripleSize);
+            if (completeTripleSlotCount < DockTripleSize)
+            {
+                hasLastDockClearConvergenceWorldPosition = false;
+                return;
+            }
 
-            CompactTrackedSlots(anchors);
-            AnimateClearedDockPieces(clearedObjects);
+            if (completeTripleSlotCount < selectedSlots.Count)
+            {
+                selectedSlots.RemoveRange(completeTripleSlotCount, selectedSlots.Count - completeTripleSlotCount);
+            }
+
+            lastDockClearConvergenceWorldPosition = ResolveDockClearConvergenceWorldPosition(selectedSlots);
+            hasLastDockClearConvergenceWorldPosition = true;
+
+            List<GameObject> clearedObjects = _trackedSlots.DetachSlots(selectedSlots);
+            if (!Application.isPlaying || !isActiveAndEnabled || dockClearDurationSeconds <= 0f)
+            {
+                DestroyClearedDockPieces(clearedObjects);
+                CompactTrackedSlots(anchors, animateMovedPieces: false);
+                return;
+            }
+
+            StartCoroutine(AnimateDockTripleClearSequence(clearedObjects, anchors, dockClearDurationSeconds));
         }
 
         private void RepairTrackedSlots(Dock dock, Transform[] anchors)
@@ -1037,7 +1070,20 @@ namespace Rescue.Unity.UI
 
         private void CompactTrackedSlots(Transform[] anchors)
         {
+            CompactTrackedSlots(anchors, animateMovedPieces: false);
+        }
+
+        private void CompactTrackedSlots(Transform[] anchors, bool animateMovedPieces)
+        {
+            Dictionary<GameObject, Vector3>? startPositions = animateMovedPieces
+                ? CaptureTrackedSlotPositions()
+                : null;
             _trackedSlots.Compact(anchors, UpdateTrackedSlotTransform, DestroyTrackedObject);
+
+            if (startPositions is not null)
+            {
+                AnimateCompactedTrackedSlots(startPositions);
+            }
         }
 
         private void AssignTrackedSlot(int slotIndex, DebrisType debrisType, Transform anchor)
@@ -1168,23 +1214,83 @@ namespace Rescue.Unity.UI
                 durationSeconds));
         }
 
-        private void AnimateClearedDockPieces(List<GameObject> clearedObjects)
+        private Vector3 ResolveDockClearConvergenceWorldPosition(List<int> selectedSlots)
+        {
+            int firstTripleCount = Mathf.Min(DockTripleSize, selectedSlots.Count);
+            int middleIndex = Mathf.Clamp(firstTripleCount / 2, 0, selectedSlots.Count - 1);
+            int middleSlot = selectedSlots[middleIndex];
+            GameObject? middleObject = _trackedSlots.GetSlotObject(middleSlot);
+            if (middleObject is not null)
+            {
+                return middleObject.transform.position;
+            }
+
+            if (TryGetSlotWorldPosition(middleSlot, out Vector3 slotPosition))
+            {
+                return slotPosition;
+            }
+
+            return TryGetDockCenterWorldPosition(out Vector3 dockCenter)
+                ? dockCenter
+                : transform.position;
+        }
+
+        private Dictionary<GameObject, Vector3> CaptureTrackedSlotPositions()
+        {
+            Dictionary<GameObject, Vector3> startPositions = new Dictionary<GameObject, Vector3>();
+            for (int slotIndex = 0; slotIndex < _trackedSlots.Capacity; slotIndex++)
+            {
+                GameObject? trackedObject = _trackedSlots.GetSlotObject(slotIndex);
+                if (trackedObject is not null && !startPositions.ContainsKey(trackedObject))
+                {
+                    startPositions.Add(trackedObject, trackedObject.transform.position);
+                }
+            }
+
+            return startPositions;
+        }
+
+        private void AnimateCompactedTrackedSlots(Dictionary<GameObject, Vector3> startPositions)
+        {
+            if (!Application.isPlaying || !isActiveAndEnabled || DockClearCompactionDurationSeconds <= 0f)
+            {
+                return;
+            }
+
+            foreach (KeyValuePair<GameObject, Vector3> entry in startPositions)
+            {
+                GameObject trackedObject = entry.Key;
+                if (trackedObject is null)
+                {
+                    continue;
+                }
+
+                Transform pieceTransform = trackedObject.transform;
+                Vector3 startPosition = entry.Value;
+                Vector3 finalPosition = pieceTransform.position;
+                if ((finalPosition - startPosition).sqrMagnitude <= 0.0001f)
+                {
+                    continue;
+                }
+
+                Quaternion finalRotation = pieceTransform.rotation;
+                Vector3 finalScale = pieceTransform.localScale;
+                pieceTransform.position = startPosition;
+                StartCoroutine(AnimateDockPieceSlideRoutine(
+                    trackedObject,
+                    startPosition,
+                    finalPosition,
+                    finalRotation,
+                    finalScale,
+                    DockClearCompactionDurationSeconds));
+            }
+        }
+
+        private void DestroyClearedDockPieces(List<GameObject> clearedObjects)
         {
             for (int i = 0; i < clearedObjects.Count; i++)
             {
-                GameObject clearedObject = clearedObjects[i];
-                if (clearedObject is null)
-                {
-                    continue;
-                }
-
-                if (!Application.isPlaying || !isActiveAndEnabled || dockClearDurationSeconds <= 0f)
-                {
-                    DestroyTrackedObject(clearedObject);
-                    continue;
-                }
-
-                StartCoroutine(AnimateDockPieceLiftClearRoutine(clearedObject, dockClearDurationSeconds));
+                DestroyTrackedObject(clearedObjects[i]);
             }
         }
 
@@ -1267,18 +1373,156 @@ namespace Rescue.Unity.UI
             }
         }
 
-        private System.Collections.IEnumerator AnimateDockPieceLiftClearRoutine(GameObject pieceObject, float durationSeconds)
+        private System.Collections.IEnumerator AnimateDockTripleClearSequence(
+            List<GameObject> clearedObjects,
+            Transform[] anchors,
+            float durationSeconds)
         {
-            if (pieceObject is null)
+            if (clearedObjects.Count == 0)
             {
                 yield break;
             }
 
-            Transform pieceTransform = pieceObject.transform;
-            Vector3 basePosition = pieceTransform.position;
-            Vector3 liftedPosition = DockPiecePoseHelper.ResolveLiftedPosition(basePosition, transform.up);
-            Vector3 baseScale = pieceTransform.localScale;
-            Vector3 raisedScale = DockPiecePoseHelper.ResolveRaisedScale(baseScale);
+            int tripleStart = 0;
+            while (tripleStart < clearedObjects.Count)
+            {
+                int tripleCount = Mathf.Min(DockTripleSize, clearedObjects.Count - tripleStart);
+                List<GameObject> tripleObjects = clearedObjects.GetRange(tripleStart, tripleCount);
+                yield return AnimateDockTripleClearRoutine(tripleObjects, durationSeconds);
+                tripleStart += DockTripleSize;
+            }
+
+            CompactTrackedSlots(anchors, animateMovedPieces: true);
+        }
+
+        private System.Collections.IEnumerator AnimateDockTripleClearRoutine(List<GameObject> tripleObjects, float durationSeconds)
+        {
+            if (tripleObjects.Count == 0)
+            {
+                yield break;
+            }
+
+            float safeDuration = Mathf.Max(0.01f, durationSeconds);
+            float liftDuration = Mathf.Max(0.01f, safeDuration * DockClearLiftFraction);
+            float convergeDuration = Mathf.Max(0.01f, safeDuration * DockClearConvergeFraction);
+            float disappearDuration = Mathf.Max(0.01f, safeDuration - liftDuration - convergeDuration);
+
+            int middleIndex = Mathf.Clamp(tripleObjects.Count / 2, 0, tripleObjects.Count - 1);
+            GameObject? middleObject = tripleObjects[middleIndex];
+            Vector3 convergencePosition = middleObject is not null
+                ? DockPiecePoseHelper.ResolveLiftedPosition(middleObject.transform.position, transform.up)
+                : transform.position;
+
+            Vector3[] basePositions = new Vector3[tripleObjects.Count];
+            Vector3[] liftedPositions = new Vector3[tripleObjects.Count];
+            Vector3[] baseScales = new Vector3[tripleObjects.Count];
+            Vector3[] raisedScales = new Vector3[tripleObjects.Count];
+            Quaternion[] rotations = new Quaternion[tripleObjects.Count];
+
+            for (int i = 0; i < tripleObjects.Count; i++)
+            {
+                GameObject pieceObject = tripleObjects[i];
+                if (pieceObject is null)
+                {
+                    continue;
+                }
+
+                Transform pieceTransform = pieceObject.transform;
+                basePositions[i] = pieceTransform.position;
+                liftedPositions[i] = DockPiecePoseHelper.ResolveLiftedPosition(basePositions[i], transform.up);
+                baseScales[i] = pieceTransform.localScale;
+                raisedScales[i] = DockPiecePoseHelper.ResolveRaisedScale(baseScales[i]);
+                rotations[i] = pieceTransform.rotation;
+                SetVisualAlpha(pieceObject, 1f);
+            }
+
+            float elapsed = 0f;
+
+            while (elapsed < liftDuration)
+            {
+                elapsed += Time.deltaTime;
+                float normalized = Mathf.Clamp01(elapsed / liftDuration);
+                float eased = 1f - Mathf.Pow(1f - normalized, 3f);
+                for (int i = 0; i < tripleObjects.Count; i++)
+                {
+                    GameObject pieceObject = tripleObjects[i];
+                    if (pieceObject is null)
+                    {
+                        continue;
+                    }
+
+                    Transform pieceTransform = pieceObject.transform;
+                    pieceTransform.SetPositionAndRotation(
+                        Vector3.LerpUnclamped(basePositions[i], liftedPositions[i], eased),
+                        rotations[i]);
+                    pieceTransform.localScale = Vector3.LerpUnclamped(baseScales[i], raisedScales[i], eased);
+                    SetVisualAlpha(pieceObject, 1f);
+                }
+
+                yield return null;
+            }
+
+            elapsed = 0f;
+            while (elapsed < convergeDuration)
+            {
+                elapsed += Time.deltaTime;
+                float normalized = Mathf.Clamp01(elapsed / convergeDuration);
+                float eased = Mathf.SmoothStep(0f, 1f, normalized);
+                for (int i = 0; i < tripleObjects.Count; i++)
+                {
+                    GameObject pieceObject = tripleObjects[i];
+                    if (pieceObject is null)
+                    {
+                        continue;
+                    }
+
+                    Vector3 targetPosition = i == middleIndex ? liftedPositions[i] : convergencePosition;
+                    Transform pieceTransform = pieceObject.transform;
+                    pieceTransform.SetPositionAndRotation(
+                        Vector3.LerpUnclamped(liftedPositions[i], targetPosition, eased),
+                        rotations[i]);
+                    pieceTransform.localScale = raisedScales[i];
+                    SetVisualAlpha(pieceObject, 1f);
+                }
+
+                yield return null;
+            }
+
+            elapsed = 0f;
+            while (elapsed < disappearDuration)
+            {
+                elapsed += Time.deltaTime;
+                float normalized = Mathf.Clamp01(elapsed / disappearDuration);
+                float eased = Mathf.SmoothStep(0f, 1f, normalized);
+                for (int i = 0; i < tripleObjects.Count; i++)
+                {
+                    GameObject pieceObject = tripleObjects[i];
+                    if (pieceObject is null)
+                    {
+                        continue;
+                    }
+
+                    Transform pieceTransform = pieceObject.transform;
+                    pieceTransform.position = Vector3.LerpUnclamped(pieceTransform.position, convergencePosition, eased);
+                    pieceTransform.rotation = rotations[i];
+                    pieceTransform.localScale = Vector3.LerpUnclamped(raisedScales[i], baseScales[i] * 0.2f, eased);
+                    SetVisualAlpha(pieceObject, 1f - eased);
+                }
+
+                yield return null;
+            }
+
+            DestroyClearedDockPieces(tripleObjects);
+        }
+
+        private System.Collections.IEnumerator AnimateDockPieceSlideRoutine(
+            GameObject pieceObject,
+            Vector3 startPosition,
+            Vector3 finalPosition,
+            Quaternion finalRotation,
+            Vector3 finalScale,
+            float durationSeconds)
+        {
             float clampedDuration = Mathf.Max(0.01f, durationSeconds);
             float elapsed = 0f;
 
@@ -1291,16 +1535,20 @@ namespace Rescue.Unity.UI
 
                 elapsed += Time.deltaTime;
                 float normalized = Mathf.Clamp01(elapsed / clampedDuration);
-                float eased = 1f - Mathf.Pow(1f - normalized, 3f);
-                pieceTransform.position = Vector3.LerpUnclamped(basePosition, liftedPosition, eased);
-                pieceTransform.localScale = Vector3.LerpUnclamped(baseScale, raisedScale, eased);
-                SetVisualAlpha(pieceObject, 1f - normalized);
+                float eased = Mathf.SmoothStep(0f, 1f, normalized);
+                Transform pieceTransform = pieceObject.transform;
+                pieceTransform.SetPositionAndRotation(Vector3.LerpUnclamped(startPosition, finalPosition, eased), finalRotation);
+                pieceTransform.localScale = finalScale;
+                SetVisualAlpha(pieceObject, 1f);
                 yield return null;
             }
 
             if (pieceObject is not null)
             {
-                DestroyTrackedObject(pieceObject);
+                Transform pieceTransform = pieceObject.transform;
+                pieceTransform.SetPositionAndRotation(finalPosition, finalRotation);
+                pieceTransform.localScale = finalScale;
+                SetVisualAlpha(pieceObject, 1f);
             }
         }
 

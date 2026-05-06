@@ -79,7 +79,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 100
-  m_Sprite: {fileID: 21300000, guid: 5e39befba0c14ed4b90d84ac07ba2346, type: 3}
+  m_Sprite: {fileID: 21300000, guid: ce6799ffbb7a41fd84f47a127f7bdaf4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -104,10 +104,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Rescue.Unity::Rescue.Unity.FX.SpriteSequenceFxPlayer
   spriteRenderer: {fileID: 21200000}
   frames:
-  - {fileID: 21300000, guid: 5e39befba0c14ed4b90d84ac07ba2346, type: 3}
-  - {fileID: 21300000, guid: 3d10c6ac27474ca6a3066d8f39af5344, type: 3}
-  - {fileID: 21300000, guid: abbec631a24c4c08af581c3b698a6b2b, type: 3}
-  - {fileID: 21300000, guid: c90a72b895ef4e8e8082b05be454c919, type: 3}
+  - {fileID: 21300000, guid: ce6799ffbb7a41fd84f47a127f7bdaf4, type: 3}
+  - {fileID: 21300000, guid: a02b1c05182f4d2b8bafb8f8d443de43, type: 3}
+  - {fileID: 21300000, guid: db637ed74c7749aaab171ba869a71f1d, type: 3}
+  - {fileID: 21300000, guid: 6c2fb2acc9354b3b80998065697a06ab, type: 3}
   secondsPerFrame: 0.06
   playOnEnable: 1
   destroyAfterPlayback: 1

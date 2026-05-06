@@ -54,6 +54,7 @@
     <Compile Include="Assets\Rescue.Core\Compatibility\IsExternalInit.cs" />
     <Compile Include="Assets\Rescue.Core\Rules\DeadboardRepair.cs" />
     <Compile Include="Assets\Rescue.Core\Pipeline\Steps\Step05_UpdateTargets.cs" />
+    <Compile Include="Assets\Rescue.Core\Pipeline\Steps\VineGrowthTiles.cs" />
     <Compile Include="Assets\Rescue.Core\Properties\AssemblyInfo.cs" />
     <Compile Include="Assets\Rescue.Core\Pipeline\Steps\Step05_InsertDock.cs" />
     <Compile Include="Assets\Rescue.Core\Pipeline\StepContext.cs" />

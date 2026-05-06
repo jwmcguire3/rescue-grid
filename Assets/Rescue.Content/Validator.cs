@@ -367,6 +367,17 @@ namespace Rescue.Content
                         "vine.priority.bounds",
                         $"vine.growthPriority entry ({coord.Row}, {coord.Col}) is out of bounds.",
                         $"$.vine.growthPriority[{i}]"));
+                    continue;
+                }
+
+                if (level.Vine.GrowthThreshold < 999
+                    && !string.Equals(level.Board.Tiles[coord.Row][coord.Col], ".", StringComparison.Ordinal))
+                {
+                    errors.Add(new ValidationError(
+                        ValidationSeverity.Warning,
+                        "vine.priority.initialBlocked",
+                        $"Active vine growth priority entry ({coord.Row}, {coord.Col}) does not start as an empty reservable tile.",
+                        $"$.vine.growthPriority[{i}]"));
                 }
             }
         }

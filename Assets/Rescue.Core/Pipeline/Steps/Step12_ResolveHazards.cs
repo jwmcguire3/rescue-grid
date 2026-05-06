@@ -63,7 +63,7 @@ namespace Rescue.Core.Pipeline.Steps
             if (updatedContext.VineGrowthPending && updatedState.Vine.PendingGrowthTile is TileCoord pendingTile)
             {
                 int nextCursor = FindNextCursor(updatedState.Vine, pendingTile);
-                if (IsValidGrowthTile(updatedState.Board, pendingTile))
+                if (VineGrowthTiles.IsValidGrowthTile(updatedState.Board, updatedState.Vine, updatedState.Targets, pendingTile))
                 {
                     Board boardWithVine = BoardHelpers.SetTile(
                         updatedState.Board,
@@ -115,12 +115,6 @@ namespace Rescue.Core.Pipeline.Steps
             }
 
             return startIndex;
-        }
-
-        private static bool IsValidGrowthTile(Board board, TileCoord coord)
-        {
-            return BoardHelpers.InBounds(board, coord)
-                && BoardHelpers.GetTile(board, coord) is EmptyTile;
         }
 
         private static void AddBlockedRescuePathsForFloodedTile(
