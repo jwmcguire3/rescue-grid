@@ -7,10 +7,10 @@
   <Project Path="Rescue.Unity.csproj" />
   <Project Path="Rescue.PlayMode.Tests.csproj" />
   <Project Path="Rescue.Unity.Presentation.EditMode.Tests.csproj" />
+  <Project Path="Rescue.Content.EditMode.Tests.csproj" />
   <Project Path="Rescue.Unity.Haptics.EditMode.Tests.csproj" />
   <Project Path="Rescue.Unity.Art.Validation.EditMode.Tests.csproj" />
   <Project Path="Rescue.Unity.Art.Prefabization.EditMode.Tests.csproj" />
-  <Project Path="Rescue.Content.EditMode.Tests.csproj" />
   <Project Path="Rescue.Unity.Art.EditMode.Tests.csproj" />
   <Project Path="Rescue.Unity.EditorTools.csproj" />
   <Project Path="Rescue.Unity.FX.EditMode.Tests.csproj" />

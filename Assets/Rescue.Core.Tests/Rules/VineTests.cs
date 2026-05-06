@@ -146,7 +146,7 @@ namespace Rescue.Core.Tests.Rules
         {
             GameState state = CreateState(
                 PipelineTestFixtures.CreateBoard(
-                    Row(new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.B)),
+                    Row(new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new BlockerTile(BlockerType.Crate, 1, null)),
                     Row(new DebrisTile(DebrisType.C), new EmptyTile(), new EmptyTile())),
                 actionsSinceLastClear: 1,
                 growthThreshold: 3,

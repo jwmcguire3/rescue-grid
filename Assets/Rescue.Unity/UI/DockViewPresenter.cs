@@ -475,7 +475,7 @@ namespace Rescue.Unity.UI
         private const int DockTripleSize = 3;
         private const float DockClearLiftFraction = 0.28f;
         private const float DockClearConvergeFraction = 0.39f;
-        private const float DockClearCompactionDurationSeconds = 0.12f;
+        private const float DockClearCompactionDurationSeconds = 0.40f;
 
         [Header("Shared Dock")]
         [SerializeField] private DockVisualConfig? dockVisualConfig;

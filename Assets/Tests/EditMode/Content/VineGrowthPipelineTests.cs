@@ -49,6 +49,26 @@ namespace Rescue.Content.Tests
         }
 
         [Test]
+        public void RunAction_GrowsVineOverDebrisAtPriorityTile()
+        {
+            TileCoord priority = new TileCoord(2, 2);
+            GameState state = CreateVineState(
+                CreateBoard(
+                    Row(new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.E), new DebrisTile(DebrisType.E)),
+                    Row(new DebrisTile(DebrisType.B), new DebrisTile(DebrisType.B), new DebrisTile(DebrisType.C), new DebrisTile(DebrisType.C)),
+                    Row(new DebrisTile(DebrisType.D), new DebrisTile(DebrisType.D), new DebrisTile(DebrisType.F), new EmptyTile())),
+                actionsSinceLastClear: 2,
+                growthThreshold: 3,
+                growthPriority: ImmutableArray.Create(priority),
+                pendingGrowthTile: priority);
+
+            ActionResult result = Pipeline.RunAction(state, new ActionInput(new TileCoord(0, 0)), new RunOptions(RecordSnapshot: false));
+
+            Assert.That(BoardHelpers.GetTile(result.State.Board, priority), Is.EqualTo(new BlockerTile(BlockerType.Vine, 1, null)));
+            Assert.That(result.Events, Has.Some.EqualTo(new VineGrown(priority)));
+        }
+
+        [Test]
         public void RunAction_GrowsIntoUnlatchedRescuePath()
         {
             GameState state = CreateVineState(

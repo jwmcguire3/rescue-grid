@@ -14,6 +14,7 @@ namespace Rescue.Core.Pipeline.Steps
 
             Tile tile = BoardHelpers.GetTile(board, coord);
             return tile is EmptyTile
+                || tile is DebrisTile
                 || tile is RescuePathTile rescuePath && IsUnlatchedRescuePath(rescuePath, targets);
         }
 

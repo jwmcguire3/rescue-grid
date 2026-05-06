@@ -370,16 +370,22 @@ namespace Rescue.Content
                     continue;
                 }
 
-                if (level.Vine.GrowthThreshold < 999
-                    && !string.Equals(level.Board.Tiles[coord.Row][coord.Col], ".", StringComparison.Ordinal))
+                string tileCode = level.Board.Tiles[coord.Row][coord.Col];
+                if (level.Vine.GrowthThreshold < 999 && !IsInitiallyVineGrowableTile(tileCode))
                 {
                     errors.Add(new ValidationError(
                         ValidationSeverity.Warning,
                         "vine.priority.initialBlocked",
-                        $"Active vine growth priority entry ({coord.Row}, {coord.Col}) does not start as an empty reservable tile.",
+                        $"Active vine growth priority entry ({coord.Row}, {coord.Col}) does not start as an empty or debris tile.",
                         $"$.vine.growthPriority[{i}]"));
                 }
             }
+        }
+
+        private static bool IsInitiallyVineGrowableTile(string tileCode)
+        {
+            return string.Equals(tileCode, ".", StringComparison.Ordinal)
+                || Enum.TryParse(tileCode, ignoreCase: false, out DebrisType _);
         }
 
         private static void AddHeuristicWarnings(LevelJson level, AnalyzedLevel analysis, List<ValidationError> errors)
