@@ -56,6 +56,7 @@
     <Compile Include="Assets\Rescue.Unity\UI\DockPiecePoseHelper.cs" />
     <Compile Include="Assets\Rescue.Unity\Feedback\AudioFeedbackEntry.cs" />
     <Compile Include="Assets\Rescue.Unity\Feedback\AudioEventRouter.cs" />
+    <Compile Include="Assets\Rescue.Unity\Debug\DebugPanelEventLogView.cs" />
     <Compile Include="Assets\Rescue.Unity\Board\BoardContentVisualRegistry.cs" />
     <Compile Include="Assets\Rescue.Unity\Haptics\AndroidHapticPlatformAdapter.cs" />
     <Compile Include="Assets\Rescue.Unity\Debug\DebugPanelFallbackUi.cs" />
@@ -109,6 +110,7 @@
     <Compile Include="Assets\Rescue.Unity\Board\TargetFeedbackPresenter.cs" />
     <Compile Include="Assets\Rescue.Unity\Debug\TuningPresetAsset.cs" />
     <Compile Include="Assets\Rescue.Unity\FX\FxEventClassifier.cs" />
+    <Compile Include="Assets\Rescue.Unity\Debug\DebugPanelExportBuilder.cs" />
     <Compile Include="Assets\Rescue.Unity\Board\WaterFeedbackResolver.cs" />
     <Compile Include="Assets\Rescue.Unity\Feedback\FeedbackEventClassifier.cs" />
     <Compile Include="Assets\Rescue.Unity\Presentation\SettingsMenuPresenter.cs" />
