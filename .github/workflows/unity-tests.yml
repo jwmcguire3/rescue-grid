@@ -8,6 +8,19 @@ on:
       - master
 
 jobs:
+  level-authoring-gate:
+    runs-on:
+      - self-hosted
+      - windows
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Level Authoring Gate
+        shell: powershell
+        run: |
+          powershell -ExecutionPolicy Bypass -File '.\scripts\verify-level-authoring.ps1'
+
   unity-tests:
     runs-on:
       - self-hosted

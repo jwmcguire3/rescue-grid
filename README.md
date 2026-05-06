@@ -21,6 +21,7 @@ The active focus is Phase 2A: readability, animation/feedback, level-authoring t
 - A fixed action pipeline with isolated steps and regression tests.
 - Authored L00-L15 level JSON content and solve scripts.
 - Level validation, replay, solve-authoring, telemetry-report, and capture tooling.
+- An automated level-authoring gate for level JSON, briefs, solve scripts, golden paths, and offline telemetry bots.
 - A functional Unity player flow in `Game.unity` and a tuning/debug flow in `DebugGameplay.unity`, with board, dock, water forecast, target, playback, Mae reaction, victory, and loss presentation.
 - Phase 1 visual assets, audio feedback, prefabs, registries, and FX hooks for the presentation path.
 
@@ -204,6 +205,7 @@ Important scripts:
 
 ```bash
 scripts/test.sh
+scripts/verify-level-authoring.ps1
 scripts/validate-levels.sh
 scripts/watch-levels.sh
 scripts/replay.sh
@@ -233,18 +235,20 @@ Level validation may print Phase 1 policy warnings separately from validation er
 Useful validation commands:
 
 ```bash
+powershell -ExecutionPolicy Bypass -File .\scripts\verify-level-authoring.ps1
 ./scripts/validate-levels.sh
 dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- validate-phase1-all Assets/StreamingAssets/Levels
 dotnet run --project Tools/SolveAuthoring/SolveAuthoring.csproj -- --verify-solves
 ```
 
-The `validate-levels.sh` wrapper runs core validation for all authored level JSON. Use `validate-phase1-all` when checking Phase 1 packet policy warnings. The accepted L03 warnings may still appear there; do not treat them as blockers unless the current task is specifically to retune L03.
+Use `scripts/verify-level-authoring.ps1` before PRs that change levels, briefs, solve scripts, golden paths, or level-authoring tools. It runs core validation, Phase 1 policy validation, solve verification, committed golden verification, level brief/solve coverage checks, a small offline telemetry bot smoke run, and `Tools/LevelTelemetry.Tests`. The `validate-levels.sh` wrapper runs core validation for all authored level JSON. Use `validate-phase1-all` when checking Phase 1 packet policy warnings. The accepted L03 warnings may still appear there; do not treat them as blockers unless the current task is specifically to retune L03.
 
 Tool projects:
 
 - `Tools/LevelValidator/`: validates authored level JSON.
 - `Tools/Replay/`: replays deterministic trajectories.
 - `Tools/SolveAuthoring/`: searches and replays authored solves.
+- `Tools/LevelTelemetry/`: runs offline authoring bot telemetry and difficulty signals.
 - `Tools/TelemetryReport/`: summarizes telemetry output.
 
 Capture verification:

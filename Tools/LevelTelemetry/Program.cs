@@ -26,7 +26,6 @@ namespace Rescue.LevelTelemetryTool
     {
         private const int DefaultSamples = 200;
         private const int DefaultMaxActions = 30;
-        private const string DefaultBotName = "random_legal";
         private static readonly string DefaultOutputDirectory = Path.Combine("Reports", "LevelTelemetry");
         private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
         {
@@ -136,7 +135,6 @@ namespace Rescue.LevelTelemetryTool
             int samples = DefaultSamples;
             int maxActions = DefaultMaxActions;
             string outputDirectory = DefaultOutputDirectory;
-            string botName = DefaultBotName;
 
             for (int i = 0; i < args.Length; i++)
             {
@@ -176,13 +174,6 @@ namespace Rescue.LevelTelemetryTool
                     continue;
                 }
 
-                if (string.Equals(arg, "--bot", StringComparison.Ordinal))
-                {
-                    botName = ReadValue(args, ref i, "--bot");
-                    ValidateBotName(botName);
-                    continue;
-                }
-
                 throw new ArgumentException($"Unknown argument '{arg}'.");
             }
 
@@ -206,7 +197,7 @@ namespace Rescue.LevelTelemetryTool
                 ValidateRange(range);
             }
 
-            return new TelemetryOptions(levelId, range, samples, maxActions, outputDirectory, botName);
+            return new TelemetryOptions(levelId, range, samples, maxActions, outputDirectory);
         }
 
         private static IReadOnlyList<string> ResolveLevelIds(TelemetryOptions options)
@@ -280,27 +271,6 @@ namespace Rescue.LevelTelemetryTool
         private static void ValidateLevelId(string levelId, string name)
         {
             _ = ParseLevelNumber(levelId, name);
-        }
-
-        private static void ValidateBotName(string botName)
-        {
-            if (!IsKnownBot(botName))
-            {
-                throw new ArgumentException($"--bot must be one of: {string.Join(", ", KnownBots())}.");
-            }
-        }
-
-        private static bool IsKnownBot(string botName)
-        {
-            return string.Equals(botName, "random_legal", StringComparison.Ordinal)
-                || string.Equals(botName, "greedy_clear", StringComparison.Ordinal)
-                || string.Equals(botName, "rescue_focused", StringComparison.Ordinal)
-                || string.Equals(botName, "dock_safe", StringComparison.Ordinal);
-        }
-
-        private static string[] KnownBots()
-        {
-            return new[] { "random_legal", "greedy_clear", "rescue_focused", "dock_safe" };
         }
 
         private static int ParseLevelNumber(string levelId, string name)
@@ -1037,8 +1007,7 @@ namespace Rescue.LevelTelemetryTool
             string? Range,
             int Samples,
             int MaxActions,
-            string OutputDirectory,
-            string BotName);
+            string OutputDirectory);
 
         private sealed record CandidateAction(
             TileCoord Coord,

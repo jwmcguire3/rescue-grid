@@ -24,6 +24,18 @@ The filename must match the `id` field inside the JSON.
 
 An explicit authoring template with the current standard fields is at [`scripts/level-template.json`](../../scripts/level-template.json). Copy it, rename it to the target level id, and fill in all values before authoring the tile grid.
 
+## Required authoring gate
+
+Before opening a PR that changes authored levels, briefs, solve scripts, golden paths, or level-authoring tools, run the full local gate:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\verify-level-authoring.ps1
+```
+
+The same gate runs in CI. It checks level JSON validation, Phase 1 packet policy validation, solve verification, optional golden verification, brief/solve coverage for every level, telemetry bot smoke reports, and `Tools/LevelTelemetry.Tests`.
+
+Every playable level JSON must have a matching `docs/level-briefs/<levelId>.brief.json` and `Assets/Resources/Levels/<levelId>.solve.json`. Golden paths are optional designer-approved paths; every committed `<levelId>.golden.json` must verify.
+
 ## ASCII symbol legend
 
 Preview output uses the JSON tile-code grammar directly. No second symbol system.
@@ -172,6 +184,8 @@ Reports are written to `Reports/LevelTelemetry/` by default.
 Use telemetry to compare bot behavior, loss reasons, target progress events, dock overflow frequency, water loss frequency, and whether rescue-focused play outperforms generic clearing.
 
 Telemetry does not replace human playtest.
+
+Offline bot telemetry is the authoring-gate surface. Runtime telemetry sessions are emitted by the development debug panel for playtest/replay capture; the main player session is not wired to runtime telemetry by default.
 
 ## Verify golden paths
 
