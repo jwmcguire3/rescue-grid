@@ -840,11 +840,7 @@ namespace Rescue.Unity.Debugging
             ActionPlaybackController? controller = ResolveActionPlaybackController();
             if (controller is null)
             {
-                if (_playbackStepValue is not null)
-                {
-                    _playbackStepValue.text = "Playback step: unavailable";
-                }
-
+                DebugPanelReplayStatus.UpdatePlaybackUnavailable(_playbackStepValue);
                 return;
             }
 
@@ -866,10 +862,7 @@ namespace Rescue.Unity.Debugging
                 RefreshSpeedSlider(_fxPlaybackSpeedSlider, _fxPlaybackSpeedValue, router.FxPlaybackSpeedMultiplier);
             }
 
-            if (_playbackStepValue is not null)
-            {
-                _playbackStepValue.text = $"Playback step: {controller.CurrentStepName}";
-            }
+            DebugPanelReplayStatus.UpdatePlaybackStep(_playbackStepValue, controller.CurrentStepName);
         }
 
         private static float ReadSpeedSlider(Slider? slider, float fallback)
@@ -1824,12 +1817,7 @@ namespace Rescue.Unity.Debugging
             RefreshPlaybackDebugUi();
             UpdatePlayButtonLabel();
 
-            if (_replayStatusValue is not null)
-            {
-                _replayStatusValue.text = _loadedReplay is null
-                    ? "Replay: inactive"
-                    : $"Replay: frame {_replayFrameIndex}/{_loadedReplay.Frames.Length - 1}; verified: {_loadedReplay.Verified}";
-            }
+            DebugPanelReplayStatus.UpdateReplayStatus(_replayStatusValue, _loadedReplay, _replayFrameIndex);
 
             if (_waterActionsValue is not null) _waterActionsValue.text = $"Water actions until rise: {_currentState.Water.ActionsUntilRise}";
             if (_waterRiseIntervalValue is not null) _waterRiseIntervalValue.text = $"Water rise interval: {_currentState.Water.RiseInterval}";
