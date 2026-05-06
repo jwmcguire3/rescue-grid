@@ -27,6 +27,8 @@ internal static class Program
                 "preview" => Preview(args[1]),
                 "readability" => args.Length >= 3 ? ReadabilitySingle(args[1], args[2]) : MissingCommandArguments("readability"),
                 "readability-all" => args.Length >= 3 ? ReadabilityAll(args[1], args[2]) : MissingCommandArguments("readability-all"),
+                "design-report" => args.Length >= 3 ? DesignReportSingle(args[1], args[2]) : MissingCommandArguments("design-report"),
+                "design-report-all" => args.Length >= 3 ? DesignReportAll(args[1], args[2]) : MissingCommandArguments("design-report-all"),
                 _ => UnknownCommand(args[0]),
             };
         }
@@ -265,6 +267,20 @@ internal static class Program
         return hasErrors ? 1 : 0;
     }
 
+    private static int DesignReportSingle(string levelPath, string briefPath)
+    {
+        LevelDesignReport report = LevelDesignReportBuilder.Build(levelPath, briefPath);
+        Console.Write(report.Text);
+        return report.HasErrors ? 1 : 0;
+    }
+
+    private static int DesignReportAll(string levelsDir, string briefsDir)
+    {
+        LevelDesignReportBatch batch = LevelDesignReportBuilder.BuildAll(levelsDir, briefsDir);
+        Console.Write(batch.Text);
+        return batch.HasErrors ? 1 : 0;
+    }
+
     private static ReadabilityRunResult RunReadability(string levelPath, string briefPath)
     {
         string json = File.ReadAllText(levelPath);
@@ -476,6 +492,8 @@ internal static class Program
         Console.WriteLine("  preview <path>");
         Console.WriteLine("  readability <level-json-path> <brief-json-path>");
         Console.WriteLine("  readability-all <levels-dir> <briefs-dir>");
+        Console.WriteLine("  design-report <level-json-path> <brief-json-path>");
+        Console.WriteLine("  design-report-all <levels-dir> <briefs-dir>");
     }
 
     private sealed record ReadabilityRunResult(ValidationResult Validation, LevelReadabilityMetrics? Metrics);

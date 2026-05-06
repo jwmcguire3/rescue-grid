@@ -54,6 +54,7 @@
     <Compile Include="Assets\Rescue.Content.Tests\TestLevels.cs" />
     <Compile Include="Assets\Rescue.Content.Tests\ReadabilityPolicyTests.cs" />
     <Compile Include="Assets\Rescue.Content.Tests\ValidatorTests.cs" />
+    <Compile Include="Assets\Rescue.Content.Tests\LevelDesignReportBuilderTests.cs" />
     <Compile Include="Assets\Rescue.Content.Tests\LoaderTests.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -49,6 +49,7 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Rescue.Content\SolveArtifactVerifier.cs" />
     <Compile Include="Assets\Rescue.Content\Validator.cs" />
     <Compile Include="Assets\Rescue.Content\Compatibility\IsExternalInit.cs" />
     <Compile Include="Assets\Rescue.Content\Schema.cs" />
@@ -56,6 +57,7 @@
     <Compile Include="Assets\Rescue.Content\ContentJson.cs" />
     <Compile Include="Assets\Rescue.Content\LevelBrief.cs" />
     <Compile Include="Assets\Rescue.Content\Loader.cs" />
+    <Compile Include="Assets\Rescue.Content\LevelDesignReportBuilder.cs" />
     <Compile Include="Assets\Rescue.Content\LevelBriefLoader.cs" />
     <Compile Include="Assets\Rescue.Content\AsciiPreview.cs" />
     <Compile Include="Assets\Rescue.Content\Tuning.cs" />

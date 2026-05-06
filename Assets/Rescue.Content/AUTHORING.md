@@ -36,6 +36,22 @@ The same gate runs in CI. It checks level JSON validation, Phase 1 packet policy
 
 Every playable level JSON must have a matching `docs/level-briefs/<levelId>.brief.json` and `Assets/Resources/Levels/<levelId>.solve.json`. Golden paths are optional designer-approved paths; every committed `<levelId>.golden.json` must verify.
 
+## Preferred design review command
+
+Before accepting a level, run the designer-facing report. It aggregates core validation, Phase 1 packet policy, brief conformance, readability/density metrics, solve/golden status, and top next-step risks in one plain-text pass:
+
+```powershell
+dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- design-report Assets/StreamingAssets/Levels/L03.json docs/level-briefs/L03.brief.json
+```
+
+Run the report across a folder pair:
+
+```powershell
+dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- design-report-all Assets/StreamingAssets/Levels docs/level-briefs
+```
+
+`design-report` is the preferred single-level review command before accepting authored content. The full authoring gate above is still required before PRs.
+
 ## ASCII symbol legend
 
 Preview output uses the JSON tile-code grammar directly. No second symbol system.
