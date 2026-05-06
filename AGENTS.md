@@ -110,6 +110,28 @@ rescue order is the central puzzle.
 - Do not treat the current L03 Phase 1 validator warning as a blocker unless a
   task explicitly asks to retune L03; it is an accepted content-policy warning.
 
+### Unity test execution
+
+- Use the repository test wrapper for routine Unity validation:
+  - `powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1 -Platforms EditMode`
+  - `powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1 -Platforms PlayMode`
+- Do not invoke `Unity.exe` directly for routine validation unless explicitly
+  instructed by the user. Avoid manual Unity commands such as
+  `Unity.exe -batchmode -nographics -projectPath ... -runTests ...`, including
+  focused `-testFilter` launches.
+- Unity may show a Windows breakpoint dialog when launched from a sandboxed or
+  restricted shell:
+  - `Unity.exe - Application Error`
+  - `The exception Breakpoint ... (0x80000003)`
+- If the breakpoint dialog appears, do not keep retrying the same sandboxed or
+  manual Unity command. Check whether a result XML and Unity log were produced.
+- If no result XML or Unity log exists, report `Unity launch failed before tests
+  started` and treat it as an environment/sandbox issue, not a gameplay, code,
+  or test failure.
+- When reporting Unity validation, distinguish between tests passed, tests
+  failed with result XML/log evidence, Unity launch failed before tests started,
+  and environment/sandbox issues.
+
 ## Agent workflow
 - Read `docs/phase_1_spec.md` before planning implementation work.
 - Prefer the implementation for repository paths and scene names; prefer
