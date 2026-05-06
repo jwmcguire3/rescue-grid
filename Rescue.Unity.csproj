@@ -58,6 +58,7 @@
     <Compile Include="Assets\Rescue.Unity\Feedback\AudioEventRouter.cs" />
     <Compile Include="Assets\Rescue.Unity\Board\BoardContentVisualRegistry.cs" />
     <Compile Include="Assets\Rescue.Unity\Haptics\AndroidHapticPlatformAdapter.cs" />
+    <Compile Include="Assets\Rescue.Unity\Debug\DebugPanelFallbackUi.cs" />
     <Compile Include="Assets\Rescue.Unity\Presentation\ActionPlaybackStepType.cs" />
     <Compile Include="Assets\Rescue.Unity\Telemetry\TelemetryEventClassifier.cs" />
     <Compile Include="Assets\Rescue.Unity\Feedback\AudioFeedbackRegistry.cs" />

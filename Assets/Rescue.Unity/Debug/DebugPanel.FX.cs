@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Rescue.Unity.FX;
 using UnityEngine;
 using UnityEngine.UIElements;
+using static Rescue.Unity.Debugging.DebugPanelFallbackUi;
 
 namespace Rescue.Unity.Debugging
 {
@@ -186,17 +187,6 @@ namespace Rescue.Unity.Debugging
             scroll.Add(_fxDebugDiagnosticsToggle);
             scroll.Add(MakeFloatFieldRow("Surface Offset", out _fxSurfaceOffsetField, "fx-surface-offset-field"));
             scroll.Add(MakeVector3FieldRow("Plane Rotation", out _fxPlaneRotationOffsetField, "fx-plane-rotation-offset-field"));
-        }
-
-        private static VisualElement MakeVector3FieldRow(string title, out Vector3Field field, string name)
-        {
-            VisualElement row = new VisualElement();
-            row.AddToClassList("field-row");
-            row.Add(new Label(title));
-            field = new Vector3Field { name = name };
-            field.style.flexGrow = 1.0f;
-            row.Add(field);
-            return row;
         }
 
         private static List<string> BuildFxHookChoices()

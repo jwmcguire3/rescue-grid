@@ -5,8 +5,10 @@ using System.IO;
 using Rescue.Content;
 using Rescue.Core.State;
 using Rescue.Telemetry;
+using Rescue.Unity.FX;
 using UnityEngine;
 using UnityEngine.UIElements;
+using static Rescue.Unity.Debugging.DebugPanelFallbackUi;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -513,14 +515,14 @@ namespace Rescue.Unity.Debugging
             Toggle playbackEnabled = new Toggle("Playback Enabled") { name = "playback-enabled-toggle" };
             _playbackEnabledToggle = playbackEnabled;
             scroll.Add(playbackEnabled);
-            scroll.Add(MakeSpeedSliderRow("Playback Speed", out _playbackSpeedSlider, out _playbackSpeedValue, "playback-speed-slider", "playback-speed-value"));
-            scroll.Add(MakeSpeedSliderRow("Board Action Speed", out _playbackBoardActionSpeedSlider, out _playbackBoardActionSpeedValue, "playback-board-action-speed-slider", "playback-board-action-speed-value"));
-            scroll.Add(MakeSpeedSliderRow("Dock Speed", out _playbackDockSpeedSlider, out _playbackDockSpeedValue, "playback-dock-speed-slider", "playback-dock-speed-value"));
-            scroll.Add(MakeSpeedSliderRow("Target Speed", out _playbackTargetSpeedSlider, out _playbackTargetSpeedValue, "playback-target-speed-slider", "playback-target-speed-value"));
-            scroll.Add(MakeSpeedSliderRow("Hazard Speed", out _playbackHazardSpeedSlider, out _playbackHazardSpeedValue, "playback-hazard-speed-slider", "playback-hazard-speed-value"));
-            scroll.Add(MakeSpeedSliderRow("Terminal Speed", out _playbackTerminalSpeedSlider, out _playbackTerminalSpeedValue, "playback-terminal-speed-slider", "playback-terminal-speed-value"));
-            scroll.Add(MakeSpeedSliderRow("Gravity/Spawn Speed", out _playbackGravitySpawnSpeedSlider, out _playbackGravitySpawnSpeedValue, "playback-gravity-spawn-speed-slider", "playback-gravity-spawn-speed-value"));
-            scroll.Add(MakeSpeedSliderRow("FX Playback Speed", out _fxPlaybackSpeedSlider, out _fxPlaybackSpeedValue, "fx-playback-speed-slider", "fx-playback-speed-value"));
+            scroll.Add(MakeSpeedSliderRow("Playback Speed", out _playbackSpeedSlider, out _playbackSpeedValue, "playback-speed-slider", "playback-speed-value", FxEventRouter.MinFxPlaybackSpeedMultiplier, FxEventRouter.MaxFxPlaybackSpeedMultiplier, FormatSpeed(FxEventRouter.DefaultFxPlaybackSpeedMultiplier)));
+            scroll.Add(MakeSpeedSliderRow("Board Action Speed", out _playbackBoardActionSpeedSlider, out _playbackBoardActionSpeedValue, "playback-board-action-speed-slider", "playback-board-action-speed-value", FxEventRouter.MinFxPlaybackSpeedMultiplier, FxEventRouter.MaxFxPlaybackSpeedMultiplier, FormatSpeed(FxEventRouter.DefaultFxPlaybackSpeedMultiplier)));
+            scroll.Add(MakeSpeedSliderRow("Dock Speed", out _playbackDockSpeedSlider, out _playbackDockSpeedValue, "playback-dock-speed-slider", "playback-dock-speed-value", FxEventRouter.MinFxPlaybackSpeedMultiplier, FxEventRouter.MaxFxPlaybackSpeedMultiplier, FormatSpeed(FxEventRouter.DefaultFxPlaybackSpeedMultiplier)));
+            scroll.Add(MakeSpeedSliderRow("Target Speed", out _playbackTargetSpeedSlider, out _playbackTargetSpeedValue, "playback-target-speed-slider", "playback-target-speed-value", FxEventRouter.MinFxPlaybackSpeedMultiplier, FxEventRouter.MaxFxPlaybackSpeedMultiplier, FormatSpeed(FxEventRouter.DefaultFxPlaybackSpeedMultiplier)));
+            scroll.Add(MakeSpeedSliderRow("Hazard Speed", out _playbackHazardSpeedSlider, out _playbackHazardSpeedValue, "playback-hazard-speed-slider", "playback-hazard-speed-value", FxEventRouter.MinFxPlaybackSpeedMultiplier, FxEventRouter.MaxFxPlaybackSpeedMultiplier, FormatSpeed(FxEventRouter.DefaultFxPlaybackSpeedMultiplier)));
+            scroll.Add(MakeSpeedSliderRow("Terminal Speed", out _playbackTerminalSpeedSlider, out _playbackTerminalSpeedValue, "playback-terminal-speed-slider", "playback-terminal-speed-value", FxEventRouter.MinFxPlaybackSpeedMultiplier, FxEventRouter.MaxFxPlaybackSpeedMultiplier, FormatSpeed(FxEventRouter.DefaultFxPlaybackSpeedMultiplier)));
+            scroll.Add(MakeSpeedSliderRow("Gravity/Spawn Speed", out _playbackGravitySpawnSpeedSlider, out _playbackGravitySpawnSpeedValue, "playback-gravity-spawn-speed-slider", "playback-gravity-spawn-speed-value", FxEventRouter.MinFxPlaybackSpeedMultiplier, FxEventRouter.MaxFxPlaybackSpeedMultiplier, FormatSpeed(FxEventRouter.DefaultFxPlaybackSpeedMultiplier)));
+            scroll.Add(MakeSpeedSliderRow("FX Playback Speed", out _fxPlaybackSpeedSlider, out _fxPlaybackSpeedValue, "fx-playback-speed-slider", "fx-playback-speed-value", FxEventRouter.MinFxPlaybackSpeedMultiplier, FxEventRouter.MaxFxPlaybackSpeedMultiplier, FormatSpeed(FxEventRouter.DefaultFxPlaybackSpeedMultiplier)));
             scroll.Add(MakeRow(out _playbackStepValue, "playback-step-value", "Playback step: Idle"));
             Toggle fxDiagnostics = new Toggle("FX Diagnostics") { name = "fx-diagnostics-toggle" };
             _fxDiagnosticsToggle = fxDiagnostics;
@@ -613,17 +615,6 @@ namespace Rescue.Unity.Debugging
             scroll.Add(presetCrudRow);
 
             scroll.Add(MakeRow(out _tuneSummaryValue, "tune-summary-value", "Tune overrides active: none"));
-        }
-
-        private static VisualElement MakeFloatFieldRow(string title, out FloatField field, string name)
-        {
-            VisualElement row = new VisualElement();
-            row.AddToClassList("field-row");
-            row.Add(new Label(title));
-            field = new FloatField { name = name };
-            field.style.flexGrow = 1.0f;
-            row.Add(field);
-            return row;
         }
 
         private static string DescribeTuneOverrides(LevelTuningOverrides overrides)
