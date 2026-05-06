@@ -13,7 +13,7 @@ The authoritative design source is `docs/phase_1_spec.md`. Do not pull mechanics
 
 ## Current State
 
-The repository is a playable Phase 1 prototype with a deterministic core, authored packet, player scene, debug scene, tooling, first-pass presentation, and dev build scripts for Android, iOS, WebGL, and capture builds. The strongest areas are:
+The repository is a playable, near-complete Phase 1 prototype with a deterministic core, authored packet, player scene, debug scene, tooling, first-pass presentation, and dev build scripts for Android, iOS, WebGL, and capture builds. It should not be treated as a finished product, but the main Phase 1 systems and content packet are present. The strongest areas are:
 
 - Immutable `Rescue.Core` state and deterministic rules.
 - A fixed action pipeline with isolated steps and regression tests.
@@ -22,7 +22,7 @@ The repository is a playable Phase 1 prototype with a deterministic core, author
 - A functional Unity player flow in `Game.unity` and a tuning/debug flow in `DebugGameplay.unity`, with board, dock, water forecast, target, playback, Mae reaction, victory, and loss presentation.
 - Phase 1 visual assets, audio feedback, prefabs, registries, and FX hooks for the presentation path.
 
-The main product risk is player-facing clarity and emotional proof. A cold player should be able to read water pressure, dock failures, vine pressure, rescue order, and the puppy extraction beat without relying on debug context.
+The remaining Phase 1 risk is proof quality: a cold player should be able to read water pressure, dock failures, vine pressure, rescue order, and the puppy extraction beat without relying on debug context. That is a playtest/presentation-readability risk, not evidence that those systems are absent.
 
 Generated build, Android, capture, and test outputs are intentionally ignored. Source control should stay focused on authored content, code, Unity settings, docs, scripts, and committed solve data rather than local result logs or build products.
 
@@ -222,7 +222,21 @@ powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1 -Platforms EditMode
 powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1 -Platforms PlayMode
 ```
 
-Level validation may print Phase 1 policy warnings separately from validation errors. The current L03 policy warning is accepted for this prototype state and is not an unresolved blocker by itself.
+Verified during this README audit on May 6, 2026: EditMode passed `793/793` and PlayMode passed `42/42`. If you need current status later, rerun the wrappers above and report the result from the generated result XML/logs.
+
+Unity `6000.4.3f1` may show a Windows breakpoint dialog before the test runner writes result XML or logs, especially from a restricted shell. If that happens and no result XML or Unity log exists, report it as `Unity launch failed before tests started` / environment-level launch failure, not as a gameplay or test failure. Do not repeatedly retry the same failing sandboxed launch.
+
+Level validation may print Phase 1 policy warnings separately from validation errors. The current L03 validation/policy warnings are accepted for this prototype state and are not unresolved blockers by themselves.
+
+Useful validation commands:
+
+```bash
+./scripts/validate-levels.sh
+dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- validate-phase1-all Assets/StreamingAssets/Levels
+dotnet run --project Tools/SolveAuthoring/SolveAuthoring.csproj -- --verify-solves
+```
+
+The `validate-levels.sh` wrapper runs core validation for all authored level JSON. Use `validate-phase1-all` when checking Phase 1 packet policy warnings. The accepted L03 warnings may still appear there; do not treat them as blockers unless the current task is specifically to retune L03.
 
 Tool projects:
 
@@ -284,20 +298,30 @@ See `docs/distribution.md` for platform install notes and telemetry collection, 
 - `scripts/`: local automation.
 - `Build/`, `Artifacts/`, `.utmp/`, root `capture/`, and root test result/log files: ignored generated output.
 
-## Known Gaps
+## Remaining Phase 1 Work
 
-The next work should make existing Phase 1 behavior clearer within the locked scope.
+No current README-level blocker is known for L01 solve/replay or the accepted L03 validator warnings. Before declaring Phase 1 fully done, verify the latest EditMode, PlayMode, level validation, Phase 1 policy validation, and solve verification results from the commands above.
 
-Highest-value gaps:
+Phase 1 must-have finish work:
 
-- Keep targeted EditMode and PlayMode scene smoke coverage green after presentation changes.
-- Strengthen `TargetOneClearAway`, `WaterWarning`, `VinePreviewChanged`, and `VineGrown` as player-facing presentation.
+- Keep EditMode and PlayMode green after any final presentation, scene wiring, or content-status documentation changes.
+- Verify L00-L15 as a player-facing progression, not just as deterministic content.
+- Confirm a cold player can understand rescue order, dock failure causality, water pressure, vine pressure, and the final rescue beat without debug context.
+
+Phase 1 polish within the locked scope:
+
+- Strengthen `TargetOneClearAway`, `WaterWarning`, `VinePreviewChanged`, and `VineGrown` as player-facing presentation where playtesting shows ambiguity.
 - Tune persistent next-flood-row forecast readability across L00-L15.
 - Make dock overflow, Dock Jam, win, and loss causality unmistakable.
 - Tune invalid-tap reject bump/audio while preserving zero state change.
 - Strengthen target extraction so it reads as a rescue beat.
 - Extend Mae reaction and aftercare support beyond the current presenter hook.
-- Verify L00-L15 as a player-facing progression, not just as deterministic content.
+
+Future Phase 2 work:
+
+- Fire, freeze fog, overgrowth, tools, keys, relics, switches, resource pieces, or tool-gated rescues.
+- Insertion preview, continuation offers, shop, pass, cosmetics, economy, live ops, or sanctuary meta-loop.
+- Full production treatment of optional Distressed presentation beyond the Phase 1 one-tick grace test mode.
 
 ## Playtest Lens
 
