@@ -53,11 +53,16 @@
     <Compile Include="Assets\Rescue.Content\Compatibility\IsExternalInit.cs" />
     <Compile Include="Assets\Rescue.Content\Schema.cs" />
     <Compile Include="Assets\Rescue.Content\ContentJson.cs" />
+    <Compile Include="Assets\Rescue.Content\LevelBrief.cs" />
     <Compile Include="Assets\Rescue.Content\Loader.cs" />
+    <Compile Include="Assets\Rescue.Content\LevelBriefLoader.cs" />
     <Compile Include="Assets\Rescue.Content\AsciiPreview.cs" />
     <Compile Include="Assets\Rescue.Content\Tuning.cs" />
     <Compile Include="Assets\Rescue.Content\LevelPacketManifest.cs" />
+    <Compile Include="Assets\Rescue.Content\ContentTileParser.cs" />
     <Compile Include="Assets\Rescue.Content\Phase1PolicyValidator.cs" />
+    <Compile Include="Assets\Rescue.Content\ReadabilityPolicyValidator.cs" />
+    <Compile Include="Assets\Rescue.Content\LevelReadabilityAnalyzer.cs" />
     <Compile Include="Assets\Rescue.Content\LevelPacketManifestLoader.cs" />
   </ItemGroup>
   <ItemGroup>

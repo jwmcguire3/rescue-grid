@@ -50,7 +50,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Rescue.Content.Tests\LevelPacketManifestTests.cs" />
+    <Compile Include="Assets\Rescue.Content.Tests\LevelBriefLoaderTests.cs" />
     <Compile Include="Assets\Rescue.Content.Tests\TestLevels.cs" />
+    <Compile Include="Assets\Rescue.Content.Tests\ReadabilityPolicyTests.cs" />
     <Compile Include="Assets\Rescue.Content.Tests\ValidatorTests.cs" />
     <Compile Include="Assets\Rescue.Content.Tests\LoaderTests.cs" />
   </ItemGroup>

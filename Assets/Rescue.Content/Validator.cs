@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using Rescue.Core.State;
+using CellCoord = Rescue.Content.ContentCellCoord;
+using CellInfo = Rescue.Content.ContentCellInfo;
+using CellKind = Rescue.Content.ContentCellKind;
 
 namespace Rescue.Content
 {
@@ -719,7 +722,7 @@ namespace Rescue.Content
 
         private static bool IsFloodedRow(LevelJson level, int row)
         {
-            return row >= level.Board.Height - level.InitialFloodedRows;
+            return ContentTileParser.IsFloodedRow(level, row);
         }
 
         private static bool HasBlockingErrors(List<ValidationError> errors)
@@ -742,7 +745,11 @@ namespace Rescue.Content
             {
                 for (int col = 0; col < level.Board.Width; col++)
                 {
-                    TryParseCell(level.Board.Tiles[row][col], out CellInfo cell);
+                    if (!TryParseCell(level.Board.Tiles[row][col], out CellInfo cell))
+                    {
+                        cell = default;
+                    }
+
                     cells[row, col] = cell;
                 }
             }
@@ -752,114 +759,18 @@ namespace Rescue.Content
 
         private static bool TryParseCell(string code, out CellInfo cell)
         {
-            if (code == ".")
-            {
-                cell = new CellInfo(CellKind.Empty, null, null, null, Hp: 0);
-                return true;
-            }
-
-            if (TryParseDebris(code, out DebrisType debrisType))
-            {
-                cell = new CellInfo(CellKind.Debris, debrisType, null, null, Hp: 0);
-                return true;
-            }
-
-            if (code == "CR")
-            {
-                cell = new CellInfo(CellKind.Crate, null, null, null, Hp: 1);
-                return true;
-            }
-
-            if (code == "CX")
-            {
-                cell = new CellInfo(CellKind.Crate, null, null, null, Hp: 2);
-                return true;
-            }
-
-            if (code == "V")
-            {
-                cell = new CellInfo(CellKind.Vine, null, null, null, Hp: 1);
-                return true;
-            }
-
-            if (code.Length == 2 && code[0] == 'I' && TryParseDebris(code[1].ToString(), out DebrisType hiddenType))
-            {
-                cell = new CellInfo(CellKind.Ice, null, hiddenType, null, Hp: 1);
-                return true;
-            }
-
-            if (code.Length >= 2 && code[0] == 'T')
-            {
-                cell = new CellInfo(CellKind.Target, null, null, code[1..], Hp: 0);
-                return true;
-            }
-
-            cell = default;
-            return false;
-        }
-
-        private static bool TryParseDebris(string code, out DebrisType debrisType)
-        {
-            debrisType = default;
-            return code switch
-            {
-                "A" => Assign(DebrisType.A, out debrisType),
-                "B" => Assign(DebrisType.B, out debrisType),
-                "C" => Assign(DebrisType.C, out debrisType),
-                "D" => Assign(DebrisType.D, out debrisType),
-                "E" => Assign(DebrisType.E, out debrisType),
-                "F" => Assign(DebrisType.F, out debrisType),
-                _ => false,
-            };
-        }
-
-        private static bool Assign(DebrisType debrisTypeValue, out DebrisType debrisType)
-        {
-            debrisType = debrisTypeValue;
-            return true;
+            return ContentTileParser.TryParseCell(code, out cell);
         }
 
         private static bool IsInBounds(int height, int width, int row, int col)
         {
-            return row >= 0 && row < height && col >= 0 && col < width;
+            return ContentTileParser.IsInBounds(height, width, row, col);
         }
 
         private static ImmutableArray<CellCoord> GetRequiredNeighbors(int height, int width, CellCoord coord)
         {
-            ImmutableArray<CellCoord>.Builder neighbors = ImmutableArray.CreateBuilder<CellCoord>(4);
-            TryAdd(height, width, coord.Row - 1, coord.Col, neighbors);
-            TryAdd(height, width, coord.Row, coord.Col + 1, neighbors);
-            TryAdd(height, width, coord.Row + 1, coord.Col, neighbors);
-            TryAdd(height, width, coord.Row, coord.Col - 1, neighbors);
-            return neighbors.ToImmutable();
+            return ContentTileParser.GetRequiredNeighbors(height, width, coord);
         }
-
-        private static void TryAdd(int height, int width, int row, int col, ImmutableArray<CellCoord>.Builder neighbors)
-        {
-            if (IsInBounds(height, width, row, col))
-            {
-                neighbors.Add(new CellCoord(row, col));
-            }
-        }
-
-        private readonly record struct CellCoord(int Row, int Col);
-
-        private enum CellKind
-        {
-            Empty,
-            Debris,
-            Crate,
-            Ice,
-            Vine,
-            Target,
-        }
-
-        private readonly record struct CellInfo(
-            CellKind Kind,
-            DebrisType? DebrisType,
-            DebrisType? HiddenDebrisType,
-            string? TargetId,
-            int Hp);
 
         private sealed class AnalyzedLevel
         {

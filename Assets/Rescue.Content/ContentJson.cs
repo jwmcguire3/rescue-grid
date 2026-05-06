@@ -64,6 +64,22 @@ namespace Rescue.Content
             return manifest;
         }
 
+        public static LevelBrief DeserializeLevelBrief(string json)
+        {
+            if (json is null)
+            {
+                throw new ArgumentNullException(nameof(json));
+            }
+
+            object? value = DeserializeValue(json, typeof(LevelBrief));
+            if (value is not LevelBrief brief)
+            {
+                throw new ContentJsonException("Level brief JSON did not produce a schema object.", null, innerException: null);
+            }
+
+            return brief;
+        }
+
         public static string SerializeLevel(LevelJson level)
         {
             if (level is null)
