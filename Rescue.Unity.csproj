@@ -80,6 +80,7 @@
     <Compile Include="Assets\Rescue.Unity\Presentation\MaeReactionPresenter.cs" />
     <Compile Include="Assets\Rescue.Unity\Presentation\PlayableLevelSession.cs" />
     <Compile Include="Assets\Rescue.Unity\Input\BoardInputPresenter.cs" />
+    <Compile Include="Assets\Rescue.Unity\Board\BoardContentMarkerFactory.cs" />
     <Compile Include="Assets\Rescue.Unity\FX\FxDebugCatalog.cs" />
     <Compile Include="Assets\Rescue.Unity\Presentation\ActionPlaybackSettings.cs" />
     <Compile Include="Assets\Rescue.Unity\Presentation\PortraitGameSceneLayout.cs" />
