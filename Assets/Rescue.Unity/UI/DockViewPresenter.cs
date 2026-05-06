@@ -471,9 +471,6 @@ namespace Rescue.Unity.UI
         private const string DefaultPieceContainerName = "DockPieces";
         private const string SharedDockInstanceName = "SharedDockVisualInstance";
         private const string OverflowAnchorPrefix = "OverflowSlot_";
-        private const float DockPieceLocalRightOffset = 0.15f;
-        private const float DockPieceLiftHeight = 0.48f;
-        private const float DockPieceRaisedScaleMultiplier = 1.08f;
 
         [Header("Shared Dock")]
         [SerializeField] private DockVisualConfig? dockVisualConfig;
@@ -711,38 +708,7 @@ namespace Rescue.Unity.UI
 
         public string DescribeTrackedSlots()
         {
-            System.Text.StringBuilder builder = new System.Text.StringBuilder();
-            builder.Append('[');
-            bool appendedAny = false;
-            for (int slotIndex = 0; slotIndex < _trackedSlots.Capacity; slotIndex++)
-            {
-                DebrisType? slotType = _trackedSlots.GetSlotType(slotIndex);
-                GameObject? slotObject = _trackedSlots.GetSlotObject(slotIndex);
-                if (!slotType.HasValue && slotObject is null)
-                {
-                    continue;
-                }
-
-                if (appendedAny)
-                {
-                    builder.Append("; ");
-                }
-
-                appendedAny = true;
-                builder.Append(slotIndex).Append(':')
-                    .Append(slotType?.ToString() ?? "-")
-                    .Append(" object='").Append(slotObject != null ? slotObject.name : "<null>")
-                    .Append("' child='").Append(slotObject != null ? DescribeFirstVisualChild(slotObject) : "<null>")
-                    .Append('\'');
-            }
-
-            if (!appendedAny)
-            {
-                builder.Append("empty");
-            }
-
-            builder.Append(']');
-            return builder.ToString();
+            return DockPiecePoseHelper.DescribeTrackedSlots(_trackedSlots);
         }
 
         private static int CountOccupiedSlots(Dock dock)
@@ -1014,37 +980,6 @@ namespace Rescue.Unity.UI
             return pieceObject;
         }
 
-        private static string DescribeFirstVisualChild(GameObject root)
-        {
-            Renderer? renderer = root.GetComponentInChildren<Renderer>(includeInactive: true);
-            if (renderer is not null)
-            {
-                Vector3 boundsCenterLocal = root.transform.InverseTransformPoint(renderer.bounds.center);
-                return GetPathRelativeTo(root.transform, renderer.transform)
-                    + $" boundsCenterLocal=({boundsCenterLocal.x:0.00},{boundsCenterLocal.y:0.00},{boundsCenterLocal.z:0.00})";
-            }
-
-            if (root.transform.childCount > 0)
-            {
-                return root.transform.GetChild(0).name;
-            }
-
-            return "<none>";
-        }
-
-        private static string GetPathRelativeTo(Transform root, Transform child)
-        {
-            System.Collections.Generic.Stack<string> segments = new System.Collections.Generic.Stack<string>();
-            Transform? current = child;
-            while (current is not null && current != root)
-            {
-                segments.Push(current.name);
-                current = current.parent;
-            }
-
-            return segments.Count == 0 ? root.name : string.Join("/", segments);
-        }
-
         private void UpdateTrackedSlotTransform(int slotIndex, Transform anchor)
         {
             GameObject? trackedObject = _trackedSlots.GetSlotObject(slotIndex);
@@ -1054,10 +989,10 @@ namespace Rescue.Unity.UI
             }
 
             Transform pieceTransform = trackedObject.transform;
-            pieceTransform.position = anchor.position + (anchor.rotation * new Vector3(DockPieceLocalRightOffset, 0f, 0f));
+            pieceTransform.position = DockPiecePoseHelper.ResolveAnchoredPosition(anchor);
             DebrisType? debrisType = _trackedSlots.GetSlotType(slotIndex);
             pieceTransform.rotation = debrisType.HasValue
-                ? anchor.rotation * ResolveDockRotationOffset(debrisType.Value)
+                ? DockPiecePoseHelper.ResolveAnchoredRotation(anchor, ResolveDockRotationOffset(debrisType.Value))
                 : anchor.rotation;
 
             if (debrisType.HasValue)
@@ -1089,10 +1024,10 @@ namespace Rescue.Unity.UI
                 return;
             }
 
-            Vector3 startPosition = finalPosition + (transform.up * DockPieceLiftHeight);
+            Vector3 startPosition = DockPiecePoseHelper.ResolveLiftedPosition(finalPosition, transform.up);
             pieceTransform.position = startPosition;
             pieceTransform.rotation = finalRotation;
-            pieceTransform.localScale = finalScale * DockPieceRaisedScaleMultiplier;
+            pieceTransform.localScale = DockPiecePoseHelper.ResolveRaisedScale(finalScale);
             SetVisualAlpha(trackedObject, 0f);
             StartCoroutine(AnimateDockPieceLowerRoutine(
                 trackedObject,
@@ -1147,7 +1082,7 @@ namespace Rescue.Unity.UI
                 Transform pieceTransform = pieceObject.transform;
                 pieceTransform.position = Vector3.LerpUnclamped(startPosition, finalPosition, eased);
                 pieceTransform.rotation = finalRotation;
-                pieceTransform.localScale = Vector3.LerpUnclamped(finalScale * DockPieceRaisedScaleMultiplier, finalScale, eased);
+                pieceTransform.localScale = Vector3.LerpUnclamped(DockPiecePoseHelper.ResolveRaisedScale(finalScale), finalScale, eased);
                 SetVisualAlpha(pieceObject, normalized);
                 yield return null;
             }
@@ -1171,9 +1106,9 @@ namespace Rescue.Unity.UI
 
             Transform pieceTransform = pieceObject.transform;
             Vector3 basePosition = pieceTransform.position;
-            Vector3 liftedPosition = basePosition + (transform.up * DockPieceLiftHeight);
+            Vector3 liftedPosition = DockPiecePoseHelper.ResolveLiftedPosition(basePosition, transform.up);
             Vector3 baseScale = pieceTransform.localScale;
-            Vector3 raisedScale = baseScale * DockPieceRaisedScaleMultiplier;
+            Vector3 raisedScale = DockPiecePoseHelper.ResolveRaisedScale(baseScale);
             float clampedDuration = Mathf.Max(0.01f, durationSeconds);
             float elapsed = 0f;
 
@@ -1199,6 +1134,11 @@ namespace Rescue.Unity.UI
             }
         }
 
+        private void ApplyDockPieceScale(Transform pieceTransform, GameObject piecePrefab, DebrisType debrisType)
+        {
+            pieceTransform.localScale = DockPiecePoseHelper.ResolveDockScale(piecePrefab, ResolveDockScaleMultiplier(debrisType));
+        }
+
         private static void SetVisualAlpha(GameObject contentObject, float alpha)
         {
             float clampedAlpha = Mathf.Clamp01(alpha);
@@ -1220,13 +1160,6 @@ namespace Rescue.Unity.UI
                 color.a = clampedAlpha;
                 graphic.color = color;
             }
-        }
-
-        private void ApplyDockPieceScale(Transform pieceTransform, GameObject piecePrefab, DebrisType debrisType)
-        {
-            pieceTransform.localScale = Vector3.Scale(
-                piecePrefab.transform.localScale,
-                Vector3.one * ResolveDockScaleMultiplier(debrisType));
         }
 
         private Quaternion ResolveDockRotationOffset(DebrisType debrisType)
@@ -1251,7 +1184,7 @@ namespace Rescue.Unity.UI
                 return;
             }
 
-            trackedObject.name = $"DockPiece_{slotIndex:00}_{debrisType}";
+            trackedObject.name = DockPiecePoseHelper.FormatPieceObjectName(slotIndex, debrisType);
         }
 
         private void ClearTrackedSlot(int slotIndex)

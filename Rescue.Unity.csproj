@@ -53,6 +53,7 @@
     <Compile Include="Assets\Rescue.Unity\Art\Validation\MeshyAssetValidationSettings.cs" />
     <Compile Include="Assets\Rescue.Unity\Haptics\IHapticPlatformAdapter.cs" />
     <Compile Include="Assets\Rescue.Unity\Haptics\HapticFeedbackSignal.cs" />
+    <Compile Include="Assets\Rescue.Unity\UI\DockPiecePoseHelper.cs" />
     <Compile Include="Assets\Rescue.Unity\Feedback\AudioFeedbackEntry.cs" />
     <Compile Include="Assets\Rescue.Unity\Feedback\AudioEventRouter.cs" />
     <Compile Include="Assets\Rescue.Unity\Board\BoardContentVisualRegistry.cs" />
@@ -97,6 +98,7 @@
     <Compile Include="Assets\Rescue.Unity\FX\FxEventHook.cs" />
     <Compile Include="Assets\Rescue.Unity\Haptics\IOSHapticPlatformAdapter.cs" />
     <Compile Include="Assets\Rescue.Unity\Art\Registries\DockVisualConfig.cs" />
+    <Compile Include="Assets\Rescue.Unity\UI\DockAnchorResolver.cs" />
     <Compile Include="Assets\Rescue.Unity\Presentation\ActionPlaybackController.cs" />
     <Compile Include="Assets\Rescue.Unity\Audio\MusicTrackEntry.cs" />
     <Compile Include="Assets\Rescue.Unity\Art\Registries\TargetVisualRegistry.cs" />
