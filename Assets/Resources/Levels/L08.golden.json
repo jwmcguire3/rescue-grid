@@ -3,21 +3,15 @@
   "seed": 1,
   "pathType": "golden",
   "expectedOutcome": "Win",
-  "maxActions": 2,
+  "maxActions": 1,
   "actions": [
     {
       "row": 5,
       "col": 1,
-      "intent": "Respond to the lower vine/crate route first and bring the puppy to one-clear-away."
-    },
-    {
-      "row": 1,
-      "col": 5,
-      "intent": "Clear the upper/right route group, clipping vine and breaking the final crate before growth can tax the path."
+      "intent": "Respond to the lower vine/crate route immediately, clipping vine and opening the final rescue side before growth can tax the path."
     }
   ],
   "expectedEventsInOrder": [
-    "TargetOneClearAway",
     "TargetExtractionLatched",
     "TargetExtracted",
     "Won"
@@ -25,5 +19,5 @@
   "expectedExtractionOrder": [
     "0"
   ],
-  "notes": "Designer-approved vine growth practice path after telemetry tuning: make immediate rescue progress, then clip vine pressure and finish before growth taxes the path."
+  "notes": "Designer-approved vine growth practice path after telemetry tuning: the intended move clips vine pressure and rescues immediately, recording that this level is now closer to a confidence practice beat than a pressure beat."
 }

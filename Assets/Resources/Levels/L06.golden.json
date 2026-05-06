@@ -3,57 +3,47 @@
   "seed": 1,
   "pathType": "golden",
   "expectedOutcome": "Win",
-  "maxActions": 10,
+  "maxActions": 8,
   "actions": [
     {
-      "row": 3,
-      "col": 6,
-      "intent": "Open the right-side route material first, breaking blockers without committing to broad side farming."
+      "row": 0,
+      "col": 4,
+      "intent": "Start with the upper-right centerline support group instead of broad side farming."
+    },
+    {
+      "row": 5,
+      "col": 2,
+      "intent": "Open the lower puppy's left side and cash a dock-safe B triple on the intended route."
+    },
+    {
+      "row": 5,
+      "col": 4,
+      "intent": "Open the lower puppy's right side and extract the urgent lower target first."
     },
     {
       "row": 3,
       "col": 4,
-      "intent": "Continue the central lane read and start meaningful progress on the lower puppy."
+      "intent": "Pivot upward through the shared center lane after the lower rescue resolves."
     },
     {
-      "row": 3,
+      "row": 1,
       "col": 0,
-      "intent": "Clear the left-side blocker access needed for the second rescue route."
+      "intent": "Clear a left-side support group that breaks ice and keeps dock pressure controlled."
     },
     {
-      "row": 3,
-      "col": 1,
-      "intent": "Open the upper puppy's lane while keeping both rescues advancing instead of collecting side value."
+      "row": 2,
+      "col": 2,
+      "intent": "Bring the upper puppy to one-clear-away through the center-left route."
     },
     {
-      "row": 5,
+      "row": 0,
       "col": 6,
-      "intent": "Pay a small dock cost to preserve the route and avoid losing the central read."
-    },
-    {
-      "row": 3,
-      "col": 5,
-      "intent": "Create one-clear-away states for both puppies and use the dock triple clear to recover space."
-    },
-    {
-      "row": 5,
-      "col": 0,
-      "intent": "Clear the left bottom blocker chain so the lower puppy can be finished first."
-    },
-    {
-      "row": 4,
-      "col": 1,
-      "intent": "Extract the lower water-near puppy before the water row becomes the main threat."
+      "intent": "Take a controlled support clear while preserving the final upper route."
     },
     {
       "row": 1,
       "col": 2,
-      "intent": "Pivot upward after the urgent rescue and prepare the final upper route."
-    },
-    {
-      "row": 0,
-      "col": 4,
-      "intent": "Finish the upper puppy and complete the intended central-lane-first solve."
+      "intent": "Open the final upper side and complete the lower-first central lane solve."
     }
   ],
   "expectedEventsInOrder": [
@@ -65,5 +55,5 @@
     "0",
     "1"
   ],
-  "notes": "Designer-approved intended path for the larger-board read: central route work first, lower puppy before upper, no reliance on broad side farming."
+  "notes": "Designer-approved intended path after telemetry tuning: central route work first, lower puppy before upper, no reliance on broad side farming."
 }

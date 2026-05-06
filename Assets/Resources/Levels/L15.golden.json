@@ -3,28 +3,22 @@
   "seed": 1,
   "pathType": "golden",
   "expectedOutcome": "Win",
-  "maxActions": 4,
+  "maxActions": 3,
   "actions": [
     {
-      "row": 5,
-      "col": 2,
-      "intent": "Reject the upper-left bait and take the lower hero-rescue B pair first, accepting real dock residue instead of a free triple."
+      "row": 6,
+      "col": 1,
+      "intent": "Reject the upper-left bait and take the lower C triple to trigger the hero rescue with a dock recovery beat."
     },
     {
       "row": 3,
       "col": 5,
-      "intent": "Open the secondary puppy to one-clear-away after the hero rescue lands."
-    },
-    {
-      "row": 3,
-      "col": 7,
-      "intent": "Finish the secondary puppy with the readable right-side B clear and recover the dock triple."
+      "intent": "Cash the compact upper-right A pair to extract the secondary puppy and complete the spectacle route."
     }
   ],
   "expectedEventsInOrder": [
     "TargetExtractionLatched",
     "TargetExtracted",
-    "TargetOneClearAway",
     "TargetExtractionLatched",
     "TargetExtracted",
     "Won"
@@ -33,5 +27,5 @@
     "0",
     "1"
   ],
-  "notes": "Designer-approved tuned hero route: hero first, secondary to one-clear-away, then final right-side rescue clear."
+  "notes": "Designer-approved tuned hero route: lower C triple extracts the hero, upper-right A pair finishes the secondary puppy."
 }

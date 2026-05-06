@@ -339,7 +339,8 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 CombinePath(artRootPath, "Models", "Pieces", "Meshy_AI_Golden_Rubber_Duck_0503170129_texture.fbx"),
                 debrisAMaterial,
                 DebrisSizingProfile,
-                visualScaleMultiplier: 0.90f);
+                visualScaleMultiplier: 0.90f,
+                rootEulerAngles: new Vector3(0f, -120f, 0f));
             GameObject? debrisBPrefab = CreateMeshWrapperPrefab(
                 CombinePath(prefabsPath, PiecesFolderName, "Debris_B_Phase1.prefab"),
                 CombinePath(artRootPath, "Models", "Pieces", "Meshy_AI_Blue_Speckled_Paw_Bow_0424154905_texture.fbx"),
@@ -518,6 +519,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             pieceRegistry.DebrisDDockScaleMultiplier = 0.8f;
             pieceRegistry.DebrisEDockScaleMultiplier = 0.8f;
             pieceRegistry.DebrisFDockScaleMultiplier = 0.8f;
+            pieceRegistry.DebrisADockEulerOffset = new Vector3(0f, 180f, 0f);
             pieceRegistry.DebrisDDockEulerOffset = new Vector3(0f, 180f, 0f);
             pieceRegistry.DebrisFDockEulerOffset = new Vector3(0f, 90f, 0f);
             EditorUtility.SetDirty(pieceRegistry);

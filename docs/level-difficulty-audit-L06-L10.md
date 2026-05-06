@@ -7,9 +7,15 @@ Telemetry source:
 
 Confidence run settings:
 
+- Original samples per bot: 500
+- Original max actions: 40
+- Bots: `random_legal`, `greedy_clear`, `rescue_focused`, `dock_safe`
+
+Retune follow-up:
+
+- `Reports/LevelTelemetry/L06-L08-Tuned-Final-Confidence/`
 - Samples per bot: 500
 - Max actions: 40
-- Bots: `random_legal`, `greedy_clear`, `rescue_focused`, `dock_safe`
 
 Bot telemetry is a comparative diagnostic, not a direct human win-rate prediction.
 
@@ -17,9 +23,9 @@ Bot telemetry is a comparative diagnostic, not a direct human win-rate predictio
 
 | Level | Role | Rescue-focused | Greedy-clear | Dock-safe | Random-legal | Verdict |
 |---|---:|---:|---:|---:|---:|---|
-| L06 | choice | 30.0% | 5.6% | 9.8% | 0.8% | Too hard |
-| L07 | teach | 38.0% | 82.8% | 29.2% | 24.0% | Rebuild or retune |
-| L08 | practice | 53.0% | 47.4% | 21.0% | 12.4% | Too hard |
+| L06 | choice | 52.6% | 26.4% | 24.8% | 9.6% | Improved, still hard |
+| L07 | teach | 100.0% | 100.0% | 100.0% | 81.4% | Retuned easy teach |
+| L08 | practice | 100.0% | 58.8% | 91.4% | 73.4% | Retuned very easy |
 | L09 | pressure | 65.2% | 25.2% | 36.6% | 31.6% | On target, monitor random win rate |
 | L10 | exam | 73.6% | 10.2% | 55.6% | 19.8% | On target |
 
@@ -33,20 +39,20 @@ Expected fail mode: Player takes satisfying broad side clears and wastes the act
 
 Telemetry summary:
 
-- `rescue_focused`: 30.0% win rate, median win at 12 actions
-- `greedy_clear`: 5.6% win rate
-- `dock_safe`: 9.8% win rate
-- `random_legal`: 0.8% win rate
+- `rescue_focused`: 52.6% win rate, median win at 11 actions
+- `greedy_clear`: 26.4% win rate
+- `dock_safe`: 24.8% win rate
+- `random_legal`: 9.6% win rate
 
-Dominant rescue-focused terminal reason: `LossRescuePathFlooded`
+Dominant rescue-focused terminal reason: `Win`
 
-Difficulty verdict: too_hard
+Difficulty verdict: improved, still_hard
 
 Design verdict: rewards_rescue, but over-tightened
 
 Recommended change: soften
 
-Reason: Rescue-focused play strongly outperforms generic clearing, so the level is testing the right idea, but its win rate is far below the `choice` bot target. The dominant failure is water reaching the rescue path, which suggests the central route needs more recovery margin or clearer/faster access.
+Reason: Tuning raised the water interval, increased assistance, and opened two central route spaces. Rescue-focused play now wins most often and still beats generic clearing, but remains below the `choice` bot target. Further softening should focus on dock residue along the intended route rather than adding more water margin.
 
 ## L07
 
@@ -58,20 +64,20 @@ Expected fail mode: Player treats vine as background clutter and detours too slo
 
 Telemetry summary:
 
-- `rescue_focused`: 38.0% win rate, median win at 5 actions
-- `greedy_clear`: 82.8% win rate
-- `dock_safe`: 29.2% win rate
-- `random_legal`: 24.0% win rate
+- `rescue_focused`: 100.0% win rate, median win at 1 action
+- `greedy_clear`: 100.0% win rate
+- `dock_safe`: 100.0% win rate
+- `random_legal`: 81.4% win rate
 
-Dominant rescue-focused terminal reason: `LossRescuePathFlooded`
+Dominant rescue-focused terminal reason: `Win`
 
-Difficulty verdict: too_hard
+Difficulty verdict: very_easy
 
-Design verdict: rewards_clearing
+Design verdict: confidence_teach
 
-Recommended change: rebuild or retune
+Recommended change: accept as teach or rebuild if a multi-action vine intro is desired
 
-Reason: Greedy clearing massively outperforms rescue-focused play on a teach level. The committed golden path also solves in one action, so the authored intended path is too short while the bot field still loses often. That combination points to a level shape problem: the teach beat is not consistently expressed.
+Reason: Tuning removed unintended pre-flooding and made the intended lower vine-lane clear a clean triple. The level now consistently teaches the static vine lane, but it is no longer a difficulty check.
 
 ## L08
 
@@ -83,20 +89,20 @@ Expected fail mode: Player ignores the preview and lets the route become slower.
 
 Telemetry summary:
 
-- `rescue_focused`: 53.0% win rate, median win at 6 actions
-- `greedy_clear`: 47.4% win rate
-- `dock_safe`: 21.0% win rate
-- `random_legal`: 12.4% win rate
+- `rescue_focused`: 100.0% win rate, median win at 1 action
+- `greedy_clear`: 58.8% win rate
+- `dock_safe`: 91.4% win rate
+- `random_legal`: 73.4% win rate
 
 Dominant rescue-focused terminal reason: `Win`
 
-Difficulty verdict: too_hard
+Difficulty verdict: very_easy
 
-Design verdict: rewards_rescue, but with tight water pressure
+Design verdict: confidence_practice
 
-Recommended change: soften
+Recommended change: accept as confidence practice or rebuild if vine growth must be observed before success
 
-Reason: Rescue-focused play beats greedy clearing, so the intended rule is present, but the win rate is below the `practice` target. Keep the vine preview beat, but add recovery margin before changing the core route.
+Reason: Tuning removed unintended pre-flooding, increased water margin and assistance, and opened the right rescue side. Rescue-focused play now reliably wins, but random and dock-safe policies are also high, so the level is now a forgiving practice beat rather than a pressure tutorial.
 
 ## L09
 

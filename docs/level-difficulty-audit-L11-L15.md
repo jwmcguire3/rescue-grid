@@ -12,7 +12,7 @@ Bot telemetry is a relative design diagnostic, not a human win-rate prediction. 
 | L12 | choice | 100% / 3% / 4% / 11% | Greedy loses almost entirely to rescue-path flooding | on_target | rewards_rescue | none |
 | L13 | pressure | 92% / 39% / 22% / 23% | Greedy loses to dock overflow and rescue-path flooding | on_target | rewards_rescue | none |
 | L14 | exam | 99% / 3% / 0% / 2% | Greedy and dock-safe lose to rescue-path flooding | on_target | rewards_rescue | none |
-| L15 | spectacle | Pending retest after tune | Pending retest after tune | pending | pending | pending |
+| L15 | spectacle | 100% / 68% / 100% / 46% | Non-rescue losses split between rescue-path flooding and dock overflow | on_target | rewards_rescue | none |
 
 ## Level Notes
 
@@ -45,5 +45,7 @@ Bot telemetry is a relative design diagnostic, not a human win-rate prediction. 
 - Expected fail mode: player chases a tempting low-value side route and loses hero tempo.
 - Pre-tune telemetry: rescue-focused and dock-safe both won 100%; greedy-clear won 78%; random-legal won 50%; rescue-focused median win was 2 actions.
 - Pre-tune built-in signal: `no_target_progress_events_seen`.
-- Tuning applied: preserve the hero sightline, change the lower hero rescue from a free B triple to a B pair, and add a readable right-side B follow-up so the secondary puppy reaches one-clear-away before extraction.
-- Verdict: pending retest after tune.
+- Tuning applied: preserve the hero sightline, move the hero trigger from the original free B triple to the lower C triple, and leave the secondary puppy as the clean upper-right payoff.
+- Post-tune telemetry: rescue-focused 100%, greedy-clear 68%, dock-safe 100%, random-legal 46%; rescue-focused median win remains 2 actions.
+- Post-tune built-in signal: `no_target_progress_events_seen`.
+- Verdict: on target for spectacle, with a watch item. The bot rates now sit inside or just above spectacle targets and generic/random play is less loose than before, but the level still resolves without `TargetProgressed` events because the hero beat is intentionally immediate.

@@ -153,6 +153,7 @@ namespace Rescue.Unity.Art.Tests
             Assert.That(registry.GetDockScaleMultiplier(DebrisType.D), Is.EqualTo(0.8f));
             Assert.That(registry.GetDockScaleMultiplier(DebrisType.E), Is.EqualTo(0.8f));
             Assert.That(registry.GetDockScaleMultiplier(DebrisType.F), Is.EqualTo(0.8f));
+            Assert.That(registry.GetDockEulerOffset(DebrisType.A), Is.EqualTo(new Vector3(0f, 180f, 0f)));
             Assert.That(registry.GetDockEulerOffset(DebrisType.D), Is.EqualTo(new Vector3(0f, 180f, 0f)));
             Assert.That(registry.GetDockEulerOffset(DebrisType.F), Is.EqualTo(new Vector3(0f, 90f, 0f)));
         }
@@ -160,12 +161,14 @@ namespace Rescue.Unity.Art.Tests
         [Test]
         public void Phase1VisualPrefabs_UseRequestedRootPoses()
         {
+            GameObject debrisA = LoadAsset<GameObject>(Phase1DebrisAPrefabPath);
             GameObject debrisC = LoadAsset<GameObject>(Phase1DebrisCPrefabPath);
             GameObject debrisD = LoadAsset<GameObject>(Phase1DebrisDPrefabPath);
             GameObject iceReveal = LoadAsset<GameObject>(Phase1IceRevealFxPrefabPath);
             GameObject vineGrowPreview = LoadAsset<GameObject>(Phase1VineGrowPreviewFxPrefabPath);
             GameObject dockInsert = LoadAsset<GameObject>(Phase1DockInsertFxPrefabPath);
 
+            Assert.That(Quaternion.Angle(debrisA.transform.localRotation, Quaternion.Euler(0f, -120f, 0f)), Is.LessThan(0.001f));
             Assert.That(Quaternion.Angle(debrisC.transform.localRotation, Quaternion.Euler(0f, 90f, 0f)), Is.LessThan(0.001f));
             Assert.That(Quaternion.Angle(debrisD.transform.localRotation, Quaternion.Euler(0f, 220f, 0f)), Is.LessThan(0.001f));
             Assert.That(Quaternion.Angle(iceReveal.transform.localRotation, Quaternion.Euler(180f, 0f, 0f)), Is.LessThan(0.001f));

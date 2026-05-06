@@ -7,11 +7,11 @@
     "tiles": [
       [".", "C", "D", "D", "A", "A", "CR", "."],
       ["F", ".", "C", ".", "CR", "CR", ".", "CR"],
-      ["D", "D", ".", "F", ".", "CR", "T1", "CR"],
-      ["CR", ".", "E", ".", "IA", "A", "A", "B"],
-      [".", "CR", "CR", ".", "CR", "CR", "CR", "C"],
-      ["T0", "CR", "B", "C", "C", "V", "CR", "CR"],
-      [".", "C", "B", "D", "D", "E", "E", "F"],
+      ["D", "D", ".", "F", ".", "CR", "T1", "."],
+      ["CR", ".", "E", ".", "IA", "A", "A", "F"],
+      [".", "CR", "CR", ".", "CR", "CR", "CR", "."],
+      ["T0", "CR", "B", "B", "C", "V", "CR", "CR"],
+      ["CR", "C", "C", "C", "D", "E", "E", "F"],
       [".", ".", ".", ".", ".", ".", ".", "."],
       [".", ".", ".", ".", ".", ".", ".", "."]
     ]
@@ -42,10 +42,10 @@
   },
   "meta": {
     "intent": "Produce one instantly legible, high-stakes rescue beat with a hero puppy hanging over the flood and a clean route that reads in seconds even to a cold viewer.",
-    "expectedPath": "Reject the compact upper-left bait clear, take the authored lower B pair to trigger the hero rescue with real dock residue, then clear the upper-right A pair and final C pair to finish the secondary puppy.",
-    "expectedFailMode": "The player keeps spending actions in the bait pocket or generic clears, misses the obvious lower rescue beat, and lets dock residue plus flood pressure turn the capture route into avoidable trouble.",
+    "expectedPath": "Reject the compact upper-left bait clear, take the lower C triple to trigger the hero rescue with a clean dock recovery beat, then clear the compact upper-right A pair to free the secondary puppy.",
+    "expectedFailMode": "The player keeps spending actions in the bait pocket or generic clears, misses the obvious lower hero rescue beat, and lets flood pressure turn the capture read into avoidable trouble.",
     "whatItProves": "The game has a genuinely captureable rescue sequence that resolves through the real action pipeline rather than a scripted fake.",
-    "notes": "The capture board keeps the hero sightline and roofed rescue neighbors, but the lower rescue is now a B pair rather than a free triple and the secondary puppy needs a readable follow-up C clear so the spectacle route has one real pivot.",
+    "notes": "The capture board keeps the hero sightline and roofed rescue neighbors, but the hero route now uses the lower C triple instead of the original free B triple, lowering generic/random looseness while preserving the clean capture payoff.",
     "isRuleTeach": false
   }
 }
