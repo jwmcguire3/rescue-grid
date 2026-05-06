@@ -56,7 +56,9 @@
     <Compile Include="Assets\Rescue.Content\Loader.cs" />
     <Compile Include="Assets\Rescue.Content\AsciiPreview.cs" />
     <Compile Include="Assets\Rescue.Content\Tuning.cs" />
+    <Compile Include="Assets\Rescue.Content\LevelPacketManifest.cs" />
     <Compile Include="Assets\Rescue.Content\Phase1PolicyValidator.cs" />
+    <Compile Include="Assets\Rescue.Content\LevelPacketManifestLoader.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Rescue.Content\Rescue.Content.asmdef" />

@@ -39,29 +39,29 @@ namespace Rescue.Content
                 throw new ArgumentNullException(nameof(json));
             }
 
-            EnsureInitialized();
-
-            try
+            object? value = DeserializeValue(json, typeof(LevelJson));
+            if (value is not LevelJson level)
             {
-                object? value = _backend switch
-                {
-                    JsonBackend.SystemTextJson => _deserializeMethod!.Invoke(null, new object?[] { json, typeof(LevelJson), _serializerOptions }),
-                    JsonBackend.NewtonsoftJson => _deserializeMethod!.Invoke(
-                        null,
-                        new object?[] { json, typeof(LevelJson), ((NewtonsoftInvocationSettings)_serializerOptions!).Settings }),
-                    _ => throw new InvalidOperationException("JSON serializer was not initialized."),
-                };
-                if (value is not LevelJson level)
-                {
-                    throw new ContentJsonException("Level JSON did not produce a schema object.", null, innerException: null);
-                }
+                throw new ContentJsonException("Level JSON did not produce a schema object.", null, innerException: null);
+            }
 
-                return level;
-            }
-            catch (TargetInvocationException ex) when (ex.InnerException is not null)
+            return level;
+        }
+
+        public static LevelPacketManifest DeserializeLevelPacketManifest(string json)
+        {
+            if (json is null)
             {
-                throw WrapJsonException(ex.InnerException);
+                throw new ArgumentNullException(nameof(json));
             }
+
+            object? value = DeserializeValue(json, typeof(LevelPacketManifest));
+            if (value is not LevelPacketManifest manifest)
+            {
+                throw new ContentJsonException("Level packet manifest JSON did not produce a schema object.", null, innerException: null);
+            }
+
+            return manifest;
         }
 
         public static string SerializeLevel(LevelJson level)
@@ -111,6 +111,35 @@ namespace Rescue.Content
                 }
 
                 InitializeNewtonsoftJson();
+            }
+        }
+
+        private static object? DeserializeValue(string json, Type type)
+        {
+            EnsureInitialized();
+
+            MethodInfo? deserializeMethod = _deserializeMethod;
+            object? serializerOptions = _serializerOptions;
+            if (deserializeMethod is null || serializerOptions is null)
+            {
+                throw new InvalidOperationException("JSON serializer was not initialized.");
+            }
+
+            try
+            {
+                return _backend switch
+                {
+                    JsonBackend.SystemTextJson => deserializeMethod.Invoke(null, new object?[] { json, type, serializerOptions }),
+                    JsonBackend.NewtonsoftJson when serializerOptions is NewtonsoftInvocationSettings settings => deserializeMethod.Invoke(
+                        null,
+                        new object?[] { json, type, settings.Settings }),
+                    JsonBackend.NewtonsoftJson => throw new InvalidOperationException("Newtonsoft.Json serializer settings were not initialized."),
+                    _ => throw new InvalidOperationException("JSON serializer was not initialized."),
+                };
+            }
+            catch (TargetInvocationException ex) when (ex.InnerException is not null)
+            {
+                throw WrapJsonException(ex.InnerException);
             }
         }
 
