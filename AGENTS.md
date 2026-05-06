@@ -3,9 +3,12 @@
 ## Project
 Rescue Grid is a Phase 1-complete prototype puzzle game now focused on Phase
 2A readability, animation/feedback, authoring throughput, and capture proof.
-The authoritative gameplay design spec remains at /docs/phase_1_spec.md. Read
-it before planning any task. Do not reference or pull mechanics from any other
-design document.
+The implemented gameplay rules authority remains at /docs/phase_1_spec.md.
+Read it before planning implementation work. Do not implement mechanics outside
+that spec unless the task explicitly asks for future-mechanic design or
+implementation. Phase 2A docs may guide readability, animation/feedback,
+capture, and authoring workflow; full-game, v3.2, and first-100 docs are
+north-star references, not default implementation authority.
 
 Core purpose: prove that acting advances danger, thinking is free, and
 rescue order is the central puzzle.
@@ -34,13 +37,21 @@ rescue order is the central puzzle.
   wires that behavior.
 
 ## Source-of-truth locations
-- Gameplay/design authority: `docs/phase_1_spec.md`.
+- Repo-wide agent instruction authority: `AGENTS.md`.
+- Implemented gameplay rules authority: `docs/phase_1_spec.md`.
+- Active Phase 2A scope authority: `docs/phase_2a_plan.md`.
+- Phase 1 packet membership and packet policy authority:
+  `docs/level-packets/phase1.packet.json`.
+- Per-level intent authority: `docs/level-briefs/`.
 - Main playable/player scene: `Assets/Scenes/Game.unity`.
 - Debug/testing/playback scene: `Assets/Scenes/DebugGameplay.unity`.
 - Authored playable level JSON: `Assets/StreamingAssets/Levels/`.
 - Authored solve/replay JSON: `Assets/Resources/Levels/`.
-- Content pipeline notes: `Assets/Rescue.Content/README.md` and
+- Level-authoring workflow/gate authority:
   `Assets/Rescue.Content/AUTHORING.md`.
+- Content pipeline map: `Assets/Rescue.Content/README.md`.
+- Codex level-authoring workflow/router:
+  `.agents/skills/level-authoring/SKILL.md`.
 - Scene membership authority: `ProjectSettings/EditorBuildSettings.asset` plus
   the files present under `Assets/Scenes/`.
 

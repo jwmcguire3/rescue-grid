@@ -23,6 +23,9 @@ Core identity:
 Before authoring or modifying levels, read the relevant sources:
 
 - `docs/phase_1_spec.md` for authoritative Phase 1 design and rules.
+- `docs/level-packets/phase1.packet.json` for current Phase 1 packet membership and packet policy.
+- `docs/level-briefs/<levelId>.brief.json` for current per-level intent.
+- `docs/phase_2a_plan.md` for active readability, animation/feedback, capture, and authoring-throughput scope.
 - `Assets/Rescue.Content/README.md` for the Rescue.Content pipeline map.
 - `Assets/Rescue.Content/AUTHORING.md` for validation, preview, template, and tooling commands.
 - `references/LEVEL_DESIGN_PRINCIPLES.md` for rescue-first design rules, fairness, and common mistakes.
@@ -32,6 +35,8 @@ Before authoring or modifying levels, read the relevant sources:
 - `references/FIRST_100_ROADMAP.md` when designing production campaign levels beyond the Phase 1 packet.
 - `references/FIRST_100_PACING_MODEL.md` when designing production campaign flow, level-set sequencing, or retention/tension curves.
 - `references/DIFFICULTY_TARGETS.md` when setting or reviewing difficulty, telemetry, fail-rate targets, bot outcomes, or tuning recommendations.
+
+First-100 and other long-range references are north-star production/campaign guidance. They do not authorize new mechanics, new packet membership, or Phase 2A scope expansion unless the user explicitly asks for future-mechanic design or implementation.
 
 Exact executable content behavior lives in `Assets/Rescue.Content/Schema.cs`, `Validator.cs`, `Loader.cs`, and `Tuning.cs`.
 

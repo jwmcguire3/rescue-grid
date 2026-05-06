@@ -171,6 +171,8 @@ Warning signs:
 
 Apply these stricter rules to L00-L15.
 
+Current L00-L20 packet membership is governed by `docs/level-packets/phase1.packet.json`, and current L16-L20 intent is governed by `docs/level-briefs/`. Until a dedicated L16-L20 difficulty reference exists, interpret L16-L20 through their briefs, manifest role, telemetry, and packet pacing reports.
+
 ### L00
 
 - Human first-attempt target: 90-98%.

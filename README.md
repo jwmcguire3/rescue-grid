@@ -9,7 +9,7 @@ The prototype is scoped to prove the core seed:
 - Rescue order is the central puzzle.
 - Extracting a puppy feels different from generic board completion.
 
-The authoritative design source is `docs/phase_1_spec.md`. Do not pull mechanics from any other design documents unless the Phase 1 spec is deliberately updated.
+The implemented gameplay rules authority is `docs/phase_1_spec.md`. Do not implement mechanics outside that spec unless the task explicitly asks for future-mechanic design or implementation. Phase 2A docs may guide readability, animation/feedback, capture, and authoring workflow; full-game, v3.2, and first-100 references are north-star product references, not default implementation authority.
 
 ## Current State
 
@@ -42,7 +42,7 @@ In scope:
 - One free undo per level.
 - Dock Jam as an early teaching variant for L01-L02.
 - L00 rule-teach level.
-- L01-L15 main packet.
+- L01-L20 main packet, governed by `docs/level-packets/phase1.packet.json`.
 - One-clear-away target state.
 - Persistent next-flood-row forecast support with row overlay and countdown fill.
 - Authored vine growth priority and preview events.
@@ -115,9 +115,9 @@ Authored level content lives in `Assets/StreamingAssets/Levels/`.
 Current packet:
 
 - `L00.json`: rule-teach opener.
-- `L01.json` through `L15.json`: main Phase 1 packet.
+- `L01.json` through `L20.json`: main Phase 1 packet.
 
-Solve files live in `Assets/Resources/Levels/` as `L00.solve.json` through `L15.solve.json`. The committed L15 capture source of truth is `Assets/Resources/Levels/L15.solve.json`; generated capture reports are written at runtime under `persistentDataPath/capture/` or by verification under `Build/Logs/`, and the workflow is documented in `docs/capture.md`.
+Solve files live in `Assets/Resources/Levels/` as `L00.solve.json` through `L20.solve.json`. Golden paths follow the same level-id range. The committed L15 capture source of truth remains `Assets/Resources/Levels/L15.solve.json`; generated capture reports are written at runtime under `persistentDataPath/capture/` or by verification under `Build/Logs/`, and the workflow is documented in `docs/capture.md`.
 
 The level schema currently supports:
 
@@ -141,7 +141,7 @@ Current scenes:
 - `Assets/Scenes/Game.unity`
 - `Assets/Scenes/DebugGameplay.unity`
 
-Open the project with Unity `6000.4.3f1`. `Game.unity` is the main playable/player scene and clean capture entry point. It boots L00 through the player-facing level session, progresses through L01-L15 from the victory screen, and keeps the debug panel out of the default player flow. `DebugGameplay.unity` is the existing debug/testing/playback scene for tuning, replay, and debug UI work.
+Open the project with Unity `6000.4.3f1`. `Game.unity` is the main playable/player scene and clean capture entry point. It boots L00 through the player-facing level session, progresses through L01-L20 from the victory screen, and keeps the debug panel out of the default player flow. `DebugGameplay.unity` is the existing debug/testing/playback scene for tuning, replay, and debug UI work.
 
 Unity implementation areas:
 
@@ -292,7 +292,7 @@ See `docs/distribution.md` for platform install notes and telemetry collection, 
 
 ## Repository Map
 
-- `docs/phase_1_spec.md`: authoritative Phase 1 design and playtest contract.
+- `docs/phase_1_spec.md`: implemented Phase 1 gameplay rules and playtest contract.
 - `docs/phase_2a_plan.md`: active Phase 2A readability, animation, tooling, and capture plan.
 - `docs/tuning.md`: tuning notes.
 - `docs/distribution.md`: distribution notes.
@@ -321,7 +321,7 @@ Phase 2A is the active workstream. It is about readability, animation/feedback, 
 Near-term Phase 2A work:
 
 - Strengthen `TargetOneClearAway`, `WaterWarning`, `VinePreviewChanged`, and `VineGrown` as player-facing presentation where playtesting shows ambiguity.
-- Tune persistent next-flood-row forecast readability across L00-L15.
+- Tune persistent next-flood-row forecast readability across L00-L20.
 - Make dock overflow, Dock Jam, win, and loss causality unmistakable.
 - Tune invalid-tap reject bump/audio while preserving zero state change.
 - Strengthen target extraction so it reads as a rescue beat.

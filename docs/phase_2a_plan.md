@@ -4,6 +4,8 @@ Phase 2A turns the complete Phase 1 engineering/prototype milestone into a reada
 
 Phase 1 is closed unless current tests, authored levels, APK/device playability, or core progression break. Phase 2A does not mean the game is production-ready; it means the next proof target has moved from rules existence to player interpretation.
 
+Authority note: Phase 2A preserves the implemented Phase 1 rules in `docs/phase_1_spec.md`. Current packet membership and policy come from `docs/level-packets/phase1.packet.json`, with per-level intent in `docs/level-briefs/`. This plan authorizes readability, animation/feedback, capture proof, and authoring-throughput work only; it does not authorize future mechanics from full-game, v3.2, or first-100 references.
+
 ## Purpose
 
 Turn the Phase 1 prototype into something a cold player can understand, feel, and explain while playing it, not just after reading an explainer.
@@ -54,7 +56,7 @@ Technical:
 - Level validation passes.
 - Solve verification passes.
 - APK works on device.
-- L00-L15 still play in order.
+- L00-L20 still play in order.
 - No new mechanics added outside approved scope.
 
 Player readability, measured with 3-5 cold players:

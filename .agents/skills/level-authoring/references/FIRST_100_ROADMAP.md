@@ -2,6 +2,8 @@
 
 This roadmap defines the first 100 production campaign levels. Do not treat it as a fixed list of implemented JSON boards.
 
+This is a long-range product/north-star reference. It is not current implementation authority, does not define Phase 1 packet membership, and does not authorize new mechanics during Phase 2A unless the user explicitly asks for future-mechanic design or implementation.
+
 L00 is the production rule-teach opener. L01-L15 are production onboarding levels, not a separate temporary packet. Together they must teach, prove, and sell the core game: acting advances danger, thinking is free, dock tension is self-authored, rescue order is central, and extraction is the emotional payoff.
 
 Numbering note: L00 sits before the numbered campaign count as the rule-teach opener. The first 100 production campaign levels are Levels 1-100, with L01-L15 forming the first onboarding run inside that count.

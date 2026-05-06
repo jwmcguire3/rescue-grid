@@ -1,8 +1,10 @@
-# Phase 1 Package — Rescue Grid Prototype Single Source of Truth
+# Phase 1 Package — Rescue Grid Implemented Rules Authority
 
 ## 0. Locked design calls for Phase 1
 
-These are the Phase 1 rules and scope calls. This document is the single source of truth for the prototype packet.
+These are the Phase 1 rules and scope calls. This document is the implemented gameplay rules/design authority for the Phase 1 prototype.
+
+Exact current packet membership and packet policy are governed by `docs/level-packets/phase1.packet.json`. Current per-level intent is governed by `docs/level-briefs/`. If packet membership or briefs differ from the historical level-count language in this document, use the manifest and briefs for content scope while preserving the rules here.
 
 Phase 1 exists to prove whether Rescue Grid is a rescue-order puzzle with dock pressure and per-action hazards, not a smaller tray sorter with puppy dressing.
 
@@ -871,7 +873,9 @@ If a level needs to remain unusually sparse for rule-teach or capture clarity, d
 
 ---
 
-# 3. Level-by-level intent packet
+# 3. Original L00-L15 level intent packet
+
+This section captures the original L00-L15 packet intent used to prove the Phase 1 rules. It remains useful design history and onboarding intent, but exact current packet membership is governed by `docs/level-packets/phase1.packet.json` and current per-level intent by `docs/level-briefs/`.
 
 I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is enough to scaffold the seed, pressure it, and produce diagnostic data without drifting into content production.
 

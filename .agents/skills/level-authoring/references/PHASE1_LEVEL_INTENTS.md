@@ -4,6 +4,8 @@ Use this reference when modifying L00-L15 production onboarding levels. `docs/ph
 
 These levels preserve the Phase 1 proof goals while also supporting first-session retention, confidence, density, and tension/release pacing. They are not a separate temporary packet: L00 is the production rule-teach opener, and L01-L15 are production onboarding inside the first campaign.
 
+Current Phase 1 packet membership is governed by `docs/level-packets/phase1.packet.json`, and current per-level intent is governed by `docs/level-briefs/`. Use this file as L00-L15 onboarding intent support, not as the complete L00-L20 packet authority.
+
 ## Production onboarding requirements
 
 - Teach, prove, and sell the core game: acting advances danger; thinking is free; dock pressure is self-authored; rescue order is central; extraction is the payoff.
