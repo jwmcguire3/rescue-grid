@@ -1,0 +1,19 @@
+{
+  "id": "L18",
+  "title": "Dock Discipline Exam",
+  "campaignBand": "dock_discipline",
+  "role": "exam",
+  "primarySkill": "integrated_dock_discipline",
+  "secondarySkill": "mixed_blocker_sequence",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "ice", "vine", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate"],
+  "boardSize": { "width": 8, "height": 9 },
+  "targetCount": 2,
+  "densityTarget": "80-90%",
+  "targetFirstAttemptWinRate": "45-65%",
+  "intendedTensionBeat": "The lower rescue, shared choke, and dock residue all demand one coherent plan.",
+  "intendedReleaseBeat": "A planned dock triple during the pivot creates a visible recovery before the second rescue.",
+  "expectedPath": "Open the shared choke, rescue the lower urgent puppy, then use a planned dock triple before finishing the second.",
+  "expectedFailMode": "Generic clearing creates dock overflow before the rescue route is complete.",
+  "designNotes": "Exam level: combines learned blockers and dock discipline without introducing a new mechanic."
+}

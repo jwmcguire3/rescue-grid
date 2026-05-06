@@ -1,0 +1,53 @@
+{
+  "id": "L19",
+  "name": "Clean Dock Rescue",
+  "board": {
+    "width": 8,
+    "height": 9,
+    "tiles": [
+      ["E", "E", "B", "B", "D", "D", "F", "F"],
+      ["A", "CR", "C", "C", "T1", "CR", "A", "A"],
+      ["A", "CR", "B", "B", "C", "C", "D", "D"],
+      ["F", "F", "E", "CR", "CR", "D", "E", "E"],
+      ["C", "C", "A", "A", "B", "B", "F", "F"],
+      ["D", "CR", "T0", "CR", "C", "C", "A", "A"],
+      ["D", "D", "E", "E", "B", "B", "CR", "F"],
+      ["A", "B", "B", "C", "C", "D", "E", "F"],
+      [".", ".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 5, "col": 2 },
+    { "id": "1", "row": 1, "col": 4 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 7
+  },
+  "vine": {
+    "growthThreshold": 999,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.35,
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
+  },
+  "meta": {
+    "intent": "Give the player a recovery spectacle where clean dock discipline enables an emotionally legible hero rescue.",
+    "expectedPath": "Use the satisfying lower dock-safe route clear to free the hero puppy, then take the compact upper route to rescue the secondary puppy.",
+    "expectedFailMode": "Wrong play should mostly be inefficient; repeated broad clears can still create dock pressure but should not feel like a punishment spike.",
+    "whatItProves": "Dock discipline can create relief and payoff, not only failure avoidance.",
+    "notes": "Role: spectacle. The level is intentionally more generous after the L18 exam while keeping dense readable play.",
+    "isRuleTeach": false
+  }
+}

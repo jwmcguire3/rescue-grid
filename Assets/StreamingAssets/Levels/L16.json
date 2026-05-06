@@ -1,0 +1,53 @@
+{
+  "id": "L16",
+  "name": "Dock Remainder Variation",
+  "board": {
+    "width": 7,
+    "height": 9,
+    "tiles": [
+      ["D", "D", "B", "B", "E", "E", "F"],
+      ["A", "CR", "C", "C", "F", "IB", "F"],
+      ["A", "CR", "T1", "C", "D", "D", "E"],
+      ["B", "B", "CR", "A", "A", "F", "E"],
+      ["C", "C", "CR", "B", "D", "F", "F"],
+      ["E", "D", "D", "B", "B", "CR", "A"],
+      ["T0", "C", "C", "C", "E", "CR", "A"],
+      ["A", "B", "B", "D", "E", "E", "F"],
+      [".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 6, "col": 0 },
+    { "id": "1", "row": 2, "col": 2 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 7
+  },
+  "vine": {
+    "growthThreshold": 999,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.30,
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
+  },
+  "meta": {
+    "intent": "Vary the dock discipline band by asking the player to prefer clean triples and low-remainder route clears while still chasing a lower rescue first.",
+    "expectedPath": "Take the lower C triple to open the urgent edge puppy with no dock cost, then use the compact C route near the upper puppy and small stabilizing clears instead of the tempting broad groups.",
+    "expectedFailMode": "The player takes tempting 4- and 5-sized groups, fills the dock with residue, and has to spend rescue tempo repairing the dock.",
+    "whatItProves": "Dock residue can be a readable rescue-route decision rather than a separate rack puzzle.",
+    "notes": "Role: variation. Empty cells are limited to the flooded bottom row; active board density stays high while the lower edge target creates the water-facing priority.",
+    "isRuleTeach": false
+  }
+}

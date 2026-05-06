@@ -1,0 +1,53 @@
+{
+  "id": "L17",
+  "name": "Dock Pressure Choice",
+  "board": {
+    "width": 7,
+    "height": 9,
+    "tiles": [
+      ["E", "B", "B", "D", "D", "F", "F"],
+      ["E", "CR", "A", "A", "C", "IF", "F"],
+      ["D", "CR", "T1", "A", "C", "C", "E"],
+      ["D", "B", "CR", "CR", "B", "E", "E"],
+      ["C", "C", "A", "A", "B", "CR", "F"],
+      ["F", "CR", "D", "D", "C", "C", "A"],
+      ["B", "CR", "T0", "D", "E", "E", "A"],
+      ["B", "B", "C", "C", "D", "F", "F"],
+      [".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 6, "col": 2 },
+    { "id": "1", "row": 2, "col": 2 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 7
+  },
+  "vine": {
+    "growthThreshold": 999,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.30,
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
+  },
+  "meta": {
+    "intent": "Pressure the player to choose between urgent rescue progress and dock cleanup without making either concern feel separate from the rescue route.",
+    "expectedPath": "Spend one costly lower rescue clear, stabilize with a planned triple or near-triple, then finish the urgent target before pivoting to the upper route.",
+    "expectedFailMode": "The player overprotects the dock and loses water tempo, or overcommits to rescue clears and overflows before the lower puppy is safe.",
+    "whatItProves": "A dock-pressure board can still be about rescue order when the safe dock move and urgent route move must be sequenced.",
+    "notes": "Role: pressure. The small ice reveal is route value, not a new lesson; vine growth is disabled for this dock-focused beat.",
+    "isRuleTeach": false
+  }
+}

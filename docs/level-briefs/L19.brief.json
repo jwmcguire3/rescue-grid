@@ -1,0 +1,19 @@
+{
+  "id": "L19",
+  "title": "Recovery Spectacle",
+  "campaignBand": "dock_discipline",
+  "role": "spectacle",
+  "primarySkill": "dock_enabled_rescue_payoff",
+  "secondarySkill": "confidence_recovery",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate"],
+  "boardSize": { "width": 8, "height": 9 },
+  "targetCount": 2,
+  "densityTarget": "80-90%",
+  "targetFirstAttemptWinRate": "75-90%",
+  "intendedTensionBeat": "The hero rescue is visually urgent but cleaner than the prior exam.",
+  "intendedReleaseBeat": "A satisfying dock-safe route move extracts the hero puppy and rebuilds confidence.",
+  "expectedPath": "Make a satisfying triple-clear route move that visibly stabilizes the dock, rescue hero puppy, then finish secondary.",
+  "expectedFailMode": "Wrong play is mostly inefficient; repeated broad clears can still create dock trouble.",
+  "designNotes": "Add a golden path proving the intended extraction beat."
+}

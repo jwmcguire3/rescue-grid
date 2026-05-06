@@ -1,0 +1,56 @@
+{
+  "id": "L18",
+  "name": "Dock Discipline Exam",
+  "board": {
+    "width": 8,
+    "height": 9,
+    "tiles": [
+      ["F", "F", "A", "A", "D", "D", "E", "E"],
+      ["C", "CR", "B", "B", "T1", "CR", "IA", "F"],
+      ["C", "CR", "CR", "V", "A", "A", "D", "F"],
+      ["E", "E", "D", "CR", "C", "C", "B", "B"],
+      ["A", "CR", "D", "D", "CR", "V", "F", "F"],
+      ["A", "CR", "T0", "C", "C", "E", "E", "B"],
+      ["D", "D", "CR", "C", "F", "F", "IB", "B"],
+      ["A", "A", "B", "B", "D", "E", "E", "C"],
+      [".", ".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 5, "col": 2 },
+    { "id": "1", "row": 1, "col": 4 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 6
+  },
+  "vine": {
+    "growthThreshold": 4,
+    "growthPriority": [
+      { "row": 2, "col": 2 },
+      { "row": 4, "col": 4 }
+    ]
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.25,
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
+  },
+  "meta": {
+    "intent": "Test dock residue, blocker sequencing, and rescue order together without adding a new rule.",
+    "expectedPath": "Open the shared lower choke, rescue the urgent puppy, cash a planned dock triple during the pivot, then finish the safer upper puppy.",
+    "expectedFailMode": "The player generically clears across the board, creates singleton-heavy dock pressure, and overflows before the rescue route is complete.",
+    "whatItProves": "The dock-discipline band can support an exam that still reads as rescue-first play.",
+    "notes": "Role: exam. Vines are light authored route pressure with a long threshold, not the main problem.",
+    "isRuleTeach": false
+  }
+}

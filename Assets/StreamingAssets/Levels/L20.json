@@ -1,0 +1,57 @@
+{
+  "id": "L20",
+  "name": "Dock Discipline Capstone",
+  "board": {
+    "width": 8,
+    "height": 9,
+    "tiles": [
+      ["F", "F", "A", "A", "T2", "B", "B", "E"],
+      ["D", "D", "CR", "C", "C", "CR", "E", "E"],
+      ["A", "CR", "B", "B", "V", "D", "D", "F"],
+      ["A", "CR", "T1", "CR", "C", "C", "F", "F"],
+      ["E", "E", "D", "D", "CR", "IA", "B", "B"],
+      ["C", "CR", "T0", "CR", "A", "A", "E", "F"],
+      ["C", "C", "D", "D", "B", "B", "CR", "F"],
+      ["A", "A", "E", "E", "C", "F", "F", "D"],
+      [".", ".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 5, "col": 2 },
+    { "id": "1", "row": 3, "col": 2 },
+    { "id": "2", "row": 0, "col": 4 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 6
+  },
+  "vine": {
+    "growthThreshold": 4,
+    "growthPriority": [
+      { "row": 3, "col": 4 },
+      { "row": 4, "col": 4 }
+    ]
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.25,
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
+  },
+  "meta": {
+    "intent": "Cap the dock-discipline band by making dock management and rescue order part of the same three-puppy decision.",
+    "expectedPath": "Rescue the most water-threatened puppy first, cash a planned dock triple during the pivot, then finish the middle and top rescues in a clean order.",
+    "expectedFailMode": "The player takes broad tempting clears, overfills the dock or delays the endangered puppy, and understands which decision caused the loss.",
+    "whatItProves": "The first dock-focused campaign band can end on a fair challenge where rescue order, dock cost, and water pressure are integrated.",
+    "notes": "Role: capstone. The top target is intentionally safer so the lower and middle rescues carry the priority read.",
+    "isRuleTeach": false
+  }
+}

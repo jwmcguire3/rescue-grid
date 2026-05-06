@@ -1,0 +1,19 @@
+{
+  "id": "L16",
+  "title": "Dock Remainder Variation",
+  "campaignBand": "dock_discipline",
+  "role": "variation",
+  "primarySkill": "dock_remainder_reading",
+  "secondarySkill": "lower_target_priority",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "ice", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate"],
+  "boardSize": { "width": 7, "height": 9 },
+  "targetCount": 2,
+  "densityTarget": "80-90%",
+  "targetFirstAttemptWinRate": "70-85%",
+  "intendedTensionBeat": "Tempting larger clears are available, but the lower route rewards low-residue dock discipline.",
+  "intendedReleaseBeat": "A clean triple route opens the urgent puppy while leaving the dock calm for the pivot.",
+  "expectedPath": "Prefer clean triples and low-residue route clears to rescue the lower puppy first, then pivot to the safer upper puppy.",
+  "expectedFailMode": "Player takes tempting 4/5 groups, fills dock, and has to waste rescue tempo repairing it.",
+  "designNotes": "Starts the L16-L20 half-band by varying dock discipline without adding active vine pressure."
+}

@@ -1,0 +1,19 @@
+{
+  "id": "L17",
+  "title": "Dock Pressure Choice",
+  "campaignBand": "dock_discipline",
+  "role": "pressure",
+  "primarySkill": "dock_rescue_choice",
+  "secondarySkill": "ice_route_value",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "ice", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate"],
+  "boardSize": { "width": 7, "height": 9 },
+  "targetCount": 2,
+  "densityTarget": "80-90%",
+  "targetFirstAttemptWinRate": "55-75%",
+  "intendedTensionBeat": "The urgent route and the safest dock stabilizer compete for action order.",
+  "intendedReleaseBeat": "A disciplined stabilizing clear makes the urgent rescue feel earned rather than delayed.",
+  "expectedPath": "Take one costly rescue clear, immediately stabilize dock with a triple, then finish the urgent target.",
+  "expectedFailMode": "Player either overprotects dock and loses water tempo, or overcommits to rescue clears and overflows.",
+  "designNotes": "The ice tile is a small future-value read on the route, not a new teaching beat."
+}
