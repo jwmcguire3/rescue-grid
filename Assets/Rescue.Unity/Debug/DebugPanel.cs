@@ -170,9 +170,9 @@ namespace Rescue.Unity.Debugging
 
         public int LoadRevision => _loadRevision;
 
-        public string CurrentWaterForecastSummary => GetWaterForecastSummary(CurrentState);
+        public string CurrentWaterForecastSummary => DebugPanelDisplay.GetWaterForecastSummary(CurrentState);
 
-        public string CurrentNearRescueSummary => GetNearRescueTargetsSummary(CurrentState);
+        public string CurrentNearRescueSummary => DebugPanelDisplay.GetNearRescueTargetsSummary(CurrentState);
 
         public bool IsPanelMinimized => _isPanelMinimized;
 
@@ -1854,7 +1854,7 @@ namespace Rescue.Unity.Debugging
                 return;
             }
 
-            string serialized = SerializeRngState(_currentState.RngState);
+            string serialized = DebugPanelDisplay.SerializeRngState(_currentState.RngState);
             GUIUtility.systemCopyBuffer = serialized;
             SetStatus("Copied RNG state.");
             RefreshUi();
@@ -1875,12 +1875,7 @@ namespace Rescue.Unity.Debugging
             ImmutableArray<DebugEventLogLine>.Builder lines = ImmutableArray.CreateBuilder<DebugEventLogLine>(events.Length);
             for (int i = 0; i < events.Length; i++)
             {
-                ActionEvent actionEvent = events[i];
-                lines.Add(new DebugEventLogLine(
-                    actionEvent.GetType().Name,
-                    DescribeActionEvent(actionEvent),
-                    DetermineEventColor(actionEvent),
-                    TelemetryEventClassifier.IsDevOnly(actionEvent)));
+                lines.Add(DebugPanelDisplay.BuildEventLogLine(events[i]));
             }
 
             _eventLog.Insert(0, new DebugActionLogEntry(actionLabel, outcome, lines.ToImmutable()));
@@ -1923,19 +1918,19 @@ namespace Rescue.Unity.Debugging
 
             if (_waterActionsValue is not null) _waterActionsValue.text = $"Water actions until rise: {_currentState.Water.ActionsUntilRise}";
             if (_waterRiseIntervalValue is not null) _waterRiseIntervalValue.text = $"Water rise interval: {_currentState.Water.RiseInterval}";
-            if (_waterNextFloodRowValue is not null) _waterNextFloodRowValue.text = $"Next row to flood: {GetNextFloodRowLabel(_currentState)}";
-            if (_waterForecastValue is not null) _waterForecastValue.text = $"Water forecast: {GetWaterForecastSummary(_currentState)}";
+            if (_waterNextFloodRowValue is not null) _waterNextFloodRowValue.text = $"Next row to flood: {DebugPanelDisplay.GetNextFloodRowLabel(_currentState)}";
+            if (_waterForecastValue is not null) _waterForecastValue.text = $"Water forecast: {DebugPanelDisplay.GetWaterForecastSummary(_currentState)}";
             if (_ruleTeachValue is not null) _ruleTeachValue.text = $"Rule teach active: {_currentState.LevelConfig.IsRuleTeach}; waiting for first action: {_currentState.Water.PauseUntilFirstAction}";
             if (_vineActionsValue is not null) _vineActionsValue.text = $"Vine actions since clear: {_currentState.Vine.ActionsSinceLastClear}";
             if (_vineThresholdValue is not null) _vineThresholdValue.text = $"Vine growth threshold: {_currentState.Vine.GrowthThreshold}";
-            if (_vinePendingValue is not null) _vinePendingValue.text = $"Pending growth tile: {FormatCoord(_currentState.Vine.PendingGrowthTile)}";
+            if (_vinePendingValue is not null) _vinePendingValue.text = $"Pending growth tile: {DebugPanelDisplay.FormatCoord(_currentState.Vine.PendingGrowthTile)}";
             if (_dockOccupancyValue is not null) _dockOccupancyValue.text = $"Dock occupancy: {DockHelpers.Occupancy(_currentState.Dock)}/{_currentState.Dock.Size}";
             if (_dockWarningValue is not null) _dockWarningValue.text = $"Dock warning level: {DockHelpers.GetWarningLevel(_currentState.Dock)}";
-            if (_dockContentsValue is not null) _dockContentsValue.text = $"Dock contents: {FormatDockContents(_currentState.Dock)}";
+            if (_dockContentsValue is not null) _dockContentsValue.text = $"Dock contents: {DebugPanelDisplay.FormatDockContents(_currentState.Dock)}";
             if (_dockJamUsedValue is not null) _dockJamUsedValue.text = $"Dock jam used: {_currentState.DockJamUsed}";
             if (_dockJamEnabledValue is not null) _dockJamEnabledValue.text = $"Dock jam enabled: {_currentState.DockJamEnabled}";
-            if (_nearRescueTargetsValue is not null) _nearRescueTargetsValue.text = $"Near-rescue targets: {GetNearRescueTargetsSummary(_currentState)}";
-            if (_rngStateValue is not null) _rngStateValue.text = $"RNG state: {SerializeRngState(_currentState.RngState)}";
+            if (_nearRescueTargetsValue is not null) _nearRescueTargetsValue.text = $"Near-rescue targets: {DebugPanelDisplay.GetNearRescueTargetsSummary(_currentState)}";
+            if (_rngStateValue is not null) _rngStateValue.text = $"RNG state: {DebugPanelDisplay.SerializeRngState(_currentState.RngState)}";
             if (_consecutiveEmergencyValue is not null) _consecutiveEmergencyValue.text = $"Consecutive emergency spawns: {_currentState.ConsecutiveEmergencySpawns}";
             if (_spawnRecoveryValue is not null) _spawnRecoveryValue.text = $"Spawn recovery counter: {_currentState.SpawnRecoveryCounter}";
 
@@ -2017,122 +2012,12 @@ namespace Rescue.Unity.Debugging
             return container;
         }
 
-        private static string DescribeActionEvent(ActionEvent actionEvent)
-        {
-            return actionEvent switch
-            {
-                InvalidInput invalid => $"Invalid input at {FormatCoord(invalid.TappedCoord)} ({invalid.Reason})",
-                GroupRemoved removed => $"Removed {removed.Type} group of {removed.Coords.Length}",
-                DockInserted inserted => $"Dock inserted {inserted.Pieces.Length}; occupancy {inserted.OccupancyAfterInsert}",
-                DockCleared cleared => $"Dock cleared {cleared.SetsCleared}x {cleared.Type}",
-                DockJamTriggered triggered => $"Dock jam triggered ({triggered.OverflowCount} overflow)",
-                WaterWarning warning => $"Water warning: {warning.ActionsUntilRise} action left; row {warning.NextFloodRow}",
-                WaterRose rose => $"Water rose into row {rose.FloodedRow}",
-                VinePreviewChanged preview => $"Vine preview -> {FormatCoord(preview.PendingTile)}",
-                VineGrown grown => $"Vine grew at {FormatCoord(grown.Coord)}",
-                TargetExtracted extracted => $"Target {extracted.TargetId} extracted",
-                TargetOneClearAway almost => $"Target {almost.TargetId} is one clear away",
-                DebugSpawnOverrideApplied applied => $"Spawn override active (requested={applied.EmergencyRequested}, applied={applied.EmergencyApplied}, chance={applied.EffectiveAssistanceChance:0.##})",
-                Lost lost => $"Loss: {lost.Outcome}",
-                Won won => $"Win after {won.TotalActions} actions",
-                Spawned spawned => $"Spawned {spawned.Pieces.Length} pieces",
-                _ => actionEvent.ToString() ?? actionEvent.GetType().Name,
-            };
-        }
-
-        private static Color DetermineEventColor(ActionEvent actionEvent)
-        {
-            return actionEvent switch
-            {
-                Lost => new Color(0.90f, 0.33f, 0.29f),
-                Won => new Color(0.43f, 0.78f, 0.47f),
-                WaterWarning or DockWarningChanged or VinePreviewChanged => new Color(0.98f, 0.79f, 0.31f),
-                WaterRose or VineGrown or DockJamTriggered => new Color(0.45f, 0.73f, 0.95f),
-                DebugSpawnOverrideApplied => new Color(0.88f, 0.55f, 0.97f),
-                _ => new Color(0.88f, 0.92f, 0.96f),
-            };
-        }
-
         private void SetStatus(string message)
         {
             if (_statusLabel is not null)
             {
                 _statusLabel.text = message;
             }
-        }
-
-        private static string FormatDockContents(Dock dock)
-        {
-            string[] contents = new string[dock.Slots.Length];
-            for (int i = 0; i < dock.Slots.Length; i++)
-            {
-                contents[i] = dock.Slots[i]?.ToString() ?? "-";
-            }
-
-            return string.Join(" ", contents);
-        }
-
-        private static string SerializeRngState(Rescue.Core.Rng.RngState rngState)
-        {
-            return $"{rngState.S0}:{rngState.S1}";
-        }
-
-        private static string GetNextFloodRowLabel(GameState state)
-        {
-            int? nextFloodRow = WaterHelpers.GetNextFloodRow(state.Board, state.Water);
-            if (!nextFloodRow.HasValue)
-            {
-                return "none";
-            }
-
-            return nextFloodRow.Value.ToString();
-        }
-
-        private static string GetWaterForecastSummary(GameState state)
-        {
-            int? nextFloodRow = WaterHelpers.GetNextFloodRow(state.Board, state.Water);
-            if (!nextFloodRow.HasValue)
-            {
-                return "board fully flooded";
-            }
-
-            if (state.Water.PauseUntilFirstAction)
-            {
-                return $"row {nextFloodRow.Value} will flood on the first valid action";
-            }
-
-            if (state.Water.RiseInterval <= 0)
-            {
-                return $"row {nextFloodRow.Value} queued, water disabled";
-            }
-
-            string actionLabel = state.Water.ActionsUntilRise == 1 ? "action" : "actions";
-            return $"row {nextFloodRow.Value} in {state.Water.ActionsUntilRise} {actionLabel}";
-        }
-
-        private static string GetNearRescueTargetsSummary(GameState state)
-        {
-            ImmutableArray<string>.Builder targetIds = ImmutableArray.CreateBuilder<string>();
-            for (int i = 0; i < state.Targets.Length; i++)
-            {
-                TargetState target = state.Targets[i];
-                if (!target.Extracted && target.OneClearAway)
-                {
-                    targetIds.Add(target.TargetId);
-                }
-            }
-
-            return targetIds.Count == 0 ? "none" : string.Join(", ", targetIds);
-        }
-
-        private static string FormatCoord(TileCoord? coord)
-        {
-            return coord.HasValue ? $"({coord.Value.Row}, {coord.Value.Col})" : "none";
-        }
-
-        private static string FormatCoord(TileCoord coord)
-        {
-            return $"({coord.Row}, {coord.Col})";
         }
 
         private static TileCoord? FindFirstValidAction(GameState state)

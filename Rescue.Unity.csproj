@@ -112,6 +112,7 @@
     <Compile Include="Assets\Rescue.Unity\Board\WaterViewPresenter.cs" />
     <Compile Include="Assets\Rescue.Unity\FX\SpriteSequenceFxPlayer.cs" />
     <Compile Include="Assets\Rescue.Unity\Board\BoardCellView.cs" />
+    <Compile Include="Assets\Rescue.Unity\Debug\DebugPanelDisplay.cs" />
     <Compile Include="Assets\Rescue.Unity\Audio\MusicPlayer.cs" />
     <Compile Include="Assets\Rescue.Unity\Diagnostics\AndroidOrientationStartupLogger.cs" />
     <Compile Include="Assets\Rescue.Unity\UI\DockSlotVisualRegistry.cs" />
