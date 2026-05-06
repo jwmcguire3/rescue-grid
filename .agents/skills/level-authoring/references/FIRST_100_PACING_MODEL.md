@@ -8,6 +8,10 @@ This file governs tension, release, confidence, difficulty ramp, and retention f
 
 Exact level JSON still needs authoring, validation, preview, and solve verification. This model guides level-set sequencing; it does not replace board design, validator checks, preview review, or solve proof.
 
+## Difficulty target reference
+
+Use `DIFFICULTY_TARGETS.md` to interpret first-attempt win-rate bands, bot telemetry, loss reasons, and softening/hardening decisions.
+
 ## Core retention principle
 
 The first 100 should not be a straight difficulty ramp.

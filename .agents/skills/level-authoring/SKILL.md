@@ -31,6 +31,7 @@ Before authoring or modifying levels, read the relevant sources:
 - `references/PHASE1_LEVEL_INTENTS.md` when modifying L00-L15 prototype levels.
 - `references/FIRST_100_ROADMAP.md` when designing production campaign levels beyond the Phase 1 packet.
 - `references/FIRST_100_PACING_MODEL.md` when designing production campaign flow, level-set sequencing, or retention/tension curves.
+- `references/DIFFICULTY_TARGETS.md` when setting or reviewing difficulty, telemetry, fail-rate targets, bot outcomes, or tuning recommendations.
 
 Exact executable content behavior lives in `Assets/Rescue.Content/Schema.cs`, `Validator.cs`, `Loader.cs`, and `Tuning.cs`.
 
