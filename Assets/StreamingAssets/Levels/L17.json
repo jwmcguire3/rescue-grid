@@ -47,7 +47,7 @@
     "expectedPath": "Spend one costly lower rescue clear, stabilize with a planned triple or near-triple, then finish the urgent target before pivoting to the upper route.",
     "expectedFailMode": "The player overprotects the dock and loses water tempo, or overcommits to rescue clears and overflows before the lower puppy is safe.",
     "whatItProves": "A dock-pressure board can still be about rescue order when the safe dock move and urgent route move must be sequenced.",
-    "notes": "Role: pressure. The small ice reveal is route value, not a new lesson; vine growth is disabled for this dock-focused beat.",
+    "notes": "Role: pressure. The board intentionally stays fully occupied to make every early clear a dock-pressure choice; the flooded bottom row supplies the hazard edge while the small ice reveal adds route value without becoming a new lesson. Vine growth is disabled for this dock-focused beat.",
     "isRuleTeach": false
   }
 }

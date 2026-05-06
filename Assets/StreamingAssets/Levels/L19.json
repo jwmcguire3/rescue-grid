@@ -47,7 +47,7 @@
     "expectedPath": "Use the satisfying lower dock-safe route clear to free the hero puppy, then take the compact upper route to rescue the secondary puppy.",
     "expectedFailMode": "Wrong play should mostly be inefficient; repeated broad clears can still create dock pressure but should not feel like a punishment spike.",
     "whatItProves": "Dock discipline can create relief and payoff, not only failure avoidance.",
-    "notes": "Role: spectacle. The level is intentionally more generous after the L18 exam while keeping dense readable play.",
+    "notes": "Role: spectacle. Full visual occupancy is intentional after the L18 exam: the generous groups create a readable relief board while repeated broad clears can still create dock trouble. The level stays dense without adding new mechanics or layout shortcuts.",
     "isRuleTeach": false
   }
 }
