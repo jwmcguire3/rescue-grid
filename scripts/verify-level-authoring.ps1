@@ -139,7 +139,7 @@ try {
 
     Invoke-Checked `
         -FilePath "dotnet" `
-        -Arguments @("run", "--project", "Tools/LevelTelemetry/LevelTelemetry.csproj", "--", "--range", "L00-L15", "--samples", "2", "--max-actions", "5", "--output", $telemetryOutput) `
+        -Arguments @("run", "--project", "Tools/LevelTelemetry/LevelTelemetry.csproj", "--", "--range", "L00-L20", "--samples", "2", "--max-actions", "5", "--output", $telemetryOutput) `
         -FailureMessage "LevelTelemetry CI smoke failed."
 
     Invoke-Checked `

@@ -18,13 +18,13 @@
 
 ## Authored level storage
 
-Authored playable levels live in `Assets/StreamingAssets/Levels/`. The current Phase 1 packet is `L00.json` through `L15.json`, and these files are the authoritative playable level definitions.
+Authored playable levels live in `Assets/StreamingAssets/Levels/`. The current authored campaign content is `L00.json` through `L20.json`, and these files are the authoritative playable level definitions.
 
 Unity `.meta` files are asset metadata, not level definitions.
 
 ## Solve/replay script storage
 
-Solve and replay scripts live in `Assets/Resources/Levels/`. The current pattern is `L00.solve.json` through `L15.solve.json`.
+Solve and replay scripts live in `Assets/Resources/Levels/`. The current pattern is `L00.solve.json` through `L20.solve.json`.
 
 These scripts verify expected behavior. They are not the source of layout truth.
 
@@ -52,7 +52,7 @@ Smoke, replay, and capture tools consume solve scripts from `Assets/Resources/Le
 
 ## Current content status
 
-The current authored Phase 1 packet is `L00` through `L15`.
+The current authored playable content is `L00` through `L20`. Phase 1 packet policy checks remain scoped to `L00` through `L15`.
 
 Do not hardcode stale validation results here. If status needs to be reported, run:
 

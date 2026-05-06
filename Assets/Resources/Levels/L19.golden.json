@@ -1,0 +1,51 @@
+{
+  "levelId": "L19",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 6,
+  "actions": [
+    {
+      "row": 5,
+      "col": 0,
+      "intent": "Open the left side of the hero route and break the first crate without adding dock residue."
+    },
+    {
+      "row": 4,
+      "col": 2,
+      "intent": "Spend a controlled dock cost to open both side access points around the hero puppy."
+    },
+    {
+      "row": 6,
+      "col": 2,
+      "intent": "Finish the hero rescue with the lower route clear."
+    },
+    {
+      "row": 0,
+      "col": 3,
+      "intent": "Begin the secondary route while clearing dock pressure back down."
+    },
+    {
+      "row": 0,
+      "col": 4,
+      "intent": "Open the right side of the secondary puppy route."
+    },
+    {
+      "row": 2,
+      "col": 4,
+      "intent": "Complete the secondary rescue and win on extraction."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "0",
+    "1"
+  ],
+  "notes": "Designer-approved recovery spectacle route: hero puppy first, then the upper secondary rescue."
+}

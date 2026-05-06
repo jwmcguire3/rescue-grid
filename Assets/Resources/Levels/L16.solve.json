@@ -1,0 +1,29 @@
+{
+  "LevelId": "L16",
+  "Seed": 1,
+  "AlternateSeed": 1001,
+  "ExpectedOutcome": "Win",
+  "ExpectAlternateSeedDivergence": false,
+  "Actions": [
+    {
+      "Row": 4,
+      "Col": 0
+    },
+    {
+      "Row": 2,
+      "Col": 3
+    },
+    {
+      "Row": 1,
+      "Col": 2
+    },
+    {
+      "Row": 6,
+      "Col": 4
+    },
+    {
+      "Row": 2,
+      "Col": 0
+    }
+  ]
+}

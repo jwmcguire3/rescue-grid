@@ -512,7 +512,7 @@ namespace Rescue.SolveAuthoringTool
             }
 
             List<string> levelIds = new List<string> { "L00" };
-            for (int index = 1; index <= 15; index++)
+            for (int index = 1; index <= 20; index++)
             {
                 levelIds.Add("L" + index.ToString("00"));
             }

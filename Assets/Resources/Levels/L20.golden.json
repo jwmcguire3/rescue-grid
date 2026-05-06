@@ -1,0 +1,60 @@
+{
+  "levelId": "L20",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 7,
+  "actions": [
+    {
+      "row": 5,
+      "col": 0,
+      "intent": "Open the lower rescue route and break the left crate near the most threatened puppy."
+    },
+    {
+      "row": 4,
+      "col": 1,
+      "intent": "Clear the central route tax and bring the lower and middle puppies to one-clear-away."
+    },
+    {
+      "row": 0,
+      "col": 5,
+      "intent": "Open the top target's right side while carrying manageable dock residue."
+    },
+    {
+      "row": 0,
+      "col": 7,
+      "intent": "Use a safe cleanup beat before committing to extraction clears."
+    },
+    {
+      "row": 6,
+      "col": 2,
+      "intent": "Extract the lower puppy before water catches the route."
+    },
+    {
+      "row": 0,
+      "col": 3,
+      "intent": "Cash the planned dock clear while extracting the middle puppy and opening the top route."
+    },
+    {
+      "row": 1,
+      "col": 3,
+      "intent": "Complete the top rescue and win with the dock under control."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "TargetExtractionLatched",
+    "DockCleared",
+    "TargetExtracted",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "0",
+    "1",
+    "2"
+  ],
+  "notes": "Designer-approved dock capstone route: lower rescue, middle pivot, top final extraction."
+}

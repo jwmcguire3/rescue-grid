@@ -18,7 +18,7 @@ Executable behavior lives in code:
 
 Authored playable levels live in `Assets/StreamingAssets/Levels/`.
 
-The current Phase 1 packet contains `L00.json` through `L15.json`.
+The current authored playable content contains `L00.json` through `L20.json`. Phase 1 packet-specific policy checks remain scoped to `L00.json` through `L15.json`.
 
 The filename must match the `id` field inside the JSON.
 
@@ -176,7 +176,7 @@ dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --level L01
 Run onboarding:
 
 ```bash
-dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --range L00-L15 --samples 200 --max-actions 30
+dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --range L00-L20 --samples 200 --max-actions 30
 ```
 
 Reports are written to `Reports/LevelTelemetry/` by default.
