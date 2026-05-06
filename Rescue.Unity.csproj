@@ -86,6 +86,7 @@
     <Compile Include="Assets\Rescue.Unity\Presentation\PortraitGameSceneLayout.cs" />
     <Compile Include="Assets\Rescue.Unity\Art\Registries\TileVisualRegistry.cs" />
     <Compile Include="Assets\Rescue.Unity\Art\Validation\MeshyAssetValidationReport.cs" />
+    <Compile Include="Assets\Rescue.Unity\Board\BoardContentPlacement.cs" />
     <Compile Include="Assets\Rescue.Unity\Feedback\FeedbackEvent.cs" />
     <Compile Include="Assets\Rescue.Unity\Art\Registries\FxVisualRegistry.cs" />
     <Compile Include="Assets\Rescue.Unity\Board\BoardContentViewPresenter.cs" />

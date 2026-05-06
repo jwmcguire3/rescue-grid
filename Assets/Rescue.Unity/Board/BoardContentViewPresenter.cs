@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Globalization;
 using Rescue.Core.Pipeline;
 using Rescue.Core.State;
 using Rescue.Unity.Art.Registries;
@@ -562,7 +561,7 @@ namespace Rescue.Unity.BoardPresentation
                 visualRegistry.Debris.Set(coord, debrisView);
 
                 Vector3 entryPosition = GetSpawnEntryWorldPosition(coord);
-                PositionContentObjectAtWorldPose(debrisObject, anchor, entryPosition, anchor.rotation * debrisView.BaseLocalRotation);
+                BoardContentPlacement.PositionAtWorldPose(debrisObject, entryPosition, anchor.rotation * debrisView.BaseLocalRotation);
                 MovePieceToCoord(
                     debrisObject,
                     anchor,
@@ -1672,18 +1671,7 @@ namespace Rescue.Unity.BoardPresentation
 
         private bool TryGetAnchor(TileCoord coord, out Transform anchor)
         {
-            anchor = transform;
-            if (gridView is null)
-            {
-                return false;
-            }
-
-            if (!gridView.IsCoordVisible(coord))
-            {
-                return false;
-            }
-
-            return gridView.TryGetCellAnchor(coord, out anchor);
+            return BoardContentPlacement.TryGetVisibleAnchor(gridView, transform, coord, out anchor);
         }
 
         private void MoveContentObjectToAnchor(
@@ -1704,28 +1692,16 @@ namespace Rescue.Unity.BoardPresentation
             float yOffset,
             Quaternion baseLocalRotation)
         {
-            Transform parent = ResolveContentParent(anchor);
-            Transform contentTransform = contentObject.transform;
-            if (contentTransform.parent != parent)
-            {
-                contentTransform.SetParent(parent, worldPositionStays: false);
-            }
-
-            if (parent == anchor)
-            {
-                contentTransform.localPosition = new Vector3(0f, yOffset, 0f);
-                contentTransform.localRotation = baseLocalRotation;
-            }
-            else
-            {
-                contentTransform.SetPositionAndRotation(
-                    ResolveCellWorldPositionWithYOffset(coord, yOffset),
-                    anchor.rotation * baseLocalRotation);
-            }
-
-            contentObject.name =
-                $"Content_{coord.Row.ToString("00", CultureInfo.InvariantCulture)}_{coord.Col.ToString("00", CultureInfo.InvariantCulture)}_{contentLabel}";
-            AttachOrUpdateBoardCellView(contentObject, coord);
+            BoardContentPlacement.MoveToAnchor(
+                contentObject,
+                gridView,
+                contentRoot,
+                transform,
+                anchor,
+                coord,
+                contentLabel,
+                yOffset,
+                baseLocalRotation);
         }
 
         private void MovePieceToCoord(
@@ -1746,21 +1722,11 @@ namespace Rescue.Unity.BoardPresentation
                 return;
             }
 
-            Transform parent = ResolveContentParent(anchor);
-            Transform contentTransform = contentObject.transform;
-            if (contentTransform.parent != parent)
-            {
-                Vector3 currentWorldPosition = contentTransform.position;
-                Quaternion currentWorldRotation = contentTransform.rotation;
-                contentTransform.SetParent(parent, worldPositionStays: false);
-                contentTransform.SetPositionAndRotation(currentWorldPosition, currentWorldRotation);
-            }
-
+            BoardContentPlacement.PreserveWorldPoseUnderContentParent(contentObject, contentRoot, anchor);
             Vector3 targetWorldPosition = ResolveCellWorldPositionWithYOffset(coord, yOffset);
             Quaternion targetWorldRotation = anchor.rotation * baseLocalRotation;
-            contentObject.name =
-                $"Content_{coord.Row.ToString("00", CultureInfo.InvariantCulture)}_{coord.Col.ToString("00", CultureInfo.InvariantCulture)}_{contentLabel}";
-            AttachOrUpdateBoardCellView(contentObject, coord);
+            contentObject.name = BoardContentPlacement.CreateContentName(coord, contentLabel);
+            BoardContentPlacement.AttachOrUpdateBoardCellView(contentObject, coord);
 
             int token = RegisterMoveAnimation(contentObject);
             StartCoroutine(AnimateWorldMoveRoutine(
@@ -1775,28 +1741,7 @@ namespace Rescue.Unity.BoardPresentation
 
         private Vector3 GetSpawnEntryWorldPosition(TileCoord coord)
         {
-            if (gridView is null)
-            {
-                return transform.position;
-            }
-
-            return gridView.GetColumnEntryWorldPosition(coord.Col) + new Vector3(0f, contentYOffset, 0f);
-        }
-
-        private static void PositionContentObjectAtWorldPose(
-            GameObject contentObject,
-            Transform anchor,
-            Vector3 worldPosition,
-            Quaternion worldRotation)
-        {
-            Transform parent = contentObject.transform.parent;
-            if (parent != anchor && parent is not null)
-            {
-                contentObject.transform.SetPositionAndRotation(worldPosition, worldRotation);
-                return;
-            }
-
-            contentObject.transform.SetPositionAndRotation(worldPosition, worldRotation);
+            return BoardContentPlacement.ResolveSpawnEntryWorldPosition(gridView, transform, coord, contentYOffset);
         }
 
         private GameObject? SpawnAtAnchor(
@@ -1812,25 +1757,16 @@ namespace Rescue.Unity.BoardPresentation
                 return null;
             }
 
-            Transform parent = ResolveContentParent(anchor);
-            GameObject contentObject = Instantiate(prefab, parent);
-            contentObject.name = $"Content_{coord.Row:00}_{coord.Col:00}_{contentLabel}";
-            AttachOrUpdateBoardCellView(contentObject, coord);
-
-            Transform contentTransform = contentObject.transform;
-            if (parent == anchor)
-            {
-                contentTransform.localPosition = new Vector3(0f, yOffset, 0f);
-                contentTransform.localRotation = prefab.transform.localRotation;
-            }
-            else
-            {
-                contentTransform.SetPositionAndRotation(
-                    ResolveCellWorldPositionWithYOffset(coord, yOffset),
-                    anchor.rotation * prefab.transform.localRotation);
-            }
-
-            contentTransform.localScale = Vector3.Scale(prefab.transform.localScale, scaleMultiplier);
+            GameObject contentObject = BoardContentPlacement.SpawnPrefabAtAnchor(
+                prefab,
+                gridView,
+                contentRoot,
+                transform,
+                anchor,
+                coord,
+                contentLabel,
+                yOffset,
+                scaleMultiplier);
             spawnedContent.Add(contentObject);
             return contentObject;
         }
@@ -1842,49 +1778,24 @@ namespace Rescue.Unity.BoardPresentation
             float yOffset,
             Vector3 scaleMultiplier)
         {
-            Transform parent = ResolveContentParent(anchor);
-            GameObject contentObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            contentObject.name = $"Content_{coord.Row:00}_{coord.Col:00}_{contentLabel}";
-            AttachOrUpdateBoardCellView(contentObject, coord);
+            GameObject contentObject = BoardContentPlacement.SpawnPrimitiveAtAnchor(
+                PrimitiveType.Cube,
+                gridView,
+                contentRoot,
+                transform,
+                anchor,
+                coord,
+                contentLabel,
+                yOffset,
+                scaleMultiplier);
             BoardContentMarkerFactory.RemoveCollider(contentObject);
-
-            Transform contentTransform = contentObject.transform;
-            contentTransform.SetParent(parent, worldPositionStays: false);
-            if (parent == anchor)
-            {
-                contentTransform.localPosition = new Vector3(0f, yOffset, 0f);
-                contentTransform.localRotation = Quaternion.identity;
-            }
-            else
-            {
-                contentTransform.SetPositionAndRotation(
-                    ResolveCellWorldPositionWithYOffset(coord, yOffset),
-                    anchor.rotation);
-            }
-
-            contentTransform.localScale = scaleMultiplier;
             spawnedContent.Add(contentObject);
             return contentObject;
         }
 
-        private static void AttachOrUpdateBoardCellView(GameObject contentObject, TileCoord coord)
-        {
-            BoardCellView? cellView = contentObject.GetComponent<BoardCellView>();
-            if (cellView is null)
-            {
-                cellView = contentObject.AddComponent<BoardCellView>();
-            }
-
-            cellView.Initialize(coord);
-        }
-
         private Vector3 ResolveCellWorldPositionWithYOffset(TileCoord coord, float yOffset)
         {
-            Vector3 basePosition = gridView is not null
-                ? gridView.GetCellWorldPosition(coord)
-                : transform.position;
-
-            return basePosition + new Vector3(0f, yOffset, 0f);
+            return BoardContentPlacement.ResolveCellWorldPositionWithYOffset(gridView, transform, coord, yOffset);
         }
 
         private System.Collections.IEnumerator AnimateWorldMoveRoutine(
@@ -2012,12 +1923,7 @@ namespace Rescue.Unity.BoardPresentation
 
         private Transform ResolveContentParent(Transform anchor)
         {
-            if (contentRoot is not null)
-            {
-                return contentRoot;
-            }
-
-            return anchor;
+            return BoardContentPlacement.ResolveContentParent(contentRoot, anchor);
         }
 
         private GameObject? ResolveDebrisPrefab(DebrisType debrisType)
