@@ -44,13 +44,18 @@ namespace Rescue.LevelTelemetryTool
             "dock_safe",
         };
 
+        internal static string ResolveOutputDirectory(string outputDirectory)
+        {
+            return Path.GetFullPath(outputDirectory);
+        }
+
         public static int Run(string[] args)
         {
             try
             {
                 TelemetryOptions options = ParseOptions(args);
                 IReadOnlyList<string> levelIds = ResolveLevelIds(options);
-                string outputPath = Path.GetFullPath(options.OutputDirectory);
+                string outputPath = ResolveOutputDirectory(options.OutputDirectory);
                 Directory.CreateDirectory(outputPath);
 
                 SortedSet<string> terminalReasons = new SortedSet<string>(StringComparer.Ordinal);

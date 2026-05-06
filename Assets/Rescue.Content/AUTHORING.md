@@ -151,6 +151,28 @@ Run this after changing level JSON, rules, loader behavior, or solve scripts.
 
 If a solve script mismatch appears, determine whether the level changed, the script is stale, or the expected result is wrong.
 
+## Generate difficulty telemetry
+
+Telemetry reports are offline design diagnostics, not runtime analytics.
+
+Run one level:
+
+```bash
+dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --level L01
+```
+
+Run onboarding:
+
+```bash
+dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --range L00-L15 --samples 200 --max-actions 30
+```
+
+Reports are written to `Reports/LevelTelemetry/` by default.
+
+Use telemetry to compare bot behavior, loss reasons, target progress events, dock overflow frequency, water loss frequency, and whether rescue-focused play outperforms generic clearing.
+
+Telemetry does not replace human playtest.
+
 ## Verify golden paths
 
 Golden paths live in `Assets/Resources/Levels/` as `<levelId>.golden.json`.

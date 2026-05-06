@@ -315,6 +315,46 @@ namespace Rescue.LevelTelemetryTool.Tests
         }
 
         [Test]
+        public void Output_DefaultPathResolvesToReportsLevelTelemetry()
+        {
+            string resolved = LevelTelemetryRunner.ResolveOutputDirectory(Path.Combine("Reports", "LevelTelemetry"));
+
+            Assert.That(resolved, Is.EqualTo(Path.GetFullPath(Path.Combine("Reports", "LevelTelemetry"))));
+        }
+
+        [Test]
+        public void Output_CustomPathOverridesDefaultAndUsesTempDirectory()
+        {
+            string outputDir = Path.Combine(_testDir, "Temp", "MyTelemetry");
+
+            int exitCode = RunTelemetry(new[] { "--level", "L01", "--samples", "1", "--max-actions", "1", "--output", outputDir }, out string output);
+
+            Assert.That(exitCode, Is.EqualTo(0), output);
+            Assert.That(File.Exists(Path.Combine(outputDir, "L01.telemetry.json")), Is.True);
+            Assert.That(output, Does.Contain(Path.GetFullPath(outputDir)));
+        }
+
+        [Test]
+        public void Gitignore_IgnoresGeneratedTelemetryReports()
+        {
+            string gitignore = File.ReadAllText(Path.Combine(FindRepoRoot(), ".gitignore"));
+
+            Assert.That(gitignore, Does.Contain("/Reports/LevelTelemetry/"));
+        }
+
+        [Test]
+        public void AuthoringDocs_ContainTelemetryUsageSection()
+        {
+            string authoring = File.ReadAllText(Path.Combine(FindRepoRoot(), "Assets", "Rescue.Content", "AUTHORING.md"));
+
+            Assert.That(authoring, Does.Contain("## Generate difficulty telemetry"));
+            Assert.That(authoring, Does.Contain("dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --level L01"));
+            Assert.That(authoring, Does.Contain("dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --range L00-L15 --samples 200 --max-actions 30"));
+            Assert.That(authoring, Does.Contain("Telemetry reports are offline design diagnostics, not runtime analytics."));
+            Assert.That(authoring, Does.Contain("Telemetry does not replace human playtest."));
+        }
+
+        [Test]
         public void Run_WritesPerLevelReportShape()
         {
             string outputDir = Path.Combine(_testDir, "run");
@@ -325,7 +365,9 @@ namespace Rescue.LevelTelemetryTool.Tests
             string reportPath = Path.Combine(outputDir, "L01.telemetry.json");
             Assert.That(File.Exists(reportPath), Is.True);
             using JsonDocument document = JsonDocument.Parse(File.ReadAllText(reportPath));
+            Assert.That(document.RootElement.GetProperty("levelId").GetString(), Is.EqualTo("L01"));
             Assert.That(document.RootElement.GetProperty("bots").EnumerateObject().Count(), Is.EqualTo(4));
+            Assert.That(document.RootElement.GetProperty("bots").EnumerateObject().Select(static property => property.Name), Is.EquivalentTo(BotNames));
         }
 
         [Test]
@@ -333,13 +375,18 @@ namespace Rescue.LevelTelemetryTool.Tests
         {
             string outputDir = Path.Combine(_testDir, "range");
 
-            int exitCode = RunTelemetry(new[] { "--range", "L00-L03", "--samples", "1", "--max-actions", "1", "--output", outputDir }, out string output);
+            int exitCode = RunTelemetry(new[] { "--range", "L00-L03", "--samples", "2", "--max-actions", "5", "--output", outputDir }, out string output);
 
             Assert.That(exitCode, Is.EqualTo(0), output);
             Assert.That(
                 Directory.GetFiles(outputDir, "*.json").Select(Path.GetFileName),
                 Is.EquivalentTo(
                     new[] { "L00.telemetry.json", "L01.telemetry.json", "L02.telemetry.json", "L03.telemetry.json" }));
+            foreach (string levelId in new[] { "L00", "L01", "L02", "L03" })
+            {
+                using JsonDocument document = JsonDocument.Parse(File.ReadAllText(Path.Combine(outputDir, levelId + ".telemetry.json")));
+                Assert.That(document.RootElement.GetProperty("levelId").GetString(), Is.EqualTo(levelId));
+            }
         }
 
         [Test]
@@ -437,6 +484,23 @@ namespace Rescue.LevelTelemetryTool.Tests
         private static JsonDocument Serialize(LevelTelemetryRunner.LevelTelemetryReport report)
         {
             return JsonDocument.Parse(JsonSerializer.Serialize(report));
+        }
+
+        private static string FindRepoRoot()
+        {
+            DirectoryInfo? current = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
+            while (current is not null)
+            {
+                if (File.Exists(Path.Combine(current.FullName, ".gitignore"))
+                    && File.Exists(Path.Combine(current.FullName, "Assets", "Rescue.Content", "AUTHORING.md")))
+                {
+                    return current.FullName;
+                }
+
+                current = current.Parent;
+            }
+
+            throw new DirectoryNotFoundException("Could not find repository root.");
         }
 
         private static void AssertHasProperties(JsonElement element, params string[] names)

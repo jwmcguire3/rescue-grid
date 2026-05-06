@@ -26,4 +26,5 @@
   <Project Path="Rescue.Replay.csproj" />
   <Project Path="Rescue.Unity.Input.EditMode.Tests.csproj" />
   <Project Path="Rescue.Unity.Targets.EditMode.Tests.csproj" />
+  <Project Path="Tools/LevelTelemetry.Tests/LevelTelemetry.Tests.csproj" />
 </Solution>

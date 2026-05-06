@@ -37,6 +37,7 @@ UIElementsSchema/
 # Local verification artifacts
 /Artifacts/
 /capture/
+/Reports/LevelTelemetry/
 
 # OS
 .DS_Store
