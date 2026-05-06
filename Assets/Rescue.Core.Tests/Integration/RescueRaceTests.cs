@@ -27,9 +27,9 @@ namespace Rescue.Core.Tests.Integration
                         new EmptyTile())),
                 targets: ImmutableArray.Create(new TargetState("urgent", new TileCoord(2, 0), Extracted: false, OneClearAway: false)))
                 with
-                {
-                    Water = new WaterState(FloodedRows: 0, ActionsUntilRise: 1, RiseInterval: 3),
-                };
+            {
+                Water = new WaterState(FloodedRows: 0, ActionsUntilRise: 1, RiseInterval: 3),
+            };
 
             ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(state, new ActionInput(new TileCoord(1, 0)));
 

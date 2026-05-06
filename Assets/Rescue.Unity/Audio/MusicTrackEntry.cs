@@ -7,7 +7,7 @@ namespace Rescue.Unity.Audio
     public sealed class MusicTrackEntry
     {
         [SerializeField] private AudioClip? clip;
-        [SerializeField] [Range(0f, 1f)] private float volume = 1f;
+        [SerializeField][Range(0f, 1f)] private float volume = 1f;
         [SerializeField] private bool overrideDefaultVolume;
 
         public MusicTrackEntry()

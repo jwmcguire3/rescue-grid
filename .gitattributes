@@ -1,0 +1,73 @@
+* text=auto
+
+# Source and project text files use LF to match .editorconfig.
+*.cs text eol=lf
+*.csx text eol=lf
+*.csproj text eol=lf
+*.sln text eol=lf
+*.slnx text eol=lf
+*.rsp text eol=lf
+
+# Config, docs, and scripts.
+*.asmdef text eol=lf
+*.asmref text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.ps1 text eol=lf
+*.sh text eol=lf
+*.txt text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+
+# Unity text serialization files.
+*.anim text eol=lf
+*.asset text eol=lf
+*.controller text eol=lf
+*.mat text eol=lf
+*.meta text eol=lf
+*.playable text eol=lf
+*.prefab text eol=lf
+*.preset text eol=lf
+*.unity text eol=lf
+
+# Binary assets and packages.
+*.a binary
+*.aar binary
+*.apk binary
+*.bundle binary
+*.dll binary
+*.exe binary
+*.framework binary
+*.jar binary
+*.lib binary
+*.pdb binary
+*.so binary
+*.unitypackage binary
+
+# Binary art, audio, font, and video assets.
+*.ai binary
+*.aseprite binary
+*.bmp binary
+*.dds binary
+*.fbx binary
+*.gif binary
+*.ico binary
+*.jpeg binary
+*.jpg binary
+*.mid binary
+*.midi binary
+*.mov binary
+*.mp3 binary
+*.mp4 binary
+*.ogg binary
+*.otf binary
+*.pdf binary
+*.png binary
+*.psd binary
+*.tga binary
+*.tif binary
+*.tiff binary
+*.ttf binary
+*.wav binary
+*.webm binary
+*.webp binary

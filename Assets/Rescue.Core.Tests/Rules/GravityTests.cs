@@ -123,10 +123,10 @@ namespace Rescue.Core.Tests.Rules
                     ImmutableArray.Create<Tile>(new RescuePathTile(ImmutableArray.Create("target"))),
                     ImmutableArray.Create<Tile>(new EmptyTile())))
                 with
-                {
-                    SpawnLineageByCoord = ImmutableDictionary<TileCoord, SpawnLineage>.Empty
+            {
+                SpawnLineageByCoord = ImmutableDictionary<TileCoord, SpawnLineage>.Empty
                         .Add(new TileCoord(0, 0), new SpawnLineage(8, DebrisType.A, new TileCoord(0, 0))),
-                };
+            };
 
             StepResult result = Step07_Gravity.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
 
@@ -253,9 +253,9 @@ namespace Rescue.Core.Tests.Rules
                     Row(new BlockerTile(BlockerType.Crate, 1, null), new DebrisTile(DebrisType.A)),
                     Row(new FloodedTile(), new FloodedTile())))
                 with
-                {
-                    Water = new WaterState(FloodedRows: 1, ActionsUntilRise: 3, RiseInterval: 3),
-                };
+            {
+                Water = new WaterState(FloodedRows: 1, ActionsUntilRise: 3, RiseInterval: 3),
+            };
 
             StepResult result = Step07_Gravity.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
 
@@ -309,10 +309,10 @@ namespace Rescue.Core.Tests.Rules
                     Row(new BlockerTile(BlockerType.Crate, 1, null), new DebrisTile(DebrisType.A)),
                     Row(new EmptyTile(), new BlockerTile(BlockerType.Crate, 1, null))))
                 with
-                {
-                    SpawnLineageByCoord = ImmutableDictionary<TileCoord, SpawnLineage>.Empty
+            {
+                SpawnLineageByCoord = ImmutableDictionary<TileCoord, SpawnLineage>.Empty
                         .Add(new TileCoord(1, 1), new SpawnLineage(12, DebrisType.A, new TileCoord(1, 1))),
-                };
+            };
 
             StepResult result = Step07_Gravity.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
 

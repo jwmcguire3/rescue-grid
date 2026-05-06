@@ -278,9 +278,9 @@ namespace Rescue.Core.Tests.Integration
                 targets: ImmutableArray.Create(new TargetState("pup", new TileCoord(3, 3), Extracted: false, OneClearAway: false)),
                 actionCount: 0)
                 with
-                {
-                    LevelConfig = PipelineTestFixtures.CreateLevelConfig(0.0d, null, DebrisType.A),
-                };
+            {
+                LevelConfig = PipelineTestFixtures.CreateLevelConfig(0.0d, null, DebrisType.A),
+            };
         }
 
         public static GameState CreateDockOverflowLossState()
@@ -291,8 +291,8 @@ namespace Rescue.Core.Tests.Integration
                     PipelineTestFixtures.Row(new DebrisTile(DebrisType.B), new TargetTile("pup", Extracted: false))),
                 targets: ImmutableArray.Create(new TargetState("pup", new TileCoord(1, 1), Extracted: false, OneClearAway: false)))
                 with
-                {
-                    Dock = new Dock(
+            {
+                Dock = new Dock(
                         ImmutableArray.Create<DebrisType?>(
                             DebrisType.B,
                             DebrisType.C,
@@ -302,8 +302,8 @@ namespace Rescue.Core.Tests.Integration
                             DebrisType.C,
                             null),
                         Size: 7),
-                    LevelConfig = PipelineTestFixtures.CreateLevelConfig(0.0d, null, DebrisType.A),
-                };
+                LevelConfig = PipelineTestFixtures.CreateLevelConfig(0.0d, null, DebrisType.A),
+            };
         }
 
         public static GameState CreateTemporaryDockOverflowClearState()
@@ -316,8 +316,8 @@ namespace Rescue.Core.Tests.Integration
                     PipelineTestFixtures.Row(new EmptyTile(), new EmptyTile(), new EmptyTile(), new EmptyTile())),
                 targets: ImmutableArray.Create(new TargetState("pup", new TileCoord(2, 2), Extracted: false, OneClearAway: false)))
                 with
-                {
-                    Dock = new Dock(
+            {
+                Dock = new Dock(
                         ImmutableArray.Create<DebrisType?>(
                             DebrisType.A,
                             DebrisType.A,
@@ -327,8 +327,8 @@ namespace Rescue.Core.Tests.Integration
                             DebrisType.E,
                             null),
                         Size: 7),
-                    LevelConfig = PipelineTestFixtures.CreateLevelConfig(0.0d, null, DebrisType.A),
-                };
+                LevelConfig = PipelineTestFixtures.CreateLevelConfig(0.0d, null, DebrisType.A),
+            };
         }
 
         public static GameState CreateTwoBeatRescueState()
@@ -341,9 +341,9 @@ namespace Rescue.Core.Tests.Integration
                     PipelineTestFixtures.Row(new EmptyTile(), new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new TargetTile("pup", Extracted: false))),
                 targets: ImmutableArray.Create(new TargetState("pup", new TileCoord(3, 3), Extracted: false, OneClearAway: false)))
                 with
-                {
-                    LevelConfig = PipelineTestFixtures.CreateLevelConfig(0.0d, null, DebrisType.A),
-                };
+            {
+                LevelConfig = PipelineTestFixtures.CreateLevelConfig(0.0d, null, DebrisType.A),
+            };
         }
 
         public static GameState CreateNonFinalExtractionState()
@@ -359,9 +359,9 @@ namespace Rescue.Core.Tests.Integration
                     new TargetState("pup", new TileCoord(3, 3), Extracted: false, OneClearAway: true),
                     new TargetState("hold", new TileCoord(4, 0), Extracted: false, OneClearAway: false)))
                 with
-                {
-                    LevelConfig = PipelineTestFixtures.CreateLevelConfig(0.0d, null, DebrisType.A),
-                };
+            {
+                LevelConfig = PipelineTestFixtures.CreateLevelConfig(0.0d, null, DebrisType.A),
+            };
         }
 
         public static GameState CreateFinalRescueWithDockOverflowState()
@@ -399,13 +399,13 @@ namespace Rescue.Core.Tests.Integration
                     PipelineTestFixtures.Row(new TargetTile("pup", Extracted: false))),
                 targets: ImmutableArray.Create(new TargetState("pup", new TileCoord(4, 0), Extracted: false, OneClearAway: false)))
                 with
+            {
+                Water = new WaterState(FloodedRows: 0, ActionsUntilRise: 1, RiseInterval: 1),
+                LevelConfig = PipelineTestFixtures.CreateLevelConfig(0.0d, null, DebrisType.A, DebrisType.B) with
                 {
-                    Water = new WaterState(FloodedRows: 0, ActionsUntilRise: 1, RiseInterval: 1),
-                    LevelConfig = PipelineTestFixtures.CreateLevelConfig(0.0d, null, DebrisType.A, DebrisType.B) with
-                    {
-                        WaterContactMode = WaterContactMode.OneTickGrace,
-                    },
-                };
+                    WaterContactMode = WaterContactMode.OneTickGrace,
+                },
+            };
         }
 
         private static Dock OverflowDock()

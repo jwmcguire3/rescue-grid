@@ -225,9 +225,9 @@ namespace Rescue.Core.Tests.Pipeline
                     PipelineTestFixtures.DebrisRow(DebrisType.A, DebrisType.A, DebrisType.A)),
                 targets: ImmutableArray.Create(new TargetState("target-1", new TileCoord(0, 0), Extracted: true, OneClearAway: false)))
                 with
-                {
-                    ExtractedTargetOrder = ImmutableArray.Create("target-1"),
-                    Dock = new Dock(
+            {
+                ExtractedTargetOrder = ImmutableArray.Create("target-1"),
+                Dock = new Dock(
                         ImmutableArray.Create<DebrisType?>(
                             DebrisType.B,
                             DebrisType.C,
@@ -237,7 +237,7 @@ namespace Rescue.Core.Tests.Pipeline
                             null,
                             null),
                         Size: 7),
-                };
+            };
 
             List<string> trace = new List<string>();
             ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(
@@ -274,16 +274,16 @@ namespace Rescue.Core.Tests.Pipeline
                     PipelineTestFixtures.DebrisRow(DebrisType.A, DebrisType.A, DebrisType.A)),
                 targets: ImmutableArray.Create(new TargetState("target-1", new TileCoord(0, 0), Extracted: true, OneClearAway: false)))
                 with
-                {
-                    ExtractedTargetOrder = ImmutableArray.Create("target-1"),
-                    Water = new WaterState(FloodedRows: 0, ActionsUntilRise: 1, RiseInterval: 1),
-                    Vine = new VineState(
+            {
+                ExtractedTargetOrder = ImmutableArray.Create("target-1"),
+                Water = new WaterState(FloodedRows: 0, ActionsUntilRise: 1, RiseInterval: 1),
+                Vine = new VineState(
                         ActionsSinceLastClear: 2,
                         GrowthThreshold: 3,
                         GrowthPriorityList: ImmutableArray.Create(new TileCoord(1, 1)),
                         PriorityCursor: 0,
                         PendingGrowthTile: new TileCoord(1, 1)),
-                };
+            };
 
             List<string> trace = new List<string>();
             ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(
@@ -319,9 +319,9 @@ namespace Rescue.Core.Tests.Pipeline
                     PipelineTestFixtures.Row(new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new TargetTile("pup", Extracted: false))),
                 targets: ImmutableArray.Create(new TargetState("pup", new TileCoord(3, 3), Extracted: false, OneClearAway: true)))
                 with
-                {
-                    LevelConfig = PipelineTestFixtures.CreateLevelConfig(0.0d, null, DebrisType.A),
-                };
+            {
+                LevelConfig = PipelineTestFixtures.CreateLevelConfig(0.0d, null, DebrisType.A),
+            };
 
             StepTrace? updateTargets = null;
             StepTrace? insertDock = null;

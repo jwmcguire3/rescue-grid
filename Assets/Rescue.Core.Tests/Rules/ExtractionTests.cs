@@ -314,9 +314,9 @@ namespace Rescue.Core.Tests.Rules
                     Row(new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A))),
                 targets: ImmutableArray.Create(new TargetState("target", new TileCoord(0, 0), Extracted: true, OneClearAway: false)))
                 with
-                {
-                    ExtractedTargetOrder = ImmutableArray.Create("target"),
-                };
+            {
+                ExtractedTargetOrder = ImmutableArray.Create("target"),
+            };
             state = state with
             {
                 Dock = new Dock(

@@ -17,9 +17,9 @@ namespace Rescue.Core.Tests.Pipeline
                     PipelineTestFixtures.Row(new TargetTile("target", Extracted: false), new EmptyTile())),
                 targets: ImmutableArray.Create(new TargetState("target", new TileCoord(1, 0), Extracted: false, OneClearAway: false)))
                 with
-                {
-                    Water = new WaterState(FloodedRows: 1, ActionsUntilRise: 2, RiseInterval: 2),
-                };
+            {
+                Water = new WaterState(FloodedRows: 1, ActionsUntilRise: 2, RiseInterval: 2),
+            };
             StepContext context = StepContext.Create(state, new ActionInput(new TileCoord(0, 0))) with
             {
                 PendingDockOverflowCount = 1,
@@ -44,9 +44,9 @@ namespace Rescue.Core.Tests.Pipeline
                     PipelineTestFixtures.Row(new TargetTile("target", Extracted: false), new EmptyTile())),
                 targets: ImmutableArray.Create(new TargetState("target", new TileCoord(1, 0), Extracted: false, OneClearAway: false)))
                 with
-                {
-                    Water = new WaterState(FloodedRows: 1, ActionsUntilRise: 2, RiseInterval: 2),
-                };
+            {
+                Water = new WaterState(FloodedRows: 1, ActionsUntilRise: 2, RiseInterval: 2),
+            };
             StepContext context = StepContext.Create(state, new ActionInput(new TileCoord(0, 0)));
 
             CheckLossResult result = WaterTargetConsequence.Run(state, context);
@@ -262,13 +262,13 @@ namespace Rescue.Core.Tests.Pipeline
                     PipelineTestFixtures.Row(new TargetTile("target", Extracted: false), new EmptyTile())),
                 targets: ImmutableArray.Create(new TargetState("target", new TileCoord(1, 0), Extracted: false, OneClearAway: false)))
                 with
+            {
+                Water = new WaterState(FloodedRows: 1, ActionsUntilRise: 2, RiseInterval: 2),
+                LevelConfig = PipelineTestFixtures.CreateLevelConfig() with
                 {
-                    Water = new WaterState(FloodedRows: 1, ActionsUntilRise: 2, RiseInterval: 2),
-                    LevelConfig = PipelineTestFixtures.CreateLevelConfig() with
-                    {
-                        WaterContactMode = waterContactMode,
-                    },
-                };
+                    WaterContactMode = waterContactMode,
+                },
+            };
         }
 
         private static GameState CreateActiveDockJamState()

@@ -15,10 +15,10 @@ namespace Rescue.Unity.Audio
         private const bool DefaultHapticsEnabled = true;
         private const float DefaultHapticsStrength = 1.0f;
 
-        [SerializeField] [Range(0f, 1f)] private float musicVolume = DefaultVolume;
-        [SerializeField] [Range(0f, 1f)] private float fxVolume = DefaultVolume;
+        [SerializeField][Range(0f, 1f)] private float musicVolume = DefaultVolume;
+        [SerializeField][Range(0f, 1f)] private float fxVolume = DefaultVolume;
         [SerializeField] private bool hapticsEnabled = DefaultHapticsEnabled;
-        [SerializeField] [Range(0f, 1f)] private float hapticsStrength = DefaultHapticsStrength;
+        [SerializeField][Range(0f, 1f)] private float hapticsStrength = DefaultHapticsStrength;
 
         public event Action? SettingsChanged;
 

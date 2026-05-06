@@ -39,9 +39,9 @@ namespace Rescue.Core.Tests.Pipeline
                     PipelineTestFixtures.DebrisRow(DebrisType.A, DebrisType.A, DebrisType.A)),
                 targets: ImmutableArray.Create(new TargetState("target-1", new TileCoord(0, 0), Extracted: true, OneClearAway: false)))
                 with
-                {
-                    ExtractedTargetOrder = ImmutableArray.Create("target-1"),
-                };
+            {
+                ExtractedTargetOrder = ImmutableArray.Create("target-1"),
+            };
 
             ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(state, new ActionInput(new TileCoord(2, 0)));
 
@@ -56,8 +56,8 @@ namespace Rescue.Core.Tests.Pipeline
                 PipelineTestFixtures.CreateBoard(
                     PipelineTestFixtures.DebrisRow(DebrisType.A, DebrisType.A)),
                 dockJamEnabled: false) with
-                {
-                    Dock = new Dock(
+            {
+                Dock = new Dock(
                         ImmutableArray.Create<DebrisType?>(
                             DebrisType.B,
                             DebrisType.C,
@@ -67,7 +67,7 @@ namespace Rescue.Core.Tests.Pipeline
                             DebrisType.B,
                             DebrisType.C),
                         Size: 7),
-                };
+            };
 
             ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(state, new ActionInput(new TileCoord(0, 0)));
 
@@ -138,8 +138,8 @@ namespace Rescue.Core.Tests.Pipeline
                     PipelineTestFixtures.DebrisRow(DebrisType.C, DebrisType.D)),
                 targets: ImmutableArray.Create(
                     new TargetState("target", new TileCoord(0, 0), TargetReadiness.ExtractableLatched))) with
-                {
-                    Dock = new Dock(
+            {
+                Dock = new Dock(
                         ImmutableArray.Create<DebrisType?>(
                             DebrisType.A,
                             DebrisType.B,
@@ -149,18 +149,18 @@ namespace Rescue.Core.Tests.Pipeline
                             null,
                             null),
                         Size: 7),
-                    Water = new WaterState(FloodedRows: 0, ActionsUntilRise: 2, RiseInterval: 5),
-                    Vine = new VineState(
+                Water = new WaterState(FloodedRows: 0, ActionsUntilRise: 2, RiseInterval: 5),
+                Vine = new VineState(
                         ActionsSinceLastClear: 2,
                         GrowthThreshold: 4,
                         GrowthPriorityList: ImmutableArray.Create(new TileCoord(1, 1)),
                         PriorityCursor: 0,
                         PendingGrowthTile: new TileCoord(1, 1)),
-                    ExtractedTargetOrder = ImmutableArray.Create("saved"),
-                    DockJamUsed = true,
-                    ConsecutiveEmergencySpawns = 1,
-                    SpawnRecoveryCounter = 2,
-                };
+                ExtractedTargetOrder = ImmutableArray.Create("saved"),
+                DockJamUsed = true,
+                ConsecutiveEmergencySpawns = 1,
+                SpawnRecoveryCounter = 2,
+            };
 
             DeadboardRepairResult repair = DeadboardRepairOps.RepairHardNoValidGroups(original.Board, original.Water);
             GameState repaired = original with { Board = repair.Board };
@@ -187,9 +187,9 @@ namespace Rescue.Core.Tests.Pipeline
                         new BlockerTile(BlockerType.Crate, 2, null)),
                     PipelineTestFixtures.DebrisRow(DebrisType.D, DebrisType.D, DebrisType.E)))
                 with
-                {
-                    Water = new WaterState(FloodedRows: 0, ActionsUntilRise: 1, RiseInterval: 3),
-                };
+            {
+                Water = new WaterState(FloodedRows: 0, ActionsUntilRise: 1, RiseInterval: 3),
+            };
         }
 
         private static DeadboardMinimalShuffleApplied GetSingleRepairEvent(ImmutableArray<ActionEvent> events)

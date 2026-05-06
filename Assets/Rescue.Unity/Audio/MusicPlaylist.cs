@@ -10,9 +10,9 @@ namespace Rescue.Unity.Audio
         [SerializeField] private bool shuffle = true;
         [SerializeField] private bool avoidImmediateRepeat = true;
         [SerializeField] private bool loopPlaylist = true;
-        [SerializeField] [Min(0f)] private float fadeInDurationSeconds = 0f;
-        [SerializeField] [Min(0f)] private float fadeOutDurationSeconds = 0f;
-        [SerializeField] [Range(0f, 1f)] private float defaultVolume = 1f;
+        [SerializeField][Min(0f)] private float fadeInDurationSeconds = 0f;
+        [SerializeField][Min(0f)] private float fadeOutDurationSeconds = 0f;
+        [SerializeField][Range(0f, 1f)] private float defaultVolume = 1f;
 
         public ReadOnlySpan<MusicTrackEntry?> Tracks => tracks;
 

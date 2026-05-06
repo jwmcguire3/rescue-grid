@@ -39,9 +39,9 @@ namespace Rescue.Core.Tests.Undo
                     PipelineTestFixtures.DebrisRow(DebrisType.C, DebrisType.C, DebrisType.D, DebrisType.D),
                     PipelineTestFixtures.EmptyRow(4)))
                 with
-                {
-                    RngState = new RngState(0x12345678u, 0x9ABCDEF0u),
-                };
+            {
+                RngState = new RngState(0x12345678u, 0x9ABCDEF0u),
+            };
 
             ActionResult firstAction = Rescue.Core.Pipeline.Pipeline.RunAction(original, new ActionInput(new TileCoord(0, 0)));
             GameState restored = UndoGuard.PerformUndo(firstAction.State, firstAction.Snapshot!);
@@ -136,9 +136,9 @@ namespace Rescue.Core.Tests.Undo
                     PipelineTestFixtures.DebrisRow(DebrisType.C, DebrisType.D, DebrisType.B),
                     PipelineTestFixtures.EmptyRow(3)))
                 with
-                {
-                    Water = new WaterState(FloodedRows: 2, ActionsUntilRise: 1, RiseInterval: 5),
-                };
+            {
+                Water = new WaterState(FloodedRows: 2, ActionsUntilRise: 1, RiseInterval: 5),
+            };
 
             ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(original, new ActionInput(new TileCoord(0, 0)));
             GameState postHazard = result.State with
@@ -162,12 +162,12 @@ namespace Rescue.Core.Tests.Undo
                 targets: ImmutableArray.Create(
                     new TargetState("target", new TileCoord(1, 2), TargetReadiness.Distressed)))
                 with
+            {
+                LevelConfig = PipelineTestFixtures.CreateLevelConfig() with
                 {
-                    LevelConfig = PipelineTestFixtures.CreateLevelConfig() with
-                    {
-                        WaterContactMode = WaterContactMode.OneTickGrace,
-                    },
-                };
+                    WaterContactMode = WaterContactMode.OneTickGrace,
+                },
+            };
 
             ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(original, new ActionInput(new TileCoord(0, 0)));
             GameState postAction = result.State with
@@ -194,13 +194,13 @@ namespace Rescue.Core.Tests.Undo
                 targets: ImmutableArray.Create(
                     new TargetState("target", new TileCoord(2, 2), TargetReadiness.Distressed)))
                 with
+            {
+                Water = new WaterState(FloodedRows: 1, ActionsUntilRise: 3, RiseInterval: 3),
+                LevelConfig = PipelineTestFixtures.CreateLevelConfig() with
                 {
-                    Water = new WaterState(FloodedRows: 1, ActionsUntilRise: 3, RiseInterval: 3),
-                    LevelConfig = PipelineTestFixtures.CreateLevelConfig() with
-                    {
-                        WaterContactMode = WaterContactMode.OneTickGrace,
-                    },
-                };
+                    WaterContactMode = WaterContactMode.OneTickGrace,
+                },
+            };
 
             ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(original, new ActionInput(new TileCoord(0, 0)));
 
@@ -224,15 +224,15 @@ namespace Rescue.Core.Tests.Undo
                     PipelineTestFixtures.Row(new EmptyTile(), new EmptyTile(), new EmptyTile()),
                     PipelineTestFixtures.DebrisRow(DebrisType.C, DebrisType.D, DebrisType.E)))
                 with
+            {
+                ConsecutiveEmergencySpawns = 1,
+                SpawnRecoveryCounter = 2,
+                DebugSpawnOverride = new SpawnOverride(ForceEmergency: true, OverrideAssistanceChance: 1.0d),
+                LevelConfig = PipelineTestFixtures.CreateLevelConfig(assistanceChance: 1.0d) with
                 {
-                    ConsecutiveEmergencySpawns = 1,
-                    SpawnRecoveryCounter = 2,
-                    DebugSpawnOverride = new SpawnOverride(ForceEmergency: true, OverrideAssistanceChance: 1.0d),
-                    LevelConfig = PipelineTestFixtures.CreateLevelConfig(assistanceChance: 1.0d) with
-                    {
-                        ConsecutiveEmergencyCap = 10,
-                    },
-                };
+                    ConsecutiveEmergencyCap = 10,
+                },
+            };
 
             ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(original, new ActionInput(new TileCoord(0, 0)));
             GameState restored = UndoGuard.PerformUndo(result.State, result.Snapshot!);
@@ -291,14 +291,14 @@ namespace Rescue.Core.Tests.Undo
                     PipelineTestFixtures.DebrisRow(DebrisType.C, DebrisType.D, DebrisType.B),
                     PipelineTestFixtures.EmptyRow(3)))
                 with
-                {
-                    Vine = new VineState(
+            {
+                Vine = new VineState(
                         ActionsSinceLastClear: 2,
                         GrowthThreshold: 4,
                         GrowthPriorityList: growthPriority,
                         PriorityCursor: 1,
                         PendingGrowthTile: new TileCoord(1, 2)),
-                };
+            };
 
             ActionResult result = Rescue.Core.Pipeline.Pipeline.RunAction(original, new ActionInput(new TileCoord(0, 0)));
             GameState postGrowth = result.State with
@@ -309,7 +309,7 @@ namespace Rescue.Core.Tests.Undo
                     GrowthPriorityList: growthPriority,
                     PriorityCursor: 2,
                     PendingGrowthTile: new TileCoord(2, 2)),
-                };
+            };
 
             GameState restored = UndoGuard.PerformUndo(postGrowth, result.Snapshot!);
 
@@ -363,12 +363,12 @@ namespace Rescue.Core.Tests.Undo
                     PipelineTestFixtures.Row(new EmptyTile(), new BlockerTile(BlockerType.Crate, 1, null), new EmptyTile(), new EmptyTile()),
                     PipelineTestFixtures.Row(new BlockerTile(BlockerType.Crate, 1, null), new BlockerTile(BlockerType.Crate, 1, null), new EmptyTile(), new EmptyTile())))
                 with
-                {
-                    RngState = new RngState(0x12345678u, 0x9ABCDEF0u),
-                    SpawnLineageByCoord = ImmutableDictionary<TileCoord, SpawnLineage>.Empty
+            {
+                RngState = new RngState(0x12345678u, 0x9ABCDEF0u),
+                SpawnLineageByCoord = ImmutableDictionary<TileCoord, SpawnLineage>.Empty
                         .Add(new TileCoord(1, 1), new SpawnLineage(12, DebrisType.B, new TileCoord(1, 1))),
-                    NextSpawnLineageId = 20,
-                };
+                NextSpawnLineageId = 20,
+            };
         }
 
         private static GameState CreateHardNoMoveRepairPipelineState()
@@ -382,10 +382,10 @@ namespace Rescue.Core.Tests.Undo
                         new BlockerTile(BlockerType.Crate, 2, null)),
                     PipelineTestFixtures.DebrisRow(DebrisType.D, DebrisType.D, DebrisType.E)))
                 with
-                {
-                    RngState = new RngState(0xCAFEBABEu, 0xFACEFEEDu),
-                    Water = new WaterState(FloodedRows: 0, ActionsUntilRise: 1, RiseInterval: 3),
-                };
+            {
+                RngState = new RngState(0xCAFEBABEu, 0xFACEFEEDu),
+                Water = new WaterState(FloodedRows: 0, ActionsUntilRise: 1, RiseInterval: 3),
+            };
         }
 
         private static void AssertGameStatesEqual(GameState expected, GameState actual)

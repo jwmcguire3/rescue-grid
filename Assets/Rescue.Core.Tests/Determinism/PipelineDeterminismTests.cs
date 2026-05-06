@@ -142,10 +142,10 @@ namespace Rescue.Core.Tests.Determinism
                         new BlockerTile(BlockerType.Crate, 2, null)),
                     PipelineTestFixtures.DebrisRow(DebrisType.D, DebrisType.D, DebrisType.E)))
                 with
-                {
-                    Water = new WaterState(FloodedRows: 0, ActionsUntilRise: 1, RiseInterval: 3),
-                    RngState = new Rescue.Core.Rng.RngState(seed, seed ^ 0xA5A5A5A5u),
-                };
+            {
+                Water = new WaterState(FloodedRows: 0, ActionsUntilRise: 1, RiseInterval: 3),
+                RngState = new Rescue.Core.Rng.RngState(seed, seed ^ 0xA5A5A5A5u),
+            };
         }
 
         private static IReadOnlyList<ActionInput> CreateInputSequence()

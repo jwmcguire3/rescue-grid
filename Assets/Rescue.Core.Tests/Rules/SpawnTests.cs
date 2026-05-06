@@ -86,9 +86,9 @@ namespace Rescue.Core.Tests.Rules
                         null),
                     Size: 7))
                 with
-                {
-                    ConsecutiveEmergencySpawns = 2,
-                };
+            {
+                ConsecutiveEmergencySpawns = 2,
+            };
 
             SpawnBias bias = SpawnOps.ComputeSpawnBias(state, state.LevelConfig);
 
@@ -103,9 +103,9 @@ namespace Rescue.Core.Tests.Rules
                 PipelineTestFixtures.CreateBoard(PipelineTestFixtures.EmptyRow(1)),
                 assistanceChance: 0.3d)
                 with
-                {
-                    DebugSpawnOverride = new SpawnOverride(ForceEmergency: true, OverrideAssistanceChance: null),
-                };
+            {
+                DebugSpawnOverride = new SpawnOverride(ForceEmergency: true, OverrideAssistanceChance: null),
+            };
 
             SpawnBias bias = SpawnOps.ComputeSpawnBias(state, state.LevelConfig);
 
@@ -130,9 +130,9 @@ namespace Rescue.Core.Tests.Rules
                         null),
                     Size: 7))
                 with
-                {
-                    DebugSpawnOverride = new SpawnOverride(ForceEmergency: null, OverrideAssistanceChance: 1.0d),
-                };
+            {
+                DebugSpawnOverride = new SpawnOverride(ForceEmergency: null, OverrideAssistanceChance: 1.0d),
+            };
 
             SpawnBias bias = SpawnOps.ComputeSpawnBias(state, state.LevelConfig);
 
@@ -270,9 +270,9 @@ namespace Rescue.Core.Tests.Rules
                     Row(new EmptyTile(), new EmptyTile()),
                     Row(new FloodedTile(), new FloodedTile())),
                 assistanceChance: 0.0d) with
-                {
-                    Water = new WaterState(FloodedRows: 1, ActionsUntilRise: 3, RiseInterval: 3),
-                };
+            {
+                Water = new WaterState(FloodedRows: 1, ActionsUntilRise: 3, RiseInterval: 3),
+            };
 
             StepResult result = Step08_Spawn.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
 
@@ -384,9 +384,9 @@ namespace Rescue.Core.Tests.Rules
                     Row(new EmptyTile(), new EmptyTile(), new EmptyTile()),
                     Row(new RescuePathTile(ImmutableArray.Create("target")), new EmptyTile(), new FloodedTile())),
                 assistanceChance: 0.0d) with
-                {
-                    Water = new WaterState(FloodedRows: 1, ActionsUntilRise: 3, RiseInterval: 3),
-                };
+            {
+                Water = new WaterState(FloodedRows: 1, ActionsUntilRise: 3, RiseInterval: 3),
+            };
 
             StepResult result = Step08_Spawn.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
 
@@ -885,10 +885,10 @@ namespace Rescue.Core.Tests.Rules
                 BuildSoftRouteBoard(),
                 assistanceChance: 1.0d)
                 with
-                {
-                    Targets = ImmutableArray.Create(new TargetState("target", new TileCoord(1, 3), Extracted: false, OneClearAway: false)),
-                    RngState = new RngState(0x12345678u, 0x9ABCDEF0u),
-                };
+            {
+                Targets = ImmutableArray.Create(new TargetState("target", new TileCoord(1, 3), Extracted: false, OneClearAway: false)),
+                RngState = new RngState(0x12345678u, 0x9ABCDEF0u),
+            };
             StepContext context = StepContext.Create(state, new ActionInput(new TileCoord(0, 0)));
 
             StepResult first = Step08_Spawn.Run(state, context);
@@ -1002,9 +1002,9 @@ namespace Rescue.Core.Tests.Rules
                 PipelineTestFixtures.CreateBoard(PipelineTestFixtures.EmptyRow(1)),
                 assistanceChance: 1.0d)
                 with
-                {
-                    RngState = new RngState(0x12345678u, 0x9ABCDEF0u),
-                };
+            {
+                RngState = new RngState(0x12345678u, 0x9ABCDEF0u),
+            };
 
             StepResult result = Step08_Spawn.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
             Spawned spawned = (Spawned)result.Events[0];
