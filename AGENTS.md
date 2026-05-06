@@ -24,7 +24,9 @@ rescue order is the central puzzle.
 - `ImmutableArray<T>` support is provided by the checked-in
   `Assets/Plugins/System.Collections.Immutable.dll` plugin; do not remove
   it unless Unity package/runtime support is replaced intentionally.
-- Lint: Roslyn analyzers via .editorconfig. Treat warnings as errors in CI.
+- Formatting and analyzer preferences are defined in the root `.editorconfig`.
+  Do not assume all analyzer warnings are CI-blocking unless the project or CI
+  configuration explicitly says so.
 
 ## Architecture rules (non-negotiable)
 

@@ -108,6 +108,7 @@
     <Compile Include="Assets\Rescue.Unity\FX\SpriteSequenceFxPlayer.cs" />
     <Compile Include="Assets\Rescue.Unity\Board\BoardCellView.cs" />
     <Compile Include="Assets\Rescue.Unity\Audio\MusicPlayer.cs" />
+    <Compile Include="Assets\Rescue.Unity\Diagnostics\AndroidOrientationStartupLogger.cs" />
     <Compile Include="Assets\Rescue.Unity\Presentation\ActionPlaybackPlan.cs" />
     <Compile Include="Assets\Rescue.Unity\Editor\Art\Validation\MeshyAssetValidationMenu.cs" />
     <Compile Include="Assets\Rescue.Unity\Presentation\LossScreenPresenter.cs" />

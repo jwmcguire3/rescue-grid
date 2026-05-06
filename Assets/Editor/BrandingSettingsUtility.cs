@@ -26,6 +26,7 @@ namespace Rescue.Unity.EditorTools
             Texture2D icon = LoadRequiredAsset<Texture2D>(IconPath);
 
             ApplySplashSettings(splash);
+            ApplyAndroidOrientationSettings();
             ApplyAndroidIconSettings(icon);
 
             AssetDatabase.SaveAssets();
@@ -72,6 +73,11 @@ namespace Rescue.Unity.EditorTools
             Require(PlayerSettings.SplashScreen.show, "Unity splash screen container is disabled, so the Rescue Grid startup image will not display.");
             Require(!PlayerSettings.SplashScreen.showUnityLogo, "Unity logo is still enabled on the splash screen.");
             Require(!PlayerSettings.SplashScreen.blurBackgroundImage, "Splash background blur is still enabled.");
+            Require(PlayerSettings.defaultInterfaceOrientation == UIOrientation.Portrait, "Default Orientation is not Portrait, so Android launch/splash can disagree with gameplay.");
+            Require(PlayerSettings.allowedAutorotateToPortrait, "Portrait is not enabled in Allowed Orientations.");
+            Require(!PlayerSettings.allowedAutorotateToPortraitUpsideDown, "Portrait Upside Down is enabled; this can launch the Android splash upside down.");
+            Require(!PlayerSettings.allowedAutorotateToLandscapeLeft, "Landscape Left is enabled; gameplay currently forces portrait.");
+            Require(!PlayerSettings.allowedAutorotateToLandscapeRight, "Landscape Right is enabled; gameplay currently forces portrait.");
 
             ValidateAndroidIconKind(AndroidPlatformIconKind.Adaptive, icon);
 #pragma warning disable CS0618
@@ -106,6 +112,15 @@ namespace Rescue.Unity.EditorTools
             PlayerSettings.SplashScreen.blurBackgroundImage = false;
             PlayerSettings.SplashScreen.logos = Array.Empty<PlayerSettings.SplashScreenLogo>();
             PlayerSettings.SplashScreen.overlayOpacity = 0f;
+        }
+
+        private static void ApplyAndroidOrientationSettings()
+        {
+            PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
+            PlayerSettings.allowedAutorotateToPortrait = true;
+            PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
+            PlayerSettings.allowedAutorotateToLandscapeLeft = false;
+            PlayerSettings.allowedAutorotateToLandscapeRight = false;
         }
 
         private static void ApplyAndroidIconSettings(Texture2D icon)
