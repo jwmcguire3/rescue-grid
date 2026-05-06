@@ -1,0 +1,59 @@
+{
+  "levelId": "L09",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 8,
+  "actions": [
+    {
+      "row": 4,
+      "col": 3,
+      "intent": "Clip the right vine pressure without abandoning the lower rescue priority."
+    },
+    {
+      "row": 5,
+      "col": 3,
+      "intent": "Open the lower puppy's route and avoid drifting into upper-side cleanup."
+    },
+    {
+      "row": 4,
+      "col": 0,
+      "intent": "Finish the lower water-near puppy first by cutting the lower vine route."
+    },
+    {
+      "row": 0,
+      "col": 3,
+      "intent": "Pivot to the upper puppy after the urgent lower rescue is safe."
+    },
+    {
+      "row": 0,
+      "col": 2,
+      "intent": "Advance the upper route without spending actions on low-value board cleanup."
+    },
+    {
+      "row": 2,
+      "col": 6,
+      "intent": "Break the upper-right crate chain and put the second puppy one clear away."
+    },
+    {
+      "row": 5,
+      "col": 2,
+      "intent": "Take a controlled dock cost while preserving the final upper route."
+    },
+    {
+      "row": 0,
+      "col": 3,
+      "intent": "Complete the upper puppy and prove lower-first triage."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "0",
+    "1"
+  ],
+  "notes": "Designer-approved pressure path: lower water-near puppy first, vine clips only when they protect the route, then pivot to upper."
+}

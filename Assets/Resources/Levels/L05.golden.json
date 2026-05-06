@@ -1,0 +1,68 @@
+{
+  "levelId": "L05",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 9,
+  "actions": [
+    {
+      "row": 4,
+      "col": 0,
+      "intent": "Commit to the lower puppy route first and break the crate framing its rescue pocket."
+    },
+    {
+      "row": 6,
+      "col": 0,
+      "intent": "Invest in the lower ice lane so the route becomes future value rather than a dead end."
+    },
+    {
+      "row": 2,
+      "col": 5,
+      "intent": "Open the upper target route enough to keep the later pivot prepared without abandoning the lower rescue."
+    },
+    {
+      "row": 3,
+      "col": 2,
+      "intent": "Clear the central B group, breaking lower-route blockers and revealing the lower ice payoff."
+    },
+    {
+      "row": 4,
+      "col": 3,
+      "intent": "Push the lower puppy to one-clear-away while managing acute dock pressure."
+    },
+    {
+      "row": 6,
+      "col": 1,
+      "intent": "Finish the lower rescue through the ice lane and clear a dock triple before pivoting."
+    },
+    {
+      "row": 2,
+      "col": 2,
+      "intent": "Clear central B residue to stabilize the dock and prepare the upper rescue."
+    },
+    {
+      "row": 2,
+      "col": 0,
+      "intent": "Clear left-side C material as the final setup before water rises."
+    },
+    {
+      "row": 0,
+      "col": 3,
+      "intent": "Open the upper puppy pocket and complete the lower-first rescue-order payoff."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetProgressed",
+    "DockCleared",
+    "TargetOneClearAway",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "WaterWarning",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "0",
+    "1"
+  ],
+  "notes": "Designer-approved intended path for L05 ice practice; lower puppy through ice first, then pivot to the upper target."
+}

@@ -1,0 +1,24 @@
+{
+  "levelId": "L07",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 1,
+  "actions": [
+    {
+      "row": 5,
+      "col": 1,
+      "intent": "Cut the visible vine lane that directly opens the final rescue side."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "BlockerBroken",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "0"
+  ],
+  "notes": "Designer-approved static vine introduction path. This golden intentionally records that the current level solves in one action, which should be considered during difficulty review."
+}

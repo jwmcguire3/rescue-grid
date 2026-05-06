@@ -1,0 +1,69 @@
+{
+  "levelId": "L06",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 10,
+  "actions": [
+    {
+      "row": 3,
+      "col": 6,
+      "intent": "Open the right-side route material first, breaking blockers without committing to broad side farming."
+    },
+    {
+      "row": 3,
+      "col": 4,
+      "intent": "Continue the central lane read and start meaningful progress on the lower puppy."
+    },
+    {
+      "row": 3,
+      "col": 0,
+      "intent": "Clear the left-side blocker access needed for the second rescue route."
+    },
+    {
+      "row": 3,
+      "col": 1,
+      "intent": "Open the upper puppy's lane while keeping both rescues advancing instead of collecting side value."
+    },
+    {
+      "row": 5,
+      "col": 6,
+      "intent": "Pay a small dock cost to preserve the route and avoid losing the central read."
+    },
+    {
+      "row": 3,
+      "col": 5,
+      "intent": "Create one-clear-away states for both puppies and use the dock triple clear to recover space."
+    },
+    {
+      "row": 5,
+      "col": 0,
+      "intent": "Clear the left bottom blocker chain so the lower puppy can be finished first."
+    },
+    {
+      "row": 4,
+      "col": 1,
+      "intent": "Extract the lower water-near puppy before the water row becomes the main threat."
+    },
+    {
+      "row": 1,
+      "col": 2,
+      "intent": "Pivot upward after the urgent rescue and prepare the final upper route."
+    },
+    {
+      "row": 0,
+      "col": 4,
+      "intent": "Finish the upper puppy and complete the intended central-lane-first solve."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "0",
+    "1"
+  ],
+  "notes": "Designer-approved intended path for the larger-board read: central route work first, lower puppy before upper, no reliance on broad side farming."
+}

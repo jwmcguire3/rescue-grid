@@ -1,0 +1,34 @@
+{
+  "levelId": "L08",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 3,
+  "actions": [
+    {
+      "row": 5,
+      "col": 1,
+      "intent": "Respond to the lower vine/crate route first and bring the puppy to one-clear-away."
+    },
+    {
+      "row": 1,
+      "col": 2,
+      "intent": "Clear the warned upper vine pressure before it worsens the route."
+    },
+    {
+      "row": 0,
+      "col": 3,
+      "intent": "Return to the rescue route and open the final side for extraction."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetOneClearAway",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "0"
+  ],
+  "notes": "Designer-approved vine growth practice path: make immediate rescue progress, clip the vine pressure, then finish the puppy."
+}

@@ -1,0 +1,72 @@
+{
+  "levelId": "L04",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 10,
+  "actions": [
+    {
+      "row": 2,
+      "col": 0,
+      "intent": "Start on the left rescue-side group, breaking the first ice route tile and showing that ice is future value."
+    },
+    {
+      "row": 0,
+      "col": 1,
+      "intent": "Continue investing in the upper ice lane instead of chasing cleaner side clears."
+    },
+    {
+      "row": 0,
+      "col": 2,
+      "intent": "Use the revealed A support to break the upper-right crate and begin opening the puppy pocket."
+    },
+    {
+      "row": 0,
+      "col": 1,
+      "intent": "Cycle D residue safely and keep the route lane from becoming a dock problem."
+    },
+    {
+      "row": 0,
+      "col": 3,
+      "intent": "Break the right-side ice on the rescue lane so its hidden value can fall into play."
+    },
+    {
+      "row": 3,
+      "col": 1,
+      "intent": "Cash the central F group to reveal the last lower route material and preserve tempo."
+    },
+    {
+      "row": 0,
+      "col": 2,
+      "intent": "Clear the upper C group to make visible target progress while accepting temporary dock pressure."
+    },
+    {
+      "row": 4,
+      "col": 3,
+      "intent": "Use the C route cluster to clear dock pressure and keep the final rescue path controlled."
+    },
+    {
+      "row": 0,
+      "col": 1,
+      "intent": "Clear D residue before the water warning becomes dangerous."
+    },
+    {
+      "row": 2,
+      "col": 1,
+      "intent": "Open the final puppy side and complete the ice-investment rescue payoff."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "IceRevealed",
+    "TargetProgressed",
+    "DockCleared",
+    "WaterWarning",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "0"
+  ],
+  "notes": "Designer-approved intended path for L04 ice introduction; proves early ice investment pays off before water becomes lethal."
+}

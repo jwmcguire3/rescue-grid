@@ -1,0 +1,49 @@
+{
+  "levelId": "L10",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 6,
+  "actions": [
+    {
+      "row": 5,
+      "col": 3,
+      "intent": "Open the central choke around the lower puppy instead of collecting side value."
+    },
+    {
+      "row": 6,
+      "col": 0,
+      "intent": "Cut the lower-left vine access and keep the urgent route moving."
+    },
+    {
+      "row": 5,
+      "col": 0,
+      "intent": "Bring the lower puppy to one-clear-away while managing dock pressure."
+    },
+    {
+      "row": 2,
+      "col": 4,
+      "intent": "Use the central mixed-blocker clear to extract the lower puppy and open the upper branch."
+    },
+    {
+      "row": 3,
+      "col": 6,
+      "intent": "Take the upper branch route rather than broad clearing after the first rescue."
+    },
+    {
+      "row": 0,
+      "col": 5,
+      "intent": "Finish the upper puppy and complete the midpoint exam path."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "0",
+    "1"
+  ],
+  "notes": "Designer-approved midpoint exam path: central choke first, lower urgent target, then a clean pivot to upper."
+}
