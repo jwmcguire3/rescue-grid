@@ -1,6 +1,6 @@
 {
   "id": "L12",
-  "title": "Three-Target Readability Test",
+  "title": "Three-Way Triage",
   "campaignBand": "production_onboarding",
   "role": "choice",
   "primarySkill": "multi_target_triage",
