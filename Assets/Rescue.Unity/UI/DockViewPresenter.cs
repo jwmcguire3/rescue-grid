@@ -492,8 +492,7 @@ namespace Rescue.Unity.UI
         [SerializeField] private GameObject? fallbackPiecePrefab;
         [SerializeField] private DockFeedbackPresenter? feedbackPresenter;
 
-        private readonly DebrisType?[] _trackedSlotTypes = new DebrisType?[MaxTrackedDockSlots];
-        private readonly GameObject?[] _trackedSlotObjects = new GameObject?[MaxTrackedDockSlots];
+        private readonly DockSlotVisualRegistry _trackedSlots = new DockSlotVisualRegistry(MaxTrackedDockSlots);
         private GameObject? _sharedDockInstance;
         private float dockInsertDurationSeconds = ActionPlaybackSettings.DefaultDockInsertFeedbackDurationSeconds;
         private float dockClearDurationSeconds = ActionPlaybackSettings.DefaultDockClearFeedbackDurationSeconds;
@@ -685,30 +684,17 @@ namespace Rescue.Unity.UI
 
         public void ClearSlots()
         {
-            for (int slotIndex = 0; slotIndex < _trackedSlotTypes.Length; slotIndex++)
-            {
-                ClearTrackedSlot(slotIndex);
-            }
+            _trackedSlots.ClearAll(DestroyTrackedObject);
         }
 
         public DebrisType? GetTrackedSlotType(int slotIndex)
         {
-            if (slotIndex < 0 || slotIndex >= _trackedSlotTypes.Length)
-            {
-                return null;
-            }
-
-            return _trackedSlotTypes[slotIndex];
+            return _trackedSlots.GetSlotType(slotIndex);
         }
 
         public GameObject? GetTrackedSlotObject(int slotIndex)
         {
-            if (slotIndex < 0 || slotIndex >= _trackedSlotObjects.Length)
-            {
-                return null;
-            }
-
-            return _trackedSlotObjects[slotIndex];
+            return _trackedSlots.GetSlotObject(slotIndex);
         }
 
         public bool TryGetSlotWorldPosition(int slotIndex, out Vector3 position)
@@ -765,10 +751,10 @@ namespace Rescue.Unity.UI
             System.Text.StringBuilder builder = new System.Text.StringBuilder();
             builder.Append('[');
             bool appendedAny = false;
-            for (int slotIndex = 0; slotIndex < _trackedSlotTypes.Length; slotIndex++)
+            for (int slotIndex = 0; slotIndex < _trackedSlots.Capacity; slotIndex++)
             {
-                DebrisType? slotType = _trackedSlotTypes[slotIndex];
-                GameObject? slotObject = _trackedSlotObjects[slotIndex];
+                DebrisType? slotType = _trackedSlots.GetSlotType(slotIndex);
+                GameObject? slotObject = _trackedSlots.GetSlotObject(slotIndex);
                 if (!slotType.HasValue && slotObject is null)
                 {
                     continue;
@@ -1078,7 +1064,7 @@ namespace Rescue.Unity.UI
 
             int insertedCount = dockInserted.Pieces.Length;
             int firstInsertedSlot = Mathf.Max(0, dockInserted.OccupancyAfterInsert - insertedCount);
-            int maxSlotCount = Mathf.Min(_trackedSlotTypes.Length, anchors.Length);
+            int maxSlotCount = Mathf.Min(_trackedSlots.Capacity, anchors.Length);
 
             for (int pieceIndex = 0; pieceIndex < insertedCount; pieceIndex++)
             {
@@ -1102,24 +1088,7 @@ namespace Rescue.Unity.UI
             }
 
             int piecesToClear = Mathf.Max(0, dockCleared.SetsCleared * 3);
-            List<GameObject> clearedObjects = new List<GameObject>(piecesToClear);
-            for (int slotIndex = 0; slotIndex < _trackedSlotTypes.Length && piecesToClear > 0; slotIndex++)
-            {
-                if (_trackedSlotTypes[slotIndex] != dockCleared.Type)
-                {
-                    continue;
-                }
-
-                GameObject? clearedObject = _trackedSlotObjects[slotIndex];
-                if (clearedObject is not null)
-                {
-                    clearedObjects.Add(clearedObject);
-                }
-
-                _trackedSlotTypes[slotIndex] = null;
-                _trackedSlotObjects[slotIndex] = null;
-                piecesToClear--;
-            }
+            List<GameObject> clearedObjects = _trackedSlots.RemoveFirstMatching(dockCleared.Type, piecesToClear);
 
             CompactTrackedSlots(anchors);
             AnimateClearedDockPieces(clearedObjects);
@@ -1127,7 +1096,7 @@ namespace Rescue.Unity.UI
 
         private void RepairTrackedSlots(Dock dock, Transform[] anchors)
         {
-            int maxSlotCount = Mathf.Min(_trackedSlotTypes.Length, dock.Slots.Length);
+            int maxSlotCount = Mathf.Min(_trackedSlots.Capacity, dock.Slots.Length);
 
             for (int slotIndex = 0; slotIndex < maxSlotCount; slotIndex++)
             {
@@ -1142,7 +1111,7 @@ namespace Rescue.Unity.UI
                 AssignTrackedSlot(slotIndex, expectedType.Value, ResolveAnchorForSlot(slotIndex, anchors));
             }
 
-            for (int slotIndex = maxSlotCount; slotIndex < _trackedSlotTypes.Length; slotIndex++)
+            for (int slotIndex = maxSlotCount; slotIndex < _trackedSlots.Capacity; slotIndex++)
             {
                 ClearTrackedSlot(slotIndex);
             }
@@ -1150,74 +1119,19 @@ namespace Rescue.Unity.UI
 
         private void CompactTrackedSlots(Transform[] anchors)
         {
-            int maxSlotCount = Mathf.Min(_trackedSlotTypes.Length, anchors.Length);
-            int writeIndex = 0;
-
-            for (int readIndex = 0; readIndex < maxSlotCount; readIndex++)
-            {
-                DebrisType? trackedType = _trackedSlotTypes[readIndex];
-                if (!trackedType.HasValue)
-                {
-                    continue;
-                }
-
-                if (writeIndex != readIndex)
-                {
-                    _trackedSlotTypes[writeIndex] = trackedType;
-                    _trackedSlotObjects[writeIndex] = _trackedSlotObjects[readIndex];
-                    _trackedSlotTypes[readIndex] = null;
-                    _trackedSlotObjects[readIndex] = null;
-                }
-
-                UpdateTrackedSlotTransform(writeIndex, anchors[writeIndex]);
-                writeIndex++;
-            }
-
-            for (int slotIndex = writeIndex; slotIndex < _trackedSlotTypes.Length; slotIndex++)
-            {
-                _trackedSlotTypes[slotIndex] = null;
-                if (slotIndex >= maxSlotCount)
-                {
-                    ClearTrackedSlot(slotIndex);
-                    continue;
-                }
-
-                if (_trackedSlotObjects[slotIndex] is not null)
-                {
-                    DestroyTrackedObject(_trackedSlotObjects[slotIndex]);
-                    _trackedSlotObjects[slotIndex] = null;
-                }
-            }
+            _trackedSlots.Compact(anchors, UpdateTrackedSlotTransform, DestroyTrackedObject);
         }
 
         private void AssignTrackedSlot(int slotIndex, DebrisType debrisType, Transform anchor)
         {
-            if (slotIndex < 0 || slotIndex >= _trackedSlotTypes.Length)
-            {
-                return;
-            }
-
-            if (_trackedSlotTypes[slotIndex] == debrisType && _trackedSlotObjects[slotIndex] is not null)
-            {
-                RenameTrackedSlotObject(slotIndex, debrisType);
-                UpdateTrackedSlotTransform(slotIndex, anchor);
-                return;
-            }
-
-            if (_trackedSlotTypes[slotIndex] != debrisType)
-            {
-                ClearTrackedSlot(slotIndex);
-            }
-
-            _trackedSlotTypes[slotIndex] = debrisType;
-
-            if (_trackedSlotObjects[slotIndex] is null)
-            {
-                _trackedSlotObjects[slotIndex] = CreateTrackedSlotObject(slotIndex, debrisType);
-            }
-
-            RenameTrackedSlotObject(slotIndex, debrisType);
-            UpdateTrackedSlotTransform(slotIndex, anchor);
+            _trackedSlots.AssignSlot(
+                slotIndex,
+                debrisType,
+                anchor,
+                CreateTrackedSlotObject,
+                RenameTrackedSlotObject,
+                UpdateTrackedSlotTransform,
+                DestroyTrackedObject);
         }
 
         private GameObject? CreateTrackedSlotObject(int slotIndex, DebrisType debrisType)
@@ -1269,7 +1183,7 @@ namespace Rescue.Unity.UI
 
         private void UpdateTrackedSlotTransform(int slotIndex, Transform anchor)
         {
-            GameObject? trackedObject = _trackedSlotObjects[slotIndex];
+            GameObject? trackedObject = _trackedSlots.GetSlotObject(slotIndex);
             if (trackedObject is null)
             {
                 return;
@@ -1277,7 +1191,7 @@ namespace Rescue.Unity.UI
 
             Transform pieceTransform = trackedObject.transform;
             pieceTransform.position = anchor.position + (anchor.rotation * new Vector3(DockPieceLocalRightOffset, 0f, 0f));
-            DebrisType? debrisType = _trackedSlotTypes[slotIndex];
+            DebrisType? debrisType = _trackedSlots.GetSlotType(slotIndex);
             pieceTransform.rotation = debrisType.HasValue
                 ? anchor.rotation * ResolveDockRotationOffset(debrisType.Value)
                 : anchor.rotation;
@@ -1294,7 +1208,7 @@ namespace Rescue.Unity.UI
 
         private void AnimateInsertedSlotLower(int slotIndex)
         {
-            GameObject? trackedObject = _trackedSlotObjects[slotIndex];
+            GameObject? trackedObject = _trackedSlots.GetSlotObject(slotIndex);
             if (trackedObject is null)
             {
                 return;
@@ -1467,7 +1381,7 @@ namespace Rescue.Unity.UI
 
         private void RenameTrackedSlotObject(int slotIndex, DebrisType debrisType)
         {
-            GameObject? trackedObject = _trackedSlotObjects[slotIndex];
+            GameObject? trackedObject = _trackedSlots.GetSlotObject(slotIndex);
             if (trackedObject is null)
             {
                 return;
@@ -1478,20 +1392,7 @@ namespace Rescue.Unity.UI
 
         private void ClearTrackedSlot(int slotIndex)
         {
-            if (slotIndex < 0 || slotIndex >= _trackedSlotTypes.Length)
-            {
-                return;
-            }
-
-            _trackedSlotTypes[slotIndex] = null;
-
-            if (_trackedSlotObjects[slotIndex] is null)
-            {
-                return;
-            }
-
-            DestroyTrackedObject(_trackedSlotObjects[slotIndex]);
-            _trackedSlotObjects[slotIndex] = null;
+            _trackedSlots.ClearSlot(slotIndex, DestroyTrackedObject);
         }
 
         private void DestroyTrackedObject(GameObject? trackedObject)
