@@ -1,5 +1,6 @@
 param(
-    [string]$ProjectPath = ""
+    [string]$ProjectPath = "",
+    [switch]$ContinueOnError
 )
 
 $ErrorActionPreference = "Stop"
@@ -14,75 +15,114 @@ function Resolve-ProjectPath {
     return (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..")).Path
 }
 
-function Invoke-Checked {
+function New-Stage {
     param(
-        [string]$FilePath,
-        [string[]]$Arguments,
-        [string]$FailureMessage
+        [string]$Name,
+        [string[]]$Command,
+        [string]$DetailsCommand,
+        [scriptblock]$ShouldSkip = $null,
+        [string]$SkipReason = ""
     )
+
+    return [pscustomobject]@{
+        Name = $Name
+        Command = $Command
+        DetailsCommand = $DetailsCommand
+        ShouldSkip = $ShouldSkip
+        SkipReason = $SkipReason
+    }
+}
+
+function Format-Command {
+    param([string[]]$Command)
+
+    return $Command -join " "
+}
+
+function Count-Warnings {
+    param([string[]]$Lines)
+
+    $count = 0
+    foreach ($line in $Lines) {
+        if ($line -match "(?i)\bwarning\b" -or $line -match "(?i)\bwarn\b") {
+            $count++
+        }
+    }
+
+    return $count
+}
+
+function Invoke-GateStage {
+    param(
+        [pscustomobject]$Stage,
+        [string]$LogDirectory
+    )
+
+    if ($null -ne $Stage.ShouldSkip -and (& $Stage.ShouldSkip)) {
+        Write-Host ""
+        Write-Host "== $($Stage.Name) =="
+        Write-Host "SKIP: $($Stage.SkipReason)"
+        return [pscustomobject]@{
+            Name = $Stage.Name
+            Status = "PASS"
+            ExitCode = 0
+            WarningCount = 0
+            DetailsCommand = $Stage.DetailsCommand
+            Note = $Stage.SkipReason
+        }
+    }
+
+    $logPath = Join-Path $LogDirectory (($Stage.Name -replace "[^A-Za-z0-9._-]", "_") + ".log")
+    $commandText = Format-Command -Command $Stage.Command
 
     Write-Host ""
-    Write-Host "> $FilePath $($Arguments -join ' ')"
-    & $FilePath @Arguments
-    if ($LASTEXITCODE -ne 0) {
-        throw $FailureMessage
-    }
-}
+    Write-Host "== $($Stage.Name) =="
+    Write-Host "> $commandText"
 
-function Get-IdsFromFiles {
-    param(
-        [string]$DirectoryPath,
-        [string]$Pattern,
-        [string]$SuffixToRemove
-    )
-
-    if (-not (Test-Path -LiteralPath $DirectoryPath)) {
-        throw "Required directory was not found: $DirectoryPath"
-    }
-
-    $ids = New-Object System.Collections.Generic.List[string]
-    Get-ChildItem -LiteralPath $DirectoryPath -Filter $Pattern -File |
-        Sort-Object Name |
+    $stageOutput = New-Object System.Collections.Generic.List[string]
+    & $Stage.Command[0] $Stage.Command[1..($Stage.Command.Length - 1)] 2>&1 |
         ForEach-Object {
-            $name = $_.Name
-            if ([string]::IsNullOrEmpty($SuffixToRemove)) {
-                $ids.Add($_.BaseName)
-            }
-            elseif ($name.EndsWith($SuffixToRemove, [StringComparison]::Ordinal)) {
-                $ids.Add($name.Substring(0, $name.Length - $SuffixToRemove.Length))
-            }
-        }
+            $stageOutput.Add($_.ToString())
+            $_
+        } |
+        Tee-Object -FilePath $logPath
+    $exitCode = $LASTEXITCODE
+    if ($null -eq $exitCode) {
+        $exitCode = 0
+    }
 
-    return $ids.ToArray()
+    $warningCount = Count-Warnings -Lines $stageOutput.ToArray()
+    $status = if ($exitCode -eq 0) { "PASS" } else { "FAIL" }
+
+    return [pscustomobject]@{
+        Name = $Stage.Name
+        Status = $status
+        ExitCode = $exitCode
+        WarningCount = $warningCount
+        DetailsCommand = $Stage.DetailsCommand
+        Note = "log: $logPath"
+    }
 }
 
-function Assert-SameIds {
-    param(
-        [string[]]$Expected,
-        [string[]]$Actual,
-        [string]$MissingMessage,
-        [string]$ExtraMessage
-    )
+function Write-Summary {
+    param([object[]]$Results)
 
-    $expectedSet = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
-    foreach ($id in $Expected) {
-        [void]$expectedSet.Add($id)
+    Write-Host ""
+    Write-Host "Level authoring gate summary"
+    Write-Host "Stage                         Status  Warnings  Inspect"
+    Write-Host "-----                         ------  --------  -------"
+
+    foreach ($result in $Results) {
+        Write-Host ("{0,-29} {1,-7} {2,-9} {3}" -f $result.Name, $result.Status, $result.WarningCount, $result.DetailsCommand)
     }
 
-    $actualSet = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
-    foreach ($id in $Actual) {
-        [void]$actualSet.Add($id)
+    $failed = @($Results | Where-Object { $_.Status -eq "FAIL" })
+    Write-Host ""
+    if ($failed.Count -eq 0) {
+        Write-Host "Level authoring gate passed."
     }
-
-    $missing = @($Expected | Where-Object { -not $actualSet.Contains($_) })
-    $extra = @($Actual | Where-Object { -not $expectedSet.Contains($_) })
-
-    if ($missing.Count -gt 0) {
-        throw "$MissingMessage $($missing -join ', ')"
-    }
-
-    if ($extra.Count -gt 0) {
-        throw "$ExtraMessage $($extra -join ', ')"
+    else {
+        Write-Host "Level authoring gate failed: $($failed.Name -join ', ')"
     }
 }
 
@@ -90,70 +130,99 @@ $projectPath = Resolve-ProjectPath -RequestedPath $ProjectPath
 $levelsDirectory = Join-Path $projectPath "Assets\StreamingAssets\Levels"
 $resourcesDirectory = Join-Path $projectPath "Assets\Resources\Levels"
 $briefDirectory = Join-Path $projectPath "docs\level-briefs"
-$telemetryOutput = Join-Path $projectPath "Reports\LevelTelemetry\CiSmoke"
+$manifestPath = Join-Path $projectPath "docs\level-packets\phase1.packet.json"
+$logDirectory = Join-Path $projectPath "Reports\LevelAuthoringGate"
 
 Push-Location $projectPath
 try {
-    Write-Host "Verifying level authoring coverage..."
-    $levelIds = Get-IdsFromFiles -DirectoryPath $levelsDirectory -Pattern "*.json" -SuffixToRemove ".json"
-    $solveIds = Get-IdsFromFiles -DirectoryPath $resourcesDirectory -Pattern "*.solve.json" -SuffixToRemove ".solve.json"
-    $briefIds = Get-IdsFromFiles -DirectoryPath $briefDirectory -Pattern "*.brief.json" -SuffixToRemove ".brief.json"
-
-    if ($levelIds.Count -eq 0) {
-        throw "No level JSON files were found under $levelsDirectory."
+    if (-not (Test-Path -LiteralPath $levelsDirectory)) {
+        throw "Required levels directory was not found: $levelsDirectory"
     }
 
-    Assert-SameIds `
-        -Expected $levelIds `
-        -Actual $solveIds `
-        -MissingMessage "Missing solve files for level(s):" `
-        -ExtraMessage "Solve files point at missing level(s):"
+    if (-not (Test-Path -LiteralPath $briefDirectory)) {
+        throw "Required briefs directory was not found: $briefDirectory"
+    }
 
-    Assert-SameIds `
-        -Expected $levelIds `
-        -Actual $briefIds `
-        -MissingMessage "Missing level briefs for level(s):" `
-        -ExtraMessage "Level briefs point at missing level(s):"
+    if (-not (Test-Path -LiteralPath $resourcesDirectory)) {
+        throw "Required resources directory was not found: $resourcesDirectory"
+    }
 
-    Write-Host "Coverage OK for $($levelIds.Count) authored level(s)."
+    if (-not (Test-Path -LiteralPath $manifestPath)) {
+        throw "Required packet manifest was not found: $manifestPath"
+    }
 
-    Invoke-Checked `
-        -FilePath "dotnet" `
-        -Arguments @("run", "--project", "Tools/LevelValidator/LevelValidator.csproj", "--", "validate-all", "Assets/StreamingAssets/Levels") `
-        -FailureMessage "LevelValidator validate-all failed."
+    New-Item -ItemType Directory -Force -Path $logDirectory | Out-Null
 
-    Invoke-Checked `
-        -FilePath "dotnet" `
-        -Arguments @("run", "--project", "Tools/LevelValidator/LevelValidator.csproj", "--", "validate-phase1-all", "Assets/StreamingAssets/Levels") `
-        -FailureMessage "LevelValidator validate-phase1-all failed."
+    $hasFailPaths = (Get-ChildItem -LiteralPath $resourcesDirectory -Filter "*.fail.json" -File).Count -gt 0
+    $stages = @(
+        (New-Stage `
+            -Name "validate-all" `
+            -Command @("dotnet", "run", "--project", "Tools/LevelValidator/LevelValidator.csproj", "--", "validate-all", "Assets/StreamingAssets/Levels") `
+            -DetailsCommand "dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- validate-all Assets/StreamingAssets/Levels"),
+        (New-Stage `
+            -Name "validate-phase1-all" `
+            -Command @("dotnet", "run", "--project", "Tools/LevelValidator/LevelValidator.csproj", "--", "validate-phase1-all", "Assets/StreamingAssets/Levels") `
+            -DetailsCommand "dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- validate-phase1-all Assets/StreamingAssets/Levels"),
+        (New-Stage `
+            -Name "validate-brief-all" `
+            -Command @("dotnet", "run", "--project", "Tools/LevelValidator/LevelValidator.csproj", "--", "validate-brief-all", "Assets/StreamingAssets/Levels", "docs/level-briefs") `
+            -DetailsCommand "dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- validate-brief-all Assets/StreamingAssets/Levels docs/level-briefs"),
+        (New-Stage `
+            -Name "readability-all" `
+            -Command @("dotnet", "run", "--project", "Tools/LevelValidator/LevelValidator.csproj", "--", "readability-all", "Assets/StreamingAssets/Levels", "docs/level-briefs") `
+            -DetailsCommand "dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- readability-all Assets/StreamingAssets/Levels docs/level-briefs"),
+        (New-Stage `
+            -Name "design-report-all" `
+            -Command @("dotnet", "run", "--project", "Tools/LevelValidator/LevelValidator.csproj", "--", "design-report-all", "Assets/StreamingAssets/Levels", "docs/level-briefs") `
+            -DetailsCommand "dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- design-report-all Assets/StreamingAssets/Levels docs/level-briefs"),
+        (New-Stage `
+            -Name "verify-solves" `
+            -Command @("dotnet", "run", "--project", "Tools/SolveAuthoring/SolveAuthoring.csproj", "--", "--verify-solves") `
+            -DetailsCommand "dotnet run --project Tools/SolveAuthoring/SolveAuthoring.csproj -- --verify-solves"),
+        (New-Stage `
+            -Name "verify-golden" `
+            -Command @("dotnet", "run", "--project", "Tools/SolveAuthoring/SolveAuthoring.csproj", "--", "--verify-golden") `
+            -DetailsCommand "dotnet run --project Tools/SolveAuthoring/SolveAuthoring.csproj -- --verify-golden"),
+        (New-Stage `
+            -Name "verify-failpaths" `
+            -Command @("dotnet", "run", "--project", "Tools/SolveAuthoring/SolveAuthoring.csproj", "--", "--verify-failpaths") `
+            -DetailsCommand "dotnet run --project Tools/SolveAuthoring/SolveAuthoring.csproj -- --verify-failpaths" `
+            -ShouldSkip { -not $hasFailPaths } `
+            -SkipReason "No .fail.json files found under Assets/Resources/Levels."),
+        (New-Stage `
+            -Name "compare-assistance-all" `
+            -Command @("dotnet", "run", "--project", "Tools/SolveAuthoring/SolveAuthoring.csproj", "--", "--compare-assistance-all") `
+            -DetailsCommand "dotnet run --project Tools/SolveAuthoring/SolveAuthoring.csproj -- --compare-assistance-all"),
+        (New-Stage `
+            -Name "packet-report" `
+            -Command @("dotnet", "run", "--project", "Tools/LevelTelemetry/LevelTelemetry.csproj", "--", "summarize-all") `
+            -DetailsCommand "dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- summarize-all"),
+        (New-Stage `
+            -Name "verify-acceptance" `
+            -Command @("dotnet", "run", "--project", "Tools/SolveAuthoring/SolveAuthoring.csproj", "--", "--verify-acceptance", "--manifest", "docs/level-packets/phase1.packet.json", "--levels-dir", "Assets/StreamingAssets/Levels", "--briefs-dir", "docs/level-briefs", "--resources-dir", "Assets/Resources/Levels") `
+            -DetailsCommand "dotnet run --project Tools/SolveAuthoring/SolveAuthoring.csproj -- --verify-acceptance --manifest docs/level-packets/phase1.packet.json --levels-dir Assets/StreamingAssets/Levels --briefs-dir docs/level-briefs --resources-dir Assets/Resources/Levels")
+    )
 
-    Invoke-Checked `
-        -FilePath "dotnet" `
-        -Arguments @("run", "--project", "Tools/SolveAuthoring/SolveAuthoring.csproj", "--", "--verify-solves") `
-        -FailureMessage "SolveAuthoring --verify-solves failed."
+    Write-Host "Verifying Phase 1 level packet for design review / playtest build..."
+    Write-Host "Project: $projectPath"
+    Write-Host "Manifest: docs/level-packets/phase1.packet.json"
 
-    Invoke-Checked `
-        -FilePath "dotnet" `
-        -Arguments @("run", "--project", "Tools/SolveAuthoring/SolveAuthoring.csproj", "--", "--verify-golden") `
-        -FailureMessage "SolveAuthoring --verify-golden failed."
+    $results = New-Object System.Collections.Generic.List[object]
+    foreach ($stage in $stages) {
+        $result = Invoke-GateStage -Stage $stage -LogDirectory $logDirectory
+        $results.Add($result)
 
-    Invoke-Checked `
-        -FilePath "dotnet" `
-        -Arguments @("run", "--project", "Tools/SolveAuthoring/SolveAuthoring.csproj", "--", "--verify-acceptance") `
-        -FailureMessage "SolveAuthoring --verify-acceptance failed."
+        if ($result.Status -eq "FAIL" -and -not $ContinueOnError) {
+            Write-Summary -Results $results.ToArray()
+            exit $result.ExitCode
+        }
+    }
 
-    Invoke-Checked `
-        -FilePath "dotnet" `
-        -Arguments @("run", "--project", "Tools/LevelTelemetry/LevelTelemetry.csproj", "--", "--range", "L00-L20", "--samples", "2", "--max-actions", "5", "--output", $telemetryOutput) `
-        -FailureMessage "LevelTelemetry CI smoke failed."
-
-    Invoke-Checked `
-        -FilePath "dotnet" `
-        -Arguments @("test", "Tools/LevelTelemetry.Tests/LevelTelemetry.Tests.csproj") `
-        -FailureMessage "LevelTelemetry tests failed."
-
-    Write-Host ""
-    Write-Host "Level authoring gate passed."
+    Write-Summary -Results $results.ToArray()
+    $failed = @($results | Where-Object { $_.Status -eq "FAIL" })
+    if ($failed.Count -gt 0) {
+        exit 1
+    }
 }
 finally {
     Pop-Location

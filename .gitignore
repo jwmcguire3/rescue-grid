@@ -37,6 +37,7 @@ UIElementsSchema/
 # Local verification artifacts
 /Artifacts/
 /capture/
+/Reports/LevelAuthoringGate/
 /Reports/LevelTelemetry/
 
 # OS

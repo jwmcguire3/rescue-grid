@@ -24,15 +24,31 @@ The filename must match the `id` field inside the JSON.
 
 An explicit authoring template with the current standard fields is at [`scripts/level-template.json`](../../scripts/level-template.json). Copy it, rename it to the target level id, and fill in all values before authoring the tile grid.
 
-## Required authoring gate
+## Final authoring gate
 
-Before opening a PR that changes authored levels, briefs, solve scripts, golden paths, or level-authoring tools, run the full local gate:
+Before opening a PR or preparing a playtest build that changes authored levels, briefs, solve scripts, golden paths, fail paths, or level-authoring tools, run the final local gate:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\verify-level-authoring.ps1
 ```
 
-The same gate runs in CI. It checks level JSON validation, Phase 1 packet policy validation, solve verification, committed golden verification, manifest-driven packet acceptance, brief/solve coverage for every level, telemetry bot smoke reports, and `Tools/LevelTelemetry.Tests`.
+On bash-compatible shells, run the equivalent wrapper:
+
+```bash
+./scripts/verify-level-authoring.sh
+```
+
+This is the pre-commit/pre-build level authoring gate. It answers whether the current Phase 1 packet is acceptable for design review or a playtest build.
+
+The gate runs in this order: core validation, Phase 1 packet policy validation, brief validation, readability checks, design reports, solve verification, golden path verification, fail-path verification when fail paths exist, assistance comparison, packet report, and manifest-driven acceptance.
+
+`packet-report` is the gate label for the replay packet summary:
+
+```bash
+dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- summarize-all
+```
+
+The PowerShell gate also runs in GitHub Actions through `.github/workflows/unity-tests.yml`.
 
 Every playable level JSON must have a matching `docs/level-briefs/<levelId>.brief.json` and `Assets/Resources/Levels/<levelId>.solve.json`. Golden paths are optional during exploration and iteration; every committed `<levelId>.golden.json` must verify, and every manifest-expected packet level must have an accepted designer-approved golden path.
 
