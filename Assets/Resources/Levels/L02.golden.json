@@ -1,0 +1,40 @@
+{
+  "levelId": "L02",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 4,
+  "actions": [
+    {
+      "row": 1,
+      "col": 0,
+      "intent": "Use the left A pair to open the central rescue lane without building mismatched dock clutter."
+    },
+    {
+      "row": 5,
+      "col": 5,
+      "intent": "TODO: designer intent needed for this action."
+    },
+    {
+      "row": 4,
+      "col": 4,
+      "intent": "Clear the right-side support group while keeping dock pressure below the jam lesson."
+    },
+    {
+      "row": 0,
+      "col": 0,
+      "intent": "Cash the A route cleanly, clear dock residue, and open the final side for extraction."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetOneClearAway",
+    "TargetExtractionLatched",
+    "DockCleared",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "0"
+  ],
+  "notes": "Designer-approved intended path, not merely any solver-found win. One solver-valid action still needs designer intent confirmation."
+}

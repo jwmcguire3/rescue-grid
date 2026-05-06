@@ -1,0 +1,42 @@
+{
+  "levelId": "L03",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 4,
+  "actions": [
+    {
+      "row": 4,
+      "col": 0,
+      "intent": "Commit to the lower water-near puppy first, even though the upper rescue looks cleaner."
+    },
+    {
+      "row": 5,
+      "col": 2,
+      "intent": "Finish opening the lower puppy before the first water rise can punish the wrong rescue order."
+    },
+    {
+      "row": 0,
+      "col": 4,
+      "intent": "Pivot to the safer upper puppy after the urgent lower puppy has extracted."
+    },
+    {
+      "row": 3,
+      "col": 4,
+      "intent": "Open the final upper rescue side and complete the intended lower-first extraction order."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetOneClearAway",
+    "TargetExtracted",
+    "WaterWarning",
+    "WaterRose",
+    "TargetExtractionLatched",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "0",
+    "1"
+  ],
+  "notes": "Designer-approved intended path, not merely any solver-found win."
+}

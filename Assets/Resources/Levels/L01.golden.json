@@ -1,0 +1,65 @@
+{
+  "levelId": "L01",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 9,
+  "actions": [
+    {
+      "row": 1,
+      "col": 0,
+      "intent": "Open the left side of the rescue pocket and start the route-supporting clears near the puppy."
+    },
+    {
+      "row": 5,
+      "col": 5,
+      "intent": "TODO: designer intent needed for this action."
+    },
+    {
+      "row": 4,
+      "col": 3,
+      "intent": "Break lower route material while keeping dock pressure controlled."
+    },
+    {
+      "row": 4,
+      "col": 1,
+      "intent": "Open the lower-center rescue lane and trigger visible puppy progress."
+    },
+    {
+      "row": 0,
+      "col": 1,
+      "intent": "Clear the upper route blocker support so the puppy reaches one-clear-away."
+    },
+    {
+      "row": 0,
+      "col": 0,
+      "intent": "Cycle dock residue safely before the final rescue-side clear."
+    },
+    {
+      "row": 0,
+      "col": 2,
+      "intent": "Break the upper-right route blocker while preserving the rescue lane."
+    },
+    {
+      "row": 1,
+      "col": 0,
+      "intent": "Cycle dock residue safely and keep the final route clear readable."
+    },
+    {
+      "row": 2,
+      "col": 4,
+      "intent": "Open the last blocked side of the puppy pocket to latch extraction and win."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetProgressed",
+    "TargetOneClearAway",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "0"
+  ],
+  "notes": "Designer-approved intended path, not merely any solver-found win. One solver-valid action still needs designer intent confirmation."
+}

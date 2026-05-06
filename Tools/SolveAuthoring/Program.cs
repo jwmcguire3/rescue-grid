@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Rescue.Content;
 using Rescue.Core.Pipeline;
 using Rescue.Core.Rules;
@@ -50,6 +51,11 @@ namespace Rescue.SolveAuthoringTool
                 if (args.Length >= 1 && string.Equals(args[0], "--verify-solves", StringComparison.Ordinal))
                 {
                     return VerifySolvesScript(args);
+                }
+
+                if (args.Length >= 1 && string.Equals(args[0], "--verify-golden", StringComparison.Ordinal))
+                {
+                    return VerifyGoldenScript(args);
                 }
 
                 IReadOnlyList<string> levelIds = ParseLevelIds(args);
@@ -144,6 +150,235 @@ namespace Rescue.SolveAuthoringTool
             }
 
             return failed ? 1 : 0;
+        }
+
+        private static int VerifyGoldenScript(string[] args)
+        {
+            string[] goldenPaths = args.Length >= 2
+                ? args.Skip(1).ToArray()
+                : Directory.GetFiles(OutputDirectory, "*.golden.json", SearchOption.TopDirectoryOnly)
+                    .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+
+            bool failed = false;
+            for (int i = 0; i < goldenPaths.Length; i++)
+            {
+                string path = goldenPaths[i];
+                try
+                {
+                    GoldenVerificationResult result = VerifyGoldenPath(path);
+                    Console.WriteLine($"{Path.GetFileName(path)}: expected {result.ExpectedOutcome}, got {result.ActualOutcome} -> {(result.Passed ? "PASS" : "FAIL")}{FormatFailure(result.Failure)}");
+                    failed |= !result.Passed;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"{Path.GetFileName(path)}: expected <unknown>, got NotRun -> FAIL ({ex.Message})");
+                    failed = true;
+                }
+            }
+
+            return failed ? 1 : 0;
+        }
+
+        private static GoldenVerificationResult VerifyGoldenPath(string path)
+        {
+            string json = File.ReadAllText(path);
+            GoldenPath golden = DeserializeGoldenPath(json, path);
+            string label = string.IsNullOrWhiteSpace(golden.LevelId) ? Path.GetFileNameWithoutExtension(path) : golden.LevelId;
+
+            string? schemaFailure = ValidateGoldenPath(golden);
+            if (schemaFailure is not null)
+            {
+                return GoldenVerificationResult.Fail(label, golden.ExpectedOutcome ?? "<missing>", "NotRun", schemaFailure);
+            }
+
+            if (golden.Actions.Length > golden.MaxActions)
+            {
+                return GoldenVerificationResult.Fail(golden.LevelId, golden.ExpectedOutcome, "NotRun", $"actions used {golden.Actions.Length} exceeds maxActions {golden.MaxActions}");
+            }
+
+            LevelJson level = LoadLevel(golden.LevelId);
+            GameState state = Loader.LoadLevel(level, golden.Seed);
+            ActionOutcome outcome = ActionOutcome.Ok;
+            List<string> eventNames = new List<string>();
+
+            for (int i = 0; i < golden.Actions.Length; i++)
+            {
+                GoldenAction action = golden.Actions[i];
+                TileCoord coord = new TileCoord(action.Row, action.Col);
+                ActionResult result = Pipeline.RunAction(state, new ActionInput(coord), new RunOptions(RecordSnapshot: false));
+
+                for (int eventIndex = 0; eventIndex < result.Events.Length; eventIndex++)
+                {
+                    ActionEvent actionEvent = result.Events[eventIndex];
+                    eventNames.Add(actionEvent.GetType().Name);
+                    if (actionEvent is InvalidInput)
+                    {
+                        return GoldenVerificationResult.Fail(
+                            golden.LevelId,
+                            golden.ExpectedOutcome,
+                            result.Outcome.ToString(),
+                            $"step {i + 1} invalid input at {action.Row},{action.Col}");
+                    }
+                }
+
+                outcome = result.Outcome;
+                state = result.State;
+
+                if (outcome != ActionOutcome.Ok && i < golden.Actions.Length - 1)
+                {
+                    return GoldenVerificationResult.Fail(
+                        golden.LevelId,
+                        golden.ExpectedOutcome,
+                        outcome.ToString(),
+                        $"terminal outcome {outcome} occurred at step {i + 1} before final golden action");
+                }
+            }
+
+            if (!string.Equals(outcome.ToString(), golden.ExpectedOutcome, StringComparison.Ordinal))
+            {
+                return GoldenVerificationResult.Fail(
+                    golden.LevelId,
+                    golden.ExpectedOutcome,
+                    outcome.ToString(),
+                    "final outcome mismatch");
+            }
+
+            if (golden.ExpectedEventsInOrder is { Length: > 0 }
+                && !ContainsEventsInOrder(eventNames, golden.ExpectedEventsInOrder, out string? missingEvent))
+            {
+                return GoldenVerificationResult.Fail(
+                    golden.LevelId,
+                    golden.ExpectedOutcome,
+                    outcome.ToString(),
+                    $"expected event '{missingEvent}' was not found in order");
+            }
+
+            if (golden.ExpectedExtractionOrder is { Length: > 0 }
+                && !state.ExtractedTargetOrder.SequenceEqual(golden.ExpectedExtractionOrder, StringComparer.Ordinal))
+            {
+                return GoldenVerificationResult.Fail(
+                    golden.LevelId,
+                    golden.ExpectedOutcome,
+                    outcome.ToString(),
+                    $"expected extraction order [{string.Join(",", golden.ExpectedExtractionOrder)}], got [{string.Join(",", state.ExtractedTargetOrder)}]");
+            }
+
+            return GoldenVerificationResult.Pass(golden.LevelId, golden.ExpectedOutcome, outcome.ToString());
+        }
+
+        private static GoldenPath DeserializeGoldenPath(string json, string path)
+        {
+            ValidateRequiredGoldenProperties(json, path);
+            return JsonSerializer.Deserialize<GoldenPath>(json)
+                ?? throw new InvalidOperationException($"Could not deserialize golden path file '{path}'.");
+        }
+
+        private static void ValidateRequiredGoldenProperties(string json, string path)
+        {
+            using JsonDocument document = JsonDocument.Parse(json);
+            JsonElement root = document.RootElement;
+            RequireProperty(root, "levelId", JsonValueKind.String, path);
+            RequireProperty(root, "seed", JsonValueKind.Number, path);
+            RequireProperty(root, "pathType", JsonValueKind.String, path);
+            RequireProperty(root, "expectedOutcome", JsonValueKind.String, path);
+            RequireProperty(root, "maxActions", JsonValueKind.Number, path);
+            JsonElement actions = RequireProperty(root, "actions", JsonValueKind.Array, path);
+            for (int i = 0; i < actions.GetArrayLength(); i++)
+            {
+                JsonElement action = actions[i];
+                RequireProperty(action, "row", JsonValueKind.Number, path);
+                RequireProperty(action, "col", JsonValueKind.Number, path);
+                RequireProperty(action, "intent", JsonValueKind.String, path);
+            }
+        }
+
+        private static JsonElement RequireProperty(JsonElement root, string propertyName, JsonValueKind expectedKind, string path)
+        {
+            if (!root.TryGetProperty(propertyName, out JsonElement property))
+            {
+                throw new InvalidOperationException($"Golden path file '{path}' is missing required property '{propertyName}'.");
+            }
+
+            if (property.ValueKind != expectedKind)
+            {
+                throw new InvalidOperationException($"Golden path file '{path}' property '{propertyName}' must be {expectedKind}.");
+            }
+
+            return property;
+        }
+
+        private static string? ValidateGoldenPath(GoldenPath golden)
+        {
+            if (string.IsNullOrWhiteSpace(golden.LevelId))
+            {
+                return "levelId is required";
+            }
+
+            if (!string.Equals(golden.PathType, "golden", StringComparison.Ordinal))
+            {
+                return "pathType must equal 'golden'";
+            }
+
+            if (string.IsNullOrWhiteSpace(golden.ExpectedOutcome))
+            {
+                return "expectedOutcome is required";
+            }
+
+            if (golden.MaxActions <= 0)
+            {
+                return "maxActions must be positive";
+            }
+
+            if (golden.Actions.Length == 0)
+            {
+                return "actions must be non-empty";
+            }
+
+            for (int i = 0; i < golden.Actions.Length; i++)
+            {
+                if (string.IsNullOrWhiteSpace(golden.Actions[i].Intent))
+                {
+                    return $"action {i + 1} intent is required";
+                }
+            }
+
+            return null;
+        }
+
+        private static bool ContainsEventsInOrder(List<string> actualEvents, string[] expectedEvents, out string? missingEvent)
+        {
+            int startIndex = 0;
+            for (int expectedIndex = 0; expectedIndex < expectedEvents.Length; expectedIndex++)
+            {
+                string expectedEvent = expectedEvents[expectedIndex];
+                bool found = false;
+                for (int actualIndex = startIndex; actualIndex < actualEvents.Count; actualIndex++)
+                {
+                    if (!string.Equals(actualEvents[actualIndex], expectedEvent, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    startIndex = actualIndex + 1;
+                    found = true;
+                    break;
+                }
+
+                if (!found)
+                {
+                    missingEvent = expectedEvent;
+                    return false;
+                }
+            }
+
+            missingEvent = null;
+            return true;
+        }
+
+        private static string FormatFailure(string? failure)
+        {
+            return failure is null ? string.Empty : $" ({failure})";
         }
 
         private static ActionOutcome ReplayOutcome(LevelJson level, int seed, IReadOnlyList<SolveAction> actions)
@@ -779,5 +1014,39 @@ namespace Rescue.SolveAuthoringTool
             SolveAction[] Actions);
 
         private sealed record SolveAction(int Row, int Col);
+
+        private sealed record GoldenPath(
+            [property: JsonPropertyName("levelId")] string LevelId,
+            [property: JsonPropertyName("seed")] int Seed,
+            [property: JsonPropertyName("pathType")] string PathType,
+            [property: JsonPropertyName("expectedOutcome")] string ExpectedOutcome,
+            [property: JsonPropertyName("maxActions")] int MaxActions,
+            [property: JsonPropertyName("actions")] GoldenAction[] Actions,
+            [property: JsonPropertyName("expectedEventsInOrder")] string[]? ExpectedEventsInOrder,
+            [property: JsonPropertyName("expectedExtractionOrder")] string[]? ExpectedExtractionOrder,
+            [property: JsonPropertyName("notes")] string? Notes);
+
+        private sealed record GoldenAction(
+            [property: JsonPropertyName("row")] int Row,
+            [property: JsonPropertyName("col")] int Col,
+            [property: JsonPropertyName("intent")] string Intent);
+
+        private sealed record GoldenVerificationResult(
+            string LevelId,
+            string ExpectedOutcome,
+            string ActualOutcome,
+            bool Passed,
+            string? Failure)
+        {
+            public static GoldenVerificationResult Pass(string levelId, string expectedOutcome, string actualOutcome)
+            {
+                return new GoldenVerificationResult(levelId, expectedOutcome, actualOutcome, Passed: true, Failure: null);
+            }
+
+            public static GoldenVerificationResult Fail(string levelId, string expectedOutcome, string actualOutcome, string failure)
+            {
+                return new GoldenVerificationResult(levelId, expectedOutcome, actualOutcome, Passed: false, failure);
+            }
+        }
     }
 }

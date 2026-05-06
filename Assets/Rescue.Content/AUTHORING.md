@@ -151,6 +151,20 @@ Run this after changing level JSON, rules, loader behavior, or solve scripts.
 
 If a solve script mismatch appears, determine whether the level changed, the script is stale, or the expected result is wrong.
 
+## Verify golden paths
+
+Golden paths live in `Assets/Resources/Levels/` as `<levelId>.golden.json`.
+
+They are designer-approved intended solves, separate from solver-found `<levelId>.solve.json` files.
+
+Run:
+
+```bash
+dotnet run --project Tools/SolveAuthoring/SolveAuthoring.csproj -- --verify-golden
+```
+
+Golden verification checks action validity, expected outcome, expected ordered events, optional target extraction order, and max action count.
+
 ## Watch mode
 
 The watcher re-validates and re-previews any level file the moment you save it.

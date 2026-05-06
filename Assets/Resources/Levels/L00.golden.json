@@ -1,0 +1,29 @@
+{
+  "levelId": "L00",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 2,
+  "actions": [
+    {
+      "row": 4,
+      "col": 0,
+      "intent": "Clear the framed lower-left pair to release the held water and teach that acting advances danger."
+    },
+    {
+      "row": 1,
+      "col": 2,
+      "intent": "Clear the side rescue route so the puppy extracts immediately after the action-based water lesson lands."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetOneClearAway",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "0"
+  ],
+  "notes": "Designer-approved intended path, not merely any solver-found win."
+}
