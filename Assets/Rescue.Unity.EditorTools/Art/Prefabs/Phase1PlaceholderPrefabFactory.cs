@@ -237,7 +237,8 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             Material? debrisAMaterial = CreateOrUpdateTexturedMaterial(
                 CombinePath(materialsPath, "Debris_A_Phase1.mat"),
                 shader,
-                CombinePath(artRootPath, "Textures", "Pieces", "Meshy_AI_Olive_Green_Rope_Leas_0428090833_texture.png"));
+                CombinePath(artRootPath, "Textures", "Pieces", "Meshy_AI_Golden_Rubber_Duck_0503170129_texture.png"),
+                CombinePath(artRootPath, "Textures", "Pieces", "Meshy_AI_Golden_Rubber_Duck_0503170129_texture_normal.png"));
             Material? debrisBMaterial = CreateOrUpdateTexturedMaterial(
                 CombinePath(materialsPath, "Debris_B_Phase1.mat"),
                 shader,
@@ -335,9 +336,10 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
 
             GameObject? debrisAPrefab = CreateMeshWrapperPrefab(
                 CombinePath(prefabsPath, PiecesFolderName, "Debris_A_Phase1.prefab"),
-                CombinePath(artRootPath, "Models", "Pieces", "Meshy_AI_Olive_Green_Rope_Leas_0428090833_texture.fbx"),
+                CombinePath(artRootPath, "Models", "Pieces", "Meshy_AI_Golden_Rubber_Duck_0503170129_texture.fbx"),
                 debrisAMaterial,
-                DebrisSizingProfile);
+                DebrisSizingProfile,
+                visualScaleMultiplier: 0.90f);
             GameObject? debrisBPrefab = CreateMeshWrapperPrefab(
                 CombinePath(prefabsPath, PiecesFolderName, "Debris_B_Phase1.prefab"),
                 CombinePath(artRootPath, "Models", "Pieces", "Meshy_AI_Blue_Speckled_Paw_Bow_0424154905_texture.fbx"),

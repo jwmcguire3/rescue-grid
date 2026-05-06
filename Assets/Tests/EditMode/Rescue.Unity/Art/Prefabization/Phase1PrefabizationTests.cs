@@ -311,9 +311,10 @@ namespace Rescue.Unity.Art.Tests
                 "Debris A",
                 Phase1DebrisAPrefabPath,
                 Phase1PlaceholderPrefabFactory.DefaultBoardCellSize);
+            string reportSummary = $"fillRatio={report.FillRatio:0.000}, footprintX={report.FootprintX:0.000}, footprintZ={report.FootprintZ:0.000}, localBounds={report.LocalBoundsSize}, verdict={report.Verdict}";
 
-            Assert.That(report.FillRatio, Is.GreaterThanOrEqualTo(0.88f));
-            Assert.That(report.Verdict, Is.EqualTo("within tolerance"));
+            Assert.That(report.FillRatio, Is.GreaterThanOrEqualTo(0.88f), reportSummary);
+            Assert.That(report.Verdict, Is.EqualTo("within tolerance"), reportSummary);
         }
 
         private static T LoadAsset<T>(string assetPath)

@@ -1,0 +1,51 @@
+{
+  "levelId": "L12",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 6,
+  "actions": [
+    {
+      "row": 4,
+      "col": 0,
+      "intent": "Commit to the lower-left puppy first instead of spreading partial progress across all three targets."
+    },
+    {
+      "row": 7,
+      "col": 1,
+      "intent": "Complete the lower-left rescue route and remove the immediate water-side pressure."
+    },
+    {
+      "row": 5,
+      "col": 2,
+      "intent": "Pivot through the center target next, using the first rescue as the stabilizing beat."
+    },
+    {
+      "row": 3,
+      "col": 5,
+      "intent": "Open the center puppy while also progressing the safer top-right route."
+    },
+    {
+      "row": 0,
+      "col": 5,
+      "intent": "Finish the safest top-right puppy last after the triage order has done its job."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "TargetOneClearAway",
+    "TargetExtractionLatched",
+    "TargetProgressed",
+    "TargetExtracted",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "0",
+    "1",
+    "2"
+  ],
+  "notes": "Designer-approved triage path: lower-left, center, then top-right."
+}

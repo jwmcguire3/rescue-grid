@@ -3,7 +3,7 @@
   "seed": 1,
   "pathType": "golden",
   "expectedOutcome": "Win",
-  "maxActions": 3,
+  "maxActions": 2,
   "actions": [
     {
       "row": 5,
@@ -12,13 +12,8 @@
     },
     {
       "row": 1,
-      "col": 2,
-      "intent": "Clear the warned upper vine pressure before it worsens the route."
-    },
-    {
-      "row": 0,
-      "col": 3,
-      "intent": "Return to the rescue route and open the final side for extraction."
+      "col": 5,
+      "intent": "Clear the upper/right route group, clipping vine and breaking the final crate before growth can tax the path."
     }
   ],
   "expectedEventsInOrder": [
@@ -30,5 +25,5 @@
   "expectedExtractionOrder": [
     "0"
   ],
-  "notes": "Designer-approved vine growth practice path: make immediate rescue progress, clip the vine pressure, then finish the puppy."
+  "notes": "Designer-approved vine growth practice path after telemetry tuning: make immediate rescue progress, then clip vine pressure and finish before growth taxes the path."
 }

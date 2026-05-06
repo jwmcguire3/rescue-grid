@@ -1,0 +1,37 @@
+{
+  "levelId": "L15",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 4,
+  "actions": [
+    {
+      "row": 5,
+      "col": 2,
+      "intent": "Reject the upper-left bait and take the lower hero-rescue B pair first, accepting real dock residue instead of a free triple."
+    },
+    {
+      "row": 3,
+      "col": 5,
+      "intent": "Open the secondary puppy to one-clear-away after the hero rescue lands."
+    },
+    {
+      "row": 3,
+      "col": 7,
+      "intent": "Finish the secondary puppy with the readable right-side B clear and recover the dock triple."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "TargetOneClearAway",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "0",
+    "1"
+  ],
+  "notes": "Designer-approved tuned hero route: hero first, secondary to one-clear-away, then final right-side rescue clear."
+}

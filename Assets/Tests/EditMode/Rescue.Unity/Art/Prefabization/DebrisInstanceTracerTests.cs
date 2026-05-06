@@ -17,11 +17,11 @@ namespace Rescue.Unity.Art.Tests
         }
 
         [Test]
-        public void TraceDebrisAPrefab_ResolvesOliveRopeModelAsset()
+        public void TraceDebrisAPrefab_ResolvesGoldenDuckModelAsset()
         {
             PrefabTraceReport report = DebrisInstanceTracer.TracePrefabAsset(DebrisAPrefabPath);
 
-            Assert.That(report.ModelAssetPath, Does.EndWith("Meshy_AI_Olive_Green_Rope_Leas_0428090833_texture.fbx"));
+            Assert.That(report.ModelAssetPath, Does.EndWith("Meshy_AI_Golden_Rubber_Duck_0503170129_texture.fbx"));
             Assert.That(report.FirstNonIdentityTransform, Is.Not.Null);
             Assert.That(report.FirstNonIdentityTransform!.Path, Does.Contain("/Visual"));
         }

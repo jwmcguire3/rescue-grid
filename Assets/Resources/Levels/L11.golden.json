@@ -1,0 +1,48 @@
+{
+  "levelId": "L11",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 6,
+  "actions": [
+    {
+      "row": 3,
+      "col": 1,
+      "intent": "Start the lower buried route first, rejecting the tempting high puppy while the water-near target still has recovery margin."
+    },
+    {
+      "row": 5,
+      "col": 0,
+      "intent": "Keep committing to the lower rescue lane and clear the blocker pressure around the urgent puppy."
+    },
+    {
+      "row": 7,
+      "col": 2,
+      "intent": "Finish the lower puppy's route before spending actions on the visually easier top target."
+    },
+    {
+      "row": 3,
+      "col": 2,
+      "intent": "Stabilize the dock with a triple clear before the final high-target rescue move."
+    },
+    {
+      "row": 0,
+      "col": 4,
+      "intent": "Cash the now-safe upper rescue after the lower puppy has already extracted."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetProgressed",
+    "TargetOneClearAway",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "0",
+    "1"
+  ],
+  "notes": "Designer-approved lower-first recovery path for the false-easy target choice."
+}

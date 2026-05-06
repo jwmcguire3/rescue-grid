@@ -20,9 +20,9 @@
   "targets": [
     { "id": "0", "row": 4, "col": 3 }
   ],
-  "initialFloodedRows": 1,
+  "initialFloodedRows": 0,
   "water": {
-    "riseInterval": 8
+    "riseInterval": 12
   },
   "vine": {
     "growthThreshold": 4,
@@ -35,7 +35,7 @@
     "jamEnabled": false
   },
   "assistance": {
-    "chance": 0.45,
+    "chance": 0.90,
     "consecutiveEmergencyCap": 2
   },
   "meta": {
@@ -43,7 +43,7 @@
     "expectedPath": "Notice the center preview, clip the vine before it grows into the gap above the puppy, then continue opening the rescue lane with the side pairs.",
     "expectedFailMode": "The player ignores the warning, lets the growth land in the center gap, and turns a clean rescue path into a slower reroute.",
     "whatItProves": "Route urgency can be visual and fair.",
-    "notes": "The rebuilt tutorial preserves the empty preview cell above the puppy, but fills the surrounding board so the warned vine cost appears inside real play.",
+    "notes": "Telemetry tuning: removed unintended pre-flooding, raised water interval from 8 to 12, and raised assistance from 0.45 to 0.90 after rescue-focused losses skewed too harsh for a practice level. The tutorial preserves the empty preview cell above the puppy, but fills the surrounding board so the warned vine cost appears inside real play.",
     "isRuleTeach": false
   }
 }

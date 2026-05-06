@@ -10,7 +10,7 @@
       ["D", "C", "C", "V", "A", "F", "."],
       [".", "CR", "D", ".", "A", "C", "C"],
       ["B", "B", ".", "T0", ".", "C", "F"],
-      ["D", "A", "A", "V", ".", "F", "E"],
+      ["A", "A", "A", "V", ".", "F", "E"],
       ["D", ".", "B", "CR", "B", "CR", "E"],
       [".", ".", ".", ".", ".", ".", "."]
     ]
@@ -20,7 +20,7 @@
   "targets": [
     { "id": "0", "row": 4, "col": 3 }
   ],
-  "initialFloodedRows": 1,
+  "initialFloodedRows": 0,
   "water": {
     "riseInterval": 8
   },
@@ -41,7 +41,7 @@
     "expectedPath": "Take the central vine lane because it is clearly the shortest path to the puppy, then use the side pairs only as support once the route is open.",
     "expectedFailMode": "The player treats vine like background clutter, detours around it with slower side clears, and gives up too much water time on a board that should read direct.",
     "whatItProves": "Vine can enter as pressure visualization, not confusion.",
-    "notes": "Growth remains disabled; the rebuilt board isolates the static vine lane inside a visually complete playfield so the tile reads as route tax, not background clutter.",
+    "notes": "Telemetry tuning: removed unintended pre-flooding and made the intended lower vine-lane clear a size-3 group so rescue-focused play prefers the teach path over generic triples. Growth remains disabled; the board isolates the static vine lane inside a visually complete playfield so the tile reads as route tax, not background clutter.",
     "isRuleTeach": false
   }
 }

@@ -1,0 +1,57 @@
+{
+  "levelId": "L14",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 7,
+  "actions": [
+    {
+      "row": 7,
+      "col": 1,
+      "intent": "Commit to the lower-left urgent rescue instead of broad low-value clearing."
+    },
+    {
+      "row": 4,
+      "col": 3,
+      "intent": "Open the central mixed-blocker pivot while preserving the lower rescue route."
+    },
+    {
+      "row": 0,
+      "col": 2,
+      "intent": "Progress the top target only as part of a controlled pivot, not as a first-rescue distraction."
+    },
+    {
+      "row": 4,
+      "col": 0,
+      "intent": "Finish the lower-left puppy before the water clock turns commitment into panic."
+    },
+    {
+      "row": 2,
+      "col": 4,
+      "intent": "Use the mixed blocker clear to extract the top puppy and set up the final middle-right rescue."
+    },
+    {
+      "row": 5,
+      "col": 6,
+      "intent": "Complete the middle-right rescue as the final sharp pivot of the late exam."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetOneClearAway",
+    "TargetProgressed",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "TargetProgressed",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "0",
+    "2",
+    "1"
+  ],
+  "notes": "Designer-approved late exam path: commit lower-left, pivot top, finish middle-right."
+}

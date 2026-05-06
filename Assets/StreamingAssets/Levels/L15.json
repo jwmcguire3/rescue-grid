@@ -7,11 +7,11 @@
     "tiles": [
       [".", "C", "D", "D", "A", "A", "CR", "."],
       ["F", ".", "C", ".", "CR", "CR", ".", "CR"],
-      ["D", "D", ".", "F", ".", "CR", "T1", "."],
-      ["CR", ".", "E", ".", "IA", "A", "A", "F"],
-      [".", "CR", "CR", ".", "CR", "CR", "CR", "."],
+      ["D", "D", ".", "F", ".", "CR", "T1", "CR"],
+      ["CR", ".", "E", ".", "IA", "A", "A", "B"],
+      [".", "CR", "CR", ".", "CR", "CR", "CR", "C"],
       ["T0", "CR", "B", "C", "C", "V", "CR", "CR"],
-      [".", "B", "B", "D", "D", "E", "E", "F"],
+      [".", "C", "B", "D", "D", "E", "E", "F"],
       [".", ".", ".", ".", ".", ".", ".", "."],
       [".", ".", ".", ".", ".", ".", ".", "."]
     ]
@@ -42,10 +42,10 @@
   },
   "meta": {
     "intent": "Produce one instantly legible, high-stakes rescue beat with a hero puppy hanging over the flood and a clean route that reads in seconds even to a cold viewer.",
-    "expectedPath": "Reject the compact upper-left bait clear, take the authored lower B triple to trigger the hero rescue, then clear the compact upper-right A pair to free the secondary puppy and end cleanly.",
-    "expectedFailMode": "The player keeps spending actions in the bait pocket or generic clears, misses the obvious lower rescue beat, and loses the simple capture read to avoidable pressure.",
+    "expectedPath": "Reject the compact upper-left bait clear, take the authored lower B pair to trigger the hero rescue with real dock residue, then clear the upper-right A pair and final C pair to finish the secondary puppy.",
+    "expectedFailMode": "The player keeps spending actions in the bait pocket or generic clears, misses the obvious lower rescue beat, and lets dock residue plus flood pressure turn the capture route into avoidable trouble.",
     "whatItProves": "The game has a genuinely captureable rescue sequence that resolves through the real action pipeline rather than a scripted fake.",
-    "notes": "The capture board keeps the hero sightline and roofed rescue neighbors, while the upper-left D pair is an intentional first-read bait choice before the urgent lower B rescue.",
+    "notes": "The capture board keeps the hero sightline and roofed rescue neighbors, but the lower rescue is now a B pair rather than a free triple and the secondary puppy needs a readable follow-up C clear so the spectacle route has one real pivot.",
     "isRuleTeach": false
   }
 }

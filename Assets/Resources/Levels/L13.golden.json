@@ -1,0 +1,54 @@
+{
+  "levelId": "L13",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 7,
+  "actions": [
+    {
+      "row": 3,
+      "col": 0,
+      "intent": "Start by clipping the lower route pressure so vine remains a readable future tax, not a surprise wall."
+    },
+    {
+      "row": 1,
+      "col": 0,
+      "intent": "Clip the upper authored vine lane before it worsens the later pivot."
+    },
+    {
+      "row": 3,
+      "col": 5,
+      "intent": "Make top-route progress while preserving enough dock room for the urgent lower rescue."
+    },
+    {
+      "row": 7,
+      "col": 1,
+      "intent": "Return to the water-near puppy and move it to one-clear-away."
+    },
+    {
+      "row": 3,
+      "col": 2,
+      "intent": "Cash the urgent lower rescue through the clipped vine lane."
+    },
+    {
+      "row": 0,
+      "col": 5,
+      "intent": "Finish the safer upper puppy after the vine tax and lower rescue are resolved."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetProgressed",
+    "TargetProgressed",
+    "TargetOneClearAway",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "0",
+    "1"
+  ],
+  "notes": "Designer-approved route that clips vine early, rescues the urgent lower puppy first, then pivots up."
+}
