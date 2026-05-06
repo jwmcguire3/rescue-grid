@@ -129,6 +129,7 @@ namespace Rescue.Content.Tests
 
         [TestCase("L08")]
         [TestCase("L13")]
+        [TestCase("L15")]
         public void AuthoredVineLevels_IgnoreVinePathProducesPreviewAndGrowth(string levelId)
         {
             GameState state = Loader.LoadLevel(levelId, seed: 1);

@@ -357,6 +357,7 @@ namespace Rescue.Content
 
         private static void ValidateGrowthPriority(LevelJson level, List<ValidationError> errors)
         {
+            bool hasInitiallyGrowablePriorityTile = false;
             for (int i = 0; i < level.Vine.GrowthPriority.Length; i++)
             {
                 TileCoordJson coord = level.Vine.GrowthPriority[i];
@@ -371,14 +372,18 @@ namespace Rescue.Content
                 }
 
                 string tileCode = level.Board.Tiles[coord.Row][coord.Col];
-                if (level.Vine.GrowthThreshold < 999 && !IsInitiallyVineGrowableTile(tileCode))
-                {
-                    errors.Add(new ValidationError(
-                        ValidationSeverity.Warning,
-                        "vine.priority.initialBlocked",
-                        $"Active vine growth priority entry ({coord.Row}, {coord.Col}) does not start as an empty or debris tile.",
-                        $"$.vine.growthPriority[{i}]"));
-                }
+                hasInitiallyGrowablePriorityTile |= IsInitiallyVineGrowableTile(tileCode);
+            }
+
+            if (level.Vine.GrowthThreshold < 999
+                && level.Vine.GrowthPriority.Length > 0
+                && !hasInitiallyGrowablePriorityTile)
+            {
+                errors.Add(new ValidationError(
+                    ValidationSeverity.Warning,
+                    "vine.priority.initialBlocked",
+                    "Active vine growth priority list has no entry that starts as an empty or debris tile.",
+                    "$.vine.growthPriority"));
             }
         }
 

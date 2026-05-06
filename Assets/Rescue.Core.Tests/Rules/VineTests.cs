@@ -165,6 +165,70 @@ namespace Rescue.Core.Tests.Rules
         }
 
         [Test]
+        public void BlockedPriorityEntryFallsBackToNextValidPriorityTile()
+        {
+            TileCoord fallback = new TileCoord(1, 1);
+            GameState state = CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    Row(new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new BlockerTile(BlockerType.Crate, 1, null)),
+                    Row(new DebrisTile(DebrisType.C), new DebrisTile(DebrisType.B), new EmptyTile())),
+                actionsSinceLastClear: 1,
+                growthThreshold: 3,
+                growthPriorityList: ImmutableArray.Create(
+                    new TileCoord(0, 2),
+                    fallback),
+                priorityCursor: 0);
+
+            StepResult previewTick = Step11_TickHazards.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
+            StepResult growthTick = Step11_TickHazards.Run(previewTick.State, StepContext.Create(previewTick.State, new ActionInput(new TileCoord(0, 0))));
+            StepResult resolve = Step12_ResolveHazards.Run(growthTick.State, growthTick.Context);
+
+            Assert.That(previewTick.State.Vine.PendingGrowthTile, Is.EqualTo(fallback));
+            Assert.That(BoardHelpers.GetTile(resolve.State.Board, fallback), Is.EqualTo(new BlockerTile(BlockerType.Vine, 1, null)));
+            Assert.That(resolve.Events, Has.Some.EqualTo(new VineGrown(fallback)));
+        }
+
+        [Test]
+        public void VineKeepsCheckingPriorityAfterMissedPreviewWindow()
+        {
+            TileCoord priority = new TileCoord(0, 2);
+            GameState state = CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    Row(new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.B)),
+                    Row(new DebrisTile(DebrisType.C), new EmptyTile(), new EmptyTile())),
+                actionsSinceLastClear: 4,
+                growthThreshold: 4,
+                growthPriorityList: ImmutableArray.Create(priority),
+                pendingGrowthTile: null);
+
+            StepResult tick = Step11_TickHazards.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
+            StepResult resolve = Step12_ResolveHazards.Run(tick.State, tick.Context);
+
+            Assert.That(tick.State.Vine.PendingGrowthTile, Is.EqualTo(priority));
+            Assert.That(tick.Context.VineGrowthPending, Is.True);
+            Assert.That(BoardHelpers.GetTile(resolve.State.Board, priority), Is.EqualTo(new BlockerTile(BlockerType.Vine, 1, null)));
+            Assert.That(resolve.Events, Has.Some.EqualTo(new VineGrown(priority)));
+        }
+
+        [Test]
+        public void VineDoesNotMarkGrowthPendingWithoutPendingTileAfterMissedPreviewWindow()
+        {
+            GameState state = CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    Row(new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new BlockerTile(BlockerType.Crate, 1, null)),
+                    Row(new DebrisTile(DebrisType.C), new EmptyTile(), new EmptyTile())),
+                actionsSinceLastClear: 4,
+                growthThreshold: 4,
+                growthPriorityList: ImmutableArray.Create(new TileCoord(0, 2)),
+                pendingGrowthTile: null);
+
+            StepResult tick = Step11_TickHazards.Run(state, StepContext.Create(state, new ActionInput(new TileCoord(0, 0))));
+
+            Assert.That(tick.State.Vine.PendingGrowthTile, Is.Null);
+            Assert.That(tick.Context.VineGrowthPending, Is.False);
+        }
+
+        [Test]
         public void SameActionVineClearResetTakesPriorityOverGrowth()
         {
             GameState state = CreateState(

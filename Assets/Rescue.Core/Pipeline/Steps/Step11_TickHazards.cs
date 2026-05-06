@@ -69,7 +69,8 @@ namespace Rescue.Core.Pipeline.Steps
                 bool previewPending = false;
                 bool growthPending = false;
 
-                if (actionsSinceLastClear == updatedState.Vine.GrowthThreshold - 1)
+                if (actionsSinceLastClear >= updatedState.Vine.GrowthThreshold - 1
+                    && pendingGrowthTile is null)
                 {
                     pendingGrowthTile = FindFirstValidGrowthTile(updatedState.Board, updatedState.Vine, updatedState.Targets);
                     if (pendingGrowthTile is not null)
@@ -79,7 +80,8 @@ namespace Rescue.Core.Pipeline.Steps
                     }
                 }
 
-                if (actionsSinceLastClear == updatedState.Vine.GrowthThreshold)
+                if (actionsSinceLastClear >= updatedState.Vine.GrowthThreshold
+                    && pendingGrowthTile is not null)
                 {
                     growthPending = true;
                 }
