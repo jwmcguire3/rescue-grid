@@ -26,6 +26,8 @@ The main product risk is player-facing clarity and emotional proof. A cold playe
 
 Generated build, Android, capture, and test outputs are intentionally ignored. Source control should stay focused on authored content, code, Unity settings, docs, scripts, and committed solve data rather than local result logs or build products.
 
+The Phase 1 safe-refactor pass is complete. Passive helper logic has already been extracted from major presenter/debug files such as `BoardContentViewPresenter`, `DockViewPresenter`, and `DebugPanel`; future refactors should be tied to a specific bug, feature, test-backed seam, or maintainability blocker rather than file size alone.
+
 ## Phase 1 Scope
 
 In scope:
@@ -163,6 +165,8 @@ Playback currently maps the main visible action events:
 - final authoritative sync
 
 Water forecast, Dock Jam, invalid-tap, vine, target-readiness, Mae reaction, and terminal outcome feedback have hooks; their final readability depends on presentation tuning.
+
+Unity-facing refactors should be narrow and behavior-aware. Avoid casual reshaping of replay stepping/playback flow, animation coroutine timing/easing, dock warning/jam/overflow/triple-clear behavior, level loading/reset/next-level flow, hotkey and callback wiring, scene presenter resolution, telemetry/session mutation, and authored level JSON or solve/replay files. Run both EditMode and PlayMode after any refactor that touches Unity-facing code.
 
 ## Telemetry and Debugging
 

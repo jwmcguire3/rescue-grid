@@ -145,6 +145,30 @@ rescue order is the central puzzle.
   correction is enough.
 - Do not perform broad refactors or cleanup while making scoped fixes.
 
+## Refactor boundary
+
+The Phase 1 safe-refactor pass is complete. It already extracted passive helper
+logic from the major presenter/debug files, including
+`BoardContentViewPresenter`, `DockViewPresenter`, and `DebugPanel`.
+
+Future refactors must be tied to a specific bug, feature, test-backed seam, or
+maintainability blocker. Do not continue broad refactoring just because a file
+is large.
+
+Do not casually refactor behavior-sensitive areas:
+- gameplay pipeline order
+- replay stepping and playback flow
+- animation coroutines and timing/easing logic
+- dock warning, jam, overflow, and triple-clear behavior
+- level loading/reset/next-level flow
+- hotkey and callback wiring
+- scene presenter resolution
+- telemetry/session mutation
+- authored level JSON and solve/replay files
+
+After any future refactor touching Unity-facing code, run both EditMode and
+PlayMode through the repository test wrappers.
+
 ## Commit style
 - One logical change per commit. Reference the task ID in the message
   (e.g. "A1: implement SeededRng with mulberry32").
