@@ -460,12 +460,19 @@ Reason: within-level acceleration risks “pseudo-timer” feel before the seed 
 
 - Global vine counter
 - If the player clears any vine, the counter resets and does not advance that action
+- Clearing any vine resets/cancels the current vine growth plan
 - If the player does not clear vine, the counter advances during the hazard counter step
 - On threshold, exactly 1 vine tile grows
-- Growth uses a pre-authored priority list, not random adjacency
+- Vine growth is deterministic and uses a planned growth goal, never random spread
+- Vine growth plans toward rescue-relevant pressure
+- Candidate pressure includes actual rescue path tiles and possible rescue-route neighbor cells around unextracted/unlatched targets
+- Growth proceeds one valid tile at a time from an existing vine/frontier toward the planned goal
+- Authored `vine.growthPriority` remains allowed as bias, constraint, tutorial lane, or fallback
 - One action before growth, the intended growth tile pulses/animates
 
-This is important: vine must be readable pressure, not noise. Growth must feel warned, authored, and attributable.
+This is important: vine must be readable pressure, not noise. Growth must feel warned, deterministic, and attributable.
+
+This is a refinement of the existing Phase 1 vine behavior, not a new hazard, blocker, or mechanic.
 
 ### Vine growth threshold
 
@@ -822,6 +829,10 @@ One growth tile total per growth event.
 
 Never multiple simultaneous spreads in Phase 1.
 
+### Level-authoring rule
+
+Designers may author vine growth bias/constraints where needed for readability, tutorial lanes, or fallback behavior. They do not need to manually author every vine growth tile. Active vine levels should still prove warned, attributable route pressure and must not rely on hidden or unfair vine targeting.
+
 ### Interpretation rule
 
 If players describe vine as random or arbitrary, vine is failing.
@@ -1024,7 +1035,7 @@ I am recommending 15 main packet levels plus L00 as a rule-teach opener. That is
 
 ## Level 13 — Vine pressure exam
 
-**Geometry:** 7x9 with one authored growth lane  
+**Geometry:** 7x9 with one authored vine pressure lane  
 **Composition:** 2 puppies, heavier vines, light crates/ice  
 **Pressure:** 1 row pre-flooded, water 6 actions/row, vine every 3 untouched actions  
 **Intent:** make the player respect vine as future action tax  

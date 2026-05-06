@@ -5,6 +5,7 @@ using Rescue.Core.Pipeline;
 using Rescue.Core.State;
 using Rescue.Unity.Art.Registries;
 using Rescue.Unity.Presentation;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -472,6 +473,8 @@ namespace Rescue.Unity.UI
         private const string DefaultPieceContainerName = "DockPieces";
         private const string SharedDockInstanceName = "SharedDockVisualInstance";
         private const string OverflowAnchorPrefix = "OverflowSlot_";
+        private const string JamCalloutObjectName = "DockJamCallout";
+        private const string JamRecoveryCalloutText = "Dock Jam - clear a triple next move";
         private const int DockTripleSize = 3;
         private const float DockClearLiftFraction = 0.28f;
         private const float DockClearConvergeFraction = 0.39f;
@@ -494,12 +497,25 @@ namespace Rescue.Unity.UI
         [SerializeField] private GameObject? fallbackPiecePrefab;
         [SerializeField] private DockFeedbackPresenter? feedbackPresenter;
 
+        [Header("Jam Callout")]
+        [SerializeField] private TextMeshPro? jamCalloutLabel;
+        [SerializeField] private Vector3 jamCalloutLocalOffset = new Vector3(0f, 0.65f, 0f);
+
         private readonly DockSlotVisualRegistry _trackedSlots = new DockSlotVisualRegistry(MaxTrackedDockSlots);
         private GameObject? _sharedDockInstance;
         private float dockInsertDurationSeconds = ActionPlaybackSettings.DefaultDockInsertFeedbackDurationSeconds;
         private float dockClearDurationSeconds = ActionPlaybackSettings.DefaultDockClearFeedbackDurationSeconds;
+        private float dockJamFeedbackDurationSeconds = ActionPlaybackSettings.DefaultDockJamFeedbackDurationSeconds;
         private bool hasLastDockClearConvergenceWorldPosition;
         private Vector3 lastDockClearConvergenceWorldPosition;
+        private Coroutine? activeJamCallout;
+        private DockVisualState lastDockVisualState = DockVisualState.Safe;
+
+        public DockVisualState LastDockVisualState => lastDockVisualState;
+
+        public string CurrentJamCalloutText => jamCalloutLabel is null ? string.Empty : jamCalloutLabel.text;
+
+        public bool IsJamCalloutVisible => jamCalloutLabel is not null && jamCalloutLabel.gameObject.activeSelf;
 
         public void Rebuild(GameState state)
         {
@@ -515,6 +531,7 @@ namespace Rescue.Unity.UI
 
             dockInsertDurationSeconds = settings.DockInsertFeedbackDurationSeconds;
             dockClearDurationSeconds = settings.DockClearFeedbackDurationSeconds;
+            dockJamFeedbackDurationSeconds = settings.DockJamFeedbackDurationSeconds;
             ResolveFeedbackPresenter().ApplyPlaybackSettings(settings);
         }
 
@@ -527,6 +544,7 @@ namespace Rescue.Unity.UI
             }
 
             EnsureSharedDockVisual();
+            HideJamCallout();
 
             Transform[] anchors = ResolveSlotAnchors();
             if (anchors.Length != Phase1DockSize)
@@ -552,6 +570,11 @@ namespace Rescue.Unity.UI
         public void ForceSyncToState(GameState state)
         {
             SyncImmediate(state);
+        }
+
+        private void OnDisable()
+        {
+            HideJamCallout();
         }
 
         public void PlayInsertFeedback(DockInserted dockInserted)
@@ -662,7 +685,8 @@ namespace Rescue.Unity.UI
             }
 
             DockFeedbackPresenter feedback = PrepareFeedbackPresenter();
-            SetDockVisualState(DockVisualState.Failed);
+            SetDockVisualState(DockVisualState.Jammed);
+            ShowJamCallout();
             feedback.PlayFailedFeedback();
         }
 
@@ -674,6 +698,7 @@ namespace Rescue.Unity.UI
             }
 
             DockFeedbackPresenter feedback = PrepareFeedbackPresenter();
+            HideJamCallout();
             SetDockVisualState(DockVisualState.Failed);
             feedback.PlayFailedFeedback();
         }
@@ -718,6 +743,7 @@ namespace Rescue.Unity.UI
 
         public void SetDockVisualState(DockVisualState state)
         {
+            lastDockVisualState = state;
             MeshRenderer? renderer = ResolveSharedDockRenderer();
             if (renderer is null)
             {
@@ -905,6 +931,76 @@ namespace Rescue.Unity.UI
             return feedback;
         }
 
+        private void ShowJamCallout()
+        {
+            TextMeshPro label = ResolveJamCalloutLabel();
+            label.text = JamRecoveryCalloutText;
+            label.gameObject.SetActive(true);
+
+            if (activeJamCallout is not null)
+            {
+                StopCoroutine(activeJamCallout);
+                activeJamCallout = null;
+            }
+
+            if (Application.isPlaying && isActiveAndEnabled)
+            {
+                activeJamCallout = StartCoroutine(HideJamCalloutAfterDelay(dockJamFeedbackDurationSeconds));
+            }
+        }
+
+        private void HideJamCallout()
+        {
+            if (activeJamCallout is not null)
+            {
+                StopCoroutine(activeJamCallout);
+                activeJamCallout = null;
+            }
+
+            if (jamCalloutLabel is not null)
+            {
+                jamCalloutLabel.gameObject.SetActive(false);
+            }
+        }
+
+        private IEnumerator HideJamCalloutAfterDelay(float durationSeconds)
+        {
+            yield return new WaitForSeconds(Mathf.Max(0.01f, durationSeconds));
+            activeJamCallout = null;
+            HideJamCallout();
+        }
+
+        private TextMeshPro ResolveJamCalloutLabel()
+        {
+            if (jamCalloutLabel is not null)
+            {
+                return jamCalloutLabel;
+            }
+
+            Transform target = ResolveFeedbackTarget();
+            Transform? existing = target.Find(JamCalloutObjectName);
+            if (existing is not null && existing.TryGetComponent(out TextMeshPro existingLabel))
+            {
+                jamCalloutLabel = existingLabel;
+                return existingLabel;
+            }
+
+            GameObject labelObject = new GameObject(JamCalloutObjectName);
+            labelObject.transform.SetParent(target, false);
+            labelObject.transform.localPosition = jamCalloutLocalOffset;
+            labelObject.transform.localRotation = Quaternion.identity;
+            labelObject.transform.localScale = Vector3.one;
+
+            TextMeshPro label = labelObject.AddComponent<TextMeshPro>();
+            label.alignment = TextAlignmentOptions.Center;
+            label.fontSize = 0.28f;
+            label.color = new Color(1f, 0.92f, 0.35f, 1f);
+            label.text = JamRecoveryCalloutText;
+            label.gameObject.SetActive(false);
+            jamCalloutLabel = label;
+            return label;
+        }
+
         private static DockVisualState MapVisualState(DockWarningLevel warningLevel)
         {
             return warningLevel switch
@@ -923,6 +1019,7 @@ namespace Rescue.Unity.UI
                 DockVisualState.Safe => safeMaterial,
                 DockVisualState.Caution => cautionMaterial,
                 DockVisualState.Acute => acuteMaterial,
+                DockVisualState.Jammed => acuteMaterial ?? failedMaterial,
                 DockVisualState.Failed => failedMaterial,
                 _ => null,
             };

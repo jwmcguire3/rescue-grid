@@ -17,8 +17,10 @@ MonoBehaviour:
   safePrefab: {fileID: 8616773766990679052, guid: f45a199fe920d4b4fbcf47ff3bfc5864, type: 3}
   cautionPrefab: {fileID: 8616773766990679052, guid: f45a199fe920d4b4fbcf47ff3bfc5864, type: 3}
   acutePrefab: {fileID: 8616773766990679052, guid: f45a199fe920d4b4fbcf47ff3bfc5864, type: 3}
+  jammedPrefab: {fileID: 8616773766990679052, guid: f45a199fe920d4b4fbcf47ff3bfc5864, type: 3}
   failedPrefab: {fileID: 8616773766990679052, guid: f45a199fe920d4b4fbcf47ff3bfc5864, type: 3}
   safeMaterial: {fileID: 2100000, guid: 3b625ff45a1f61a42b94a4c57794501d, type: 2}
   cautionMaterial: {fileID: 2100000, guid: f306ad2134429824dbb89b5dc42cfd40, type: 2}
   acuteMaterial: {fileID: 2100000, guid: 3ea3efcfc755c71488d7fc74f7389578, type: 2}
+  jammedMaterial: {fileID: 2100000, guid: f306ad2134429824dbb89b5dc42cfd40, type: 2}
   failedMaterial: {fileID: 2100000, guid: 2a5bce4e92255064fa278c80d3305d50, type: 2}

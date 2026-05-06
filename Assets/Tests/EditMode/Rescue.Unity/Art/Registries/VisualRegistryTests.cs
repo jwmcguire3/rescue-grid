@@ -126,20 +126,40 @@ namespace Rescue.Unity.Art.Tests
             Material safeMaterial = CreateMaterial();
             Material cautionMaterial = CreateMaterial();
             Material acuteMaterial = CreateMaterial();
+            Material jammedMaterial = CreateMaterial();
             Material failedMaterial = CreateMaterial();
 
             config.SharedDockPrefab = sharedDockPrefab;
             config.SafeMaterial = safeMaterial;
             config.CautionMaterial = cautionMaterial;
             config.AcuteMaterial = acuteMaterial;
+            config.JammedMaterial = jammedMaterial;
             config.FailedMaterial = failedMaterial;
 
             Assert.That(config.GetPrefab(DockVisualState.Safe), Is.SameAs(sharedDockPrefab));
             Assert.That(config.GetPrefab(DockVisualState.Caution), Is.SameAs(sharedDockPrefab));
+            Assert.That(config.GetPrefab(DockVisualState.Jammed), Is.SameAs(sharedDockPrefab));
             Assert.That(config.GetMaterial(DockVisualState.Safe), Is.SameAs(safeMaterial));
             Assert.That(config.GetMaterial(DockVisualState.Caution), Is.SameAs(cautionMaterial));
             Assert.That(config.GetMaterial(DockVisualState.Acute), Is.SameAs(acuteMaterial));
+            Assert.That(config.GetMaterial(DockVisualState.Jammed), Is.SameAs(jammedMaterial));
             Assert.That(config.GetMaterial(DockVisualState.Failed), Is.SameAs(failedMaterial));
+        }
+
+        [Test]
+        public void DockVisualConfig_JammedMaterialFallsBackToAcuteBeforeFailed()
+        {
+            DockVisualConfig config = CreateScriptableObject<DockVisualConfig>();
+            Material acuteMaterial = CreateMaterial();
+            Material failedMaterial = CreateMaterial();
+            config.AcuteMaterial = acuteMaterial;
+            config.FailedMaterial = failedMaterial;
+
+            Assert.That(config.GetMaterial(DockVisualState.Jammed), Is.SameAs(acuteMaterial));
+
+            config.AcuteMaterial = null;
+
+            Assert.That(config.GetMaterial(DockVisualState.Jammed), Is.SameAs(failedMaterial));
         }
 
         [Test]

@@ -216,6 +216,22 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
+        public void Build_DockJamTriggeredAloneNeverMapsToTerminalOutcome()
+        {
+            ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(
+                CreateState(),
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(new DockJamTriggered(OverflowCount: 1)));
+
+            Assert.That(plan.Take(plan.Count - 1).Select(step => step.StepType), Is.EqualTo(new[]
+            {
+                ActionPlaybackStepType.DockFeedback,
+            }));
+            Assert.That(plan.Any(step => step.StepType == ActionPlaybackStepType.TerminalOutcome), Is.False);
+            Assert.That(plan[^1].StepType, Is.EqualTo(ActionPlaybackStepType.FinalSync));
+        }
+
+        [Test]
         public void Build_PreservesCanonicalDockEventOrder()
         {
             ActionPlaybackPlan plan = ActionPlaybackBuilder.Build(

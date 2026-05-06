@@ -706,6 +706,68 @@ namespace Rescue.Unity.UI.Tests
         }
 
         [Test]
+        public void DockViewPresenter_PlayJamFeedbackUsesRecoverableJamStateAndCallout()
+        {
+            GameObject presenterObject = CreateTrackedObject("DockPresenter");
+            DockViewPresenter presenter = presenterObject.AddComponent<DockViewPresenter>();
+            GameObject dockVisual = CreateTrackedObject("DockVisual");
+            MeshRenderer renderer = dockVisual.AddComponent<MeshRenderer>();
+            dockVisual.transform.SetParent(presenterObject.transform, false);
+
+            Material acuteMaterial = new Material(Shader.Find("Standard"));
+            Material failedMaterial = new Material(Shader.Find("Standard"));
+            SetPrivateField(presenter, "sharedDockRenderer", renderer);
+            SetPrivateField(presenter, "acuteMaterial", acuteMaterial);
+            SetPrivateField(presenter, "failedMaterial", failedMaterial);
+
+            try
+            {
+                presenter.PlayJamFeedback(new DockJamTriggered(OverflowCount: 1));
+
+                Assert.That(presenter.LastDockVisualState, Is.EqualTo(DockVisualState.Jammed));
+                Assert.That(renderer.sharedMaterial, Is.SameAs(acuteMaterial));
+                Assert.That(presenter.CurrentJamCalloutText, Is.EqualTo("Dock Jam - clear a triple next move"));
+                Assert.That(presenter.IsJamCalloutVisible, Is.True);
+            }
+            finally
+            {
+                Object.DestroyImmediate(acuteMaterial);
+                Object.DestroyImmediate(failedMaterial);
+            }
+        }
+
+        [Test]
+        public void DockViewPresenter_PlayOverflowFeedbackUsesFailedStateAndHidesJamCallout()
+        {
+            GameObject presenterObject = CreateTrackedObject("DockPresenter");
+            DockViewPresenter presenter = presenterObject.AddComponent<DockViewPresenter>();
+            GameObject dockVisual = CreateTrackedObject("DockVisual");
+            MeshRenderer renderer = dockVisual.AddComponent<MeshRenderer>();
+            dockVisual.transform.SetParent(presenterObject.transform, false);
+
+            Material acuteMaterial = new Material(Shader.Find("Standard"));
+            Material failedMaterial = new Material(Shader.Find("Standard"));
+            SetPrivateField(presenter, "sharedDockRenderer", renderer);
+            SetPrivateField(presenter, "acuteMaterial", acuteMaterial);
+            SetPrivateField(presenter, "failedMaterial", failedMaterial);
+
+            try
+            {
+                presenter.PlayJamFeedback(new DockJamTriggered(OverflowCount: 1));
+                presenter.PlayOverflowFeedback(new DockOverflowTriggered(OverflowCount: 1));
+
+                Assert.That(presenter.LastDockVisualState, Is.EqualTo(DockVisualState.Failed));
+                Assert.That(renderer.sharedMaterial, Is.SameAs(failedMaterial));
+                Assert.That(presenter.IsJamCalloutVisible, Is.False);
+            }
+            finally
+            {
+                Object.DestroyImmediate(acuteMaterial);
+                Object.DestroyImmediate(failedMaterial);
+            }
+        }
+
+        [Test]
         public void DockViewPresenter_FeedbackMethodsFailSoftWhenVisualReferencesAreMissing()
         {
             GameObject presenterObject = CreateTrackedObject("DockPresenter");

@@ -7,6 +7,7 @@ namespace Rescue.Unity.Art.Registries
         Safe,
         Caution,
         Acute,
+        Jammed,
         Failed,
     }
 
@@ -21,12 +22,14 @@ namespace Rescue.Unity.Art.Registries
         [SerializeField] private GameObject? safePrefab;
         [SerializeField] private GameObject? cautionPrefab;
         [SerializeField] private GameObject? acutePrefab;
+        [SerializeField] private GameObject? jammedPrefab;
         [SerializeField] private GameObject? failedPrefab;
 
         [Header("State Materials")]
         [SerializeField] private Material? safeMaterial;
         [SerializeField] private Material? cautionMaterial;
         [SerializeField] private Material? acuteMaterial;
+        [SerializeField] private Material? jammedMaterial;
         [SerializeField] private Material? failedMaterial;
 
         public GameObject? SharedDockPrefab
@@ -59,6 +62,12 @@ namespace Rescue.Unity.Art.Registries
             set => acutePrefab = value;
         }
 
+        public GameObject? JammedPrefab
+        {
+            get => jammedPrefab;
+            set => jammedPrefab = value;
+        }
+
         public GameObject? FailedPrefab
         {
             get => failedPrefab;
@@ -81,6 +90,12 @@ namespace Rescue.Unity.Art.Registries
         {
             get => acuteMaterial;
             set => acuteMaterial = value;
+        }
+
+        public Material? JammedMaterial
+        {
+            get => jammedMaterial;
+            set => jammedMaterial = value;
         }
 
         public Material? FailedMaterial
@@ -112,6 +127,7 @@ namespace Rescue.Unity.Art.Registries
                 DockVisualState.Safe => safePrefab,
                 DockVisualState.Caution => cautionPrefab,
                 DockVisualState.Acute => acutePrefab,
+                DockVisualState.Jammed => jammedPrefab,
                 DockVisualState.Failed => failedPrefab,
                 _ => null,
             };
@@ -126,6 +142,7 @@ namespace Rescue.Unity.Art.Registries
                 DockVisualState.Safe => safeMaterial,
                 DockVisualState.Caution => cautionMaterial,
                 DockVisualState.Acute => acuteMaterial,
+                DockVisualState.Jammed => jammedMaterial ?? acuteMaterial ?? failedMaterial,
                 DockVisualState.Failed => failedMaterial,
                 _ => null,
             };

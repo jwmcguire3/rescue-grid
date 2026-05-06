@@ -113,6 +113,22 @@ namespace Rescue.Unity.FX.Tests
         }
 
         [Test]
+        public void FxEventRouter_DockJamPlaybackDoesNotRouteTerminalOverflowFx()
+        {
+            SpyFxEventRouter router = CreateRouter();
+            GameState state = CreateState();
+
+            router.RoutePlaybackBeat(
+                state,
+                new ActionInput(new TileCoord(0, 0)),
+                state,
+                CreatePlaybackStep(ActionPlaybackStepType.DockFeedback, new DockJamTriggered(OverflowCount: 1)));
+
+            Assert.That(router.DockWarningCount, Is.EqualTo(1));
+            Assert.That(router.LossDockOverflowCount, Is.EqualTo(0));
+        }
+
+        [Test]
         public void FxEventRouter_MissingRegistryDoesNotThrow()
         {
             FxEventRouter router = CreateGameObject("FxRouter").AddComponent<FxEventRouter>();
