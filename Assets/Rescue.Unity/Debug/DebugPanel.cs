@@ -1819,23 +1819,9 @@ namespace Rescue.Unity.Debugging
 
             DebugPanelReplayStatus.UpdateReplayStatus(_replayStatusValue, _loadedReplay, _replayFrameIndex);
 
-            if (_waterActionsValue is not null) _waterActionsValue.text = $"Water actions until rise: {_currentState.Water.ActionsUntilRise}";
-            if (_waterRiseIntervalValue is not null) _waterRiseIntervalValue.text = $"Water rise interval: {_currentState.Water.RiseInterval}";
-            if (_waterNextFloodRowValue is not null) _waterNextFloodRowValue.text = $"Next row to flood: {DebugPanelDisplay.GetNextFloodRowLabel(_currentState)}";
-            if (_waterForecastValue is not null) _waterForecastValue.text = $"Water forecast: {DebugPanelDisplay.GetWaterForecastSummary(_currentState)}";
-            if (_ruleTeachValue is not null) _ruleTeachValue.text = $"Rule teach active: {_currentState.LevelConfig.IsRuleTeach}; waiting for first action: {_currentState.Water.PauseUntilFirstAction}";
-            if (_vineActionsValue is not null) _vineActionsValue.text = $"Vine actions since clear: {_currentState.Vine.ActionsSinceLastClear}";
-            if (_vineThresholdValue is not null) _vineThresholdValue.text = $"Vine growth threshold: {_currentState.Vine.GrowthThreshold}";
-            if (_vinePendingValue is not null) _vinePendingValue.text = $"Pending growth tile: {DebugPanelDisplay.FormatCoord(_currentState.Vine.PendingGrowthTile)}";
-            if (_dockOccupancyValue is not null) _dockOccupancyValue.text = $"Dock occupancy: {DockHelpers.Occupancy(_currentState.Dock)}/{_currentState.Dock.Size}";
-            if (_dockWarningValue is not null) _dockWarningValue.text = $"Dock warning level: {DockHelpers.GetWarningLevel(_currentState.Dock)}";
-            if (_dockContentsValue is not null) _dockContentsValue.text = $"Dock contents: {DebugPanelDisplay.FormatDockContents(_currentState.Dock)}";
-            if (_dockJamUsedValue is not null) _dockJamUsedValue.text = $"Dock jam used: {_currentState.DockJamUsed}";
-            if (_dockJamEnabledValue is not null) _dockJamEnabledValue.text = $"Dock jam enabled: {_currentState.DockJamEnabled}";
-            if (_nearRescueTargetsValue is not null) _nearRescueTargetsValue.text = $"Near-rescue targets: {DebugPanelDisplay.GetNearRescueTargetsSummary(_currentState)}";
-            if (_rngStateValue is not null) _rngStateValue.text = $"RNG state: {DebugPanelDisplay.SerializeRngState(_currentState.RngState)}";
-            if (_consecutiveEmergencyValue is not null) _consecutiveEmergencyValue.text = $"Consecutive emergency spawns: {_currentState.ConsecutiveEmergencySpawns}";
-            if (_spawnRecoveryValue is not null) _spawnRecoveryValue.text = $"Spawn recovery counter: {_currentState.SpawnRecoveryCounter}";
+            DebugPanelReadouts.Update(_currentState,
+                _waterActionsValue, _waterRiseIntervalValue, _waterNextFloodRowValue, _waterForecastValue, _ruleTeachValue, _vineActionsValue, _vineThresholdValue, _vinePendingValue,
+                _dockOccupancyValue, _dockWarningValue, _dockContentsValue, _dockJamUsedValue, _dockJamEnabledValue, _nearRescueTargetsValue, _rngStateValue, _consecutiveEmergencyValue, _spawnRecoveryValue);
 
             if (_eventLogList is not null)
             {

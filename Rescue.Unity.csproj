@@ -102,6 +102,7 @@
     <Compile Include="Assets\Rescue.Unity\Art\Registries\DockVisualConfig.cs" />
     <Compile Include="Assets\Rescue.Unity\UI\DockAnchorResolver.cs" />
     <Compile Include="Assets\Rescue.Unity\Presentation\ActionPlaybackController.cs" />
+    <Compile Include="Assets\Rescue.Unity\Debug\DebugPanelReadouts.cs" />
     <Compile Include="Assets\Rescue.Unity\Audio\MusicTrackEntry.cs" />
     <Compile Include="Assets\Rescue.Unity\Art\Registries\TargetVisualRegistry.cs" />
     <Compile Include="Assets\Rescue.Unity\FX\FxEventRouter.cs" />
