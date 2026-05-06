@@ -71,7 +71,9 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(settings.DockClearFeedbackDurationSeconds, Is.InRange(0.14f, 0.18f));
             Assert.That(settings.GravityDurationSeconds, Is.InRange(0.07f, 0.08f));
             Assert.That(settings.SpawnDurationSeconds, Is.InRange(0.055f, 0.065f));
-            Assert.That(settings.TargetExtractDurationSeconds, Is.InRange(0.22f, 0.26f));
+            Assert.That(settings.TargetExtractDurationSeconds, Is.InRange(0.38f, 0.42f));
+            Assert.That(settings.TargetExtractDurationSeconds, Is.GreaterThan(settings.RemoveDurationSeconds));
+            Assert.That(settings.TargetExtractDurationSeconds, Is.GreaterThan(settings.DockClearFeedbackDurationSeconds));
             Assert.That(settings.WinFxDurationSeconds, Is.InRange(1.15f, 1.25f));
             Assert.That(settings.LossFxDurationSeconds, Is.InRange(1.15f, 1.25f));
             Assert.That(settings.WaterRiseDurationSeconds, Is.InRange(0.28f, 0.32f));

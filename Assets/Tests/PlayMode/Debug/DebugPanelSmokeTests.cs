@@ -1,5 +1,6 @@
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
 using System;
+using System.IO;
 using System.Reflection;
 using NUnit.Framework;
 using Rescue.Content;
@@ -8,6 +9,7 @@ using Rescue.Unity.Debugging;
 using Rescue.Unity.Presentation;
 using UnityEngine;
 using UnityEngine.TestTools;
+using UnityEngine.UIElements;
 
 namespace Rescue.PlayMode.Tests.Debug
 {
@@ -276,6 +278,29 @@ namespace Rescue.PlayMode.Tests.Debug
         }
 
         [UnityTest]
+        public System.Collections.IEnumerator DebugPanel_LevelSelectorExposesFullPhase1Packet()
+        {
+            DebugPanel panel = DebugPanel.EnsureInstance();
+
+            yield return null;
+
+            DropdownField? levelSelector = panel.GetComponent<UIDocument>()
+                .rootVisualElement
+                .Q<DropdownField>("level-selector");
+            string[] expectedLevelIds = LoadExpectedLevelIdsFromManifest();
+
+            Assert.That(levelSelector, Is.Not.Null);
+            CollectionAssert.AreEqual(expectedLevelIds, levelSelector!.choices);
+            Assert.That(panel.HasNextLevel(), Is.True);
+
+            panel.LoadLevel(Loader.LoadLevelDefinition("L20"), seed: 7);
+
+            yield return null;
+
+            Assert.That(panel.HasNextLevel(), Is.False);
+        }
+
+        [UnityTest]
         public System.Collections.IEnumerator NextLevelLoadsFollowingStreamingAssetLevel()
         {
             DebugPanel panel = DebugPanel.EnsureInstance();
@@ -350,6 +375,23 @@ namespace Rescue.PlayMode.Tests.Debug
             object? options = Activator.CreateInstance(optionsType);
             object? value = deserializeMethod.Invoke(null, new object?[] { json, typeof(object), options });
             return value is not null;
+        }
+
+        private static string[] LoadExpectedLevelIdsFromManifest()
+        {
+            return LevelPacketManifestLoader.Load(GetRepoManifestPath()).ExpectedLevelIds;
+        }
+
+        private static string GetRepoManifestPath()
+        {
+            return Path.Combine(GetProjectRoot(), "docs", "level-packets", "phase1.packet.json");
+        }
+
+        private static string GetProjectRoot()
+        {
+            string root = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+                ?? throw new IOException("Could not resolve test assembly directory.");
+            return Path.GetFullPath(Path.Combine(root, "..", ".."));
         }
 
         private static void DestroyTerminalScreensIfPresent()

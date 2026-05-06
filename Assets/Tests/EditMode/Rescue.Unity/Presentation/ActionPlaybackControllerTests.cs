@@ -498,6 +498,7 @@ namespace Rescue.Unity.Presentation.Tests
             audioRouter.Registry = CreateAudioRegistry(
                 Entry(FeedbackEventId.GroupClear),
                 Entry(FeedbackEventId.DockInsert),
+                Entry(FeedbackEventId.TargetExtract),
                 Entry(FeedbackEventId.GravitySettle),
                 Entry(FeedbackEventId.SpawnLand),
                 Entry(FeedbackEventId.WaterRise));
@@ -509,6 +510,7 @@ namespace Rescue.Unity.Presentation.Tests
                 actionCount: 6,
                 new GroupRemoved(DebrisType.A, ImmutableArray.Create(new TileCoord(0, 0), new TileCoord(0, 1))),
                 new DockInserted(ImmutableArray.Create(DebrisType.A), OccupancyAfterInsert: 1, OverflowCount: 0),
+                new TargetExtracted("pup-1", new TileCoord(1, 0)),
                 new GravitySettled(ImmutableArray.Create((new TileCoord(0, 0), new TileCoord(1, 0)))),
                 new Spawned(ImmutableArray.Create((new TileCoord(0, 0), DebrisType.C))),
                 new WaterRose(FloodedRow: 1));
@@ -524,6 +526,7 @@ namespace Rescue.Unity.Presentation.Tests
             {
                 FeedbackEventId.GroupClear,
                 FeedbackEventId.DockInsert,
+                FeedbackEventId.TargetExtract,
                 FeedbackEventId.GravitySettle,
                 FeedbackEventId.SpawnLand,
                 FeedbackEventId.WaterRise,
@@ -594,6 +597,34 @@ namespace Rescue.Unity.Presentation.Tests
                 HapticEventId.DockAcute,
                 HapticEventId.WaterRise,
                 HapticEventId.Win,
+            }));
+        }
+
+        [Test]
+        public void ActionPlaybackController_RoutesTargetExtractHapticForNonTerminalExtraction()
+        {
+            ControllerHarness harness = CreateControllerHarness(
+                playbackEnabled: true,
+                yieldBetweenSteps: false,
+                hapticRouterType: typeof(SpyHapticEventRouter));
+            SpyHapticEventRouter hapticRouter = (SpyHapticEventRouter)harness.HapticRouter!;
+            GameState previousState = CreateState();
+
+            ActionResult result = CreateResult(
+                previousState,
+                actionCount: 7,
+                new TargetExtracted("pup-1", new TileCoord(1, 0)));
+
+            bool handled = harness.Controller.TryPlayAction(
+                previousState,
+                new ActionInput(new TileCoord(0, 0)),
+                result,
+                _ => { });
+
+            Assert.That(handled, Is.True);
+            Assert.That(hapticRouter.PlayedIds, Is.EqualTo(new[]
+            {
+                HapticEventId.TargetExtract,
             }));
         }
 

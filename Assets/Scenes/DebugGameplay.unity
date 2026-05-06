@@ -294,7 +294,7 @@ MonoBehaviour:
     dockJamFeedbackDurationSeconds: 0.7
     gravityDurationSeconds: 0.15
     spawnDurationSeconds: 0.12
-    targetExtractDurationSeconds: 0.12
+    targetExtractDurationSeconds: 0.2
     waterRiseDurationSeconds: 0.15
     waterForecastTransitionDurationSeconds: 0.1
     waterForecastPulseDurationSeconds: 0.25

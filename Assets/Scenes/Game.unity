@@ -267,7 +267,7 @@ MonoBehaviour:
     boardPieceLandingSquashYScale: 0.92
     boardPieceLandingBounceDistance: 0.04
     targetReactionDurationSeconds: 0.12
-    targetExtractDurationSeconds: 0.12
+    targetExtractDurationSeconds: 0.2
     winFxDurationSeconds: 0.6
     lossFxDurationSeconds: 0.6
     waterRiseDurationSeconds: 0.15

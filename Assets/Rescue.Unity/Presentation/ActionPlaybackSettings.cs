@@ -21,7 +21,7 @@ namespace Rescue.Unity.Presentation
         public const float DefaultBoardPieceLandingSquashYScale = 0.92f;
         public const float DefaultBoardPieceLandingBounceDistance = 0.04f;
         public const float DefaultTargetReactionDurationSeconds = 0.12f;
-        public const float DefaultTargetExtractDurationSeconds = 0.12f;
+        public const float DefaultTargetExtractDurationSeconds = 0.20f;
         public const float DefaultWinFxDurationSeconds = 0.60f;
         public const float DefaultLossFxDurationSeconds = 0.60f;
         public const float DefaultWaterRiseDurationSeconds = 0.15f;

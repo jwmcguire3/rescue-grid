@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+using System.Reflection;
 using NUnit.Framework;
 using Rescue.Unity.Audio;
 using Rescue.Unity.Presentation;
@@ -106,6 +109,23 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(musicSlider.style.minWidth.value.value, Is.EqualTo(SettingsMenuPresenter.SliderTrackMinWidth).Within(0.001f));
             Assert.That(fxSlider.style.minWidth.value.value, Is.EqualTo(SettingsMenuPresenter.SliderTrackMinWidth).Within(0.001f));
             Assert.That(hapticsStrengthSlider.style.minWidth.value.value, Is.EqualTo(SettingsMenuPresenter.SliderTrackMinWidth).Within(0.001f));
+        }
+
+        [Test]
+        public void SettingsMenuPresenter_LevelChoicesExposeFullPhase1Packet()
+        {
+            SettingsMenuPresenter presenter = CreatePresenter(out _);
+
+            presenter.SetOpen(true);
+
+            string[] expectedLevelIds = LoadExpectedLevelIdsFromManifest();
+
+            CollectionAssert.AreEqual(expectedLevelIds, PlayableLevelSession.LevelIds);
+            Assert.That(presenter.LevelChoices, Has.Count.EqualTo(expectedLevelIds.Length));
+            for (int i = 0; i < expectedLevelIds.Length; i++)
+            {
+                Assert.That(presenter.LevelChoices[i], Does.StartWith(expectedLevelIds[i]));
+            }
         }
 
         [Test]
@@ -268,6 +288,39 @@ namespace Rescue.Unity.Presentation.Tests
             field!.SetValue(target, value);
         }
 
+        private static string[] LoadExpectedLevelIdsFromManifest()
+        {
+            Assembly jsonAssembly = Assembly.Load(new AssemblyName("System.Text.Json"));
+            Type serializerType = jsonAssembly.GetType("System.Text.Json.JsonSerializer", throwOnError: true)
+                ?? throw new InvalidOperationException("JsonSerializer type was not found.");
+            Type optionsType = jsonAssembly.GetType("System.Text.Json.JsonSerializerOptions", throwOnError: true)
+                ?? throw new InvalidOperationException("JsonSerializerOptions type was not found.");
+            MethodInfo deserializeMethod = serializerType.GetMethod(
+                "Deserialize",
+                BindingFlags.Public | BindingFlags.Static,
+                binder: null,
+                types: new[] { typeof(string), typeof(Type), optionsType },
+                modifiers: null)
+                ?? throw new MissingMethodException("JsonSerializer.Deserialize(string, Type, JsonSerializerOptions) was not found.");
+
+            object? value = deserializeMethod.Invoke(null, new object?[] { File.ReadAllText(GetRepoManifestPath()), typeof(PacketManifestSubset), null });
+            PacketManifestSubset manifest = value as PacketManifestSubset
+                ?? throw new InvalidOperationException("Could not deserialize packet manifest.");
+            return manifest.expectedLevelIds;
+        }
+
+        private static string GetRepoManifestPath()
+        {
+            return Path.Combine(GetProjectRoot(), "docs", "level-packets", "phase1.packet.json");
+        }
+
+        private static string GetProjectRoot()
+        {
+            string root = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+                ?? throw new IOException("Could not resolve test assembly directory.");
+            return Path.GetFullPath(Path.Combine(root, "..", ".."));
+        }
+
         private static void DestroyAny<T>()
             where T : UnityObject
         {
@@ -279,6 +332,11 @@ namespace Rescue.Unity.Presentation.Tests
                     UnityObject.DestroyImmediate(objects[i]);
                 }
             }
+        }
+
+        private sealed class PacketManifestSubset
+        {
+            public string[] expectedLevelIds { get; set; } = Array.Empty<string>();
         }
     }
 }

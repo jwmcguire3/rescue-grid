@@ -14,8 +14,11 @@ namespace Rescue.Unity.BoardPresentation
         private const float HiddenDebrisYOffsetRatio = 0.5f;
         private const float DefaultDebrisClearLiftDistance = 0.42f;
         private const float DefaultDebrisClearShrinkScale = 0.88f;
-        private const float DefaultTargetExtractLiftDistance = 0.18f;
-        private const float DefaultTargetExtractPulseScale = 1.12f;
+        private const float DefaultTargetExtractLiftDistance = 0.42f;
+        private const float DefaultTargetExtractPulseScale = 1.18f;
+        private const float TargetExtractHoldPhaseRatio = 0.25f;
+        private const float TargetExtractFadeStartRatio = 0.45f;
+        private const float TargetExtractBrightnessBoost = 1.25f;
         private const float DefaultBlockerDamagePulseScale = 1.06f;
         private const float DefaultBlockerDamageAlphaFloor = 0.70f;
         private const float MinimumTimelineDurationSeconds = 0.01f;
@@ -658,6 +661,10 @@ namespace Rescue.Unity.BoardPresentation
             Transform targetTransform = targetObject.transform;
             Vector3 baseLocalPosition = targetTransform.localPosition;
             Vector3 baseLocalScale = targetTransform.localScale;
+            SpriteRenderer[] spriteRenderers = targetObject.GetComponentsInChildren<SpriteRenderer>(includeInactive: true);
+            Color[] spriteBaseColors = CaptureSpriteColors(spriteRenderers);
+            Graphic[] graphics = targetObject.GetComponentsInChildren<Graphic>(includeInactive: true);
+            Color[] graphicBaseColors = CaptureGraphicColors(graphics);
             float clampedDuration = Mathf.Max(0.01f, durationSeconds);
             float elapsed = 0f;
 
@@ -671,7 +678,13 @@ namespace Rescue.Unity.BoardPresentation
                 elapsed += Time.deltaTime;
                 float normalized = Mathf.Clamp01(elapsed / clampedDuration);
                 ApplyTargetExtractPose(targetTransform, normalized, baseLocalPosition, baseLocalScale);
-                SetTargetVisualAlpha(targetObject, 1f - normalized);
+                ApplyTargetExtractVisuals(
+                    spriteRenderers,
+                    spriteBaseColors,
+                    graphics,
+                    graphicBaseColors,
+                    ResolveTargetExtractAlpha(normalized),
+                    ResolveTargetExtractBrightness(normalized));
                 yield return null;
             }
 
@@ -851,19 +864,93 @@ namespace Rescue.Unity.BoardPresentation
             Vector3 baseLocalScale)
         {
             float clamped = Mathf.Clamp01(normalized);
-            float eased = 1f - Mathf.Pow(1f - clamped, 3f);
-            float pulse = Mathf.Sin(clamped * Mathf.PI);
+            float liftProgress = Mathf.InverseLerp(TargetExtractHoldPhaseRatio, 1f, clamped);
+            float easedLift = 1f - Mathf.Pow(1f - liftProgress, 3f);
+            float reliefPulse = Mathf.Sin(Mathf.Clamp01(clamped / TargetExtractFadeStartRatio) * Mathf.PI);
 
-            targetTransform.localPosition = baseLocalPosition + new Vector3(0f, DefaultTargetExtractLiftDistance * eased, 0f);
+            targetTransform.localPosition = baseLocalPosition + new Vector3(0f, DefaultTargetExtractLiftDistance * easedLift, 0f);
             targetTransform.localScale = Vector3.LerpUnclamped(
                 baseLocalScale,
                 baseLocalScale * DefaultTargetExtractPulseScale,
-                pulse);
+                reliefPulse);
+        }
+
+        private static float ResolveTargetExtractAlpha(float normalized)
+        {
+            float fadeProgress = Mathf.InverseLerp(TargetExtractFadeStartRatio, 1f, Mathf.Clamp01(normalized));
+            return 1f - fadeProgress;
+        }
+
+        private static float ResolveTargetExtractBrightness(float normalized)
+        {
+            float pulse = Mathf.Sin(Mathf.Clamp01(normalized / TargetExtractFadeStartRatio) * Mathf.PI);
+            return Mathf.LerpUnclamped(1f, TargetExtractBrightnessBoost, pulse);
         }
 
         private static void SetTargetVisualAlpha(GameObject targetObject, float alpha)
         {
             SetVisualAlpha(targetObject, alpha);
+        }
+
+        private static Color[] CaptureSpriteColors(SpriteRenderer[] spriteRenderers)
+        {
+            Color[] colors = new Color[spriteRenderers.Length];
+            for (int i = 0; i < spriteRenderers.Length; i++)
+            {
+                colors[i] = spriteRenderers[i].color;
+            }
+
+            return colors;
+        }
+
+        private static Color[] CaptureGraphicColors(Graphic[] graphics)
+        {
+            Color[] colors = new Color[graphics.Length];
+            for (int i = 0; i < graphics.Length; i++)
+            {
+                colors[i] = graphics[i].color;
+            }
+
+            return colors;
+        }
+
+        private static void ApplyTargetExtractVisuals(
+            SpriteRenderer[] spriteRenderers,
+            Color[] spriteBaseColors,
+            Graphic[] graphics,
+            Color[] graphicBaseColors,
+            float alpha,
+            float brightness)
+        {
+            for (int i = 0; i < spriteRenderers.Length; i++)
+            {
+                if (spriteRenderers[i] == null)
+                {
+                    continue;
+                }
+
+                spriteRenderers[i].color = ResolveExtractColor(spriteBaseColors[i], alpha, brightness);
+            }
+
+            for (int i = 0; i < graphics.Length; i++)
+            {
+                if (graphics[i] == null)
+                {
+                    continue;
+                }
+
+                graphics[i].color = ResolveExtractColor(graphicBaseColors[i], alpha, brightness);
+            }
+        }
+
+        private static Color ResolveExtractColor(Color baseColor, float alpha, float brightness)
+        {
+            float clampedBrightness = Mathf.Max(0f, brightness);
+            return new Color(
+                Mathf.Clamp01(baseColor.r * clampedBrightness),
+                Mathf.Clamp01(baseColor.g * clampedBrightness),
+                Mathf.Clamp01(baseColor.b * clampedBrightness),
+                Mathf.Clamp01(baseColor.a * alpha));
         }
 
         private static void SetVisualAlpha(GameObject contentObject, float alpha)

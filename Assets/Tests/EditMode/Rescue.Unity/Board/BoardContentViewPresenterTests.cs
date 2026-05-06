@@ -944,6 +944,25 @@ namespace Rescue.Unity.BoardPresentation.Tests
         }
 
         [Test]
+        public void BoardContentViewPresenter_TargetExtractPoseHoldsThenLiftsAndFades()
+        {
+            GameObject targetObject = CreateTrackedGameObject("TargetExtractPoseProbe");
+            Transform targetTransform = targetObject.transform;
+            Vector3 basePosition = targetTransform.localPosition;
+            Vector3 baseScale = targetTransform.localScale;
+
+            InvokeTargetExtractPose(targetTransform, 0.20f, basePosition, baseScale);
+
+            Assert.That(targetTransform.localPosition.y, Is.EqualTo(basePosition.y).Within(0.001f));
+            Assert.That(ResolveTargetExtractAlpha(0.20f), Is.EqualTo(1f).Within(0.001f));
+
+            InvokeTargetExtractPose(targetTransform, 1.0f, basePosition, baseScale);
+
+            Assert.That(targetTransform.localPosition.y - basePosition.y, Is.GreaterThan(0.18f));
+            Assert.That(ResolveTargetExtractAlpha(1.0f), Is.EqualTo(0f).Within(0.001f));
+        }
+
+        [Test]
         public void BoardContentViewPresenter_NonTargetAnimationApisFailSoftWhenVisualsAreMissing()
         {
             PresenterHarness harness = CreateHarness();
@@ -1482,6 +1501,33 @@ namespace Rescue.Unity.BoardPresentation.Tests
 
             Assert.That(field, Is.Not.Null, $"Expected private field '{fieldName}'.");
             return field?.GetValue(target);
+        }
+
+        private static void InvokeTargetExtractPose(
+            Transform targetTransform,
+            float normalized,
+            Vector3 baseLocalPosition,
+            Vector3 baseLocalScale)
+        {
+            System.Reflection.MethodInfo? method = typeof(BoardContentViewPresenter).GetMethod(
+                "ApplyTargetExtractPose",
+                System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic,
+                binder: null,
+                new[] { typeof(Transform), typeof(float), typeof(Vector3), typeof(Vector3) },
+                modifiers: null);
+
+            Assert.That(method, Is.Not.Null, "Expected private method 'ApplyTargetExtractPose'.");
+            method?.Invoke(null, new object[] { targetTransform, normalized, baseLocalPosition, baseLocalScale });
+        }
+
+        private static float ResolveTargetExtractAlpha(float normalized)
+        {
+            System.Reflection.MethodInfo? method = typeof(BoardContentViewPresenter).GetMethod(
+                "ResolveTargetExtractAlpha",
+                System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+
+            Assert.That(method, Is.Not.Null, "Expected private method 'ResolveTargetExtractAlpha'.");
+            return (float)(method?.Invoke(null, new object[] { normalized }) ?? 0f);
         }
 
         private static ImmutableArray<ImmutableArray<Tile>> CreateRowsWithTargetAndPath(
