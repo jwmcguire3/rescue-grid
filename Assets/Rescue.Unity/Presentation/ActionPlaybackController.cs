@@ -160,7 +160,7 @@ namespace Rescue.Unity.Presentation
                     }
 
                     ActionPlaybackStep step = CurrentPlan[i];
-                    currentStepName = GetStepDebugLabel(step);
+                    currentStepName = ActionPlaybackRouting.GetDebugLabel(step);
                     PlayStep(step, previousState, input, result.State);
                     yield return CreateStepYield(step);
                 }
@@ -186,7 +186,7 @@ namespace Rescue.Unity.Presentation
                     }
 
                     ActionPlaybackStep step = CurrentPlan[i];
-                    currentStepName = GetStepDebugLabel(step);
+                    currentStepName = ActionPlaybackRouting.GetDebugLabel(step);
                     PlayStep(step, previousState, input, result.State);
                 }
             }
@@ -219,7 +219,7 @@ namespace Rescue.Unity.Presentation
             for (int i = 0; i < sourceEvents.Length; i++)
             {
                 ActionEvent sourceEvent = sourceEvents[i];
-                ActionPlaybackStep routedStep = new ActionPlaybackStep(step.StepType, sourceEvent.GetType().Name, sourceEvent);
+                ActionPlaybackStep routedStep = ActionPlaybackRouting.CreateRoutedStep(step, sourceEvent);
                 TryRoutePlaybackFx(routedStep, previousState, input, resultState);
             }
 
@@ -401,14 +401,7 @@ namespace Rescue.Unity.Presentation
                 return 0f;
             }
 
-            int brokenCount = 0;
-            for (int i = 0; i < events.Length; i++)
-            {
-                if (events[i] is BlockerBroken)
-                {
-                    brokenCount++;
-                }
-            }
+            int brokenCount = ActionPlaybackRouting.CountBlockerBreaks(events);
 
             return brokenCount > 1
                 ? (brokenCount - 1) * settings.BlockerBreakCascadeStaggerSeconds
@@ -437,14 +430,6 @@ namespace Rescue.Unity.Presentation
                 IsPlaying = false;
                 currentStepName = "Idle";
             }
-        }
-
-        private static string GetStepDebugLabel(ActionPlaybackStep step)
-        {
-            string? sourceEventName = step.SourceEventName;
-            return string.IsNullOrWhiteSpace(sourceEventName)
-                ? step.StepType.ToString()
-                : sourceEventName;
         }
 
         private WaterViewPresenter? ResolveWaterView()
@@ -557,7 +542,7 @@ namespace Rescue.Unity.Presentation
 
             router.BoardGrid ??= ResolveBoardGrid();
 
-            if (IsMultiBreakBlockerBatch(step, sourceEvents))
+            if (ActionPlaybackRouting.IsMultiBreakBlockerBatch(step, sourceEvents))
             {
                 RouteBlockerBatchAudio(router, previousState, input, resultState, sourceEvents);
                 return;
@@ -566,12 +551,12 @@ namespace Rescue.Unity.Presentation
             for (int i = 0; i < sourceEvents.Length; i++)
             {
                 ActionEvent sourceEvent = sourceEvents[i];
-                if (!IsAudioPlaybackBeat(sourceEvent))
+                if (!ActionPlaybackRouting.IsAudioPlaybackBeat(sourceEvent))
                 {
                     continue;
                 }
 
-                ActionPlaybackStep routedStep = new ActionPlaybackStep(step.StepType, sourceEvent.GetType().Name, sourceEvent);
+                ActionPlaybackStep routedStep = ActionPlaybackRouting.CreateRoutedStep(step, sourceEvent);
                 try
                 {
                     router.RoutePlaybackBeat(previousState, input, resultState, routedStep);
@@ -596,14 +581,13 @@ namespace Rescue.Unity.Presentation
             for (int i = 0; i < sourceEvents.Length; i++)
             {
                 ActionEvent sourceEvent = sourceEvents[i];
-                if (!IsAudioPlaybackBeat(sourceEvent))
+                if (!ActionPlaybackRouting.IsAudioPlaybackBeat(sourceEvent))
                 {
                     continue;
                 }
 
-                ActionPlaybackStep routedStep = new ActionPlaybackStep(
+                ActionPlaybackStep routedStep = ActionPlaybackRouting.CreateRoutedStep(
                     ActionPlaybackStepType.BreakBlockerOrReveal,
-                    sourceEvent.GetType().Name,
                     sourceEvent);
 
                 if (sourceEvent is BlockerBroken)
@@ -670,42 +654,6 @@ namespace Rescue.Unity.Presentation
                     $"{nameof(ActionPlaybackController)} skipped haptics for playback step '{step.SourceEventName ?? step.StepType.ToString()}' after an exception: {exception.Message}",
                     this);
             }
-        }
-
-        private static bool IsMultiBreakBlockerBatch(ActionPlaybackStep step, ImmutableArray<ActionEvent> sourceEvents)
-        {
-            if (step.StepType != ActionPlaybackStepType.BreakBlockerOrReveal || sourceEvents.Length <= 1)
-            {
-                return false;
-            }
-
-            int brokenCount = 0;
-            for (int i = 0; i < sourceEvents.Length; i++)
-            {
-                if (sourceEvents[i] is BlockerBroken)
-                {
-                    brokenCount++;
-                }
-            }
-
-            return brokenCount > 1;
-        }
-
-        private static bool IsAudioPlaybackBeat(ActionEvent? actionEvent)
-        {
-            return actionEvent is GroupRemoved
-                or BlockerDamaged
-                or BlockerBroken
-                or IceRevealed
-                or DockInserted
-                or DockCleared
-                or DockWarningChanged
-                or DockOverflowTriggered
-                or DockJamTriggered
-                or GravitySettled
-                or Spawned
-                or TargetExtracted
-                or WaterRose;
         }
 
         private void ApplyPlaybackSettingsToPresenters()
