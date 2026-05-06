@@ -359,7 +359,12 @@ namespace Rescue.Content
             Type? applicationType = Type.GetType("UnityEngine.Application, UnityEngine.CoreModule");
             if (applicationType is null)
             {
-                throw new PlatformNotSupportedException("Unity streaming assets loading is only available inside the Unity runtime.");
+                if (TryLoadLevelJsonFromRepoStreamingAssets(levelId, out string json))
+                {
+                    return json;
+                }
+
+                throw new PlatformNotSupportedException("Unity streaming assets loading is only available inside the Unity runtime, and no repository Assets/StreamingAssets/Levels directory was found.");
             }
 
             PropertyInfo? streamingAssetsPathProperty = applicationType.GetProperty(
@@ -383,6 +388,31 @@ namespace Rescue.Content
             }
 
             throw new InvalidOperationException($"Level '{levelId}' was not found in Assets/StreamingAssets/Levels/.");
+        }
+
+        private static bool TryLoadLevelJsonFromRepoStreamingAssets(string levelId, out string json)
+        {
+            for (DirectoryInfo? directory = new DirectoryInfo(Directory.GetCurrentDirectory());
+                 directory is not null;
+                 directory = directory.Parent)
+            {
+                string candidatePath = Path.Combine(
+                    directory.FullName,
+                    "Assets",
+                    "StreamingAssets",
+                    "Levels",
+                    levelId + ".json");
+                if (!File.Exists(candidatePath))
+                {
+                    continue;
+                }
+
+                json = File.ReadAllText(candidatePath);
+                return true;
+            }
+
+            json = string.Empty;
+            return false;
         }
 
         private static string CombineStreamingAssetsPath(string streamingAssetsPath, params string[] segments)
