@@ -14,6 +14,7 @@ using Rescue.Unity.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
+using UnityEngine.UIElements;
 using UnityObject = UnityEngine.Object;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -64,6 +65,10 @@ namespace Rescue.PlayMode.Tests.Smoke
         {
             PlayableLevelSession session = FindRequired<PlayableLevelSession>();
             SettingsMenuPresenter settings = FindRequired<SettingsMenuPresenter>();
+            UIDocument settingsDocument = settings.GetComponent<UIDocument>();
+            Assert.That(settingsDocument.rootVisualElement.Q<Button>("restart-level-button"), Is.Not.Null);
+            Assert.That(settingsDocument.rootVisualElement.Q<Button>("settings-restart-button"), Is.Null);
+            Assert.That(settingsDocument.rootVisualElement.Q<Button>("settings-show-tutorial-button"), Is.Not.Null);
 
             Assert.That(settings.IsOpen, Is.False);
             settings.Toggle();
@@ -84,12 +89,15 @@ namespace Rescue.PlayMode.Tests.Smoke
             currentState = session.CurrentState ?? throw new AssertionException("Restart did not reload a state.");
             Assert.That(session.CurrentLevelId, Is.EqualTo("L00"));
             Assert.That(currentState.ActionCount, Is.EqualTo(0));
+            Assert.That(settings.IsOpen, Is.False, "Restart should close settings.");
 
+            settings.SetOpen(true);
             settings.SelectLevel(settings.LevelChoices[3]);
             yield return null;
             currentState = session.CurrentState ?? throw new AssertionException("Level select did not load a state.");
             Assert.That(session.CurrentLevelId, Is.EqualTo("L03"));
             Assert.That(currentState.ActionCount, Is.EqualTo(0));
+            Assert.That(settings.IsOpen, Is.False, "Level selection should close settings.");
         }
 
         [UnityTest]
@@ -168,6 +176,7 @@ namespace Rescue.PlayMode.Tests.Smoke
             PlayableLevelSession session = FindRequired<PlayableLevelSession>();
             BoardInputPresenter boardInput = FindRequired<BoardInputPresenter>();
             L00IntroImagePresenter intro = FindRequired<L00IntroImagePresenter>();
+            SettingsMenuPresenter settings = FindRequired<SettingsMenuPresenter>();
 
             Assert.That(session.CurrentLevelId, Is.EqualTo("L00"));
             Assert.That(intro.IsVisible, Is.True, "L00 should show the intro image before play.");
@@ -194,6 +203,20 @@ namespace Rescue.PlayMode.Tests.Smoke
             session.LoadLevel("L01", session.Seed);
             yield return null;
             Assert.That(intro.IsVisible, Is.False, "Loading a non-L00 level should hide the intro.");
+            Assert.That(boardInput.IsInputBlocked, Is.False);
+
+            settings.SetOpen(true);
+            settings.RequestShowTutorial();
+            yield return null;
+
+            Assert.That(settings.IsOpen, Is.False, "Show Tutorial should close settings before displaying the image.");
+            Assert.That(intro.IsVisible, Is.True, "Show Tutorial should reuse the L00 intro image overlay.");
+            Assert.That(boardInput.IsInputBlocked, Is.True, "Show Tutorial should block board input until dismissed.");
+
+            intro.Dismiss();
+            yield return null;
+
+            Assert.That(intro.IsVisible, Is.False);
             Assert.That(boardInput.IsInputBlocked, Is.False);
         }
 

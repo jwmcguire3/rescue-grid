@@ -29,6 +29,7 @@ namespace Rescue.Unity.Presentation
         private Button? toggleButton;
         private Button? resumeButton;
         private Button? restartButton;
+        private Button? tutorialButton;
         private DropdownField? levelDropdown;
         private Slider? musicSlider;
         private Slider? fxSlider;
@@ -126,8 +127,21 @@ namespace Rescue.Unity.Presentation
             }
 
             ResolveSceneReferences();
+            SetOpen(false);
             session?.Retry();
             RefreshValues();
+        }
+
+        public void RequestShowTutorial()
+        {
+            if (IsTerminalScreenVisible())
+            {
+                return;
+            }
+
+            ResolveSceneReferences();
+            SetOpen(false);
+            session?.ShowTutorialImage();
         }
 
         public void RequestResume()
@@ -155,6 +169,7 @@ namespace Rescue.Unity.Presentation
 
             string levelId = ParseLevelId(levelChoice);
             session.LoadLevel(levelId, session.Seed);
+            SetOpen(false);
             RefreshValues();
         }
 
@@ -244,6 +259,11 @@ namespace Rescue.Unity.Presentation
             if (restartButton is not null)
             {
                 restartButton.clicked -= RequestRestart;
+            }
+
+            if (tutorialButton is not null)
+            {
+                tutorialButton.clicked -= RequestShowTutorial;
             }
         }
 
@@ -380,6 +400,17 @@ namespace Rescue.Unity.Presentation
             anchor.style.alignItems = Align.FlexEnd;
             anchor.pickingMode = PickingMode.Position;
 
+            VisualElement topButtonRow = new VisualElement { name = "settings-top-button-row" };
+            topButtonRow.style.flexDirection = FlexDirection.Row;
+            topButtonRow.style.alignItems = Align.Center;
+            topButtonRow.style.justifyContent = Justify.FlexEnd;
+
+            restartButton = new Button(RequestRestart) { name = "restart-level-button", text = "Restart" };
+            StylePrimaryButton(restartButton);
+            restartButton.style.width = 104f;
+            restartButton.style.height = 42f;
+            restartButton.style.marginRight = 8f;
+
             toggleButton = new Button(Toggle) { name = "settings-toggle-button", text = "Settings" };
             StylePrimaryButton(toggleButton);
             toggleButton.style.width = 112f;
@@ -426,11 +457,11 @@ namespace Rescue.Unity.Presentation
             headerRow.Add(titleLabel);
             headerRow.Add(resumeButton);
 
-            restartButton = new Button(RequestRestart) { name = "settings-restart-button", text = "Restart Level" };
-            StylePrimaryButton(restartButton);
-            restartButton.style.height = 40f;
-            restartButton.style.marginTop = 4f;
-            restartButton.style.marginBottom = 14f;
+            tutorialButton = new Button(RequestShowTutorial) { name = "settings-show-tutorial-button", text = "Show Tutorial" };
+            StylePrimaryButton(tutorialButton);
+            tutorialButton.style.height = 40f;
+            tutorialButton.style.marginTop = 4f;
+            tutorialButton.style.marginBottom = 14f;
 
             levelDropdown = new DropdownField("Level")
             {
@@ -514,7 +545,7 @@ namespace Rescue.Unity.Presentation
             });
 
             panel.Add(headerRow);
-            panel.Add(restartButton);
+            panel.Add(tutorialButton);
             panel.Add(levelDropdown);
             panel.Add(audioSectionLabel);
             panel.Add(musicRow);
@@ -522,7 +553,9 @@ namespace Rescue.Unity.Presentation
             panel.Add(muteRow);
             panel.Add(hapticsToggle);
             panel.Add(hapticsStrengthRow);
-            anchor.Add(toggleButton);
+            topButtonRow.Add(restartButton);
+            topButtonRow.Add(toggleButton);
+            anchor.Add(topButtonRow);
             anchor.Add(panel);
             root.Add(anchor);
             RefreshValues();

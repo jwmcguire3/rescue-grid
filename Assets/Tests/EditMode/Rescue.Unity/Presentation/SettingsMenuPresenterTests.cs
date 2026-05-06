@@ -11,6 +11,7 @@ namespace Rescue.Unity.Presentation.Tests
     {
         private GameObject? presenterObject;
         private GameObject? audioObject;
+        private GameObject? sessionObject;
         private GameObject? terminalObject;
 
         [SetUp]
@@ -44,6 +45,17 @@ namespace Rescue.Unity.Presentation.Tests
                 terminalObject = null;
             }
 
+            if (sessionObject is not null)
+            {
+                UnityObject.DestroyImmediate(sessionObject);
+                sessionObject = null;
+            }
+
+            DestroyAny<PlayableLevelSession>();
+            DestroyAny<VictoryScreenPresenter>();
+            DestroyAny<LossScreenPresenter>();
+            DestroyAny<L00IntroImagePresenter>();
+
             PlayerPrefs.DeleteKey(AudioSettingsController.MusicVolumePrefsKey);
             PlayerPrefs.DeleteKey(AudioSettingsController.FxVolumePrefsKey);
             PlayerPrefs.DeleteKey(AudioSettingsController.HapticsEnabledPrefsKey);
@@ -68,7 +80,9 @@ namespace Rescue.Unity.Presentation.Tests
 
             Assert.That(root.Q<Button>("settings-toggle-button"), Is.Not.Null);
             Assert.That(root.Q<Button>("settings-resume-button"), Is.Not.Null);
-            Assert.That(root.Q<Button>("settings-restart-button"), Is.Not.Null);
+            Assert.That(root.Q<Button>("restart-level-button"), Is.Not.Null);
+            Assert.That(root.Q<Button>("settings-restart-button"), Is.Null);
+            Assert.That(root.Q<Button>("settings-show-tutorial-button"), Is.Not.Null);
             Assert.That(root.Q<DropdownField>("settings-level-dropdown"), Is.Not.Null);
             Assert.That(root.Q<Toggle>("settings-mute-music-toggle"), Is.Not.Null);
             Assert.That(root.Q<Toggle>("settings-mute-fx-toggle"), Is.Not.Null);
@@ -196,6 +210,31 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(audioSettings.MusicVolume, Is.EqualTo(0.37f).Within(0.001f));
         }
 
+        [Test]
+        public void SettingsMenuPresenter_RestartClosesSettingsMenu()
+        {
+            SettingsMenuPresenter presenter = CreatePresenter(out _);
+
+            presenter.SetOpen(true);
+            presenter.RequestRestart();
+
+            Assert.That(presenter.IsOpen, Is.False);
+        }
+
+        [Test]
+        public void SettingsMenuPresenter_LevelSelectionClosesSettingsMenu()
+        {
+            SettingsMenuPresenter presenter = CreatePresenter(out _);
+            PlayableLevelSession session = CreateSession();
+            SetPrivateField(presenter, "session", session);
+
+            presenter.SetOpen(true);
+            presenter.SelectLevel("L01 - First Steps");
+
+            Assert.That(presenter.IsOpen, Is.False);
+            Assert.That(session.CurrentLevelId, Is.EqualTo("L01"));
+        }
+
         private SettingsMenuPresenter CreatePresenter(out AudioSettingsController audioSettings)
         {
             audioObject = new GameObject("AudioSettingsControllerTests");
@@ -206,11 +245,40 @@ namespace Rescue.Unity.Presentation.Tests
             return presenterObject.AddComponent<SettingsMenuPresenter>();
         }
 
+        private PlayableLevelSession CreateSession()
+        {
+            sessionObject = new GameObject("PlayableLevelSessionTests");
+            return sessionObject.AddComponent<PlayableLevelSession>();
+        }
+
         private VisualElement RootElement()
         {
             Assert.That(presenterObject, Is.Not.Null);
             UIDocument document = presenterObject!.GetComponent<UIDocument>();
             return document.rootVisualElement;
+        }
+
+        private static void SetPrivateField(object target, string fieldName, object? value)
+        {
+            System.Reflection.FieldInfo? field = target.GetType().GetField(
+                fieldName,
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+            Assert.That(field, Is.Not.Null, $"Expected private field '{fieldName}'.");
+            field!.SetValue(target, value);
+        }
+
+        private static void DestroyAny<T>()
+            where T : UnityObject
+        {
+            T[] objects = UnityObject.FindObjectsByType<T>(FindObjectsSortMode.None);
+            for (int i = 0; i < objects.Length; i++)
+            {
+                if (objects[i] is not null)
+                {
+                    UnityObject.DestroyImmediate(objects[i]);
+                }
+            }
         }
     }
 }

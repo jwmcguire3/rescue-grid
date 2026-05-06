@@ -89,6 +89,8 @@ namespace Rescue.Unity.Presentation
             undoSnapshots.Clear();
             victoryScreen?.Hide();
             lossScreen?.Hide();
+            SettingsMenuPresenter? settingsMenu = FindAnyObjectByType<SettingsMenuPresenter>();
+            settingsMenu?.SetOpen(false);
             SyncVictoryAvailability();
             gameStateView?.Rebuild(loaded);
             boardInput?.SetCurrentState(loaded, refreshView: false);
@@ -124,6 +126,13 @@ namespace Rescue.Unity.Presentation
         {
             ReplayCurrentLevel();
             return true;
+        }
+
+        public void ShowTutorialImage()
+        {
+            ResolveSceneReferences();
+            boardInput?.SetInputBlocked(true);
+            l00IntroImage?.Show();
         }
 
         public bool TryUndo()
