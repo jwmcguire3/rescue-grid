@@ -286,7 +286,7 @@ namespace Rescue.LevelTelemetryTool
             string[] parts = range.Split('-');
             if (parts.Length != 2)
             {
-                throw new ArgumentException("--range must use the form L00-L15.");
+                throw new ArgumentException("--range must use the form L00-L20.");
             }
 
             ValidateLevelId(parts[0], "--range start");
@@ -319,7 +319,7 @@ namespace Rescue.LevelTelemetryTool
             Console.Error.WriteLine("  dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- summarize-level L03");
             Console.Error.WriteLine("  dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- summarize-all");
             Console.Error.WriteLine("  dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --level L01 [--samples 200] [--max-actions 30] [--output Reports/LevelTelemetry]");
-            Console.Error.WriteLine("  dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --range L00-L15 [--samples 200] [--max-actions 30] [--output Reports/LevelTelemetry]");
+            Console.Error.WriteLine("  dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --range L00-L20 [--samples 200] [--max-actions 30] [--output Reports/LevelTelemetry]");
         }
 
         private static string BuildReportName(IReadOnlyList<string> levelIds, int samples, int maxActions)

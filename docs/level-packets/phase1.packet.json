@@ -42,5 +42,5 @@
     }
   ],
   "waterIntervalMinimum": 6,
-  "notes": "Matches the current authored playable files in Assets/StreamingAssets/Levels: L00-L20. L00 is the rule-teach opener and is exempt from the normal water interval floor. L02 intentionally teaches Dock Jam with no water pressure. Existing validators and tools are not wired to this manifest yet."
+  "notes": "Matches the current authored playable files in Assets/StreamingAssets/Levels: L00-L20. L00 is the rule-teach opener and is exempt from the normal water interval floor. L02 intentionally teaches Dock Jam with no water pressure. Acceptance verification is driven by this manifest."
 }

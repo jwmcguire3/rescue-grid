@@ -32,9 +32,9 @@ Before opening a PR that changes authored levels, briefs, solve scripts, golden 
 powershell -ExecutionPolicy Bypass -File .\scripts\verify-level-authoring.ps1
 ```
 
-The same gate runs in CI. It checks level JSON validation, Phase 1 packet policy validation, solve verification, optional golden verification, brief/solve coverage for every level, telemetry bot smoke reports, and `Tools/LevelTelemetry.Tests`.
+The same gate runs in CI. It checks level JSON validation, Phase 1 packet policy validation, solve verification, committed golden verification, manifest-driven packet acceptance, brief/solve coverage for every level, telemetry bot smoke reports, and `Tools/LevelTelemetry.Tests`.
 
-Every playable level JSON must have a matching `docs/level-briefs/<levelId>.brief.json` and `Assets/Resources/Levels/<levelId>.solve.json`. Golden paths are optional during exploration and iteration; every committed `<levelId>.golden.json` must verify.
+Every playable level JSON must have a matching `docs/level-briefs/<levelId>.brief.json` and `Assets/Resources/Levels/<levelId>.solve.json`. Golden paths are optional during exploration and iteration; every committed `<levelId>.golden.json` must verify, and every manifest-expected packet level must have an accepted designer-approved golden path.
 
 For command intent:
 

@@ -13,13 +13,13 @@ The authoritative design source is `docs/phase_1_spec.md`. Do not pull mechanics
 
 ## Current State
 
-Phase 1 is complete as an engineering/prototype milestone: EditMode and PlayMode pass, level validation and solve verification pass, L00-L15 can be played in order, and the APK works on device. It should not be treated as a finished product.
+Phase 1 is complete as an engineering/prototype milestone: EditMode and PlayMode pass, level validation and solve verification pass, the accepted packet is L00-L20, and the APK works on device. It should not be treated as a finished product.
 
 The active focus is Phase 2A: readability, animation/feedback, level-authoring tools, and capture proof without expanding mechanics. The current repository has a deterministic core, authored packet, player scene, debug scene, tooling, first-pass presentation, and dev build scripts for Android, iOS, WebGL, and capture builds. The strongest areas are:
 
 - Immutable `Rescue.Core` state and deterministic rules.
 - A fixed action pipeline with isolated steps and regression tests.
-- Authored L00-L15 level JSON content and solve scripts.
+- Authored L00-L20 level JSON content, solve scripts, and accepted golden paths.
 - Level validation, replay, solve-authoring, telemetry-report, and capture tooling.
 - An automated level-authoring gate for level JSON, briefs, solve scripts, golden paths, and offline telemetry bots.
 - A functional Unity player flow in `Game.unity` and a tuning/debug flow in `DebugGameplay.unity`, with board, dock, water forecast, target, playback, Mae reaction, victory, and loss presentation.
@@ -250,7 +250,7 @@ dotnet run --project Tools/LevelValidator/LevelValidator.csproj -- validate-phas
 dotnet run --project Tools/SolveAuthoring/SolveAuthoring.csproj -- --verify-solves
 ```
 
-Use `scripts/verify-level-authoring.ps1` before PRs that change levels, briefs, solve scripts, golden paths, or level-authoring tools. It runs core validation, Phase 1 policy validation, solve verification, committed golden verification, level brief/solve coverage checks, a small offline telemetry bot smoke run, and `Tools/LevelTelemetry.Tests`. The `validate-levels.sh` wrapper runs core validation for all authored level JSON. Use `validate-phase1-all` when checking Phase 1 packet policy warnings. The accepted L03 warnings may still appear there; do not treat them as blockers unless the current task is specifically to retune L03.
+Use `scripts/verify-level-authoring.ps1` before PRs that change levels, briefs, solve scripts, golden paths, or level-authoring tools. It runs core validation, Phase 1 policy validation, solve verification, committed golden verification, manifest-driven packet acceptance, level brief/solve coverage checks, a small offline telemetry bot smoke run, and `Tools/LevelTelemetry.Tests`. The `validate-levels.sh` wrapper runs core validation for all authored level JSON. Use `validate-phase1-all` when checking Phase 1 packet policy warnings. The accepted L03 warnings may still appear there; do not treat them as blockers unless the current task is specifically to retune L03.
 
 Tool projects:
 
@@ -302,8 +302,8 @@ See `docs/distribution.md` for platform install notes and telemetry collection, 
 - `Assets/Rescue.Core.Tests/`: core EditMode tests.
 - `Assets/Rescue.Content/`: level schema, loader, validator, ASCII preview.
 - `Assets/Rescue.Content.Tests/`: content tests.
-- `Assets/StreamingAssets/Levels/`: authored L00-L15 level JSON.
-- `Assets/Resources/Levels/`: authored solve files.
+- `Assets/StreamingAssets/Levels/`: authored L00-L20 level JSON.
+- `Assets/Resources/Levels/`: authored solve and golden path files.
 - `Assets/Rescue.Replay/`: replay runtime code.
 - `Assets/Rescue.Telemetry/`: telemetry schema and logger/hooks.
 - `Assets/Rescue.Unity/`: Unity presentation, debug UI, capture, art integration.

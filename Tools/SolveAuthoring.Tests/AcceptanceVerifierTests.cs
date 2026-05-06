@@ -49,7 +49,7 @@ namespace Rescue.SolveAuthoringTool.Tests
         }
 
         [Test]
-        public void VerifyAcceptance_AllRequiredFilesPresent_Passes()
+        public void VerifyAcceptance_AllManifestExpectedFilesPresent_Passes()
         {
             int exitCode = RunAcceptance(out string output);
 
@@ -60,7 +60,7 @@ namespace Rescue.SolveAuthoringTool.Tests
         }
 
         [Test]
-        public void VerifyAcceptance_MissingGolden_Fails()
+        public void VerifyAcceptance_MissingManifestExpectedGolden_Fails()
         {
             File.Delete(Path.Combine(_resourcesDir, "L00.golden.json"));
 
@@ -130,6 +130,16 @@ namespace Rescue.SolveAuthoringTool.Tests
             Assert.That(output, Does.Contain("Phase 1 policy warnings: WARN"));
             Assert.That(output, Does.Contain("phase1.dockJamLevel"));
             Assert.That(output, Does.Contain("Acceptance summary: 1/1 level(s) passed."));
+        }
+
+        [Test]
+        public void VerifyLevelAuthoringScript_IncludesAcceptanceGate()
+        {
+            string script = File.ReadAllText(RepoPath("scripts", "verify-level-authoring.ps1"));
+
+            Assert.That(script, Does.Contain("--verify-golden"));
+            Assert.That(script, Does.Contain("--verify-acceptance"));
+            Assert.That(script.IndexOf("--verify-acceptance", StringComparison.Ordinal), Is.GreaterThan(script.IndexOf("--verify-golden", StringComparison.Ordinal)));
         }
 
         private int RunAcceptance(out string output)
