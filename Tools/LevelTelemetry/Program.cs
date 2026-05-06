@@ -11,18 +11,28 @@ using Rescue.Core.State;
 
 namespace Rescue.LevelTelemetryTool
 {
+#if !LEVEL_TELEMETRY_TESTS
     internal static class Program
+    {
+        private static int Main(string[] args)
+        {
+            return LevelTelemetryRunner.Run(args);
+        }
+    }
+#endif
+
+    internal static class LevelTelemetryRunner
     {
         private const int DefaultSamples = 200;
         private const int DefaultMaxActions = 30;
-        private const string BotName = "random_legal";
+        private const string DefaultBotName = "random_legal";
         private static readonly string DefaultOutputDirectory = Path.Combine("Reports", "LevelTelemetry");
         private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
         {
             WriteIndented = true,
         };
 
-        private static int Main(string[] args)
+        public static int Run(string[] args)
         {
             try
             {
@@ -40,7 +50,7 @@ namespace Rescue.LevelTelemetryTool
                     string levelId = levelIds[levelIndex];
                     for (int seed = 1; seed <= options.Samples; seed++)
                     {
-                        RunReport run = RunRandomLegal(levelId, seed, options.MaxActions);
+                        RunReport run = RunBot(levelId, seed, options.BotName, options.MaxActions);
                         runs.Add(run);
                         terminalReasons.Add(run.TerminalReason);
                         outcomeNames.Add(run.Outcome);
@@ -52,7 +62,7 @@ namespace Rescue.LevelTelemetryTool
                 }
 
                 TelemetryReport report = new TelemetryReport(
-                    Bot: BotName,
+                    Bot: options.BotName,
                     Levels: levelIds.ToArray(),
                     SamplesPerLevel: options.Samples,
                     MaxActions: options.MaxActions,
@@ -63,11 +73,11 @@ namespace Rescue.LevelTelemetryTool
 
                 string reportPath = Path.Combine(
                     outputPath,
-                    $"random_legal_{BuildReportName(levelIds, options.Samples, options.MaxActions)}.json");
+                    $"{options.BotName}_{BuildReportName(levelIds, options.Samples, options.MaxActions)}.json");
                 File.WriteAllText(reportPath, JsonSerializer.Serialize(report, JsonOptions));
 
-                Console.WriteLine("LevelTelemetry random_legal simulation complete.");
-                Console.WriteLine($"Bot: {BotName}");
+                Console.WriteLine($"LevelTelemetry {options.BotName} simulation complete.");
+                Console.WriteLine($"Bot: {options.BotName}");
                 Console.WriteLine($"Levels: {string.Join(", ", levelIds)}");
                 Console.WriteLine($"Samples per level: {options.Samples}");
                 Console.WriteLine($"Max actions: {options.MaxActions}");
@@ -99,6 +109,7 @@ namespace Rescue.LevelTelemetryTool
             int samples = DefaultSamples;
             int maxActions = DefaultMaxActions;
             string outputDirectory = DefaultOutputDirectory;
+            string botName = DefaultBotName;
 
             for (int i = 0; i < args.Length; i++)
             {
@@ -138,6 +149,13 @@ namespace Rescue.LevelTelemetryTool
                     continue;
                 }
 
+                if (string.Equals(arg, "--bot", StringComparison.Ordinal))
+                {
+                    botName = ReadValue(args, ref i, "--bot");
+                    ValidateBotName(botName);
+                    continue;
+                }
+
                 throw new ArgumentException($"Unknown argument '{arg}'.");
             }
 
@@ -161,7 +179,7 @@ namespace Rescue.LevelTelemetryTool
                 ValidateRange(range);
             }
 
-            return new TelemetryOptions(levelId, range, samples, maxActions, outputDirectory);
+            return new TelemetryOptions(levelId, range, samples, maxActions, outputDirectory, botName);
         }
 
         private static IReadOnlyList<string> ResolveLevelIds(TelemetryOptions options)
@@ -237,6 +255,27 @@ namespace Rescue.LevelTelemetryTool
             _ = ParseLevelNumber(levelId, name);
         }
 
+        private static void ValidateBotName(string botName)
+        {
+            if (!IsKnownBot(botName))
+            {
+                throw new ArgumentException($"--bot must be one of: {string.Join(", ", KnownBots())}.");
+            }
+        }
+
+        private static bool IsKnownBot(string botName)
+        {
+            return string.Equals(botName, "random_legal", StringComparison.Ordinal)
+                || string.Equals(botName, "greedy_clear", StringComparison.Ordinal)
+                || string.Equals(botName, "rescue_focused", StringComparison.Ordinal)
+                || string.Equals(botName, "dock_safe", StringComparison.Ordinal);
+        }
+
+        private static string[] KnownBots()
+        {
+            return new[] { "random_legal", "greedy_clear", "rescue_focused", "dock_safe" };
+        }
+
         private static int ParseLevelNumber(string levelId, string name)
         {
             if (levelId.Length != 3 || levelId[0] != 'L')
@@ -255,8 +294,8 @@ namespace Rescue.LevelTelemetryTool
         private static void PrintUsage()
         {
             Console.Error.WriteLine("Usage:");
-            Console.Error.WriteLine("  dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --level L01 [--samples 200] [--max-actions 30] [--output Reports/LevelTelemetry]");
-            Console.Error.WriteLine("  dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --range L00-L15 [--samples 200] [--max-actions 30] [--output Reports/LevelTelemetry]");
+            Console.Error.WriteLine("  dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --level L01 [--bot random_legal] [--samples 200] [--max-actions 30] [--output Reports/LevelTelemetry]");
+            Console.Error.WriteLine("  dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --range L00-L15 [--bot random_legal] [--samples 200] [--max-actions 30] [--output Reports/LevelTelemetry]");
         }
 
         private static string BuildReportName(IReadOnlyList<string> levelIds, int samples, int maxActions)
@@ -267,7 +306,7 @@ namespace Rescue.LevelTelemetryTool
             return $"{levelPart}_samples{samples}_max{maxActions}";
         }
 
-        private static RunReport RunRandomLegal(string levelId, int seed, int maxActions)
+        private static RunReport RunBot(string levelId, int seed, string botName, int maxActions)
         {
             GameState state = Loader.LoadLevel(levelId, seed);
             List<ActionReport> actions = new List<ActionReport>(maxActions);
@@ -284,7 +323,7 @@ namespace Rescue.LevelTelemetryTool
                     break;
                 }
 
-                CandidateAction chosen = ChooseRandomLegal(levelId, seed, BotName, actionIndex, candidates);
+                CandidateAction chosen = ChooseCandidate(levelId, seed, botName, actionIndex, state, candidates);
                 ActionResult result = Pipeline.RunAction(
                     state,
                     new ActionInput(chosen.Coord),
@@ -326,7 +365,7 @@ namespace Rescue.LevelTelemetryTool
             return new RunReport(
                 LevelId: levelId,
                 Seed: seed,
-                Bot: BotName,
+                Bot: botName,
                 ActionsTaken: actions.Count,
                 TerminalReason: terminalReason,
                 Outcome: outcome.ToString(),
@@ -354,11 +393,24 @@ namespace Rescue.LevelTelemetryTool
                         continue;
                     }
 
-                    candidates.Add(new CandidateAction(coord, group.Value.Length));
+                    candidates.Add(new CandidateAction(
+                        coord,
+                        group.Value,
+                        GetDebrisType(state.Board, coord)));
                 }
             }
 
             return candidates.ToImmutable();
+        }
+
+        private static DebrisType GetDebrisType(Board board, TileCoord coord)
+        {
+            if (BoardHelpers.GetTile(board, coord) is DebrisTile debris)
+            {
+                return debris.Type;
+            }
+
+            throw new InvalidOperationException($"Candidate at {coord.Row},{coord.Col} is not debris.");
         }
 
         private static TileCoord CanonicalCoord(ImmutableArray<TileCoord> group)
@@ -376,6 +428,24 @@ namespace Rescue.LevelTelemetryTool
             return best;
         }
 
+        private static CandidateAction ChooseCandidate(
+            string levelId,
+            int seed,
+            string botName,
+            int actionIndex,
+            GameState state,
+            ImmutableArray<CandidateAction> candidates)
+        {
+            return botName switch
+            {
+                "random_legal" => ChooseRandomLegal(levelId, seed, botName, actionIndex, candidates),
+                "greedy_clear" => ChooseGreedyClear(candidates),
+                "rescue_focused" => ChooseByScore(candidates, candidate => ScoreRescueFocused(state, candidate)),
+                "dock_safe" => ChooseByScore(candidates, candidate => ScoreDockSafe(state, candidate)),
+                _ => throw new ArgumentException($"Unknown bot '{botName}'."),
+            };
+        }
+
         private static CandidateAction ChooseRandomLegal(
             string levelId,
             int seed,
@@ -386,6 +456,189 @@ namespace Rescue.LevelTelemetryTool
             int randomSeed = CreateDeterministicSeed(levelId, seed, botName, actionIndex);
             Random random = new Random(randomSeed);
             return candidates[random.Next(candidates.Length)];
+        }
+
+        private static CandidateAction ChooseGreedyClear(ImmutableArray<CandidateAction> candidates)
+        {
+            return candidates
+                .OrderByDescending(static candidate => candidate.GroupSize)
+                .ThenBy(static candidate => DistanceToMultipleOfThree(candidate.GroupSize))
+                .ThenByDescending(static candidate => candidate.LowestRow)
+                .ThenBy(static candidate => candidate.LowestCol)
+                .ThenBy(static candidate => candidate.Coord.Row)
+                .ThenBy(static candidate => candidate.Coord.Col)
+                .First();
+        }
+
+        private static CandidateAction ChooseByScore(
+            ImmutableArray<CandidateAction> candidates,
+            Func<CandidateAction, int> score)
+        {
+            return candidates
+                .OrderByDescending(score)
+                .ThenByDescending(static candidate => candidate.GroupSize)
+                .ThenBy(static candidate => candidate.Coord.Row)
+                .ThenBy(static candidate => candidate.Coord.Col)
+                .First();
+        }
+
+        private static int ScoreRescueFocused(GameState state, CandidateAction candidate)
+        {
+            int score = 0;
+            score += CountTargetAdjacentTiles(state, candidate.Group) * 100;
+            score += CountUrgentRouteTiles(state, candidate.Group) * 50;
+            score += GroupOps.FindAdjacentBlockers(state.Board, candidate.Group).Length * 30;
+            if (candidate.GroupSize == 3 || candidate.GroupSize == 6)
+            {
+                score += 20;
+            }
+
+            int remainder = candidate.GroupSize % 3;
+            score -= remainder * 20;
+            if (DockHelpers.Occupancy(state.Dock) >= 5 && remainder == 2)
+            {
+                score -= 30;
+            }
+
+            return score;
+        }
+
+        private static int ScoreDockSafe(GameState state, CandidateAction candidate)
+        {
+            int score = 0;
+            if (candidate.GroupSize == 3 || candidate.GroupSize == 6)
+            {
+                score += 80;
+            }
+
+            int remainder = candidate.GroupSize % 3;
+            // Offline policy approximation: count current dock slots by debris type,
+            // then add this group's inserted remainder. If that reaches 3, this action
+            // is treated as likely to complete a dock triple without simulating rules.
+            int dockTypeCount = CountDockType(state.Dock, candidate.DebrisType);
+            if ((dockTypeCount == 1 || dockTypeCount == 2) && dockTypeCount + remainder >= 3)
+            {
+                score += 40;
+            }
+
+            score -= remainder * 50;
+            if (DockHelpers.Occupancy(state.Dock) >= 5 && remainder == 2)
+            {
+                score -= 100;
+            }
+
+            score += GroupOps.FindAdjacentBlockers(state.Board, candidate.Group).Length * 20;
+            score += CountTargetAdjacentTiles(state, candidate.Group) * 10;
+            return score;
+        }
+
+        private static int DistanceToMultipleOfThree(int groupSize)
+        {
+            int remainder = groupSize % 3;
+            return remainder == 0 ? 0 : Math.Min(remainder, 3 - remainder);
+        }
+
+        private static int CountDockType(Dock dock, DebrisType type)
+        {
+            int count = 0;
+            for (int i = 0; i < dock.Slots.Length; i++)
+            {
+                if (dock.Slots[i] == type)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private static int CountTargetAdjacentTiles(GameState state, ImmutableArray<TileCoord> group)
+        {
+            int count = 0;
+            for (int i = 0; i < group.Length; i++)
+            {
+                if (IsAdjacentToUnextractedTarget(state, group[i]))
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private static bool IsAdjacentToUnextractedTarget(GameState state, TileCoord coord)
+        {
+            ImmutableArray<TileCoord> neighbors = BoardHelpers.OrthogonalNeighbors(state.Board, coord);
+            for (int i = 0; i < neighbors.Length; i++)
+            {
+                Tile neighbor = BoardHelpers.GetTile(state.Board, neighbors[i]);
+                if (neighbor is not TargetTile targetTile || targetTile.Extracted)
+                {
+                    continue;
+                }
+
+                for (int targetIndex = 0; targetIndex < state.Targets.Length; targetIndex++)
+                {
+                    TargetState target = state.Targets[targetIndex];
+                    if (target.TargetId == targetTile.TargetId && !target.Extracted)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private static int CountUrgentRouteTiles(GameState state, ImmutableArray<TileCoord> group)
+        {
+            UrgentRoute? route = SpawnOps.FindUrgentRoute(state);
+            if (!route.HasValue)
+            {
+                return 0;
+            }
+
+            int count = 0;
+            for (int i = 0; i < group.Length; i++)
+            {
+                TileCoord coord = group[i];
+                if (ContainsCoord(route.Value.HardRouteCells, coord)
+                    || ContainsCoord(route.Value.SoftRouteCells, coord)
+                    || IsAdjacentToRouteCell(state.Board, coord, route.Value))
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private static bool IsAdjacentToRouteCell(Board board, TileCoord coord, UrgentRoute route)
+        {
+            ImmutableArray<TileCoord> neighbors = BoardHelpers.OrthogonalNeighbors(board, coord);
+            for (int i = 0; i < neighbors.Length; i++)
+            {
+                if (ContainsCoord(route.HardRouteCells, neighbors[i])
+                    || ContainsCoord(route.SoftRouteCells, neighbors[i]))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool ContainsCoord(ImmutableArray<TileCoord> coords, TileCoord candidate)
+        {
+            for (int i = 0; i < coords.Length; i++)
+            {
+                if (coords[i] == candidate)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static int CreateDeterministicSeed(string levelId, int seed, string botName, int actionIndex)
@@ -434,9 +687,20 @@ namespace Rescue.LevelTelemetryTool
             string? Range,
             int Samples,
             int MaxActions,
-            string OutputDirectory);
+            string OutputDirectory,
+            string BotName);
 
-        private sealed record CandidateAction(TileCoord Coord, int GroupSize);
+        private sealed record CandidateAction(
+            TileCoord Coord,
+            ImmutableArray<TileCoord> Group,
+            DebrisType DebrisType)
+        {
+            public int GroupSize => Group.Length;
+
+            public int LowestRow => Group.Max(static coord => coord.Row);
+
+            public int LowestCol => Group.Min(static coord => coord.Col);
+        }
 
         private sealed record TelemetryReport(
             string Bot,
