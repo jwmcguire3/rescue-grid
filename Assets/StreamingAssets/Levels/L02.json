@@ -6,12 +6,12 @@
     "height": 7,
     "tiles": [
       ["CR", "F", "A", "A", "CR", "F"],
-      ["A", "CR", "T0", ".", "CR", "B"],
-      ["A", "CR", ".", ".", "CR", "B"],
+      ["A", "CR", "T0", "CR", "CR", "B"],
+      ["A", "CR", "D", ".", "CR", "B"],
       ["C", "CR", "D", "F", "CR", "D"],
-      ["C", "D", "D", "F", "B", "D"],
-      [".", "F", "F", ".", "C", "."],
-      [".", ".", ".", ".", ".", "."]
+      ["C", "F", "C", "F", "B", "D"],
+      [".", "F", "C", ".", "C", "."],
+      ["B", "B", ".", ".", ".", "."]
     ]
   },
   "debrisTypePool": ["A", "B", "C", "D", "F"],
@@ -32,15 +32,15 @@
     "jamEnabled": true
   },
   "assistance": {
-    "chance": 0.70,
+    "chance": 0.20,
     "consecutiveEmergencyCap": 2
   },
   "meta": {
     "intent": "Teach that the dock is not a bag of free storage by putting a simple rescue behind a narrow middle lane and tempting side clears.",
-    "expectedPath": "Use the left A pair and the top A pair to open the middle lane cleanly, letting the dock cycle one color instead of hoarding side singles.",
+    "expectedPath": "Use the left A pair, the top A pair, and the central D pair to open the middle lane cleanly, letting the dock cycle useful colors instead of hoarding side residue.",
     "expectedFailMode": "The player clears the B, C, and D side pairs first, triggers Dock Jam, and learns that rack sequencing was their own mistake.",
     "whatItProves": "Losses can read as self-authored even with no hazard present.",
-    "notes": "The rebuilt dock-discipline board keeps the narrow rescue lane and Dock Jam lesson, while side pairs and denser residue make rack sequencing feel self-authored.",
+    "notes": "The rebuilt dock-discipline board keeps the narrow rescue lane and Dock Jam lesson, but adds one more central blocker, breaks easy triples, and sharply lowers assistance so random side clearing is more likely to create self-authored rack pressure.",
     "isRuleTeach": false
   }
 }

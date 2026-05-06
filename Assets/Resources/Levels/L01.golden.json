@@ -3,63 +3,38 @@
   "seed": 1,
   "pathType": "golden",
   "expectedOutcome": "Win",
-  "maxActions": 9,
+  "maxActions": 4,
   "actions": [
     {
-      "row": 1,
+      "row": 3,
       "col": 0,
-      "intent": "Open the left side of the rescue pocket and start the route-supporting clears near the puppy."
-    },
-    {
-      "row": 5,
-      "col": 5,
-      "intent": "TODO: designer intent needed for this action."
-    },
-    {
-      "row": 4,
-      "col": 3,
-      "intent": "Break lower route material while keeping dock pressure controlled."
-    },
-    {
-      "row": 4,
-      "col": 1,
-      "intent": "Open the lower-center rescue lane and trigger visible puppy progress."
+      "intent": "Take the left-side residue pair first, creating dock pressure while starting route-supporting movement near the puppy."
     },
     {
       "row": 0,
       "col": 1,
-      "intent": "Clear the upper route blocker support so the puppy reaches one-clear-away."
+      "intent": "Clear the upper-left route support to break two puppy-pocket crates and show visible target progress."
     },
     {
-      "row": 0,
-      "col": 0,
-      "intent": "Cycle dock residue safely before the final rescue-side clear."
-    },
-    {
-      "row": 0,
-      "col": 2,
-      "intent": "Break the upper-right route blocker while preserving the rescue lane."
-    },
-    {
-      "row": 1,
-      "col": 0,
-      "intent": "Cycle dock residue safely and keep the final route clear readable."
-    },
-    {
-      "row": 2,
+      "row": 4,
       "col": 4,
-      "intent": "Open the last blocked side of the puppy pocket to latch extraction and win."
+      "intent": "Accept one dock-warning beat while clearing the right-side support group for the final route action."
+    },
+    {
+      "row": 0,
+      "col": 4,
+      "intent": "Clear the final right-side group, break the remaining puppy-pocket crates, clear a dock triple, and extract."
     }
   ],
   "expectedEventsInOrder": [
     "TargetProgressed",
-    "TargetOneClearAway",
     "TargetExtractionLatched",
+    "DockCleared",
     "TargetExtracted",
     "Won"
   ],
   "expectedExtractionOrder": [
     "0"
   ],
-  "notes": "Designer-approved intended path, not merely any solver-found win. One solver-valid action still needs designer intent confirmation."
+  "notes": "Designer-approved intended path for the rebuilt first-rescue board; it demonstrates route progress plus a visible dock-warning beat before extraction."
 }

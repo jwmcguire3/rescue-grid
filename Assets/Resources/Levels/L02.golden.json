@@ -3,38 +3,33 @@
   "seed": 1,
   "pathType": "golden",
   "expectedOutcome": "Win",
-  "maxActions": 4,
+  "maxActions": 3,
   "actions": [
     {
-      "row": 1,
-      "col": 0,
-      "intent": "Use the left A pair to open the central rescue lane without building mismatched dock clutter."
-    },
-    {
-      "row": 5,
-      "col": 5,
-      "intent": "TODO: designer intent needed for this action."
-    },
-    {
-      "row": 4,
-      "col": 4,
-      "intent": "Clear the right-side support group while keeping dock pressure below the jam lesson."
-    },
-    {
       "row": 0,
+      "col": 2,
+      "intent": "Use the top A pair to open the upper side of the rescue lane while placing controlled A residue in the dock."
+    },
+    {
+      "row": 2,
       "col": 0,
-      "intent": "Cash the A route cleanly, clear dock residue, and open the final side for extraction."
+      "intent": "Use the left A pair to break the lower lane crates and clear one A dock triple."
+    },
+    {
+      "row": 2,
+      "col": 1,
+      "intent": "Cash the central A group to open the final rescue side without wandering into side-pair dock pressure."
     }
   ],
   "expectedEventsInOrder": [
-    "TargetOneClearAway",
-    "TargetExtractionLatched",
+    "TargetProgressed",
     "DockCleared",
+    "TargetExtractionLatched",
     "TargetExtracted",
     "Won"
   ],
   "expectedExtractionOrder": [
     "0"
   ],
-  "notes": "Designer-approved intended path, not merely any solver-found win. One solver-valid action still needs designer intent confirmation."
+  "notes": "Designer-approved intended path for the rebuilt dock-discipline board; it uses A residue intentionally instead of treating the dock as free storage."
 }

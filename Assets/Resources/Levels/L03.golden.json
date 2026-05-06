@@ -29,8 +29,6 @@
   "expectedEventsInOrder": [
     "TargetOneClearAway",
     "TargetExtracted",
-    "WaterWarning",
-    "WaterRose",
     "TargetExtractionLatched",
     "Won"
   ],
