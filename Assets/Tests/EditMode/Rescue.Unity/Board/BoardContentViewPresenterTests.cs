@@ -574,6 +574,75 @@ namespace Rescue.Unity.BoardPresentation.Tests
         }
 
         [Test]
+        public void BoardContentViewPresenter_PendingVinePreviewReadsStrongerThanEarlyProgress()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState earlyState = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new EmptyTile())),
+                vine: new VineState(
+                    ActionsSinceLastClear: 1,
+                    GrowthThreshold: 4,
+                    GrowthPriorityList: ImmutableArray<TileCoord>.Empty,
+                    PriorityCursor: 0,
+                    PendingGrowthTile: null,
+                    PlannedGrowthTile: new TileCoord(0, 0)));
+            GameState pendingState = earlyState with
+            {
+                Vine = earlyState.Vine with
+                {
+                    ActionsSinceLastClear = 3,
+                    PendingGrowthTile = new TileCoord(0, 0),
+                },
+            };
+
+            harness.GridPresenter.RebuildGrid(earlyState);
+            harness.ContentPresenter.SyncImmediate(earlyState);
+            Transform? earlyOverlay = FindChildByName(harness.ContentRoot, "VineGrowthPreview");
+            Assert.That(earlyOverlay, Is.Not.Null);
+            float earlyScale = earlyOverlay!.localScale.x;
+
+            harness.ContentPresenter.SyncImmediate(pendingState);
+
+            Transform? pendingOverlay = FindChildByName(harness.ContentRoot, "VineGrowthPreview");
+            Assert.That(pendingOverlay, Is.Not.Null);
+            Assert.That(pendingOverlay!.localScale.x, Is.GreaterThan(earlyScale));
+            Assert.That(pendingOverlay.localScale.x, Is.LessThan(1f));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_UsesSourceDirectionOnlyWhenSourceTileExists()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState undirectedState = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new EmptyTile(), new EmptyTile())),
+                vine: new VineState(
+                    ActionsSinceLastClear: 1,
+                    GrowthThreshold: 4,
+                    GrowthPriorityList: ImmutableArray<TileCoord>.Empty,
+                    PriorityCursor: 0,
+                    PendingGrowthTile: null,
+                    PlannedGrowthTile: new TileCoord(0, 1)));
+            GameState directedState = undirectedState with
+            {
+                Vine = undirectedState.Vine with { GrowthSourceTile = new TileCoord(0, 0) },
+            };
+
+            harness.GridPresenter.RebuildGrid(undirectedState);
+            harness.ContentPresenter.SyncImmediate(undirectedState);
+            Transform? undirectedOverlay = FindChildByName(harness.ContentRoot, "VineGrowthPreview");
+            Assert.That(undirectedOverlay, Is.Not.Null);
+            AssertVinePreviewDirection(undirectedOverlay!, Vector3.forward);
+
+            harness.ContentPresenter.SyncImmediate(directedState);
+
+            Transform? directedOverlay = FindChildByName(harness.ContentRoot, "VineGrowthPreview");
+            Assert.That(directedOverlay, Is.Not.Null);
+            AssertVinePreviewDirection(directedOverlay!, Vector3.right);
+        }
+
+        [Test]
         public void BoardContentViewPresenter_VinePreviewUsesRegisteredOverlayBeforeVineFallback()
         {
             PresenterHarness harness = CreateHarness();
@@ -893,6 +962,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
             SetPrivateField(settings, "breakBlockerOrRevealDurationSeconds", 0.09f);
             SetPrivateField(settings, "spawnDurationSeconds", 0.14f);
             SetPrivateField(settings, "targetExtractDurationSeconds", 0.17f);
+            SetPrivateField(settings, "plannedVineProgressDurationSeconds", 0.11f);
             SetPrivateField(settings, "boardPieceLandingSquashXScale", 1.04f);
             SetPrivateField(settings, "boardPieceLandingSquashYScale", 0.94f);
             SetPrivateField(settings, "boardPieceLandingBounceDistance", 0.03f);
@@ -905,6 +975,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "iceRevealDurationSeconds"), Is.EqualTo(0.18f));
             Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "spawnDurationSeconds"), Is.EqualTo(0.07f));
             Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "targetExtractDurationSeconds"), Is.EqualTo(0.34f));
+            Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "plannedVineProgressDurationSeconds"), Is.EqualTo(0.22f));
             Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "boardPieceLandingSquashXScale"), Is.EqualTo(1.04f));
             Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "boardPieceLandingSquashYScale"), Is.EqualTo(0.94f));
             Assert.That(GetPrivateFieldValue(harness.ContentPresenter, "boardPieceLandingBounceDistance"), Is.EqualTo(0.03f));
@@ -1817,6 +1888,15 @@ namespace Rescue.Unity.BoardPresentation.Tests
         private static void AssertRescuePathDirection(GameObject pathObject, Vector3 expectedDirection)
         {
             Vector3 actualDirection = pathObject.transform.localRotation * Vector3.forward;
+            actualDirection.y = 0f;
+            actualDirection.Normalize();
+            Vector3 normalizedExpected = expectedDirection.normalized;
+            Assert.That(Vector3.Dot(actualDirection, normalizedExpected), Is.GreaterThan(0.99f));
+        }
+
+        private static void AssertVinePreviewDirection(Transform overlay, Vector3 expectedDirection)
+        {
+            Vector3 actualDirection = overlay.localRotation * Vector3.forward;
             actualDirection.y = 0f;
             actualDirection.Normalize();
             Vector3 normalizedExpected = expectedDirection.normalized;

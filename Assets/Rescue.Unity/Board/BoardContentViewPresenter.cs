@@ -70,11 +70,13 @@ namespace Rescue.Unity.BoardPresentation
         private float iceRevealDurationSeconds = Presentation.ActionPlaybackSettings.DefaultBreakBlockerOrRevealDurationSeconds;
         private float spawnDurationSeconds = Presentation.ActionPlaybackSettings.DefaultSpawnDurationSeconds;
         private float targetExtractDurationSeconds = Presentation.ActionPlaybackSettings.DefaultTargetExtractDurationSeconds;
+        private float plannedVineProgressDurationSeconds = Presentation.ActionPlaybackSettings.DefaultPlannedVineProgressDurationSeconds;
         private float vinePreviewDurationSeconds = Presentation.ActionPlaybackSettings.DefaultVinePreviewDurationSeconds;
         private float vineGrowthDurationSeconds = Presentation.ActionPlaybackSettings.DefaultVineGrowthDurationSeconds;
         private float boardPieceLandingSquashXScale = Presentation.ActionPlaybackSettings.DefaultBoardPieceLandingSquashXScale;
         private float boardPieceLandingSquashYScale = Presentation.ActionPlaybackSettings.DefaultBoardPieceLandingSquashYScale;
         private float boardPieceLandingBounceDistance = Presentation.ActionPlaybackSettings.DefaultBoardPieceLandingBounceDistance;
+        private int vinePreviewAnimationToken;
 
         public void ApplyPlaybackSettings(Presentation.ActionPlaybackSettings settings)
         {
@@ -91,6 +93,7 @@ namespace Rescue.Unity.BoardPresentation
             iceRevealDurationSeconds = settings.BreakBlockerOrRevealDurationSeconds;
             spawnDurationSeconds = settings.SpawnDurationSeconds;
             targetExtractDurationSeconds = settings.TargetExtractDurationSeconds;
+            plannedVineProgressDurationSeconds = settings.PlannedVineProgressDurationSeconds;
             vinePreviewDurationSeconds = settings.VinePreviewDurationSeconds;
             vineGrowthDurationSeconds = settings.VineGrowthDurationSeconds;
             boardPieceLandingSquashXScale = settings.BoardPieceLandingSquashXScale;
@@ -353,6 +356,7 @@ namespace Rescue.Unity.BoardPresentation
             vinePreviewCoord = null;
             vinePreviewFullLocalScale = Vector3.one;
             vinePreviewBaseLocalRotation = Quaternion.identity;
+            vinePreviewAnimationToken++;
         }
 
         public void RemoveDebrisGroup(GroupRemoved removal)
@@ -655,7 +659,8 @@ namespace Rescue.Unity.BoardPresentation
                 anchor,
                 VinePreviewStartScale,
                 ResolveVinePreviewYOffset(isPlannedOnly: false),
-                VinePreviewColor))
+                VinePreviewColor,
+                sourceTile: null))
             {
                 return;
             }
@@ -688,7 +693,8 @@ namespace Rescue.Unity.BoardPresentation
                 anchor,
                 VinePreviewRestScale,
                 ResolveVinePreviewYOffset(isPlannedOnly: false),
-                VinePreviewColor))
+                VinePreviewColor,
+                sourceTile: null))
             {
                 return;
             }
@@ -1430,15 +1436,25 @@ namespace Rescue.Unity.BoardPresentation
             Color tint = isPlannedOnly
                 ? new Color(VinePreviewColor.r, VinePreviewColor.g, VinePreviewColor.b, Mathf.Clamp01(plannedVineOverlayAlpha))
                 : VinePreviewColor;
+            bool canAnimateCoverage = ShouldAnimateVineCoverage(previewTile.Value, coverageScale);
 
             if (EnsureVinePreviewObject(
                 previewTile.Value,
                 anchor,
                 coverageScale,
                 ResolveVinePreviewYOffset(isPlannedOnly),
-                tint))
+                tint,
+                state.Vine.GrowthSourceTile,
+                applyCoverageImmediately: !canAnimateCoverage))
             {
-                ApplyVinePreviewCoverage(coverageScale);
+                if (canAnimateCoverage)
+                {
+                    AnimateVinePreviewCoverage(coverageScale);
+                }
+                else
+                {
+                    ApplyVinePreviewCoverage(coverageScale);
+                }
             }
         }
 
@@ -1447,7 +1463,9 @@ namespace Rescue.Unity.BoardPresentation
             Transform anchor,
             Vector3 coverageScale,
             float yOffset,
-            Color tint)
+            Color tint,
+            TileCoord? sourceTile,
+            bool applyCoverageImmediately = true)
         {
             if (vinePreviewObject is not null
                 && vinePreviewCoord.HasValue
@@ -1481,9 +1499,13 @@ namespace Rescue.Unity.BoardPresentation
                 coord,
                 VinePreviewLabel,
                 yOffset,
-                vinePreviewBaseLocalRotation);
+                ResolveVinePreviewRotation(sourceTile, coord));
             ApplyTint(vinePreviewObject, tint);
-            ApplyVinePreviewCoverage(coverageScale);
+            if (applyCoverageImmediately)
+            {
+                ApplyVinePreviewCoverage(coverageScale);
+            }
+
             return true;
         }
 
@@ -1500,6 +1522,96 @@ namespace Rescue.Unity.BoardPresentation
             float baseScale = Mathf.Clamp(plannedVineOverlayBaseScale, 0.05f, VinePreviewRestScale.x);
             float coverage = Mathf.Lerp(baseScale, VinePreviewRestScale.x, progress);
             return new Vector3(coverage, coverage, coverage);
+        }
+
+        private bool ShouldAnimateVineCoverage(TileCoord coord, Vector3 coverageScale)
+        {
+            if (vinePreviewObject is null
+                || !vinePreviewCoord.HasValue
+                || vinePreviewCoord.Value != coord
+                || !Application.isPlaying
+                || !isActiveAndEnabled
+                || plannedVineProgressDurationSeconds <= 0f)
+            {
+                return false;
+            }
+
+            Vector3 targetScale = Vector3.Scale(vinePreviewFullLocalScale, coverageScale);
+            return (vinePreviewObject.transform.localScale - targetScale).sqrMagnitude > 0.0001f;
+        }
+
+        private void AnimateVinePreviewCoverage(Vector3 targetCoverageScale)
+        {
+            if (vinePreviewObject is null)
+            {
+                return;
+            }
+
+            int animationToken = ++vinePreviewAnimationToken;
+            StartCoroutine(AnimateVinePreviewCoverageRoutine(
+                vinePreviewObject,
+                targetCoverageScale,
+                plannedVineProgressDurationSeconds,
+                animationToken));
+        }
+
+        private System.Collections.IEnumerator AnimateVinePreviewCoverageRoutine(
+            GameObject previewObject,
+            Vector3 targetCoverageScale,
+            float durationSeconds,
+            int animationToken)
+        {
+            if (previewObject is null)
+            {
+                yield break;
+            }
+
+            Vector3 startScale = previewObject.transform.localScale;
+            Vector3 targetScale = Vector3.Scale(vinePreviewFullLocalScale, targetCoverageScale);
+            float clampedDuration = Mathf.Max(MinimumTimelineDurationSeconds, durationSeconds);
+            float elapsed = 0f;
+
+            while (elapsed < clampedDuration)
+            {
+                if (previewObject is null || previewObject != vinePreviewObject || animationToken != vinePreviewAnimationToken)
+                {
+                    yield break;
+                }
+
+                elapsed += Time.deltaTime;
+                float normalized = Mathf.Clamp01(elapsed / clampedDuration);
+                float eased = 1f - Mathf.Pow(1f - normalized, 3f);
+                previewObject.transform.localScale = Vector3.LerpUnclamped(startScale, targetScale, eased);
+                yield return null;
+            }
+
+            if (previewObject is not null && previewObject == vinePreviewObject && animationToken == vinePreviewAnimationToken)
+            {
+                previewObject.transform.localScale = targetScale;
+            }
+        }
+
+        private Quaternion ResolveVinePreviewRotation(TileCoord? sourceTile, TileCoord previewTile)
+        {
+            if (!sourceTile.HasValue)
+            {
+                return vinePreviewBaseLocalRotation;
+            }
+
+            int rowDelta = previewTile.Row - sourceTile.Value.Row;
+            int colDelta = previewTile.Col - sourceTile.Value.Col;
+            if (rowDelta == 0 && colDelta == 0)
+            {
+                return vinePreviewBaseLocalRotation;
+            }
+
+            Vector3 growthDirection = new Vector3(colDelta, 0f, -rowDelta);
+            if (growthDirection.sqrMagnitude <= 0.0001f)
+            {
+                return vinePreviewBaseLocalRotation;
+            }
+
+            return Quaternion.LookRotation(growthDirection.normalized, Vector3.up) * vinePreviewBaseLocalRotation;
         }
 
         private static bool CanDisplayVineGrowthOverlay(Tile tile)
@@ -1531,6 +1643,7 @@ namespace Rescue.Unity.BoardPresentation
             vinePreviewCoord = null;
             vinePreviewFullLocalScale = Vector3.one;
             vinePreviewBaseLocalRotation = Quaternion.identity;
+            vinePreviewAnimationToken++;
         }
 
         private void SyncLastObstacleMarkers(GameState state)

@@ -29,6 +29,7 @@ namespace Rescue.Unity.Presentation
         public const float DefaultWaterForecastTransitionDurationSeconds = 0.10f;
         public const float DefaultWaterForecastPulseDurationSeconds = 0.25f;
         public const float DefaultWaterlinePulseDurationSeconds = 0.20f;
+        public const float DefaultPlannedVineProgressDurationSeconds = 0.10f;
         public const float DefaultVinePreviewDurationSeconds = 0.18f;
         public const float DefaultVineGrowthDurationSeconds = 0.30f;
         public const float DefaultPlaybackSpeedMultiplier = 0.5f;
@@ -69,6 +70,7 @@ namespace Rescue.Unity.Presentation
         [SerializeField] private float waterForecastTransitionDurationSeconds = DefaultWaterForecastTransitionDurationSeconds;
         [SerializeField] private float waterForecastPulseDurationSeconds = DefaultWaterForecastPulseDurationSeconds;
         [SerializeField] private float waterlinePulseDurationSeconds = DefaultWaterlinePulseDurationSeconds;
+        [SerializeField] private float plannedVineProgressDurationSeconds = DefaultPlannedVineProgressDurationSeconds;
         [SerializeField] private float vinePreviewDurationSeconds = DefaultVinePreviewDurationSeconds;
         [SerializeField] private float vineGrowthDurationSeconds = DefaultVineGrowthDurationSeconds;
 
@@ -163,6 +165,10 @@ namespace Rescue.Unity.Presentation
 
         public float WaterlinePulseDurationSeconds => ScaleGameplayDuration(
             waterlinePulseDurationSeconds,
+            HazardSpeedMultiplier);
+
+        public float PlannedVineProgressDurationSeconds => ScaleGameplayDuration(
+            plannedVineProgressDurationSeconds,
             HazardSpeedMultiplier);
 
         public float VinePreviewDurationSeconds => ScaleGameplayDuration(vinePreviewDurationSeconds, HazardSpeedMultiplier);

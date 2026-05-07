@@ -30,6 +30,7 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(settings.WaterForecastTransitionDurationSeconds, Is.GreaterThan(0f));
             Assert.That(settings.WaterForecastPulseDurationSeconds, Is.GreaterThan(0f));
             Assert.That(settings.WaterlinePulseDurationSeconds, Is.GreaterThan(0f));
+            Assert.That(settings.PlannedVineProgressDurationSeconds, Is.GreaterThan(0f));
             Assert.That(settings.PlaybackSpeedMultiplier, Is.EqualTo(ActionPlaybackSettings.DefaultPlaybackSpeedMultiplier));
             Assert.That(settings.BoardActionSpeedMultiplier, Is.EqualTo(ActionPlaybackSettings.DefaultGroupSpeedMultiplier));
             Assert.That(settings.DockSpeedMultiplier, Is.EqualTo(ActionPlaybackSettings.DefaultGroupSpeedMultiplier));
@@ -64,6 +65,7 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(settings.WaterForecastTransitionDurationSeconds, Is.EqualTo(ScaleDefaultGameplay(ActionPlaybackSettings.DefaultWaterForecastTransitionDurationSeconds)));
             Assert.That(settings.WaterForecastPulseDurationSeconds, Is.EqualTo(ScaleDefaultGameplay(ActionPlaybackSettings.DefaultWaterForecastPulseDurationSeconds)));
             Assert.That(settings.WaterlinePulseDurationSeconds, Is.EqualTo(ScaleDefaultGameplay(ActionPlaybackSettings.DefaultWaterlinePulseDurationSeconds)));
+            Assert.That(settings.PlannedVineProgressDurationSeconds, Is.EqualTo(ScaleDefaultGameplay(ActionPlaybackSettings.DefaultPlannedVineProgressDurationSeconds)));
             Assert.That(settings.PlaybackSpeedMultiplier, Is.EqualTo(0.5f));
             Assert.That(settings.RemoveDurationSeconds, Is.InRange(0.18f, 0.22f));
             Assert.That(settings.BreakBlockerOrRevealDurationSeconds, Is.InRange(0.18f, 0.22f));
@@ -77,6 +79,7 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(settings.WinFxDurationSeconds, Is.InRange(1.15f, 1.25f));
             Assert.That(settings.LossFxDurationSeconds, Is.InRange(1.15f, 1.25f));
             Assert.That(settings.WaterRiseDurationSeconds, Is.InRange(0.28f, 0.32f));
+            Assert.That(settings.PlannedVineProgressDurationSeconds, Is.InRange(0.18f, 0.22f));
         }
 
         [Test]
@@ -93,6 +96,7 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(settings.SpawnDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultSpawnDurationSeconds / (2.0f * ActionPlaybackSettings.DefaultGravitySpawnSpeedMultiplier)));
             Assert.That(settings.LossFxDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultLossFxDurationSeconds / 2.0f));
             Assert.That(settings.WaterForecastPulseDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultWaterForecastPulseDurationSeconds / 2.0f));
+            Assert.That(settings.PlannedVineProgressDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultPlannedVineProgressDurationSeconds / 2.0f));
         }
 
         [Test]
@@ -116,6 +120,7 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(settings.TargetReactionDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultTargetReactionDurationSeconds / 0.5f));
             Assert.That(settings.TargetExtractDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultTargetExtractDurationSeconds / 0.5f));
             Assert.That(settings.WaterRiseDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultWaterRiseDurationSeconds / 2.0f));
+            Assert.That(settings.PlannedVineProgressDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultPlannedVineProgressDurationSeconds / 2.0f));
             Assert.That(settings.VineGrowthDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultVineGrowthDurationSeconds / 2.0f));
             Assert.That(settings.WinFxDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultWinFxDurationSeconds / 4.0f));
             Assert.That(settings.LossFxDurationSeconds, Is.EqualTo(ActionPlaybackSettings.DefaultLossFxDurationSeconds / 4.0f));
