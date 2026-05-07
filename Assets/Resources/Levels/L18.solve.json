@@ -3,11 +3,19 @@
   "Seed": 1,
   "AlternateSeed": 1001,
   "ExpectedOutcome": "Win",
-  "ExpectAlternateSeedDivergence": false,
+  "ExpectAlternateSeedDivergence": true,
   "Actions": [
     {
-      "Row": 7,
-      "Col": 2
+      "Row": 0,
+      "Col": 4
+    },
+    {
+      "Row": 5,
+      "Col": 3
+    },
+    {
+      "Row": 0,
+      "Col": 6
     },
     {
       "Row": 4,
@@ -18,20 +26,16 @@
       "Col": 4
     },
     {
+      "Row": 6,
+      "Col": 0
+    },
+    {
       "Row": 0,
       "Col": 0
     },
     {
-      "Row": 4,
-      "Col": 0
-    },
-    {
-      "Row": 1,
-      "Col": 3
-    },
-    {
       "Row": 0,
-      "Col": 3
+      "Col": 2
     }
   ]
 }

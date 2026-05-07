@@ -3,7 +3,7 @@
   "seed": 1,
   "pathType": "golden",
   "expectedOutcome": "Win",
-  "maxActions": 7,
+  "maxActions": 9,
   "actions": [
     {
       "row": 7,
@@ -12,36 +12,49 @@
     },
     {
       "row": 4,
-      "col": 3,
+      "col": 0,
       "intent": "Open the central mixed-blocker pivot while preserving the lower rescue route."
     },
     {
       "row": 0,
-      "col": 2,
+      "col": 0,
       "intent": "Progress the top target only as part of a controlled pivot, not as a first-rescue distraction."
     },
     {
-      "row": 4,
-      "col": 0,
+      "row": 1,
+      "col": 5,
       "intent": "Finish the lower-left puppy before the water clock turns commitment into panic."
-    },
-    {
-      "row": 2,
-      "col": 4,
-      "intent": "Use the mixed blocker clear to extract the top puppy and set up the final middle-right rescue."
     },
     {
       "row": 5,
       "col": 6,
+      "intent": "Open the middle-right rescue lane before returning to the top pivot."
+    },
+    {
+      "row": 0,
+      "col": 2,
+      "intent": "Recover the top route after systemic vine growth changes the earlier pivot."
+    },
+    {
+      "row": 2,
+      "col": 7,
+      "intent": "Keep the top rescue controlled while dock residue stays manageable."
+    },
+    {
+      "row": 1,
+      "col": 4,
+      "intent": "Set up the final middle-right extraction after the top rescue."
+    },
+    {
+      "row": 2,
+      "col": 4,
       "intent": "Complete the middle-right rescue as the final sharp pivot of the late exam."
     }
   ],
   "expectedEventsInOrder": [
     "TargetOneClearAway",
-    "TargetProgressed",
     "TargetExtractionLatched",
     "TargetExtracted",
-    "TargetProgressed",
     "TargetExtractionLatched",
     "TargetExtracted",
     "TargetExtractionLatched",

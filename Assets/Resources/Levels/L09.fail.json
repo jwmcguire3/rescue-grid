@@ -4,49 +4,43 @@
   "pathType": "expected_fail",
   "expectedOutcome": "LossDockOverflow",
   "expectedLossReason": "LossDockOverflow",
-  "maxActions": 7,
+  "maxActions": 6,
   "actions": [
     {
-      "row": 2,
-      "col": 6,
-      "intent": "Tunnel into the upper-right puppy first, spending the opening action away from the water-near lower rescue."
+      "row": 0,
+      "col": 2,
+      "intent": "Open with broad top cleanup instead of preserving dock space for the lower rescue route."
     },
     {
       "row": 1,
       "col": 0,
-      "intent": "Keep collecting upper-side value instead of returning to the lower-left route."
+      "intent": "Keep collecting upper-side value instead of committing to lower-left triage."
     },
     {
-      "row": 0,
-      "col": 0,
+      "row": 2,
+      "col": 1,
       "intent": "Add broad cleanup residue while the urgent lower puppy remains unresolved."
     },
     {
-      "row": 0,
+      "row": 1,
       "col": 0,
       "intent": "Continue chasing board value after gravity changes the same upper lane."
     },
     {
-      "row": 0,
-      "col": 2,
+      "row": 1,
+      "col": 3,
       "intent": "Spend another top-side clear rather than finishing the lower rescue route."
     },
     {
-      "row": 1,
-      "col": 2,
-      "intent": "Push dock pressure higher while still failing to commit to the lower puppy."
-    },
-    {
-      "row": 4,
-      "col": 4,
+      "row": 3,
+      "col": 0,
       "intent": "Overflow the dock after tunneling away from the intended lower-first triage path."
     }
   ],
   "expectedEventsInOrder": [
     "TargetProgressed",
-    "TargetOneClearAway",
     "DockOverflowTriggered",
     "Lost"
   ],
-  "notes": "Verified wrong-priority branch: upper-side tunneling and broad cleanup create dock-tempo failure before the lower-first route is complete."
+  "notes": "Verified wrong-priority branch: broad cleanup and top-side tunneling create dock-tempo failure before the lower-first route is complete."
 }

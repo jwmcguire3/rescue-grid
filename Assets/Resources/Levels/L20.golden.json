@@ -3,7 +3,7 @@
   "seed": 1,
   "pathType": "golden",
   "expectedOutcome": "Win",
-  "maxActions": 7,
+  "maxActions": 6,
   "actions": [
     {
       "row": 5,
@@ -33,21 +33,14 @@
     {
       "row": 0,
       "col": 3,
-      "intent": "Cash the planned dock clear while extracting the middle puppy and opening the top route."
-    },
-    {
-      "row": 1,
-      "col": 3,
-      "intent": "Complete the top rescue and win with the dock under control."
+      "intent": "Cash the planned dock clear while extracting the middle and top puppies to win with the dock under control."
     }
   ],
   "expectedEventsInOrder": [
     "TargetExtractionLatched",
     "TargetExtracted",
-    "TargetExtractionLatched",
     "DockCleared",
     "TargetExtracted",
-    "TargetExtractionLatched",
     "TargetExtracted",
     "Won"
   ],

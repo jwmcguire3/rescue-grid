@@ -4,7 +4,7 @@
   "pathType": "expected_fail",
   "expectedOutcome": "LossDockOverflow",
   "expectedLossReason": "LossDockOverflow",
-  "maxActions": 7,
+  "maxActions": 4,
   "actions": [
     {
       "row": 0,
@@ -12,34 +12,19 @@
       "intent": "Take the visually easy high puppy first instead of respecting the buried lower target."
     },
     {
-      "row": 4,
-      "col": 4,
-      "intent": "Spend the next action around the upper/mid board rather than immediately pivoting lower."
-    },
-    {
       "row": 0,
-      "col": 3,
-      "intent": "Keep playing the open top-side lane after the tempting puppy is already saved."
-    },
-    {
-      "row": 0,
-      "col": 6,
-      "intent": "Continue upper-side cleanup and build dock pressure instead of routing to the lower puppy."
+      "col": 0,
+      "intent": "Spend the next action around the upper board rather than immediately pivoting lower."
     },
     {
       "row": 1,
-      "col": 3,
-      "intent": "Delay the lower rescue again while the dock remains loaded with residue."
+      "col": 0,
+      "intent": "Keep playing the open top-side lane after the tempting puppy is already saved."
     },
     {
       "row": 2,
       "col": 0,
-      "intent": "Spend another off-route clear before the lower puppy is secure."
-    },
-    {
-      "row": 3,
-      "col": 1,
-      "intent": "Finally touch the lower route too late and overflow the dock."
+      "intent": "Overflow the dock with broad top-side residue before the lower puppy is secure."
     }
   ],
   "expectedEventsInOrder": [
@@ -48,5 +33,5 @@
     "DockOverflowTriggered",
     "Lost"
   ],
-  "notes": "Verified false-easy fail: the high target is rescued first, then delayed lower-route play produces dock overflow."
+  "notes": "Verified false-easy fail: the high target is rescued first, then top-side cleanup produces dock overflow while the buried lower puppy remains trapped."
 }

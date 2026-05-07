@@ -21,7 +21,7 @@
       "intent": "Pivot through the center target next, using the first rescue as the stabilizing beat."
     },
     {
-      "row": 3,
+      "row": 4,
       "col": 5,
       "intent": "Open the center puppy while also progressing the safer top-right route."
     },
@@ -29,6 +29,11 @@
       "row": 0,
       "col": 5,
       "intent": "Finish the safest top-right puppy last after the triage order has done its job."
+    },
+    {
+      "row": 2,
+      "col": 6,
+      "intent": "Finish the top-right puppy last after the lower-left and center rescues are secure."
     }
   ],
   "expectedEventsInOrder": [
@@ -36,7 +41,6 @@
     "TargetExtracted",
     "TargetOneClearAway",
     "TargetExtractionLatched",
-    "TargetProgressed",
     "TargetExtracted",
     "TargetExtractionLatched",
     "TargetExtracted",

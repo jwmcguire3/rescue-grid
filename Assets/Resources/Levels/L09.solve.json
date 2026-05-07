@@ -6,15 +6,19 @@
   "ExpectAlternateSeedDivergence": true,
   "Actions": [
     {
-      "Row": 4,
-      "Col": 3
-    },
-    {
       "Row": 5,
-      "Col": 3
+      "Col": 5
     },
     {
       "Row": 4,
+      "Col": 0
+    },
+    {
+      "Row": 3,
+      "Col": 2
+    },
+    {
+      "Row": 0,
       "Col": 0
     },
     {
@@ -22,20 +26,8 @@
       "Col": 3
     },
     {
-      "Row": 0,
-      "Col": 2
-    },
-    {
       "Row": 2,
       "Col": 6
-    },
-    {
-      "Row": 5,
-      "Col": 2
-    },
-    {
-      "Row": 0,
-      "Col": 3
     }
   ]
 }

@@ -6,9 +6,19 @@
   "maxActions": 8,
   "actions": [
     {
-      "row": 7,
-      "col": 2,
-      "intent": "Open the lower route and pay dock residue."
+      "row": 0,
+      "col": 4,
+      "intent": "Open upper pressure without losing sight of the lower rescue priority."
+    },
+    {
+      "row": 5,
+      "col": 3,
+      "intent": "Break shared blockers and move the lower target near rescue."
+    },
+    {
+      "row": 0,
+      "col": 6,
+      "intent": "Keep the upper route moving while dock residue remains controlled."
     },
     {
       "row": 4,
@@ -21,23 +31,18 @@
       "intent": "Clear vine and crate pressure while progressing the upper route."
     },
     {
-      "row": 0,
+      "row": 6,
       "col": 0,
-      "intent": "Cash the planned B dock triple."
-    },
-    {
-      "row": 4,
-      "col": 0,
-      "intent": "Extract the lower target."
-    },
-    {
-      "row": 1,
-      "col": 3,
-      "intent": "Set the upper target one-clear-away and clear E dock pressure."
+      "intent": "Extract the lower target with a planned dock clear during the pivot."
     },
     {
       "row": 0,
-      "col": 3,
+      "col": 0,
+      "intent": "Cash the planned E dock triple before the final rescue."
+    },
+    {
+      "row": 0,
+      "col": 2,
       "intent": "Extract the upper target and win."
     }
   ],

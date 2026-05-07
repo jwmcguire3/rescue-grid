@@ -43,5 +43,5 @@
     "DockOverflowTriggered",
     "Lost"
   ],
-  "notes": "Verified vine-exam fail branch: ignoring the early vine/urgent route creates reroute pressure and dock overflow. Current replay does not produce a clean VineGrown event before loss."
+  "notes": "Verified vine-exam fail branch: ignoring the early vine/urgent route now produces warned vine growth before the reroute pressure turns into dock overflow."
 }
