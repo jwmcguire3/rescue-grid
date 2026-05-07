@@ -634,16 +634,18 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Transform? undirectedOverlay = FindChildByName(harness.ContentRoot, "VineGrowthPreview");
             Assert.That(undirectedOverlay, Is.Not.Null);
             AssertVinePreviewDirection(undirectedOverlay!, Vector3.forward);
+            Assert.That(undirectedOverlay.localScale.z, Is.EqualTo(undirectedOverlay.localScale.x).Within(0.001f));
 
             harness.ContentPresenter.SyncImmediate(directedState);
 
             Transform? directedOverlay = FindChildByName(harness.ContentRoot, "VineGrowthPreview");
             Assert.That(directedOverlay, Is.Not.Null);
             AssertVinePreviewDirection(directedOverlay!, Vector3.right);
+            Assert.That(directedOverlay.localScale.z, Is.LessThan(directedOverlay.localScale.x));
         }
 
         [Test]
-        public void BoardContentViewPresenter_VinePreviewUsesRegisteredOverlayBeforeVineFallback()
+        public void BoardContentViewPresenter_VinePreviewUsesRegisteredVineBeforeOverlayFallback()
         {
             PresenterHarness harness = CreateHarness();
             BlockerVisualRegistry blockerRegistry = CreateRegistry<BlockerVisualRegistry>();
@@ -669,8 +671,8 @@ namespace Rescue.Unity.BoardPresentation.Tests
 
             Transform? preview = FindChildByName(harness.ContentRoot, "VineGrowthPreview");
             Assert.That(preview, Is.Not.Null);
-            Assert.That(preview!.Find("OverlayPrefabMarker"), Is.Not.Null);
-            Assert.That(preview.Find("VinePrefabMarker"), Is.Null);
+            Assert.That(preview!.Find("VinePrefabMarker"), Is.Not.Null);
+            Assert.That(preview.Find("OverlayPrefabMarker"), Is.Null);
         }
 
         [Test]
