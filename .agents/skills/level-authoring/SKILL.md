@@ -81,7 +81,8 @@ Current core assumptions:
 - water advances by accepted actions, not real time,
 - crates are route tax,
 - ice is future value,
-- vine is warned route pressure,
+- vine is warned route pressure; active growth can be systemic rescue-pressure planning, authored `growthPriority` fallback/bias, or both,
+- `vine.growthThreshold >= 999` with empty priority means static/no-growth vine setup for current Phase 1 packet review,
 - spawn assistance must support recovery, not solve the level.
 
 Do not rely on lucky spawn to prove the intended path.
@@ -170,7 +171,7 @@ Check:
 - Is rescue order meaningful?
 - Does dock pressure feel self-authored?
 - Does water feel action-based, not timed?
-- Is vine, if present, forecasted and attributable?
+- Is vine, if present, forecasted and attributable through systemic planning, authored fallback, or intentional static/no-growth setup?
 - Is the expected path playable without lucky spawn?
 - Is the expected fail mode fair?
 - Is there at least one satisfying move?

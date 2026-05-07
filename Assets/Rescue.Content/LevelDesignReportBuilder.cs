@@ -298,6 +298,23 @@ namespace Rescue.Content
                 risks.Add(LevelAssistanceComparisonAnalyzer.DependencyWarning);
             }
 
+            if (level is not null)
+            {
+                VineGrowthAuthoringInfo vine = VineGrowthAuthoringInspector.Inspect(level);
+                if (vine.ActiveGrowthConfigured && vine.VineCount > 0 && !vine.ValidGrowthPlanAvailable)
+                {
+                    risks.Add("No valid vine growth plan.");
+                }
+                else if (vine.SystemicPlanAvailable)
+                {
+                    risks.Add("Info: systemic vine plan available.");
+                }
+                else if (vine.AuthoredFallbackUsed)
+                {
+                    risks.Add("Info: authored vine fallback used.");
+                }
+            }
+
             return risks;
         }
 
@@ -387,6 +404,26 @@ namespace Rescue.Content
             builder.AppendLine($"  dock jam enabled: {level.Dock.JamEnabled}");
             builder.AppendLine($"  assistance chance: {level.Assistance.Chance.ToString("0.###", CultureInfo.InvariantCulture)}");
             builder.AppendLine($"  spawn integrity: allowExactTripleSpawns={level.Assistance.SpawnIntegrity.AllowExactTripleSpawns}, allowOversizedSpawnGroups={level.Assistance.SpawnIntegrity.AllowOversizedSpawnGroups}");
+            AppendVineSystems(builder, level);
+        }
+
+        private static void AppendVineSystems(StringBuilder builder, LevelJson level)
+        {
+            VineGrowthAuthoringInfo vine = VineGrowthAuthoringInspector.Inspect(level);
+            builder.AppendLine($"  vine growth threshold: {vine.GrowthThreshold}");
+            builder.AppendLine($"  vine authored priority present: {vine.AuthoredPriorityPresent}");
+            builder.AppendLine($"  vine authored fallback possible: {vine.AuthoredFallbackPossible}");
+            builder.AppendLine($"  vine systemic planning active: {vine.ActiveGrowthConfigured && vine.SystemicPlanAvailable}");
+            builder.AppendLine($"  vine legacy fallback used: {vine.AuthoredFallbackUsed}");
+            builder.AppendLine($"  vine static growth disabled: {vine.StaticGrowthDisabled}");
+            if (vine.PlannedTile is TileCoord planned)
+            {
+                builder.AppendLine($"  vine initial plan: tile=({planned.Row}, {planned.Col}), source={FormatCoord(vine.SourceTile)}, goal={FormatCoord(vine.GoalTile)}");
+            }
+            else if (vine.ActiveGrowthConfigured && vine.VineCount > 0)
+            {
+                builder.AppendLine("  vine initial plan: none");
+            }
         }
 
         private static void AppendArtifactStatus(StringBuilder builder, string label, SolveArtifactVerificationResult? result)
@@ -537,6 +574,13 @@ namespace Rescue.Content
         private static string FormatPercent(double ratio)
         {
             return (ratio * 100.0d).ToString("0.#", CultureInfo.InvariantCulture) + "%";
+        }
+
+        private static string FormatCoord(TileCoord? coord)
+        {
+            return coord is TileCoord value
+                ? $"({value.Row}, {value.Col})"
+                : "none";
         }
 
         private static string FormatFailure(string? failure)

@@ -81,14 +81,28 @@ namespace Rescue.Content
                     "$.debrisTypePool"));
             }
 
+            VineGrowthAuthoringInfo vine = VineGrowthAuthoringInspector.Inspect(level);
+
             if (Contains(manifest.StaticVineIntroLevelIds, level.Id)
-                && level.Vine.GrowthPriority.Length > 0
-                && level.Vine.GrowthThreshold < 999)
+                && vine.ActiveGrowthConfigured
+                && (vine.VineCount > 0 || vine.AuthoredPriorityPresent))
             {
                 warnings.Add(new ValidationError(
                     ValidationSeverity.Warning,
                     "phase1.l07VineGrowth",
-                    "Configured static vine introduction levels should have vine growth disabled.",
+                    "Configured static vine introduction levels should have vine growth disabled, including systemic planning.",
+                    "$.vine"));
+            }
+
+            if (!Contains(manifest.StaticVineIntroLevelIds, level.Id)
+                && vine.ActiveGrowthConfigured
+                && vine.VineCount > 0
+                && !vine.ValidGrowthPlanAvailable)
+            {
+                warnings.Add(new ValidationError(
+                    ValidationSeverity.Warning,
+                    "phase1.vineGrowthPlan.missing",
+                    "Active vine level has neither a systemic vine plan nor a valid authored fallback from the initial board.",
                     "$.vine"));
             }
 

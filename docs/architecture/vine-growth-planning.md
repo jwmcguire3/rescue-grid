@@ -2,7 +2,9 @@
 
 ## Status
 
-Decision memo for the next vine-growth implementation tasks. This document does not implement the planner. Gameplay authority remains `docs/phase_1_spec.md`; Phase 2A scope remains readability, feedback, authoring throughput, and capture proof.
+Decision memo plus implementation note for vine-growth planning tasks. Gameplay authority remains `docs/phase_1_spec.md`; Phase 2A scope remains readability, feedback, authoring throughput, and capture proof.
+
+Implementation note: Core now has systemic/hybrid planning fields on `VineState` and a deterministic `VineGrowthPlanner`. Authoring/reporting tooling inspects the current planner model; it does not change vine runtime behavior.
 
 The desired implementation direction is hybrid:
 
@@ -262,11 +264,11 @@ New event candidates:
 - `VineGrowthProgressed(TileCoord sourceTile, TileCoord nextTile, TileCoord goalTile)`
 - `VineGrowthCanceled(TileCoord? plannedTile, string reason)`
 
-Needed now:
+Current implementation:
 
-- `VineGrowthPlanned`: not required for first implementation unless telemetry/debug UI needs to display the earlier plan before preview.
-- `VineGrowthProgressed`: not required now. `VineGrown` already marks the visible growth tile.
-- `VineGrowthCanceled`: not required now if cancellation is fully represented by state plus `VinePreviewChanged(null)` where needed.
+- `VineGrowthPlanned`: not emitted as a runtime event.
+- `VineGrowthProgressed`: not emitted as a runtime event. `VineGrown` still marks the visible growth tile.
+- `VineGrowthCanceled`: not emitted as a runtime event. Cancellation is represented by state and existing preview clear behavior where available.
 
 Recommendation: defer new public events for the first implementation. Add internal planner result data and keep the external event surface stable. Add new events only when a concrete presentation, telemetry, or debugging task needs them.
 

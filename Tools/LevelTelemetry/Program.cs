@@ -526,6 +526,12 @@ namespace Rescue.LevelTelemetryTool
             int targetExtracted = 0;
             int targetDistressed = 0;
             int dockJamEvents = 0;
+            int vinePreviews = 0;
+            int vinePreviewClears = 0;
+            int vineGrowths = 0;
+            int vinePlannedEvents = 0;
+            int vineProgressedEvents = 0;
+            int vineCanceledEvents = 0;
             int assistedSpawnEvents = 0;
             int assistedSpawnPieces = 0;
             int emergencyRequested = 0;
@@ -566,6 +572,20 @@ namespace Rescue.LevelTelemetryTool
                     case DockJamTriggered:
                         dockJamEvents++;
                         break;
+                    case VinePreviewChanged preview:
+                        if (preview.PendingTile.HasValue)
+                        {
+                            vinePreviews++;
+                        }
+                        else
+                        {
+                            vinePreviewClears++;
+                        }
+
+                        break;
+                    case VineGrown:
+                        vineGrowths++;
+                        break;
                     case Spawned spawned:
                         SummarizeSpawned(
                             spawned,
@@ -577,6 +597,9 @@ namespace Rescue.LevelTelemetryTool
                             ref emergencyApplied,
                             ref maxEffectiveAssistanceChance,
                             assistedSpawnReasons);
+                        break;
+                    default:
+                        CountFutureVineEvent(actionEvent, ref vinePlannedEvents, ref vineProgressedEvents, ref vineCanceledEvents);
                         break;
                 }
             }
@@ -603,6 +626,12 @@ namespace Rescue.LevelTelemetryTool
                 targetExtracted,
                 targetDistressed,
                 dockJamEvents,
+                vinePreviews,
+                vinePreviewClears,
+                vineGrowths,
+                vinePlannedEvents,
+                vineProgressedEvents,
+                vineCanceledEvents,
                 lossReason,
                 assistedSpawnDetailAvailable,
                 assistedSpawnEvents,
@@ -829,6 +858,15 @@ namespace Rescue.LevelTelemetryTool
             builder.AppendLine($"  water rises: {summary.WaterRises}");
             builder.AppendLine($"  target readiness events: progressed={summary.TargetProgressed}, one-clear-away={summary.TargetOneClearAway}, latched={summary.TargetLatched}, extracted={summary.TargetExtracted}, distressed={summary.TargetDistressed}");
             builder.AppendLine($"  dock jam events: {summary.DockJamEvents}");
+            builder.AppendLine($"  vine events: previews={summary.VinePreviews}, preview-clears={summary.VinePreviewClears}, grown={summary.VineGrowths}, planned={summary.VinePlannedEvents}, progressed={summary.VineProgressedEvents}, canceled={summary.VineCanceledEvents}");
+            if (summary.VinePreviews + summary.VinePreviewClears + summary.VineGrowths > 0
+                && summary.VinePlannedEvents == 0
+                && summary.VineProgressedEvents == 0
+                && summary.VineCanceledEvents == 0)
+            {
+                builder.AppendLine("  vine plan event detail unavailable; replay events expose preview/growth only.");
+            }
+
             builder.AppendLine($"  loss reason: {summary.LossReason ?? "none"}");
             if (!summary.AssistedSpawnDetailAvailable)
             {
@@ -1511,6 +1549,12 @@ namespace Rescue.LevelTelemetryTool
             int TargetExtracted,
             int TargetDistressed,
             int DockJamEvents,
+            int VinePreviews,
+            int VinePreviewClears,
+            int VineGrowths,
+            int VinePlannedEvents,
+            int VineProgressedEvents,
+            int VineCanceledEvents,
             string? LossReason,
             bool AssistedSpawnDetailAvailable,
             int AssistedSpawnEvents,
@@ -1558,6 +1602,12 @@ namespace Rescue.LevelTelemetryTool
                     TargetExtracted: 0,
                     TargetDistressed: 0,
                     DockJamEvents: 0,
+                    VinePreviews: 0,
+                    VinePreviewClears: 0,
+                    VineGrowths: 0,
+                    VinePlannedEvents: 0,
+                    VineProgressedEvents: 0,
+                    VineCanceledEvents: 0,
                     LossReason: null,
                     AssistedSpawnDetailAvailable: true,
                     AssistedSpawnEvents: 0,
@@ -1566,6 +1616,27 @@ namespace Rescue.LevelTelemetryTool
                     EmergencyAppliedPieces: 0,
                     MaxEffectiveAssistanceChance: 0.0d,
                     AssistedSpawnReasons: new Dictionary<string, int>(StringComparer.Ordinal));
+            }
+        }
+
+        private static void CountFutureVineEvent(
+            ActionEvent actionEvent,
+            ref int vinePlannedEvents,
+            ref int vineProgressedEvents,
+            ref int vineCanceledEvents)
+        {
+            string eventName = actionEvent.GetType().Name;
+            if (string.Equals(eventName, "VineGrowthPlanned", StringComparison.Ordinal))
+            {
+                vinePlannedEvents++;
+            }
+            else if (string.Equals(eventName, "VineGrowthProgressed", StringComparison.Ordinal))
+            {
+                vineProgressedEvents++;
+            }
+            else if (string.Equals(eventName, "VineGrowthCanceled", StringComparison.Ordinal))
+            {
+                vineCanceledEvents++;
             }
         }
 

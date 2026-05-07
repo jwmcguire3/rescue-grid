@@ -53,6 +53,7 @@
     <Compile Include="Assets\Tests\EditMode\Content\BriefConformanceValidatorTests.cs" />
     <Compile Include="Assets\Tests\EditMode\Content\SpawnIntegritySchemaTests.cs" />
     <Compile Include="Assets\Tests\EditMode\Content\LevelSvgPreviewTests.cs" />
+    <Compile Include="Assets\Tests\EditMode\Content\VineGrowthAuthoringValidationTests.cs" />
     <Compile Include="Assets\Tests\EditMode\Content\AsciiPreviewTests.cs" />
   </ItemGroup>
   <ItemGroup>

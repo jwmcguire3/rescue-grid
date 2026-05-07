@@ -28,6 +28,7 @@
     <Compile Include="..\..\Assets\Rescue.Content\Schema.cs" Link="Rescue.Content\Schema.cs" />
     <Compile Include="..\..\Assets\Rescue.Content\Tuning.cs" Link="Rescue.Content\Tuning.cs" />
     <Compile Include="..\..\Assets\Rescue.Content\Validator.cs" Link="Rescue.Content\Validator.cs" />
+    <Compile Include="..\..\Assets\Rescue.Content\VineGrowthAuthoringInspector.cs" Link="Rescue.Content\VineGrowthAuthoringInspector.cs" />
     <Compile Include="..\..\Assets\Rescue.Content\Phase1PolicyValidator.cs" Link="Rescue.Content\Phase1PolicyValidator.cs" />
     <Compile Include="..\..\Assets\Rescue.Content\ReadabilityPolicyValidator.cs" Link="Rescue.Content\ReadabilityPolicyValidator.cs" />
     <Compile Include="..\..\Assets\Rescue.Content\SolveArtifactVerifier.cs" Link="Rescue.Content\SolveArtifactVerifier.cs" />

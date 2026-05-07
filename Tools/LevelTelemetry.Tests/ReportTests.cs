@@ -445,6 +445,9 @@ namespace Rescue.LevelTelemetryTool.Tests
                     new TargetExtracted("a", new TileCoord(1, 1)),
                     new TargetDistressedEntered("b", new TileCoord(2, 2)),
                     new DockJamTriggered(OverflowCount: 1),
+                    new VinePreviewChanged(new TileCoord(3, 3)),
+                    new VinePreviewChanged(PendingTile: null),
+                    new VineGrown(new TileCoord(3, 3)),
                 });
 
             Assert.That(summary.ExtractionOrder, Is.EqualTo(new[] { "a", "b" }));
@@ -456,6 +459,12 @@ namespace Rescue.LevelTelemetryTool.Tests
             Assert.That(summary.TargetExtracted, Is.EqualTo(1));
             Assert.That(summary.TargetDistressed, Is.EqualTo(1));
             Assert.That(summary.DockJamEvents, Is.EqualTo(1));
+            Assert.That(summary.VinePreviews, Is.EqualTo(1));
+            Assert.That(summary.VinePreviewClears, Is.EqualTo(1));
+            Assert.That(summary.VineGrowths, Is.EqualTo(1));
+            Assert.That(summary.VinePlannedEvents, Is.EqualTo(0));
+            Assert.That(summary.VineProgressedEvents, Is.EqualTo(0));
+            Assert.That(summary.VineCanceledEvents, Is.EqualTo(0));
         }
 
         [Test]

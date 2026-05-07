@@ -67,6 +67,7 @@ namespace Rescue.Content
             }
 
             AddHeuristicWarnings(level, analysis, errors);
+            AddVineGrowthPlanningWarnings(level, errors);
             return errors.Count == 0
                 ? ValidationResult.Success()
                 : ValidationResult.FromErrors(errors);
@@ -391,6 +392,24 @@ namespace Rescue.Content
         {
             return string.Equals(tileCode, ".", StringComparison.Ordinal)
                 || Enum.TryParse(tileCode, ignoreCase: false, out DebrisType _);
+        }
+
+        private static void AddVineGrowthPlanningWarnings(LevelJson level, List<ValidationError> errors)
+        {
+            VineGrowthAuthoringInfo vine = VineGrowthAuthoringInspector.Inspect(level);
+            if (vine.StaticGrowthDisabled)
+            {
+                return;
+            }
+
+            if (vine.VineCount > 0 && !vine.ValidGrowthPlanAvailable)
+            {
+                errors.Add(new ValidationError(
+                    ValidationSeverity.Warning,
+                    "vine.growthPlan.missing",
+                    "Active vine growth has no valid systemic plan and no valid authored fallback from the initial board.",
+                    "$.vine"));
+            }
         }
 
         private static void AddHeuristicWarnings(LevelJson level, AnalyzedLevel analysis, List<ValidationError> errors)

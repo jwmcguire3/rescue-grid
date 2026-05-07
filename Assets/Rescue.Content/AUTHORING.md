@@ -11,6 +11,7 @@ Executable behavior lives in code:
 - `Assets/Rescue.Content/Schema.cs` defines the level content data model.
 - `Assets/Rescue.Content/Validator.cs` defines core validation errors and warnings.
 - `Assets/Rescue.Content/Phase1PolicyValidator.cs` defines Phase 1 packet policy warnings.
+- `Assets/Rescue.Content/VineGrowthAuthoringInspector.cs` reports whether vine growth has a systemic plan, authored fallback, or no valid initial plan.
 - `Assets/Rescue.Content/Loader.cs` defines how valid content becomes `GameState`.
 - `Assets/Rescue.Content/Tuning.cs` defines content defaults and tuning mapping.
 
@@ -158,6 +159,13 @@ Exit code `0` = valid (warnings may still print). Exit code `1` = errors. Exit c
 
 Phase 1 policy validation runs core validation plus manifest-driven packet warnings, such as Dock Jam placement, debris pool bands, static vine intro setup, Phase 1 water interval floor, reinforced crate usage, and spawn-integrity exception notes.
 
+Vine authoring now supports hybrid growth:
+
+- `vine.growthThreshold >= 999` with an empty priority list is treated as static/no-growth vine setup for current packet review.
+- Active vine levels may rely on systemic rescue-pressure planning when the initial board has a valid vine source/frontier and rescue-relevant growth candidate.
+- `vine.growthPriority` is still supported as authored bias and legacy fallback, but it is no longer required to name every active growth tile.
+- Active vine levels with no systemic plan and no valid authored fallback warn in validation/reporting because the level cannot demonstrate readable vine pressure from the inspected start state.
+
 Use it when editing or reviewing the Phase 1 packet:
 
 ```
@@ -274,6 +282,8 @@ dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- summarize-all
 ```
 
 Replay summaries read `<levelId>.golden.json`, `<levelId>.solve.json`, and optional `<levelId>.fail.json` from `Assets/Resources/Levels/`. They report action count, final outcome, extraction order, dock clears, water rises, target readiness events, dock jams, losses, and assisted spawn detail when current events expose it. Missing fail paths are reported as missing optional data, not as fabricated telemetry.
+
+Replay summaries also report vine preview and growth event counts. Planned/progress/canceled vine event counts remain zero unless the runtime event stream exposes those event types; current replay artifacts should be read as preview/growth proof, not full planner telemetry.
 
 Telemetry does not replace human playtest.
 
