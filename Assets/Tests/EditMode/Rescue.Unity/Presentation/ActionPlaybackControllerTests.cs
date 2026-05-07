@@ -1140,6 +1140,79 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
+        public void ActionPlaybackController_VineGrowthTakeoverRunsBeforeFinalSyncReplacesOverlay()
+        {
+            ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
+            GameState previousState = CreateBoardState(
+                ImmutableArray.Create(ImmutableArray.Create<Tile>(new EmptyTile()))) with
+            {
+                Vine = new VineState(
+                    ActionsSinceLastClear: 3,
+                    GrowthThreshold: 4,
+                    GrowthPriorityList: ImmutableArray<TileCoord>.Empty,
+                    PriorityCursor: 0,
+                    PendingGrowthTile: new TileCoord(0, 0),
+                    PlannedGrowthTile: new TileCoord(0, 0)),
+            };
+            GameState resultState = CreateBoardState(
+                ImmutableArray.Create(ImmutableArray.Create<Tile>(new BlockerTile(BlockerType.Vine, 1, null))));
+
+            harness.GridPresenter.RebuildGrid(previousState);
+            harness.ContentPresenter.SyncImmediate(previousState);
+
+            int finalSyncCalls = 0;
+            bool overlayPresentAtFinalSync = false;
+            float overlayScaleAtFinalSync = 0f;
+
+            bool handled = harness.Controller.TryPlayAction(
+                previousState,
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(resultState, actionCount: 4, new VineGrown(new TileCoord(0, 0))),
+                syncedResult =>
+                {
+                    finalSyncCalls++;
+                    Transform? overlayAtFinalSync = FindChildByName(harness.ContentRoot, "VineGrowthPreview");
+                    overlayPresentAtFinalSync = overlayAtFinalSync is not null;
+                    overlayScaleAtFinalSync = overlayAtFinalSync != null ? overlayAtFinalSync.localScale.x : 0f;
+                    harness.ContentPresenter.ForceSyncToState(syncedResult.State);
+                });
+
+            Assert.That(handled, Is.True);
+            Assert.That(finalSyncCalls, Is.EqualTo(1));
+            Assert.That(harness.Controller.CurrentPlan[0].StepType, Is.EqualTo(ActionPlaybackStepType.VineGrowth));
+            Assert.That(harness.Controller.CurrentPlan[^1].StepType, Is.EqualTo(ActionPlaybackStepType.FinalSync));
+            Assert.That(overlayPresentAtFinalSync, Is.True);
+            Assert.That(overlayScaleAtFinalSync, Is.GreaterThan(0.9f));
+            Assert.That(FindChildByName(harness.ContentRoot, "VineGrowthPreview"), Is.Null);
+            Assert.That(FindChildByName(harness.ContentRoot, "Blocker_Vine"), Is.Not.Null);
+        }
+
+        [Test]
+        public void ActionPlaybackController_VineGrowthFallbackStillRoutesFxWhenOverlayIsMissing()
+        {
+            ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
+            SpyFxEventRouter? fxRouter = harness.FxRouter as SpyFxEventRouter;
+            GameState previousState = CreateBoardState(
+                ImmutableArray.Create(ImmutableArray.Create<Tile>(new EmptyTile())));
+            GameState resultState = CreateBoardState(
+                ImmutableArray.Create(ImmutableArray.Create<Tile>(new BlockerTile(BlockerType.Vine, 1, null))));
+
+            harness.GridPresenter.RebuildGrid(previousState);
+
+            bool handled = harness.Controller.TryPlayAction(
+                previousState,
+                new ActionInput(new TileCoord(0, 0)),
+                CreateResult(resultState, actionCount: 1, new VineGrown(new TileCoord(0, 0))),
+                syncedResult => harness.ContentPresenter.ForceSyncToState(syncedResult.State));
+
+            Assert.That(handled, Is.True);
+            Assert.That(fxRouter, Is.Not.Null);
+            Assert.That(fxRouter!.VineGrowthCount, Is.EqualTo(1));
+            Assert.That(FindChildByName(harness.ContentRoot, "VineGrowthPreview"), Is.Null);
+            Assert.That(FindChildByName(harness.ContentRoot, "Blocker_Vine"), Is.Not.Null);
+        }
+
+        [Test]
         public void ActionPlaybackController_DockFeedbackRoutesThroughPlaybackAndFinalSyncRepairsDockState()
         {
             ControllerHarness harness = CreateControllerHarness(playbackEnabled: true, yieldBetweenSteps: false);
@@ -1778,6 +1851,8 @@ namespace Rescue.Unity.Presentation.Tests
 
             public int LossDockOverflowCount { get; private set; }
 
+            public int VineGrowthCount { get; private set; }
+
             public Vector3 LastGroupClearPosition { get; private set; }
 
             protected override void PlayGroupClear(Vector3 worldPosition)
@@ -1794,6 +1869,12 @@ namespace Rescue.Unity.Presentation.Tests
             protected override void PlayLossDockOverflow()
             {
                 LossDockOverflowCount++;
+            }
+
+            protected override void PlayVineGrowth(Vector3 worldPosition)
+            {
+                _ = worldPosition;
+                VineGrowthCount++;
             }
         }
 

@@ -31,6 +31,7 @@ namespace Rescue.Unity.BoardPresentation
         private static readonly Vector3 VinePreviewStartScale = new Vector3(0.46f, 0.46f, 0.46f);
         private static readonly Vector3 VinePreviewPulseScale = new Vector3(0.72f, 0.72f, 0.72f);
         private static readonly Vector3 VineGrowthFullScale = Vector3.one;
+        private static readonly Color VineGrowthTakeoverColor = new Color(0.42f, 1.0f, 0.34f, 0.92f);
         private const string LastObstacleLabel = "TargetLastObstacle";
         private const string RescuePathLabel = "RescuePath";
         private const float MinimumRescuePathYOffset = 0.18f;
@@ -688,13 +689,17 @@ namespace Rescue.Unity.BoardPresentation
             }
 
             float effectiveDurationSeconds = durationSeconds ?? vineGrowthDurationSeconds;
+            bool hasExistingOverlayAtCoord = vinePreviewObject is not null
+                && vinePreviewCoord.HasValue
+                && vinePreviewCoord.Value == grown.Coord;
             if (!EnsureVinePreviewObject(
                 grown.Coord,
                 anchor,
                 VinePreviewRestScale,
                 ResolveVinePreviewYOffset(isPlannedOnly: false),
-                VinePreviewColor,
-                sourceTile: null))
+                VineGrowthTakeoverColor,
+                sourceTile: null,
+                applyCoverageImmediately: !hasExistingOverlayAtCoord))
             {
                 return;
             }
@@ -710,6 +715,7 @@ namespace Rescue.Unity.BoardPresentation
                 return;
             }
 
+            vinePreviewAnimationToken++;
             StartCoroutine(AnimateVineGrowthRoutine(vinePreviewObject, effectiveDurationSeconds));
         }
 
