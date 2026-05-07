@@ -25,6 +25,8 @@ namespace Rescue.Unity.BoardPresentation
         private const float MoveLandingPhaseRatio = 0.35f;
         private const string VinePreviewLabel = "VineGrowthPreview";
         private const float VinePreviewYOffsetRatio = 0.45f;
+        private const float DefaultPlannedVineOverlayBaseScale = 0.28f;
+        private const float DefaultPlannedVineOverlayAlpha = 0.42f;
         private static readonly Vector3 VinePreviewRestScale = new Vector3(0.64f, 0.64f, 0.64f);
         private static readonly Vector3 VinePreviewStartScale = new Vector3(0.46f, 0.46f, 0.46f);
         private static readonly Vector3 VinePreviewPulseScale = new Vector3(0.72f, 0.72f, 0.72f);
@@ -47,6 +49,9 @@ namespace Rescue.Unity.BoardPresentation
         [SerializeField] private Transform? contentRoot;
         [SerializeField] private GameObject? fallbackContentPrefab;
         [SerializeField] private float contentYOffset = 0.15f;
+        [SerializeField] private float plannedVineOverlayBaseScale = DefaultPlannedVineOverlayBaseScale;
+        [SerializeField] private float plannedVineOverlayAlpha = DefaultPlannedVineOverlayAlpha;
+        [SerializeField] private float plannedVineOverlayYOffset;
 
         private readonly List<GameObject> spawnedContent = new List<GameObject>();
         private readonly Dictionary<GameObject, int> moveAnimationTokens = new Dictionary<GameObject, int>();
@@ -171,6 +176,7 @@ namespace Rescue.Unity.BoardPresentation
             AppendPieceDescription(builder, "blocker", visualRegistry.Blockers, coord);
             AppendPieceDescription(builder, "hiddenDebris", visualRegistry.HiddenDebris, coord);
             AppendPieceDescription(builder, "rescuePath", visualRegistry.RescuePath, coord);
+            AppendVinePreviewDescription(builder, coord);
 
             foreach (KeyValuePair<string, TargetVisualView> entry in spawnedTargetsById)
             {
@@ -644,7 +650,12 @@ namespace Rescue.Unity.BoardPresentation
 
             float effectiveDurationSeconds = durationSeconds ?? vinePreviewDurationSeconds;
             TileCoord pendingTile = previewChanged.PendingTile.Value;
-            if (!EnsureVinePreviewObject(pendingTile, anchor, VinePreviewStartScale))
+            if (!EnsureVinePreviewObject(
+                pendingTile,
+                anchor,
+                VinePreviewStartScale,
+                ResolveVinePreviewYOffset(isPlannedOnly: false),
+                VinePreviewColor))
             {
                 return;
             }
@@ -672,7 +683,12 @@ namespace Rescue.Unity.BoardPresentation
             }
 
             float effectiveDurationSeconds = durationSeconds ?? vineGrowthDurationSeconds;
-            if (!EnsureVinePreviewObject(grown.Coord, anchor, VinePreviewRestScale))
+            if (!EnsureVinePreviewObject(
+                grown.Coord,
+                anchor,
+                VinePreviewRestScale,
+                ResolveVinePreviewYOffset(isPlannedOnly: false),
+                VinePreviewColor))
             {
                 return;
             }
@@ -1397,23 +1413,41 @@ namespace Rescue.Unity.BoardPresentation
 
         private void SyncVinePreview(GameState state)
         {
-            TileCoord? pendingTile = state.Vine.PendingGrowthTile;
-            if (pendingTile is null
-                || !BoardHelpers.InBounds(state.Board, pendingTile.Value)
-                || BoardHelpers.GetTile(state.Board, pendingTile.Value) is not EmptyTile
-                || !TryGetAnchor(pendingTile.Value, out Transform anchor))
+            TileCoord? previewTile = state.Vine.PendingGrowthTile ?? state.Vine.PlannedGrowthTile;
+            bool isPlannedOnly = state.Vine.PendingGrowthTile is null && state.Vine.PlannedGrowthTile.HasValue;
+            if (previewTile is null
+                || !BoardHelpers.InBounds(state.Board, previewTile.Value)
+                || !CanDisplayVineGrowthOverlay(BoardHelpers.GetTile(state.Board, previewTile.Value))
+                || !TryGetAnchor(previewTile.Value, out Transform anchor))
             {
                 ClearVinePreview();
                 return;
             }
 
-            if (EnsureVinePreviewObject(pendingTile.Value, anchor, VinePreviewRestScale))
+            Vector3 coverageScale = isPlannedOnly
+                ? ResolvePlannedVineOverlayCoverage(state.Vine)
+                : VinePreviewRestScale;
+            Color tint = isPlannedOnly
+                ? new Color(VinePreviewColor.r, VinePreviewColor.g, VinePreviewColor.b, Mathf.Clamp01(plannedVineOverlayAlpha))
+                : VinePreviewColor;
+
+            if (EnsureVinePreviewObject(
+                previewTile.Value,
+                anchor,
+                coverageScale,
+                ResolveVinePreviewYOffset(isPlannedOnly),
+                tint))
             {
-                ApplyVinePreviewCoverage(VinePreviewRestScale);
+                ApplyVinePreviewCoverage(coverageScale);
             }
         }
 
-        private bool EnsureVinePreviewObject(TileCoord coord, Transform anchor, Vector3 coverageScale)
+        private bool EnsureVinePreviewObject(
+            TileCoord coord,
+            Transform anchor,
+            Vector3 coverageScale,
+            float yOffset,
+            Color tint)
         {
             if (vinePreviewObject is not null
                 && vinePreviewCoord.HasValue
@@ -1446,11 +1480,31 @@ namespace Rescue.Unity.BoardPresentation
                 anchor,
                 coord,
                 VinePreviewLabel,
-                contentYOffset * VinePreviewYOffsetRatio,
+                yOffset,
                 vinePreviewBaseLocalRotation);
-            ApplyTint(vinePreviewObject, VinePreviewColor);
+            ApplyTint(vinePreviewObject, tint);
             ApplyVinePreviewCoverage(coverageScale);
             return true;
+        }
+
+        private float ResolveVinePreviewYOffset(bool isPlannedOnly)
+        {
+            return contentYOffset * VinePreviewYOffsetRatio + (isPlannedOnly ? plannedVineOverlayYOffset : 0f);
+        }
+
+        private Vector3 ResolvePlannedVineOverlayCoverage(VineState vine)
+        {
+            float progress = vine.GrowthThreshold <= 0
+                ? 0f
+                : Mathf.Clamp01((float)vine.ActionsSinceLastClear / vine.GrowthThreshold);
+            float baseScale = Mathf.Clamp(plannedVineOverlayBaseScale, 0.05f, VinePreviewRestScale.x);
+            float coverage = Mathf.Lerp(baseScale, VinePreviewRestScale.x, progress);
+            return new Vector3(coverage, coverage, coverage);
+        }
+
+        private static bool CanDisplayVineGrowthOverlay(Tile tile)
+        {
+            return tile is EmptyTile or DebrisTile or RescuePathTile;
         }
 
         private void ApplyVinePreviewCoverage(Vector3 coverageScale)
@@ -1711,6 +1765,19 @@ namespace Rescue.Unity.BoardPresentation
                 .Append(", object='").Append(view.Object.name)
                 .Append("', child='").Append(DescribeFirstVisualChild(view.Object))
                 .Append("'}");
+        }
+
+        private void AppendVinePreviewDescription(System.Text.StringBuilder builder, TileCoord coord)
+        {
+            if (vinePreviewObject is null || !vinePreviewCoord.HasValue || vinePreviewCoord.Value != coord)
+            {
+                return;
+            }
+
+            builder.Append(" vinePreview{object='").Append(vinePreviewObject.name)
+                .Append("', scale=")
+                .Append(vinePreviewObject.transform.localScale.x.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture))
+                .Append('}');
         }
 
         private static string DescribeFirstVisualChild(GameObject root)

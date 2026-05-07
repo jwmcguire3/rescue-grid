@@ -333,6 +333,247 @@ namespace Rescue.Unity.BoardPresentation.Tests
         }
 
         [Test]
+        public void BoardContentViewPresenter_RendersPlannedVineOverlayBeforePendingPreview()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState plannedState = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new EmptyTile())),
+                vine: new VineState(
+                    ActionsSinceLastClear: 1,
+                    GrowthThreshold: 4,
+                    GrowthPriorityList: ImmutableArray<TileCoord>.Empty,
+                    PriorityCursor: 0,
+                    PendingGrowthTile: null,
+                    PlannedGrowthTile: new TileCoord(0, 0)));
+
+            harness.GridPresenter.RebuildGrid(plannedState);
+            harness.ContentPresenter.SyncImmediate(plannedState);
+
+            Transform? overlay = FindChildByName(harness.ContentRoot, "VineGrowthPreview");
+            Assert.That(overlay, Is.Not.Null);
+            Assert.That(overlay!.localScale.x, Is.LessThan(0.64f));
+            Assert.That(harness.ContentPresenter.DescribeVisualAt(new TileCoord(0, 0)), Does.Contain("vinePreview"));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_DoesNotRenderPlannedVineOverlayWithoutPlan()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new EmptyTile())));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            Assert.That(FindChildByName(harness.ContentRoot, "VineGrowthPreview"), Is.Null);
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_PlannedVineOverlayClearsWhenPlanClears()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState plannedState = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new EmptyTile())),
+                vine: new VineState(
+                    ActionsSinceLastClear: 1,
+                    GrowthThreshold: 4,
+                    GrowthPriorityList: ImmutableArray<TileCoord>.Empty,
+                    PriorityCursor: 0,
+                    PendingGrowthTile: null,
+                    PlannedGrowthTile: new TileCoord(0, 0)));
+            GameState clearedState = plannedState with
+            {
+                Vine = plannedState.Vine with
+                {
+                    ActionsSinceLastClear = 0,
+                    PendingGrowthTile = null,
+                    PlannedGrowthTile = null,
+                },
+            };
+
+            harness.GridPresenter.RebuildGrid(plannedState);
+            harness.ContentPresenter.SyncImmediate(plannedState);
+            Assert.That(FindChildByName(harness.ContentRoot, "VineGrowthPreview"), Is.Not.Null);
+
+            harness.ContentPresenter.SyncImmediate(clearedState);
+
+            Assert.That(FindChildByName(harness.ContentRoot, "VineGrowthPreview"), Is.Null);
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_PlannedVineOverlayMovesWhenPlanChanges()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState firstState = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new EmptyTile(), new EmptyTile())),
+                vine: new VineState(
+                    ActionsSinceLastClear: 1,
+                    GrowthThreshold: 4,
+                    GrowthPriorityList: ImmutableArray<TileCoord>.Empty,
+                    PriorityCursor: 0,
+                    PendingGrowthTile: null,
+                    PlannedGrowthTile: new TileCoord(0, 0)));
+            GameState movedState = firstState with
+            {
+                Vine = firstState.Vine with { PlannedGrowthTile = new TileCoord(0, 1) },
+            };
+
+            harness.GridPresenter.RebuildGrid(firstState);
+            harness.ContentPresenter.SyncImmediate(firstState);
+
+            Transform? firstOverlay = FindChildByName(harness.ContentRoot, "VineGrowthPreview");
+            Assert.That(firstOverlay, Is.Not.Null);
+
+            harness.ContentPresenter.SyncImmediate(movedState);
+
+            Transform? movedOverlay = FindChildByName(harness.ContentRoot, "VineGrowthPreview");
+            Assert.That(movedOverlay, Is.Not.Null);
+            Assert.That(harness.ContentPresenter.DescribeVisualAt(new TileCoord(0, 0)), Does.Not.Contain("vinePreview"));
+            Assert.That(harness.ContentPresenter.DescribeVisualAt(new TileCoord(0, 1)), Does.Contain("vinePreview"));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_PlannedVineOverlayRendersOverDebrisWithoutReplacingIt()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState plannedState = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new DebrisTile(DebrisType.A))),
+                vine: new VineState(
+                    ActionsSinceLastClear: 1,
+                    GrowthThreshold: 4,
+                    GrowthPriorityList: ImmutableArray<TileCoord>.Empty,
+                    PriorityCursor: 0,
+                    PendingGrowthTile: null,
+                    PlannedGrowthTile: new TileCoord(0, 0)));
+
+            harness.GridPresenter.RebuildGrid(plannedState);
+            harness.ContentPresenter.SyncImmediate(plannedState);
+
+            Assert.That(GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 0)), Is.Not.Null);
+            Assert.That(FindChildByName(harness.ContentRoot, "VineGrowthPreview"), Is.Not.Null);
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_PlannedVineOverlayRendersOverRescuePath()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState plannedState = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new RescuePathTile(ImmutableArray.Create("puppy-1")))),
+                vine: new VineState(
+                    ActionsSinceLastClear: 1,
+                    GrowthThreshold: 4,
+                    GrowthPriorityList: ImmutableArray<TileCoord>.Empty,
+                    PriorityCursor: 0,
+                    PendingGrowthTile: null,
+                    PlannedGrowthTile: new TileCoord(0, 0)));
+
+            harness.GridPresenter.RebuildGrid(plannedState);
+            harness.ContentPresenter.SyncImmediate(plannedState);
+
+            Assert.That(GetRegisteredPieceObject(harness.ContentPresenter, "RescuePath", new TileCoord(0, 0)), Is.Not.Null);
+            Assert.That(FindChildByName(harness.ContentRoot, "VineGrowthPreview"), Is.Not.Null);
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_PlannedVineOverlayDoesNotRemainAfterRebuild()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState plannedState = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new EmptyTile(), new EmptyTile())),
+                vine: new VineState(
+                    ActionsSinceLastClear: 1,
+                    GrowthThreshold: 4,
+                    GrowthPriorityList: ImmutableArray<TileCoord>.Empty,
+                    PriorityCursor: 0,
+                    PendingGrowthTile: null,
+                    PlannedGrowthTile: new TileCoord(0, 1)));
+            GameState rebuiltState = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new EmptyTile())));
+
+            harness.GridPresenter.RebuildGrid(plannedState);
+            harness.ContentPresenter.SyncImmediate(plannedState);
+            Assert.That(FindChildByName(harness.ContentRoot, "VineGrowthPreview"), Is.Not.Null);
+
+            harness.GridPresenter.RebuildGrid(rebuiltState);
+            harness.ContentPresenter.RebuildContent(rebuiltState);
+
+            Assert.That(FindChildByName(harness.ContentRoot, "VineGrowthPreview"), Is.Null);
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_PlannedVineOverlayClearsWhenTileBecomesFullVine()
+        {
+            PresenterHarness harness = CreateHarness();
+            BlockerVisualRegistry blockerRegistry = CreateRegistry<BlockerVisualRegistry>();
+            blockerRegistry.FallbackBlockerPrefab = harness.FallbackPrefab;
+            SetPrivateField(harness.ContentPresenter, "blockerRegistry", blockerRegistry);
+            GameState plannedState = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new EmptyTile())),
+                vine: new VineState(
+                    ActionsSinceLastClear: 1,
+                    GrowthThreshold: 4,
+                    GrowthPriorityList: ImmutableArray<TileCoord>.Empty,
+                    PriorityCursor: 0,
+                    PendingGrowthTile: null,
+                    PlannedGrowthTile: new TileCoord(0, 0)));
+            GameState fullVineState = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new BlockerTile(BlockerType.Vine, 1, null))),
+                vine: plannedState.Vine);
+
+            harness.GridPresenter.RebuildGrid(plannedState);
+            harness.ContentPresenter.SyncImmediate(plannedState);
+            Assert.That(FindChildByName(harness.ContentRoot, "VineGrowthPreview"), Is.Not.Null);
+
+            harness.ContentPresenter.SyncImmediate(fullVineState);
+
+            Assert.That(FindChildByName(harness.ContentRoot, "VineGrowthPreview"), Is.Null);
+            Assert.That(FindChildByName(harness.ContentRoot, "Blocker_Vine"), Is.Not.Null);
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_PlannedVineOverlayCoverageFollowsActionProgress()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState earlyState = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new EmptyTile())),
+                vine: new VineState(
+                    ActionsSinceLastClear: 0,
+                    GrowthThreshold: 4,
+                    GrowthPriorityList: ImmutableArray<TileCoord>.Empty,
+                    PriorityCursor: 0,
+                    PendingGrowthTile: null,
+                    PlannedGrowthTile: new TileCoord(0, 0)));
+            GameState progressedState = earlyState with
+            {
+                Vine = earlyState.Vine with { ActionsSinceLastClear = 2 },
+            };
+
+            harness.GridPresenter.RebuildGrid(earlyState);
+            harness.ContentPresenter.SyncImmediate(earlyState);
+            Transform? overlay = FindChildByName(harness.ContentRoot, "VineGrowthPreview");
+            Assert.That(overlay, Is.Not.Null);
+            float earlyScale = overlay!.localScale.x;
+
+            harness.ContentPresenter.SyncImmediate(progressedState);
+
+            Transform? progressedOverlay = FindChildByName(harness.ContentRoot, "VineGrowthPreview");
+            Assert.That(progressedOverlay, Is.Not.Null);
+            Assert.That(progressedOverlay!.localScale.x, Is.GreaterThan(earlyScale));
+            Assert.That(progressedOverlay.localScale.x, Is.LessThan(0.64f));
+        }
+
+        [Test]
         public void BoardContentViewPresenter_VinePreviewUsesRegisteredOverlayBeforeVineFallback()
         {
             PresenterHarness harness = CreateHarness();
