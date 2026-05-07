@@ -144,14 +144,14 @@ MonoBehaviour:
     maxPlaysPerRoute: 1
   - eventId: 17
     clips:
-    - {fileID: 8300000, guid: 550cce4703adc41489c351f8799c514a, type: 3}
-    volume: 0.35
-    pitchVariance: 0
+    - {fileID: 8300000, guid: a53e3515ad1cbdf4faf21c58c94f820e, type: 3}
+    volume: 2
+    pitchVariance: 0.03
     maxPlaysPerRoute: 1
   - eventId: 18
     clips:
     - {fileID: 8300000, guid: a53e3515ad1cbdf4faf21c58c94f820e, type: 3}
-    volume: 0.7
+    volume: 2
     pitchVariance: 0.03
     maxPlaysPerRoute: 1
   - eventId: 19

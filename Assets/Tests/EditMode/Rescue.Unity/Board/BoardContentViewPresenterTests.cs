@@ -459,6 +459,86 @@ namespace Rescue.Unity.BoardPresentation.Tests
         }
 
         [Test]
+        public void BoardContentViewPresenter_VinePreviewRendersAboveDebrisHeight()
+        {
+            PresenterHarness harness = CreateHarness();
+            PieceVisualRegistry pieceRegistry = CreateRegistry<PieceVisualRegistry>();
+            GameObject tallDebrisPrefab = CreateTrackedPrimitive(PrimitiveType.Cube, "TallDebrisPrefab");
+            tallDebrisPrefab.transform.localScale = new Vector3(1f, 2f, 1f);
+            pieceRegistry.DebrisAPrefab = tallDebrisPrefab;
+            SetPrivateField(harness.ContentPresenter, "pieceRegistry", pieceRegistry);
+            GameState plannedState = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new DebrisTile(DebrisType.A))),
+                vine: new VineState(
+                    ActionsSinceLastClear: 1,
+                    GrowthThreshold: 4,
+                    GrowthPriorityList: ImmutableArray<TileCoord>.Empty,
+                    PriorityCursor: 0,
+                    PendingGrowthTile: null,
+                    PlannedGrowthTile: new TileCoord(0, 0)));
+
+            harness.GridPresenter.RebuildGrid(plannedState);
+            harness.ContentPresenter.SyncImmediate(plannedState);
+
+            GameObject? debrisObject = GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 0));
+            Transform? overlay = FindChildByName(harness.ContentRoot, "VineGrowthPreview");
+            Assert.That(debrisObject, Is.Not.Null);
+            Assert.That(overlay, Is.Not.Null);
+            Renderer debrisRenderer = debrisObject!.GetComponentInChildren<Renderer>()
+                ?? throw new AssertionException("Expected tall debris renderer.");
+            Assert.That(overlay!.position.y, Is.GreaterThan(debrisRenderer.bounds.max.y));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_VinePreviewHeightUpdatesWhenDebrisUnderItChanges()
+        {
+            PresenterHarness harness = CreateHarness();
+            PieceVisualRegistry pieceRegistry = CreateRegistry<PieceVisualRegistry>();
+            GameObject shortDebrisPrefab = CreateTrackedPrimitive(PrimitiveType.Cube, "ShortDebrisPrefab");
+            shortDebrisPrefab.transform.localScale = new Vector3(1f, 0.3f, 1f);
+            GameObject tallDebrisPrefab = CreateTrackedPrimitive(PrimitiveType.Cube, "TallDebrisPrefab");
+            tallDebrisPrefab.transform.localScale = new Vector3(1f, 2f, 1f);
+            pieceRegistry.DebrisAPrefab = shortDebrisPrefab;
+            pieceRegistry.DebrisBPrefab = tallDebrisPrefab;
+            SetPrivateField(harness.ContentPresenter, "pieceRegistry", pieceRegistry);
+            GameState shortState = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new DebrisTile(DebrisType.A))),
+                vine: new VineState(
+                    ActionsSinceLastClear: 1,
+                    GrowthThreshold: 4,
+                    GrowthPriorityList: ImmutableArray<TileCoord>.Empty,
+                    PriorityCursor: 0,
+                    PendingGrowthTile: null,
+                    PlannedGrowthTile: new TileCoord(0, 0)));
+            GameState tallState = shortState with
+            {
+                Board = new CoreBoard(
+                    1,
+                    1,
+                    ImmutableArray.Create(ImmutableArray.Create<Tile>(new DebrisTile(DebrisType.B)))),
+            };
+
+            harness.GridPresenter.RebuildGrid(shortState);
+            harness.ContentPresenter.SyncImmediate(shortState);
+            Transform? shortOverlay = FindChildByName(harness.ContentRoot, "VineGrowthPreview");
+            Assert.That(shortOverlay, Is.Not.Null);
+            float shortOverlayY = shortOverlay!.position.y;
+
+            harness.ContentPresenter.SyncImmediate(tallState);
+
+            Transform? tallOverlay = FindChildByName(harness.ContentRoot, "VineGrowthPreview");
+            GameObject? tallDebrisObject = GetRegisteredPieceObject(harness.ContentPresenter, "Debris", new TileCoord(0, 0));
+            Assert.That(tallOverlay, Is.Not.Null);
+            Assert.That(tallDebrisObject, Is.Not.Null);
+            Renderer debrisRenderer = tallDebrisObject!.GetComponentInChildren<Renderer>()
+                ?? throw new AssertionException("Expected tall debris renderer.");
+            Assert.That(tallOverlay!.position.y, Is.GreaterThan(shortOverlayY));
+            Assert.That(tallOverlay.position.y, Is.GreaterThan(debrisRenderer.bounds.max.y));
+        }
+
+        [Test]
         public void BoardContentViewPresenter_PlannedVineOverlayRendersOverRescuePath()
         {
             PresenterHarness harness = CreateHarness();
@@ -1697,6 +1777,14 @@ namespace Rescue.Unity.BoardPresentation.Tests
         private GameObject CreateTrackedGameObject(string name)
         {
             GameObject gameObject = new GameObject(name);
+            createdObjects.Add(gameObject);
+            return gameObject;
+        }
+
+        private GameObject CreateTrackedPrimitive(PrimitiveType primitiveType, string name)
+        {
+            GameObject gameObject = GameObject.CreatePrimitive(primitiveType);
+            gameObject.name = name;
             createdObjects.Add(gameObject);
             return gameObject;
         }

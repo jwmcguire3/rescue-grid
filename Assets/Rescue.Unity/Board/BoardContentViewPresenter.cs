@@ -26,6 +26,7 @@ namespace Rescue.Unity.BoardPresentation
         private const string VinePreviewLabel = "VineGrowthPreview";
         private const float VinePreviewYOffsetRatio = 1.0f;
         private const float VinePreviewReadabilityLift = 0.055f;
+        private const float VinePreviewContentClearance = 0.08f;
         private const float DefaultPlannedVineOverlayBaseScale = 0.28f;
         private const float DefaultPlannedVineOverlayAlpha = 0.42f;
         private const float DirectedVinePreviewMinWidth = 0.36f;
@@ -668,7 +669,7 @@ namespace Rescue.Unity.BoardPresentation
                 pendingTile,
                 anchor,
                 VinePreviewStartScale,
-                ResolveVinePreviewYOffset(isPlannedOnly: false),
+                ResolveVinePreviewYOffset(pendingTile, isPlannedOnly: false),
                 VinePreviewColor,
                 sourceTile: null))
             {
@@ -705,7 +706,7 @@ namespace Rescue.Unity.BoardPresentation
                 grown.Coord,
                 anchor,
                 VinePreviewRestScale,
-                ResolveVinePreviewYOffset(isPlannedOnly: false),
+                ResolveVinePreviewYOffset(grown.Coord, isPlannedOnly: false),
                 VineGrowthTakeoverColor,
                 sourceTile: null,
                 applyCoverageImmediately: !hasExistingOverlayAtCoord))
@@ -1457,7 +1458,7 @@ namespace Rescue.Unity.BoardPresentation
                 previewTile.Value,
                 anchor,
                 coverageScale,
-                ResolveVinePreviewYOffset(isPlannedOnly),
+                ResolveVinePreviewYOffset(previewTile.Value, isPlannedOnly),
                 tint,
                 state.Vine.GrowthSourceTile,
                 applyCoverageImmediately: !canAnimateCoverage))
@@ -1498,7 +1499,7 @@ namespace Rescue.Unity.BoardPresentation
                     VinePreviewLabel,
                     previewPrefab,
                     anchor,
-                    contentYOffset * VinePreviewYOffsetRatio,
+                    yOffset,
                     Vector3.one);
                 if (vinePreviewObject is null)
                 {
@@ -1531,10 +1532,47 @@ namespace Rescue.Unity.BoardPresentation
             return true;
         }
 
-        private float ResolveVinePreviewYOffset(bool isPlannedOnly)
+        private float ResolveVinePreviewYOffset(TileCoord coord, bool isPlannedOnly)
         {
             float requestedYOffset = contentYOffset * VinePreviewYOffsetRatio + (isPlannedOnly ? plannedVineOverlayYOffset : 0f);
-            return Mathf.Max(requestedYOffset, MinimumRescuePathYOffset + VinePreviewReadabilityLift);
+            float readableYOffset = Mathf.Max(requestedYOffset, MinimumRescuePathYOffset + VinePreviewReadabilityLift);
+            return TryResolveTileContentTopYOffset(coord, out float contentTopYOffset)
+                ? Mathf.Max(readableYOffset, contentTopYOffset + VinePreviewContentClearance)
+                : readableYOffset;
+        }
+
+        private bool TryResolveTileContentTopYOffset(TileCoord coord, out float topYOffset)
+        {
+            topYOffset = 0f;
+            bool found = false;
+            found |= TryResolvePieceTopYOffset(visualRegistry.Debris, coord, ref topYOffset);
+            found |= TryResolvePieceTopYOffset(visualRegistry.Blockers, coord, ref topYOffset);
+            found |= TryResolvePieceTopYOffset(visualRegistry.HiddenDebris, coord, ref topYOffset);
+            found |= TryResolvePieceTopYOffset(visualRegistry.RescuePath, coord, ref topYOffset);
+            return found;
+        }
+
+        private bool TryResolvePieceTopYOffset(BoardPieceRegistry registry, TileCoord coord, ref float topYOffset)
+        {
+            if (!registry.TryGet(coord, out BoardPieceView? view)
+                || view is null
+                || view.Object == null)
+            {
+                return false;
+            }
+
+            float baseY = gridView is not null
+                ? gridView.GetCellWorldPosition(coord).y
+                : transform.position.y;
+            float viewTopY = view.Object.transform.position.y;
+            Renderer[] renderers = view.Object.GetComponentsInChildren<Renderer>(includeInactive: true);
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                viewTopY = Mathf.Max(viewTopY, renderers[i].bounds.max.y);
+            }
+
+            topYOffset = Mathf.Max(topYOffset, viewTopY - baseY);
+            return true;
         }
 
         private Vector3 ResolvePlannedVineOverlayCoverage(VineState vine, TileCoord previewTile)

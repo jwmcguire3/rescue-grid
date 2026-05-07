@@ -142,25 +142,27 @@ namespace Rescue.Unity.Feedback.Tests
         }
 
         [Test]
-        public void Phase1AudioFeedbackRegistry_VinePreviewIsQuieterThanFinalGrowth()
+        public void Phase1AudioFeedbackRegistry_VinePreviewAndGrowthUseVineGrowthSfx()
         {
             AudioFeedbackRegistry registry = LoadAsset<AudioFeedbackRegistry>(Phase1AudioRegistryPath);
 
             bool hasPreview = registry.TryGetEntry(FeedbackEventId.VinePreview, out AudioFeedbackEntry? preview);
             bool hasGrowth = registry.TryGetEntry(FeedbackEventId.VineGrow, out AudioFeedbackEntry? growth);
 
-            Assert.That(hasPreview, Is.True, "One-action vine preview should have a quiet warning SFX entry.");
-            Assert.That(hasGrowth, Is.True, "Final vine takeover should keep a stronger growth SFX entry.");
+            Assert.That(hasPreview, Is.True, "One-action vine preview should play the vine growth SFX.");
             Assert.That(preview, Is.Not.Null);
+            Assert.That(hasGrowth, Is.True, "Each actual vine growth should play the VineGrowth SFX entry.");
             Assert.That(growth, Is.Not.Null);
             if (preview is null || growth is null)
             {
                 throw new AssertionException("Expected vine preview and growth audio entries.");
             }
 
-            Assert.That(preview.TryGetClip(out _), Is.True);
+            Assert.That(preview.TryGetClip(out AudioClip? previewClip), Is.True);
             Assert.That(growth.TryGetClip(out _), Is.True);
-            Assert.That(preview.Volume, Is.LessThan(growth.Volume));
+            Assert.That(previewClip?.name, Is.EqualTo("VineGrowth_01"));
+            Assert.That(preview.Volume, Is.EqualTo(2f).Within(0.001f));
+            Assert.That(growth.Volume, Is.EqualTo(2f).Within(0.001f));
             Assert.That(preview.MaxPlaysPerRoute, Is.EqualTo(1));
             Assert.That(growth.MaxPlaysPerRoute, Is.EqualTo(1));
         }
@@ -239,6 +241,21 @@ namespace Rescue.Unity.Feedback.Tests
 
             Assert.That(router.PlayedIds, Is.EqualTo(new[] { FeedbackEventId.GroupClear }));
             Assert.That(router.LastEffectiveVolume, Is.EqualTo(0.35f).Within(0.001f));
+        }
+
+        [Test]
+        public void AudioEventRouter_AllowsBoostedFeedbackVolume()
+        {
+            SpyAudioEventRouter router = CreateSpyRouter();
+            router.Registry = CreateRegistry(new AudioFeedbackEntry(
+                FeedbackEventId.VineGrow,
+                new[] { CreateClip(nameof(FeedbackEventId.VineGrow)) },
+                volume: 2f));
+
+            router.Route(new VineGrown(new TileCoord(1, 1)));
+
+            Assert.That(router.PlayedIds, Is.EqualTo(new[] { FeedbackEventId.VineGrow }));
+            Assert.That(router.LastEffectiveVolume, Is.EqualTo(2f).Within(0.001f));
         }
 
         [Test]

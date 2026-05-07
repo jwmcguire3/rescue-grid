@@ -166,7 +166,7 @@ namespace Rescue.Unity.Feedback
 
         protected float ResolveEffectiveVolume(AudioFeedbackEntry entry)
         {
-            return Mathf.Clamp01(entry.Volume * (ResolveSettingsController()?.FxVolume ?? 1.0f));
+            return Mathf.Max(0f, entry.Volume * (ResolveSettingsController()?.FxVolume ?? 1.0f));
         }
 
         private AudioSettingsController? ResolveSettingsController()
