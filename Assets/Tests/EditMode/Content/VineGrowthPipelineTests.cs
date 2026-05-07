@@ -90,13 +90,34 @@ namespace Rescue.Content.Tests
                 growthPriority: ImmutableArray.Create(new TileCoord(2, 2)));
 
             state = Pipeline.RunAction(state, new ActionInput(new TileCoord(0, 0)), new RunOptions(RecordSnapshot: false)).State;
-            ActionResult result = Pipeline.RunAction(state, new ActionInput(new TileCoord(1, 0)), new RunOptions(RecordSnapshot: false));
+            ActionResult result = Pipeline.RunAction(state, new ActionInput(new TileCoord(2, 0)), new RunOptions(RecordSnapshot: false));
 
             Assert.That(result.State.Vine.PendingGrowthTile, Is.EqualTo(new TileCoord(2, 2)));
-            Assert.That(result.State.Vine.PlannedGrowthTile, Is.Null);
+            Assert.That(result.State.Vine.PlannedGrowthTile, Is.EqualTo(new TileCoord(2, 2)));
             Assert.That(result.State.Vine.GrowthSourceTile, Is.Null);
-            Assert.That(result.State.Vine.GrowthGoalTile, Is.Null);
+            Assert.That(result.State.Vine.GrowthGoalTile, Is.EqualTo(new TileCoord(2, 2)));
             Assert.That(result.Events, Has.Some.EqualTo(new VinePreviewChanged(new TileCoord(2, 2))));
+        }
+
+        [Test]
+        public void RunAction_PlansSystemicVineBeforePreviewWindow()
+        {
+            GameState state = CreateVineState(
+                CreateBoard(
+                    Row(new BlockerTile(BlockerType.Vine, 1, null), new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                    Row(new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.C), new TargetTile("0", Extracted: false)),
+                    Row(new DebrisTile(DebrisType.B), new DebrisTile(DebrisType.B), new EmptyTile(), new DebrisTile(DebrisType.D))),
+                growthThreshold: 4,
+                growthPriority: ImmutableArray<TileCoord>.Empty,
+                targets: ImmutableArray.Create(new TargetState("0", new TileCoord(1, 3), TargetReadiness.Trapped)));
+
+            ActionResult result = Pipeline.RunAction(state, new ActionInput(new TileCoord(2, 0)), new RunOptions(RecordSnapshot: false));
+
+            Assert.That(result.State.Vine.PlannedGrowthTile, Is.EqualTo(new TileCoord(0, 1)));
+            Assert.That(result.State.Vine.GrowthSourceTile, Is.EqualTo(new TileCoord(0, 0)));
+            Assert.That(result.State.Vine.GrowthGoalTile, Is.EqualTo(new TileCoord(0, 3)));
+            Assert.That(result.State.Vine.PendingGrowthTile, Is.Null);
+            Assert.That(result.Events.OfType<VinePreviewChanged>(), Is.Empty);
         }
 
         [Test]
@@ -117,6 +138,7 @@ namespace Rescue.Content.Tests
             Assert.That(BoardHelpers.GetTile(result.State.Board, new TileCoord(2, 2)), Is.EqualTo(new BlockerTile(BlockerType.Vine, 1, null)));
             Assert.That(result.Events, Has.Some.EqualTo(new VineGrown(new TileCoord(2, 2))));
             Assert.That(result.State.Vine.ActionsSinceLastClear, Is.EqualTo(0));
+            Assert.That(result.State.Vine.PlannedGrowthTile, Is.Null);
         }
 
         [Test]
@@ -196,6 +218,41 @@ namespace Rescue.Content.Tests
             Assert.That(result.Events.OfType<VineGrown>(), Is.Empty);
             Assert.That(result.State.Vine.ActionsSinceLastClear, Is.EqualTo(0));
             Assert.That(result.State.Vine.PendingGrowthTile, Is.Null);
+            Assert.That(result.State.Vine.PlannedGrowthTile, Is.Null);
+            Assert.That(result.State.Vine.GrowthSourceTile, Is.Null);
+            Assert.That(result.State.Vine.GrowthGoalTile, Is.Null);
+        }
+
+        [Test]
+        public void Undo_RestoresLivePlannedVineState()
+        {
+            GameState state = CreateVineState(
+                CreateBoard(
+                    Row(new BlockerTile(BlockerType.Vine, 1, null), new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                    Row(new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.C), new TargetTile("0", Extracted: false)),
+                    Row(new DebrisTile(DebrisType.B), new DebrisTile(DebrisType.B), new EmptyTile(), new DebrisTile(DebrisType.D))),
+                growthThreshold: 4,
+                growthPriority: ImmutableArray<TileCoord>.Empty,
+                targets: ImmutableArray.Create(new TargetState("0", new TileCoord(1, 3), TargetReadiness.Trapped)));
+
+            ActionResult plannedResult = Pipeline.RunAction(
+                state,
+                new ActionInput(new TileCoord(2, 0)),
+                new RunOptions(RecordSnapshot: false));
+            Assert.That(plannedResult.State.Vine.PlannedGrowthTile, Is.EqualTo(new TileCoord(0, 1)));
+
+            ActionResult nextResult = Pipeline.RunAction(
+                plannedResult.State,
+                new ActionInput(new TileCoord(1, 0)),
+                new RunOptions(RecordSnapshot: true));
+
+            Snapshot snapshot = nextResult.Snapshot ?? throw new AssertionException("Expected undo snapshot.");
+            GameState restored = UndoGuard.PerformUndo(nextResult.State, snapshot);
+
+            Assert.That(restored.Vine.PlannedGrowthTile, Is.EqualTo(plannedResult.State.Vine.PlannedGrowthTile));
+            Assert.That(restored.Vine.GrowthSourceTile, Is.EqualTo(plannedResult.State.Vine.GrowthSourceTile));
+            Assert.That(restored.Vine.GrowthGoalTile, Is.EqualTo(plannedResult.State.Vine.GrowthGoalTile));
+            Assert.That(restored.Vine.PendingGrowthTile, Is.EqualTo(plannedResult.State.Vine.PendingGrowthTile));
         }
 
         [TestCase("L08")]

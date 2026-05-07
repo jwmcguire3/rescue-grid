@@ -69,6 +69,22 @@ namespace Rescue.Core.Tests.Determinism
         }
 
         [Test]
+        public void VinePlanningPipelineRunIsDeterministic()
+        {
+            GameState state = CreateVinePlanningState(0xC0FFEEu);
+            ActionInput input = new ActionInput(new TileCoord(2, 0));
+
+            ActionResult first = Rescue.Core.Pipeline.Pipeline.RunAction(state, input);
+            ActionResult second = Rescue.Core.Pipeline.Pipeline.RunAction(state, input);
+
+            Assert.That(first.State.Vine.PlannedGrowthTile, Is.EqualTo(new TileCoord(0, 1)));
+            AssertRunStatesEqual(
+                new PipelineRunState(first.State, first.Events),
+                new PipelineRunState(second.State, second.Events),
+                "vine planning pipeline run");
+        }
+
+        [Test]
         public void RepeatedDiagonalSettlingRunsFromSameSeedProduceIdenticalBoardsAndEvents()
         {
             GameState state = CreateDiagonalAssistedSpawnState(0xBADC0DEu);
@@ -127,6 +143,25 @@ namespace Rescue.Core.Tests.Determinism
             return state with
             {
                 LevelConfig = PipelineTestFixtures.CreateLevelConfig(1.0d),
+                RngState = new Rescue.Core.Rng.RngState(seed, seed ^ 0xA5A5A5A5u),
+            };
+        }
+
+        private static GameState CreateVinePlanningState(uint seed)
+        {
+            GameState state = PipelineTestFixtures.CreateState(
+                PipelineTestFixtures.CreateBoard(
+                    PipelineTestFixtures.Row(new BlockerTile(BlockerType.Vine, 1, null), new EmptyTile(), new EmptyTile(), new EmptyTile()),
+                    PipelineTestFixtures.Row(new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.A), new DebrisTile(DebrisType.C), new TargetTile("pup", Extracted: false)),
+                    PipelineTestFixtures.Row(new DebrisTile(DebrisType.B), new DebrisTile(DebrisType.B), new EmptyTile(), new DebrisTile(DebrisType.D))),
+                targets: ImmutableArray.Create(new TargetState("pup", new TileCoord(1, 3), TargetReadiness.Trapped)));
+
+            return state with
+            {
+                Vine = state.Vine with
+                {
+                    GrowthThreshold = 4,
+                },
                 RngState = new Rescue.Core.Rng.RngState(seed, seed ^ 0xA5A5A5A5u),
             };
         }
@@ -202,7 +237,10 @@ namespace Rescue.Core.Tests.Determinism
             Assert.That(actual.Vine.GrowthPriorityList, Is.EqualTo(expected.Vine.GrowthPriorityList).AsCollection, $"Vine growth list mismatch at {label}.");
             Assert.That(actual.Vine.PriorityCursor, Is.EqualTo(expected.Vine.PriorityCursor), $"Vine cursor mismatch at {label}.");
             Assert.That(actual.Vine.PendingGrowthTile, Is.EqualTo(expected.Vine.PendingGrowthTile), $"Vine pending tile mismatch at {label}.");
-            Assert.That(actual.Targets, Is.EqualTo(expected.Targets).AsCollection, $"Targets mismatch at {label}.");
+            Assert.That(actual.Vine.PlannedGrowthTile, Is.EqualTo(expected.Vine.PlannedGrowthTile), $"Vine planned tile mismatch at {label}.");
+            Assert.That(actual.Vine.GrowthSourceTile, Is.EqualTo(expected.Vine.GrowthSourceTile), $"Vine source tile mismatch at {label}.");
+            Assert.That(actual.Vine.GrowthGoalTile, Is.EqualTo(expected.Vine.GrowthGoalTile), $"Vine goal tile mismatch at {label}.");
+            AssertTargetSequenceEqual(expected.Targets, actual.Targets, $"Targets mismatch at {label}.");
             AssertLevelConfigEqual(expected.LevelConfig, actual.LevelConfig, label);
             Assert.That(actual.RngState, Is.EqualTo(expected.RngState), $"RngState mismatch at {label}.");
             Assert.That(actual.ActionCount, Is.EqualTo(expected.ActionCount), $"ActionCount mismatch at {label}.");
@@ -230,9 +268,24 @@ namespace Rescue.Core.Tests.Determinism
                 Assert.That(actual.Tiles[row].Length, Is.EqualTo(expected.Tiles[row].Length), $"Board row length mismatch at {label}, row {row}.");
                 for (int col = 0; col < expected.Tiles[row].Length; col++)
                 {
-                    Assert.That(actual.Tiles[row][col], Is.EqualTo(expected.Tiles[row][col]), $"Board tile mismatch at {label}, row {row}, col {col}.");
+                    AssertTileEqual(
+                        expected.Tiles[row][col],
+                        actual.Tiles[row][col],
+                        $"Board tile mismatch at {label}, row {row}, col {col}.");
                 }
             }
+        }
+
+        private static void AssertTileEqual(Tile expected, Tile actual, string message)
+        {
+            Assert.That(actual.GetType(), Is.EqualTo(expected.GetType()), message);
+            if (expected is RescuePathTile expectedRescuePath && actual is RescuePathTile actualRescuePath)
+            {
+                AssertStringSequenceEqual(expectedRescuePath.TargetIds, actualRescuePath.TargetIds, message);
+                return;
+            }
+
+            Assert.That(actual, Is.EqualTo(expected), message);
         }
 
         private static void AssertActionEventSequenceEqual(
@@ -276,6 +329,11 @@ namespace Rescue.Core.Tests.Determinism
                 case Spawned expectedSpawned:
                     Spawned actualSpawned = (Spawned)actual;
                     AssertSpawnSequenceEqual(expectedSpawned.Pieces, actualSpawned.Pieces, $"Spawned pieces mismatch at {label}, index {index}.");
+                    return;
+                case TargetRescuePathLocked expectedTargetRescuePathLocked:
+                    TargetRescuePathLocked actualTargetRescuePathLocked = (TargetRescuePathLocked)actual;
+                    Assert.That(actualTargetRescuePathLocked.TargetId, Is.EqualTo(expectedTargetRescuePathLocked.TargetId), $"TargetRescuePathLocked target mismatch at {label}, index {index}.");
+                    AssertTileCoordSequenceEqual(expectedTargetRescuePathLocked.Coords, actualTargetRescuePathLocked.Coords, $"TargetRescuePathLocked coords mismatch at {label}, index {index}.");
                     return;
                 case Won expectedWon:
                     Won actualWon = (Won)actual;
@@ -322,6 +380,18 @@ namespace Rescue.Core.Tests.Determinism
             for (int i = 0; i < expected.Length; i++)
             {
                 Assert.That(actual[i], Is.EqualTo(expected[i]), $"{messagePrefix} item {i}.");
+            }
+        }
+
+        private static void AssertTargetSequenceEqual(
+            ImmutableArray<TargetState> expected,
+            ImmutableArray<TargetState> actual,
+            string messagePrefix)
+        {
+            Assert.That(actual.Length, Is.EqualTo(expected.Length), $"{messagePrefix} length.");
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.That(actual[i], Is.EqualTo(expected[i]), $"{messagePrefix} target {i}.");
             }
         }
 

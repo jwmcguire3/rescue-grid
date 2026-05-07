@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Rescue.Core.Rules;
 using Rescue.Core.State;
 
 namespace Rescue.Core.Pipeline.Steps
@@ -69,18 +70,47 @@ namespace Rescue.Core.Pipeline.Steps
             {
                 int actionsSinceLastClear = updatedState.Vine.ActionsSinceLastClear + 1;
                 TileCoord? pendingGrowthTile = updatedState.Vine.PendingGrowthTile;
+                TileCoord? plannedGrowthTile = updatedState.Vine.PlannedGrowthTile;
+                TileCoord? growthSourceTile = updatedState.Vine.GrowthSourceTile;
+                TileCoord? growthGoalTile = updatedState.Vine.GrowthGoalTile;
                 bool previewPending = false;
                 bool growthPending = false;
+                bool pendingWasCleared = false;
+
+                if (plannedGrowthTile is not null
+                    && !IsPlanStillValid(
+                        updatedState.Board,
+                        updatedState.Vine,
+                        updatedState.Targets,
+                        plannedGrowthTile.Value,
+                        growthSourceTile,
+                        growthGoalTile))
+                {
+                    pendingWasCleared = pendingGrowthTile is not null;
+                    pendingGrowthTile = null;
+                    plannedGrowthTile = null;
+                    growthSourceTile = null;
+                    growthGoalTile = null;
+                }
+
+                if (plannedGrowthTile is null && !pendingWasCleared)
+                {
+                    VineGrowthPlan? plan = VineGrowthPlanner.Plan(updatedState);
+                    if (plan is not null)
+                    {
+                        plannedGrowthTile = plan.NextGrowthTile;
+                        growthSourceTile = plan.SourceTile;
+                        growthGoalTile = plan.GoalTile;
+                    }
+                }
 
                 if (actionsSinceLastClear >= updatedState.Vine.GrowthThreshold - 1
-                    && pendingGrowthTile is null)
+                    && pendingGrowthTile is null
+                    && plannedGrowthTile is not null)
                 {
-                    pendingGrowthTile = FindFirstValidGrowthTile(updatedState.Board, updatedState.Vine, updatedState.Targets);
-                    if (pendingGrowthTile is not null)
-                    {
-                        previewPending = true;
-                        events.Add(new VinePreviewChanged(pendingGrowthTile));
-                    }
+                    pendingGrowthTile = plannedGrowthTile;
+                    previewPending = true;
+                    events.Add(new VinePreviewChanged(pendingGrowthTile));
                 }
 
                 if (actionsSinceLastClear >= updatedState.Vine.GrowthThreshold
@@ -93,6 +123,9 @@ namespace Rescue.Core.Pipeline.Steps
                 {
                     ActionsSinceLastClear = actionsSinceLastClear,
                     PendingGrowthTile = pendingGrowthTile,
+                    PlannedGrowthTile = plannedGrowthTile,
+                    GrowthSourceTile = growthSourceTile,
+                    GrowthGoalTile = growthGoalTile,
                 };
                 updatedContext = updatedContext with
                 {
@@ -109,19 +142,28 @@ namespace Rescue.Core.Pipeline.Steps
             return new StepResult(updatedState, updatedContext, events.ToImmutable());
         }
 
-        private static TileCoord? FindFirstValidGrowthTile(Board board, VineState vine, ImmutableArray<TargetState> targets)
+        private static bool IsPlanStillValid(
+            Board board,
+            VineState vine,
+            ImmutableArray<TargetState> targets,
+            TileCoord plannedGrowthTile,
+            TileCoord? growthSourceTile,
+            TileCoord? growthGoalTile)
         {
-            int startIndex = vine.PriorityCursor < 0 ? 0 : vine.PriorityCursor;
-            for (int i = startIndex; i < vine.GrowthPriorityList.Length; i++)
+            if (!VineGrowthTiles.IsValidGrowthTile(board, vine, targets, plannedGrowthTile))
             {
-                TileCoord coord = vine.GrowthPriorityList[i];
-                if (VineGrowthTiles.IsValidGrowthTile(board, vine, targets, coord))
-                {
-                    return coord;
-                }
+                return false;
             }
 
-            return null;
+            if (growthSourceTile is TileCoord source
+                && (!BoardHelpers.InBounds(board, source)
+                    || BoardHelpers.GetTile(board, source) is not BlockerTile { Type: BlockerType.Vine }))
+            {
+                return false;
+            }
+
+            return growthGoalTile is not TileCoord goal
+                || VineGrowthTiles.IsValidGrowthTile(board, vine, targets, goal);
         }
     }
 }

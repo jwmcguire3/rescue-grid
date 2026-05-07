@@ -48,7 +48,14 @@ namespace Rescue.Core.Pipeline.Steps
             {
                 Board = updatedBoard,
                 Vine = vineCleared
-                    ? state.Vine with { ActionsSinceLastClear = 0 }
+                    ? state.Vine with
+                    {
+                        ActionsSinceLastClear = 0,
+                        PendingGrowthTile = null,
+                        PlannedGrowthTile = null,
+                        GrowthSourceTile = null,
+                        GrowthGoalTile = null,
+                    }
                     : state.Vine,
             };
 
