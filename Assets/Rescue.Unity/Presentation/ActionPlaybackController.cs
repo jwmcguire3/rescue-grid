@@ -386,7 +386,7 @@ namespace Rescue.Unity.Presentation
                         {
                             DockWarningLevel.Caution => settings.DockWarningCautionDurationSeconds,
                             DockWarningLevel.Acute => settings.DockWarningAcuteDurationSeconds,
-                            DockWarningLevel.Fail => settings.DockJamFeedbackDurationSeconds,
+                            DockWarningLevel.Fail => settings.DockWarningFullDurationSeconds,
                             _ => settings.DockFeedbackDurationSeconds,
                         };
                     case DockJamTriggered:

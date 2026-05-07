@@ -89,12 +89,23 @@ namespace Rescue.Unity.UI.Tests
         }
 
         [Test]
-        public void DockFeedbackPresenter_SelectsFailedFeedbackAtSeven()
+        public void DockFeedbackPresenter_SelectsFullFeedbackAtSeven()
         {
             GameObject presenterObject = CreateTrackedObject("DockFeedbackPresenter");
             DockFeedbackPresenter presenter = presenterObject.AddComponent<DockFeedbackPresenter>();
 
             DockFeedbackType feedbackType = presenter.SelectFeedbackType(7, 7);
+
+            Assert.That(feedbackType, Is.EqualTo(DockFeedbackType.Full));
+        }
+
+        [Test]
+        public void DockFeedbackPresenter_SelectsFailedFeedbackAboveSeven()
+        {
+            GameObject presenterObject = CreateTrackedObject("DockFeedbackPresenter");
+            DockFeedbackPresenter presenter = presenterObject.AddComponent<DockFeedbackPresenter>();
+
+            DockFeedbackType feedbackType = presenter.SelectFeedbackType(8, 7);
 
             Assert.That(feedbackType, Is.EqualTo(DockFeedbackType.Failed));
         }
@@ -108,6 +119,7 @@ namespace Rescue.Unity.UI.Tests
             Assert.DoesNotThrow(() => presenter.PlayInsertFeedback());
             Assert.DoesNotThrow(() => presenter.PlayCautionFeedback());
             Assert.DoesNotThrow(() => presenter.PlayAcuteFeedback());
+            Assert.DoesNotThrow(() => presenter.PlayFullFeedback());
             Assert.DoesNotThrow(() => presenter.PlayFailedFeedback());
             Assert.DoesNotThrow(() => presenter.PlayTripleClearFeedback());
             Assert.DoesNotThrow(() => presenter.SyncToState(5, 7));
@@ -152,7 +164,8 @@ namespace Rescue.Unity.UI.Tests
             Assert.That(presenter.InsertDuration, Is.EqualTo(0.18f));
             Assert.That(presenter.ClearDuration, Is.EqualTo(0.14f));
             Assert.That(presenter.CautionPulseDuration, Is.EqualTo(0.84f));
-            Assert.That(presenter.AcuteShakeDuration, Is.EqualTo(0.66f));
+            Assert.That(presenter.AcutePulseDuration, Is.EqualTo(0.66f));
+            Assert.That(presenter.FullPulseDuration, Is.EqualTo(0.429f).Within(0.001f));
             Assert.That(presenter.FailedPulseDuration, Is.EqualTo(1.22f));
         }
 

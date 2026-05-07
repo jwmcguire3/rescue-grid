@@ -64,9 +64,11 @@ namespace Rescue.Unity.Haptics
                     signal = Create(HapticEventId.DockCaution, new HapticPattern(HapticPatternStyle.Tick, 0.22f, 35), 40, actionEvent);
                     return true;
                 case DockWarningChanged warningChanged when warningChanged.After == DockWarningLevel.Acute:
-                    signal = Create(HapticEventId.DockAcute, new HapticPattern(HapticPatternStyle.Pulse, 0.65f, 70), 70, actionEvent);
+                    signal = Create(HapticEventId.DockAcute, new HapticPattern(HapticPatternStyle.Pulse, 0.35f, 45), 70, actionEvent);
                     return true;
                 case DockWarningChanged warningChanged when warningChanged.After == DockWarningLevel.Fail:
+                    signal = Create(HapticEventId.DockOverflow, new HapticPattern(HapticPatternStyle.Pulse, 0.45f, 40), 75, actionEvent);
+                    return true;
                 case DockOverflowTriggered:
                     signal = Create(HapticEventId.DockOverflow, new HapticPattern(HapticPatternStyle.Failure, 0.90f, 125), 100, actionEvent);
                     return true;

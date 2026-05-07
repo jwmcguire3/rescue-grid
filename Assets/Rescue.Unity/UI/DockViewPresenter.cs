@@ -46,6 +46,7 @@ namespace Rescue.Unity.UI
         None,
         Caution,
         Acute,
+        Full,
         Failed,
     }
 
@@ -60,9 +61,14 @@ namespace Rescue.Unity.UI
 
             int clampedOccupancy = Mathf.Max(0, occupiedSlots);
 
-            if (clampedOccupancy >= dockSize)
+            if (clampedOccupancy > dockSize)
             {
                 return DockFeedbackType.Failed;
+            }
+
+            if (clampedOccupancy == dockSize)
+            {
+                return DockFeedbackType.Full;
             }
 
             if (clampedOccupancy == dockSize - 1)
@@ -82,6 +88,7 @@ namespace Rescue.Unity.UI
     public sealed class DockFeedbackPresenter : MonoBehaviour
     {
         private const float DefaultPulseScaleMultiplier = 1.08f;
+        private const float FullPulseScaleMultiplier = 1.10f;
         private const float FailedHoldScaleMultiplier = 1.04f;
         private const float TripleClearMinScaleMultiplier = 0.9f;
         private const float TripleClearPopScaleMultiplier = 1.04f;
@@ -110,7 +117,9 @@ namespace Rescue.Unity.UI
         private float insertDurationSeconds = ActionPlaybackSettings.DefaultDockInsertFeedbackDurationSeconds;
         private float clearDurationSeconds = ActionPlaybackSettings.DefaultDockClearFeedbackDurationSeconds;
         private float cautionPulseDurationSeconds = ActionPlaybackSettings.DefaultDockWarningCautionDurationSeconds;
-        private float acuteShakeDurationSeconds = ActionPlaybackSettings.DefaultDockWarningAcuteDurationSeconds;
+        private float acutePulseDurationSeconds = ActionPlaybackSettings.DefaultDockWarningAcuteDurationSeconds;
+        private float fullPulseDurationSeconds = ActionPlaybackSettings.DefaultDockWarningAcuteDurationSeconds
+            * ActionPlaybackSettings.DockWarningFullDurationMultiplier;
         private float failedPulseDurationSeconds = ActionPlaybackSettings.DefaultDockJamFeedbackDurationSeconds;
 
         public float InsertPopScale => insertPopScale;
@@ -121,7 +130,11 @@ namespace Rescue.Unity.UI
 
         public float AcuteShakeAmount => acuteShakeAmount;
 
-        public float AcuteShakeDuration => acuteShakeDurationSeconds;
+        public float AcutePulseDuration => acutePulseDurationSeconds;
+
+        public float AcuteShakeDuration => AcutePulseDuration;
+
+        public float FullPulseDuration => fullPulseDurationSeconds;
 
         public float FailedPulseDuration => failedPulseDurationSeconds;
 
@@ -137,7 +150,8 @@ namespace Rescue.Unity.UI
             insertDurationSeconds = settings.DockInsertFeedbackDurationSeconds;
             clearDurationSeconds = settings.DockClearFeedbackDurationSeconds;
             cautionPulseDurationSeconds = settings.DockWarningCautionDurationSeconds;
-            acuteShakeDurationSeconds = settings.DockWarningAcuteDurationSeconds;
+            acutePulseDurationSeconds = settings.DockWarningAcuteDurationSeconds;
+            fullPulseDurationSeconds = settings.DockWarningFullDurationSeconds;
             failedPulseDurationSeconds = settings.DockJamFeedbackDurationSeconds;
         }
 
@@ -158,11 +172,12 @@ namespace Rescue.Unity.UI
 
         public void PlayAcuteFeedback()
         {
-            PlayRoutine(CreatePressureShakeRoutine(
-                acuteShakeDurationSeconds,
-                acuteShakeAmount,
-                DefaultPulseScaleMultiplier,
-                ResolveShakeCurve()));
+            PlayRoutine(CreatePulseRoutine(acutePulseDurationSeconds, DefaultPulseScaleMultiplier, ResolvePulseCurve()));
+        }
+
+        public void PlayFullFeedback()
+        {
+            PlayRoutine(CreatePulseRoutine(fullPulseDurationSeconds, FullPulseScaleMultiplier, ResolvePulseCurve()));
         }
 
         public void PlayFailedFeedback()
@@ -184,6 +199,12 @@ namespace Rescue.Unity.UI
                 return;
             }
 
+            if (feedbackType == DockFeedbackType.Full)
+            {
+                PlayFullFeedback();
+                return;
+            }
+
             ResetVisuals();
         }
 
@@ -196,14 +217,17 @@ namespace Rescue.Unity.UI
             }
 
             DockFeedbackType feedbackType = SelectFeedbackType(occupancy, dockSize);
-            if (feedbackType == DockFeedbackType.Failed)
+            if (feedbackType is DockFeedbackType.Failed or DockFeedbackType.Full)
             {
                 CacheBaseline();
                 ResetVisuals();
 
                 if (TryGetTarget(out Transform target))
                 {
-                    target.localScale = _baseLocalScale * FailedHoldScaleMultiplier;
+                    float scaleMultiplier = feedbackType == DockFeedbackType.Full
+                        ? FullPulseScaleMultiplier
+                        : FailedHoldScaleMultiplier;
+                    target.localScale = _baseLocalScale * scaleMultiplier;
                 }
 
                 return;
@@ -670,6 +694,9 @@ namespace Rescue.Unity.UI
                     break;
                 case DockWarningLevel.Acute:
                     feedback.PlayAcuteFeedback();
+                    break;
+                case DockWarningLevel.Fail:
+                    feedback.PlayFullFeedback();
                     break;
                 default:
                     feedback.SyncToState(0, Phase1DockSize);

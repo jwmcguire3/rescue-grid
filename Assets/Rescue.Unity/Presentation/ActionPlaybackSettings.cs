@@ -15,6 +15,7 @@ namespace Rescue.Unity.Presentation
         public const float DefaultDockClearFeedbackDurationSeconds = 0.18f;
         public const float DefaultDockWarningCautionDurationSeconds = 0.50f;
         public const float DefaultDockWarningAcuteDurationSeconds = 0.40f;
+        public const float DockWarningFullDurationMultiplier = 0.65f;
         public const float DefaultDockJamFeedbackDurationSeconds = 0.70f;
         public const float DefaultGravityDurationSeconds = 0.15f;
         public const float DefaultSpawnDurationSeconds = 0.12f;
@@ -126,6 +127,8 @@ namespace Rescue.Unity.Presentation
         public float DockWarningAcuteDurationSeconds => ScaleGameplayDuration(
             dockWarningAcuteDurationSeconds,
             DockSpeedMultiplier);
+
+        public float DockWarningFullDurationSeconds => DockWarningAcuteDurationSeconds * DockWarningFullDurationMultiplier;
 
         public float DockJamFeedbackDurationSeconds => ScaleGameplayDuration(
             dockJamFeedbackDurationSeconds,

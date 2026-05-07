@@ -173,7 +173,8 @@ namespace Rescue.Unity.Haptics.Tests
             yield return new TestCaseData(new BlockerBroken(new TileCoord(1, 1), BlockerType.Crate), HapticEventId.BlockerBreak, HapticPatternStyle.Pop, 0.30f, 40);
             yield return new TestCaseData(new IceRevealed(new TileCoord(1, 2), DebrisType.B), HapticEventId.BlockerBreak, HapticPatternStyle.Pop, 0.30f, 40);
             yield return new TestCaseData(new DockWarningChanged(DockWarningLevel.Safe, DockWarningLevel.Caution), HapticEventId.DockCaution, HapticPatternStyle.Tick, 0.22f, 35);
-            yield return new TestCaseData(new DockWarningChanged(DockWarningLevel.Caution, DockWarningLevel.Acute), HapticEventId.DockAcute, HapticPatternStyle.Pulse, 0.65f, 70);
+            yield return new TestCaseData(new DockWarningChanged(DockWarningLevel.Caution, DockWarningLevel.Acute), HapticEventId.DockAcute, HapticPatternStyle.Pulse, 0.35f, 45);
+            yield return new TestCaseData(new DockWarningChanged(DockWarningLevel.Acute, DockWarningLevel.Fail), HapticEventId.DockOverflow, HapticPatternStyle.Pulse, 0.45f, 40);
             yield return new TestCaseData(new DockJamTriggered(OverflowCount: 1), HapticEventId.DockJam, HapticPatternStyle.Warning, 0.65f, 70);
             yield return new TestCaseData(new DockOverflowTriggered(OverflowCount: 1), HapticEventId.DockOverflow, HapticPatternStyle.Failure, 0.90f, 125);
             yield return new TestCaseData(new TargetProgressed("pup-1", new TileCoord(2, 1)), HapticEventId.TargetNearRescue, HapticPatternStyle.Lift, 0.22f, 40);

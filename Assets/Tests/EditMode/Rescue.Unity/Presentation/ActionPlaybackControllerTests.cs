@@ -155,6 +155,7 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(GetStepDuration(controller, new DockCleared(DebrisType.A, SetsCleared: 1, OccupancyAfterClear: 0)), Is.EqualTo(0.14f));
             Assert.That(GetStepDuration(controller, new DockWarningChanged(DockWarningLevel.Safe, DockWarningLevel.Caution)), Is.EqualTo(0.84f));
             Assert.That(GetStepDuration(controller, new DockWarningChanged(DockWarningLevel.Caution, DockWarningLevel.Acute)), Is.EqualTo(0.66f));
+            Assert.That(GetStepDuration(controller, new DockWarningChanged(DockWarningLevel.Acute, DockWarningLevel.Fail)), Is.EqualTo(0.429f).Within(0.001f));
             Assert.That(GetStepDuration(controller, new DockJamTriggered(OverflowCount: 1)), Is.EqualTo(1.22f));
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.Gravity), Is.EqualTo(0.09f));
             Assert.That(GetStepDuration(controller, ActionPlaybackStepType.Spawn), Is.EqualTo(0.065f));
