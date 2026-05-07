@@ -24,7 +24,8 @@ namespace Rescue.Unity.BoardPresentation
         private const float MinimumTimelineDurationSeconds = 0.01f;
         private const float MoveLandingPhaseRatio = 0.35f;
         private const string VinePreviewLabel = "VineGrowthPreview";
-        private const float VinePreviewYOffsetRatio = 0.45f;
+        private const float VinePreviewYOffsetRatio = 1.0f;
+        private const float VinePreviewReadabilityLift = 0.055f;
         private const float DefaultPlannedVineOverlayBaseScale = 0.28f;
         private const float DefaultPlannedVineOverlayAlpha = 0.42f;
         private const float DirectedVinePreviewMinWidth = 0.36f;
@@ -1532,7 +1533,8 @@ namespace Rescue.Unity.BoardPresentation
 
         private float ResolveVinePreviewYOffset(bool isPlannedOnly)
         {
-            return contentYOffset * VinePreviewYOffsetRatio + (isPlannedOnly ? plannedVineOverlayYOffset : 0f);
+            float requestedYOffset = contentYOffset * VinePreviewYOffsetRatio + (isPlannedOnly ? plannedVineOverlayYOffset : 0f);
+            return Mathf.Max(requestedYOffset, MinimumRescuePathYOffset + VinePreviewReadabilityLift);
         }
 
         private Vector3 ResolvePlannedVineOverlayCoverage(VineState vine, TileCoord previewTile)

@@ -477,7 +477,11 @@ namespace Rescue.Unity.BoardPresentation.Tests
             harness.ContentPresenter.SyncImmediate(plannedState);
 
             Assert.That(GetRegisteredPieceObject(harness.ContentPresenter, "RescuePath", new TileCoord(0, 0)), Is.Not.Null);
-            Assert.That(FindChildByName(harness.ContentRoot, "VineGrowthPreview"), Is.Not.Null);
+            GameObject? rescuePathObject = GetRegisteredPieceObject(harness.ContentPresenter, "RescuePath", new TileCoord(0, 0));
+            Transform? overlay = FindChildByName(harness.ContentRoot, "VineGrowthPreview");
+            Assert.That(overlay, Is.Not.Null);
+            Assert.That(rescuePathObject, Is.Not.Null);
+            Assert.That(overlay!.position.y, Is.GreaterThan(rescuePathObject!.transform.position.y));
         }
 
         [Test]
