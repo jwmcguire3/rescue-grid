@@ -6,12 +6,14 @@ using Rescue.Core.Rng;
 using Rescue.Core.State;
 using Rescue.Unity.Audio;
 using Rescue.Unity.Presentation;
+using UnityEditor;
 using UnityEngine;
 
 namespace Rescue.Unity.Feedback.Tests
 {
     public sealed class AudioEventRouterTests
     {
+        private const string Phase1AudioRegistryPath = "Assets/Rescue.Unity/Feedback/Phase1AudioFeedbackRegistry.asset";
         private readonly List<Object> createdObjects = new List<Object>();
 
         [TearDown]
@@ -140,6 +142,30 @@ namespace Rescue.Unity.Feedback.Tests
         }
 
         [Test]
+        public void Phase1AudioFeedbackRegistry_VinePreviewIsQuieterThanFinalGrowth()
+        {
+            AudioFeedbackRegistry registry = LoadAsset<AudioFeedbackRegistry>(Phase1AudioRegistryPath);
+
+            bool hasPreview = registry.TryGetEntry(FeedbackEventId.VinePreview, out AudioFeedbackEntry? preview);
+            bool hasGrowth = registry.TryGetEntry(FeedbackEventId.VineGrow, out AudioFeedbackEntry? growth);
+
+            Assert.That(hasPreview, Is.True, "One-action vine preview should have a quiet warning SFX entry.");
+            Assert.That(hasGrowth, Is.True, "Final vine takeover should keep a stronger growth SFX entry.");
+            Assert.That(preview, Is.Not.Null);
+            Assert.That(growth, Is.Not.Null);
+            if (preview is null || growth is null)
+            {
+                throw new AssertionException("Expected vine preview and growth audio entries.");
+            }
+
+            Assert.That(preview.TryGetClip(out _), Is.True);
+            Assert.That(growth.TryGetClip(out _), Is.True);
+            Assert.That(preview.Volume, Is.LessThan(growth.Volume));
+            Assert.That(preview.MaxPlaysPerRoute, Is.EqualTo(1));
+            Assert.That(growth.MaxPlaysPerRoute, Is.EqualTo(1));
+        }
+
+        [Test]
         public void AudioEventRouter_RoutePlaybackBeatHandlesMainPlaybackEvents()
         {
             SpyAudioEventRouter router = CreateSpyRouter();
@@ -263,6 +289,14 @@ namespace Rescue.Unity.Feedback.Tests
             AudioClip clip = AudioClip.Create(name, lengthSamples: 32, channels: 1, frequency: 8000, stream: false);
             createdObjects.Add(clip);
             return clip;
+        }
+
+        private static T LoadAsset<T>(string assetPath)
+            where T : Object
+        {
+            T? asset = AssetDatabase.LoadAssetAtPath<T>(assetPath);
+            Assert.That(asset, Is.Not.Null, $"Expected asset at '{assetPath}'.");
+            return asset ?? throw new AssertionException($"Expected asset at '{assetPath}'.");
         }
 
         private static ActionPlaybackStep CreatePlaybackStep(ActionEvent actionEvent)

@@ -182,7 +182,7 @@ namespace Rescue.Unity.Haptics.Tests
             yield return new TestCaseData(new WaterWarning(ActionsUntilRise: 1, NextFloodRow: 4), HapticEventId.WaterWarning, HapticPatternStyle.Warning, 0.30f, 45);
             yield return new TestCaseData(new WaterRose(FloodedRow: 4), HapticEventId.WaterRise, HapticPatternStyle.Pulse, 0.45f, 75);
             yield return new TestCaseData(new Lost(ActionOutcome.LossWaterOnTarget), HapticEventId.WaterLoss, HapticPatternStyle.Failure, 0.90f, 125);
-            yield return new TestCaseData(new VinePreviewChanged(new TileCoord(3, 2)), HapticEventId.VinePreview, HapticPatternStyle.Tick, 0.20f, 35);
+            yield return new TestCaseData(new VinePreviewChanged(new TileCoord(3, 2)), HapticEventId.VinePreview, HapticPatternStyle.Tick, 0.16f, 30);
             yield return new TestCaseData(new VineGrown(new TileCoord(3, 2)), HapticEventId.VineGrow, HapticPatternStyle.Warning, 0.40f, 60);
             yield return new TestCaseData(new Won("pup-1", TotalActions: 4, ExtractedTargetOrder: ImmutableArray.Create("pup-1")), HapticEventId.Win, HapticPatternStyle.Success, 0.45f, 55);
         }

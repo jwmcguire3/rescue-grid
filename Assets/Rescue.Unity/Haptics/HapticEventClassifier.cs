@@ -87,7 +87,7 @@ namespace Rescue.Unity.Haptics
                     signal = Create(HapticEventId.WaterRise, new HapticPattern(HapticPatternStyle.Pulse, 0.45f, 75), 60, actionEvent);
                     return true;
                 case VinePreviewChanged previewChanged when previewChanged.PendingTile.HasValue:
-                    signal = Create(HapticEventId.VinePreview, new HapticPattern(HapticPatternStyle.Tick, 0.20f, 35), 35, actionEvent);
+                    signal = Create(HapticEventId.VinePreview, new HapticPattern(HapticPatternStyle.Tick, 0.16f, 30), 35, actionEvent);
                     return true;
                 case VineGrown:
                     signal = Create(HapticEventId.VineGrow, new HapticPattern(HapticPatternStyle.Warning, 0.40f, 60), 55, actionEvent);
