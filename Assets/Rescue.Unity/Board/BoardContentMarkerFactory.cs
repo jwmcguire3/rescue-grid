@@ -6,7 +6,9 @@ namespace Rescue.Unity.BoardPresentation
     internal static class BoardContentMarkerFactory
     {
         private const string RescuePathWashName = "RescuePathWash";
-        private const string RescuePathChevronPrefix = "RescuePathChevron_";
+        private const string RescuePathPawName = "RescuePathPaw";
+        private const string RescuePathPawModelResourcePath = "Meshy_AI_Teal_Paw_0513020745_texture";
+        private const string RescuePathPawTextureResourcePath = "Textures/Meshy_AI_Teal_Paw_0513020745_texture";
         private const string TargetReadabilityMarkerName = "TargetReadabilityMarker";
         private const int TargetMarkerCircleSegments = 32;
 
@@ -14,12 +16,12 @@ namespace Rescue.Unity.BoardPresentation
         private static readonly Vector3 TargetReadabilityMarkerLocalScale = new Vector3(0.7f, 1f, 0.7f);
         private static readonly Vector3 TargetLastObstacleMarkerLocalPosition = new Vector3(0f, 0.035f, 0f);
         private static readonly Vector3 TargetLastObstacleMarkerLocalScale = new Vector3(0.6f, 1f, 0.6f);
-        private static readonly Color RescuePathWashColor = new Color(0.435f, 0.141f, 0.122f, 0.22f);
-        private static readonly Color RescuePathChevronColor = new Color(0.435f, 0.141f, 0.122f, 0.82f);
+        private static readonly Color RescuePathWashColor = new Color(0.118f, 0.522f, 0.467f, 0.24f);
+        private static readonly Color RescuePathPawTintColor = new Color(0.55f, 0.93f, 0.84f, 0.9f);
         private static readonly Color TargetMarkerNeutralColor = new Color(0.9f, 0.9f, 0.84f, 0.5f);
 
         private static Material? rescuePathWashMaterial;
-        private static Material? rescuePathChevronMaterial;
+        private static Material? rescuePathPawMaterial;
         private static Material? targetMarkerMaterial;
 
         public static GameObject CreateRescuePathMarker(
@@ -48,8 +50,7 @@ namespace Rescue.Unity.BoardPresentation
 
             markerTransform.localScale = Vector3.one;
             CreateRescuePathWash(markerTransform);
-            CreateRescuePathChevron(markerTransform, 0, 0.02f);
-            CreateRescuePathChevron(markerTransform, 1, -0.18f);
+            CreateRescuePathPaw(markerTransform);
             ConfigureRescuePathMarker(markerObject, outwardDirection);
             return markerObject;
         }
@@ -148,32 +149,78 @@ namespace Rescue.Unity.BoardPresentation
             AssignGeneratedRescuePathWashMaterial(wash);
         }
 
-        private static void CreateRescuePathChevron(Transform parent, int index, float zOffset)
+        private static void CreateRescuePathPaw(Transform parent)
         {
-            GameObject chevron = new GameObject($"{RescuePathChevronPrefix}{index:00}");
-            chevron.transform.SetParent(parent, worldPositionStays: false);
-            chevron.transform.localPosition = new Vector3(0f, 0.024f + (index * 0.006f), zOffset);
-            chevron.transform.localRotation = Quaternion.identity;
-            chevron.transform.localScale = Vector3.one;
-            CreateRescuePathChevronArm(chevron.transform, "LeftArm", -0.12f, 28f);
-            CreateRescuePathChevronArm(chevron.transform, "RightArm", 0.12f, -28f);
+            GameObject paw = new GameObject(RescuePathPawName);
+            paw.transform.SetParent(parent, worldPositionStays: false);
+            paw.transform.localPosition = new Vector3(0f, 0.034f, 0f);
+            paw.transform.localRotation = Quaternion.identity;
+            paw.transform.localScale = Vector3.one;
+
+            GameObject? pawResource = Resources.Load<GameObject>(RescuePathPawModelResourcePath);
+            GameObject pawVisual = pawResource is null
+                ? CreateFallbackRescuePathPawVisual()
+                : Object.Instantiate(pawResource);
+
+            pawVisual.name = "Visual";
+            pawVisual.transform.SetParent(paw.transform, worldPositionStays: false);
+            pawVisual.transform.localPosition = Vector3.zero;
+            pawVisual.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
+            pawVisual.transform.localScale = Vector3.one;
+
+            RemoveColliders(pawVisual);
+            AssignRescuePathPawMaterial(pawVisual);
+            DisableRendererShadows(pawVisual);
+            FitVisualToRescuePathTile(pawVisual);
         }
 
-        private static void CreateRescuePathChevronArm(Transform parent, string name, float xOffset, float yRotation)
+        private static GameObject CreateFallbackRescuePathPawVisual()
         {
-            GameObject arm = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            arm.name = name;
-            RemoveCollider(arm);
-            arm.transform.SetParent(parent, worldPositionStays: false);
-            arm.transform.localPosition = new Vector3(xOffset, 0f, -0.02f);
-            arm.transform.localRotation = Quaternion.Euler(0f, yRotation, 0f);
-            arm.transform.localScale = new Vector3(0.115f, 0.028f, 0.47f);
-            Renderer? renderer = arm.GetComponent<Renderer>();
-            if (renderer is not null)
+            GameObject fallback = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            fallback.transform.localScale = new Vector3(0.64f, 0.018f, 0.46f);
+            RemoveCollider(fallback);
+            return fallback;
+        }
+
+        private static void FitVisualToRescuePathTile(GameObject visual)
+        {
+            Renderer[] renderers = visual.GetComponentsInChildren<Renderer>(includeInactive: true);
+            if (renderers.Length == 0)
             {
-                renderer.sharedMaterial = GetRescuePathChevronMaterial();
-                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                renderer.receiveShadows = false;
+                return;
+            }
+
+            Bounds bounds = renderers[0].bounds;
+            for (int i = 1; i < renderers.Length; i++)
+            {
+                bounds.Encapsulate(renderers[i].bounds);
+            }
+
+            Vector3 size = bounds.size;
+            float footprint = Mathf.Max(size.x, size.z);
+            if (footprint > 0.0001f)
+            {
+                float scale = Mathf.Min(1f, 0.72f / footprint);
+                visual.transform.localScale *= scale;
+            }
+
+            Vector3 center = bounds.center;
+            visual.transform.position -= new Vector3(center.x, bounds.min.y, center.z);
+        }
+
+        private static void RemoveColliders(GameObject contentObject)
+        {
+            Collider[] colliders = contentObject.GetComponentsInChildren<Collider>(includeInactive: true);
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                if (Application.isPlaying)
+                {
+                    Object.Destroy(colliders[i]);
+                }
+                else
+                {
+                    Object.DestroyImmediate(colliders[i]);
+                }
             }
         }
 
@@ -330,14 +377,39 @@ namespace Rescue.Unity.BoardPresentation
             return rescuePathWashMaterial;
         }
 
-        private static Material GetRescuePathChevronMaterial()
+        private static Material GetRescuePathPawMaterial()
         {
-            if (rescuePathChevronMaterial == null)
+            if (rescuePathPawMaterial == null)
             {
-                rescuePathChevronMaterial = CreateGeneratedTransparentMaterial(RescuePathChevronColor);
+                rescuePathPawMaterial = CreateGeneratedTransparentMaterial(RescuePathPawTintColor);
+                Texture2D? texture = Resources.Load<Texture2D>(RescuePathPawTextureResourcePath);
+                if (texture is not null)
+                {
+                    rescuePathPawMaterial.mainTexture = texture;
+                }
             }
 
-            return rescuePathChevronMaterial;
+            return rescuePathPawMaterial;
+        }
+
+        private static void AssignRescuePathPawMaterial(GameObject contentObject)
+        {
+            Renderer[] renderers = contentObject.GetComponentsInChildren<Renderer>(includeInactive: true);
+            Material material = GetRescuePathPawMaterial();
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                renderers[i].sharedMaterial = material;
+            }
+        }
+
+        private static void DisableRendererShadows(GameObject contentObject)
+        {
+            Renderer[] renderers = contentObject.GetComponentsInChildren<Renderer>(includeInactive: true);
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                renderers[i].shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                renderers[i].receiveShadows = false;
+            }
         }
 
         private static Material CreateGeneratedTransparentMaterial(Color color)

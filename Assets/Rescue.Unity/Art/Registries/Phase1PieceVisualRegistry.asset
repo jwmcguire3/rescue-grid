@@ -22,7 +22,7 @@ MonoBehaviour:
   debrisADockEulerOffset: {x: 0, y: 180, z: 0}
   debrisBDockEulerOffset: {x: 0, y: 0, z: 0}
   debrisCDockEulerOffset: {x: 0, y: 0, z: 0}
-  debrisDDockEulerOffset: {x: 0, y: 180, z: 0}
+  debrisDDockEulerOffset: {x: 0, y: -90, z: 0}
   debrisEDockEulerOffset: {x: 0, y: 0, z: 0}
   debrisFDockEulerOffset: {x: 0, y: 90, z: 0}
   debrisADockScaleMultiplier: 0.8

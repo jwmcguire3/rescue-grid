@@ -904,7 +904,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
         [TestCase(1, 1, 1, 0, -1f, 0f)]
         [TestCase(1, 1, 0, 1, 0f, 1f)]
         [TestCase(1, 1, 2, 1, 0f, -1f)]
-        public void BoardContentViewPresenter_RescuePathChevronsPointOutwardFromTarget(
+        public void BoardContentViewPresenter_RescuePathMarkerPointsOutwardFromTarget(
             int targetRow,
             int targetCol,
             int pathRow,
@@ -928,7 +928,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
         }
 
         [Test]
-        public void BoardContentViewPresenter_RescuePathChevronsUseFirstAdjacentResolvedTarget()
+        public void BoardContentViewPresenter_RescuePathMarkerUsesFirstAdjacentResolvedTarget()
         {
             PresenterHarness harness = CreateHarness();
             TileCoord pathCoord = new TileCoord(1, 1);
@@ -1896,17 +1896,16 @@ namespace Rescue.Unity.BoardPresentation.Tests
         private static void AssertRescuePathMarkerShape(GameObject pathObject)
         {
             Assert.That(pathObject.transform.Find("RescuePathWash"), Is.Not.Null);
-            Transform? firstChevron = pathObject.transform.Find("RescuePathChevron_00");
-            Transform? secondChevron = pathObject.transform.Find("RescuePathChevron_01");
-            Assert.That(firstChevron, Is.Not.Null);
-            Assert.That(secondChevron, Is.Not.Null);
-            Assert.That(firstChevron!.Find("LeftArm"), Is.Not.Null);
-            Assert.That(firstChevron.Find("RightArm"), Is.Not.Null);
-            Assert.That(secondChevron!.Find("LeftArm"), Is.Not.Null);
-            Assert.That(secondChevron.Find("RightArm"), Is.Not.Null);
+            Transform? paw = pathObject.transform.Find("RescuePathPaw");
+            Assert.That(paw, Is.Not.Null);
+            Assert.That(pathObject.transform.Find("RescuePathChevron_00"), Is.Null);
+            Assert.That(pathObject.transform.Find("RescuePathChevron_01"), Is.Null);
+            Transform? pawVisual = paw!.Find("Visual");
+            Assert.That(pawVisual, Is.Not.Null);
+            Assert.That(Quaternion.Angle(Quaternion.identity, pawVisual!.localRotation), Is.LessThan(0.001f));
             Assert.That(pathObject.GetComponentsInChildren<Collider>(includeInactive: true), Is.Empty);
             Renderer[] renderers = pathObject.GetComponentsInChildren<Renderer>(includeInactive: true);
-            Assert.That(renderers, Has.Length.EqualTo(5));
+            Assert.That(renderers.Length, Is.GreaterThanOrEqualTo(2));
             for (int i = 0; i < renderers.Length; i++)
             {
                 Material? material = renderers[i].sharedMaterial;
