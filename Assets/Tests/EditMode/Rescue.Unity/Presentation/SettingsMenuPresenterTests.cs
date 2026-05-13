@@ -4,8 +4,10 @@ using System.Reflection;
 using NUnit.Framework;
 using Rescue.Unity.Audio;
 using Rescue.Unity.Presentation;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UIElements;
+using UnityEngine.UI;
+using UIDocument = UnityEngine.UIElements.UIDocument;
 using UnityObject = UnityEngine.Object;
 
 namespace Rescue.Unity.Presentation.Tests
@@ -67,48 +69,58 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
-        public void SettingsMenuPresenter_BuildsCleanWideSettingsControls()
+        public void SettingsMenuPresenter_BuildsRescueRowSettingsControls()
         {
             SettingsMenuPresenter presenter = CreatePresenter(out _);
 
             presenter.SetOpen(true);
 
-            VisualElement root = RootElement();
-            VisualElement? panel = root.Q<VisualElement>("settings-panel");
-            Slider? musicSlider = root.Q<Slider>("settings-music-slider");
-            Slider? fxSlider = root.Q<Slider>("settings-fx-slider");
-            Slider? hapticsStrengthSlider = root.Q<Slider>("settings-haptics-strength-slider");
-            Toggle? hapticsToggle = root.Q<Toggle>("settings-haptics-toggle");
-            Label? hapticsStrengthLabel = root.Q<Label>("settings-haptics-strength-row-label");
+            SettingsMenuView view = presenter.View;
+            Assert.That(view.RestartButton, Is.Not.Null);
+            Assert.That(view.SettingsButton, Is.Not.Null);
+            Assert.That(view.ResumeButton, Is.Not.Null);
+            Assert.That(view.ShowTutorialButton, Is.Not.Null);
+            Assert.That(view.LevelDropdown, Is.Not.Null);
+            Assert.That(view.MusicSlider, Is.Not.Null);
+            Assert.That(view.FxSlider, Is.Not.Null);
+            Assert.That(view.HapticsStrengthSlider, Is.Not.Null);
+            Assert.That(view.MuteMusicToggle, Is.Not.Null);
+            Assert.That(view.MuteFxToggle, Is.Not.Null);
+            Assert.That(view.HapticsToggle, Is.Not.Null);
+            Assert.That(view.HapticsToggle.isOn, Is.True);
+            Assert.That(view.PanelRoot.activeSelf, Is.True);
 
-            Assert.That(root.Q<Button>("settings-toggle-button"), Is.Not.Null);
-            Assert.That(root.Q<Button>("settings-resume-button"), Is.Not.Null);
-            Assert.That(root.Q<Button>("restart-level-button"), Is.Not.Null);
-            Assert.That(root.Q<Button>("settings-restart-button"), Is.Null);
-            Assert.That(root.Q<Button>("settings-show-tutorial-button"), Is.Not.Null);
-            Assert.That(root.Q<DropdownField>("settings-level-dropdown"), Is.Not.Null);
-            Assert.That(root.Q<Toggle>("settings-mute-music-toggle"), Is.Not.Null);
-            Assert.That(root.Q<Toggle>("settings-mute-fx-toggle"), Is.Not.Null);
-            Assert.That(hapticsToggle, Is.Not.Null);
-            Assert.That(hapticsToggle!.label, Is.EqualTo("Vibrations"));
-            Assert.That(hapticsToggle.value, Is.True);
-            Assert.That(hapticsStrengthSlider, Is.Not.Null);
-            Assert.That(hapticsStrengthLabel, Is.Not.Null);
-            Assert.That(hapticsStrengthLabel!.text, Is.EqualTo("Strength"));
-            Assert.That(root.Q<Label>("settings-music-slider-value-label"), Is.Not.Null);
-            Assert.That(root.Q<Label>("settings-fx-slider-value-label"), Is.Not.Null);
-            Assert.That(root.Q<Label>("settings-haptics-strength-slider-value-label"), Is.Not.Null);
+            Assert.That(view.ReadableLabels, Is.Not.Empty);
+            Assert.That(view.ReadableLabels, Has.All.TypeOf<TextMeshProUGUI>());
+            Assert.That(view.ReadableLabels, Has.Some.Matches<TextMeshProUGUI>(label => label.text == "Vibrations"));
+            Assert.That(view.ReadableLabels, Has.Some.Matches<TextMeshProUGUI>(label => label.text == "Strength"));
 
-            Assert.That(panel, Is.Not.Null);
-            Assert.That(panel!.style.width.value.value, Is.EqualTo(SettingsMenuPresenter.PanelWidth).Within(0.001f));
-            Assert.That(musicSlider, Is.Not.Null);
-            Assert.That(fxSlider, Is.Not.Null);
-            Assert.That(musicSlider!.showInputField, Is.False);
-            Assert.That(fxSlider!.showInputField, Is.False);
-            Assert.That(hapticsStrengthSlider!.showInputField, Is.False);
-            Assert.That(musicSlider.style.minWidth.value.value, Is.EqualTo(SettingsMenuPresenter.SliderTrackMinWidth).Within(0.001f));
-            Assert.That(fxSlider.style.minWidth.value.value, Is.EqualTo(SettingsMenuPresenter.SliderTrackMinWidth).Within(0.001f));
-            Assert.That(hapticsStrengthSlider.style.minWidth.value.value, Is.EqualTo(SettingsMenuPresenter.SliderTrackMinWidth).Within(0.001f));
+            Image restartImage = view.RestartButton.GetComponent<Image>();
+            Image settingsImage = view.SettingsButton.GetComponent<Image>();
+            Image panelImage = view.PanelRoot.GetComponent<Image>();
+            Assert.That(restartImage, Is.Not.Null);
+            Assert.That(settingsImage, Is.Not.Null);
+            Assert.That(panelImage, Is.Not.Null);
+            Assert.That(restartImage.sprite, Is.Not.Null, "Restart should use a Rescue Row plaque sprite.");
+            Assert.That(settingsImage.sprite, Is.Not.Null, "Settings should use a Rescue Row plaque sprite.");
+            Assert.That(panelImage.sprite, Is.Not.Null, "Settings panel should use the worn panel sprite.");
+            Assert.That(restartImage.type, Is.EqualTo(Image.Type.Simple), "Small top plaques should render the full painted sprite instead of collapsed 9-slice borders.");
+            Assert.That(settingsImage.type, Is.EqualTo(Image.Type.Simple), "Small top plaques should render the full painted sprite instead of collapsed 9-slice borders.");
+            Assert.That(panelImage.type, Is.EqualTo(Image.Type.Sliced));
+
+            AssertContainedInPanel(view, "SettingsTitle");
+            AssertContainedInPanel(view, "ResumeButton");
+            AssertContainedInPanel(view, "ShowTutorialButton");
+            AssertContainedInPanel(view, "LevelDropdownRow");
+            AssertContainedInPanel(view, "MusicSliderRow");
+            AssertContainedInPanel(view, "FXSliderRow");
+            AssertContainedInPanel(view, "MuteRow");
+            AssertContainedInPanel(view, "VibrationsToggle");
+            AssertContainedInPanel(view, "HapticsStrengthRow");
+
+            AssertRusticSlider(view.MusicSlider);
+            AssertRusticSlider(view.FxSlider);
+            AssertRusticSlider(view.HapticsStrengthSlider);
         }
 
         [Test]
@@ -138,16 +150,16 @@ namespace Rescue.Unity.Presentation.Tests
 
             presenter.SetOpen(true);
 
-            VisualElement root = RootElement();
-            Assert.That(root.Q<Slider>("settings-music-slider")!.value, Is.EqualTo(0.37f).Within(0.001f));
-            Assert.That(root.Q<Slider>("settings-fx-slider")!.value, Is.EqualTo(0.62f).Within(0.001f));
-            Assert.That(root.Q<Slider>("settings-haptics-strength-slider")!.value, Is.EqualTo(0.48f).Within(0.001f));
-            Assert.That(root.Q<Label>("settings-music-slider-value-label")!.text, Is.EqualTo("37%"));
-            Assert.That(root.Q<Label>("settings-fx-slider-value-label")!.text, Is.EqualTo("62%"));
-            Assert.That(root.Q<Label>("settings-haptics-strength-slider-value-label")!.text, Is.EqualTo("48%"));
-            Assert.That(root.Q<Toggle>("settings-mute-music-toggle")!.value, Is.False);
-            Assert.That(root.Q<Toggle>("settings-mute-fx-toggle")!.value, Is.False);
-            Assert.That(root.Q<Toggle>("settings-haptics-toggle")!.value, Is.True);
+            SettingsMenuView view = presenter.View;
+            Assert.That(view.MusicSlider.value, Is.EqualTo(0.37f).Within(0.001f));
+            Assert.That(view.FxSlider.value, Is.EqualTo(0.62f).Within(0.001f));
+            Assert.That(view.HapticsStrengthSlider.value, Is.EqualTo(0.48f).Within(0.001f));
+            Assert.That(FindLabel(view, "MusicValue").text, Is.EqualTo("37%"));
+            Assert.That(FindLabel(view, "FXValue").text, Is.EqualTo("62%"));
+            Assert.That(FindLabel(view, "HapticsStrengthValue").text, Is.EqualTo("48%"));
+            Assert.That(view.MuteMusicToggle.isOn, Is.False);
+            Assert.That(view.MuteFxToggle.isOn, Is.False);
+            Assert.That(view.HapticsToggle.isOn, Is.True);
         }
 
         [Test]
@@ -160,26 +172,25 @@ namespace Rescue.Unity.Presentation.Tests
 
             presenter.SetOpen(true);
             presenter.SetHapticsEnabled(false);
-            VisualElement root = RootElement();
-            Slider hapticsStrengthSlider = root.Q<Slider>("settings-haptics-strength-slider")!;
-            VisualElement hapticsStrengthRow = root.Q<VisualElement>("settings-haptics-strength-row")!;
+            SettingsMenuView view = presenter.View;
+            Slider hapticsStrengthSlider = view.HapticsStrengthSlider;
+            CanvasGroup hapticsStrengthRow = hapticsStrengthSlider.GetComponentInParent<CanvasGroup>()!;
 
             Assert.That(audioSettings.MusicVolume, Is.EqualTo(0.37f).Within(0.001f));
             Assert.That(audioSettings.FxVolume, Is.EqualTo(0.62f).Within(0.001f));
             Assert.That(audioSettings.HapticsEnabled, Is.False);
             Assert.That(PlayerPrefs.GetInt(AudioSettingsController.HapticsEnabledPrefsKey), Is.EqualTo(0));
             Assert.That(audioSettings.HapticsStrength, Is.EqualTo(0.48f).Within(0.001f));
-            Assert.That(root.Q<Toggle>("settings-haptics-toggle")!.value, Is.False);
-            Assert.That(root.Q<Toggle>("settings-haptics-toggle")!.label, Is.EqualTo("Vibrations"));
-            Assert.That(hapticsStrengthSlider.enabledSelf, Is.False);
-            Assert.That(hapticsStrengthRow.style.opacity.value, Is.EqualTo(0.45f).Within(0.001f));
+            Assert.That(view.HapticsToggle.isOn, Is.False);
+            Assert.That(hapticsStrengthSlider.interactable, Is.False);
+            Assert.That(hapticsStrengthRow.alpha, Is.EqualTo(0.45f).Within(0.001f));
 
             presenter.SetHapticsEnabled(true);
             Assert.That(audioSettings.HapticsEnabled, Is.True);
             Assert.That(PlayerPrefs.GetInt(AudioSettingsController.HapticsEnabledPrefsKey), Is.EqualTo(1));
-            Assert.That(root.Q<Toggle>("settings-haptics-toggle")!.value, Is.True);
-            Assert.That(hapticsStrengthSlider.enabledSelf, Is.True);
-            Assert.That(hapticsStrengthRow.style.opacity.value, Is.EqualTo(1.0f).Within(0.001f));
+            Assert.That(view.HapticsToggle.isOn, Is.True);
+            Assert.That(hapticsStrengthSlider.interactable, Is.True);
+            Assert.That(hapticsStrengthRow.alpha, Is.EqualTo(1.0f).Within(0.001f));
         }
 
         [Test]
@@ -192,12 +203,12 @@ namespace Rescue.Unity.Presentation.Tests
             presenter.SetOpen(true);
             presenter.SetMusicMuted(true);
 
-            VisualElement root = RootElement();
             Assert.That(audioSettings.MusicVolume, Is.EqualTo(0f).Within(0.001f));
             Assert.That(audioSettings.FxVolume, Is.EqualTo(0.62f).Within(0.001f));
-            Assert.That(root.Q<Toggle>("settings-mute-music-toggle")!.value, Is.True);
-            Assert.That(root.Q<Toggle>("settings-mute-fx-toggle")!.value, Is.False);
-            Assert.That(root.Q<Label>("settings-music-slider-value-label")!.text, Is.EqualTo("0%"));
+            SettingsMenuView view = presenter.View;
+            Assert.That(view.MuteMusicToggle.isOn, Is.True);
+            Assert.That(view.MuteFxToggle.isOn, Is.False);
+            Assert.That(FindLabel(view, "MusicValue").text, Is.EqualTo("0%"));
 
             presenter.SetMusicMuted(false);
             Assert.That(audioSettings.MusicVolume, Is.EqualTo(0.37f).Within(0.001f));
@@ -206,8 +217,8 @@ namespace Rescue.Unity.Presentation.Tests
             presenter.SetFxMuted(true);
             Assert.That(audioSettings.MusicVolume, Is.EqualTo(0.37f).Within(0.001f));
             Assert.That(audioSettings.FxVolume, Is.EqualTo(0f).Within(0.001f));
-            Assert.That(root.Q<Toggle>("settings-mute-music-toggle")!.value, Is.False);
-            Assert.That(root.Q<Toggle>("settings-mute-fx-toggle")!.value, Is.True);
+            Assert.That(view.MuteMusicToggle.isOn, Is.False);
+            Assert.That(view.MuteFxToggle.isOn, Is.True);
 
             presenter.SetFxMuted(false);
             Assert.That(audioSettings.MusicVolume, Is.EqualTo(0.37f).Within(0.001f));
@@ -261,7 +272,6 @@ namespace Rescue.Unity.Presentation.Tests
             audioSettings = audioObject.AddComponent<AudioSettingsController>();
 
             presenterObject = new GameObject("SettingsMenuPresenterTests");
-            presenterObject.AddComponent<UIDocument>();
             return presenterObject.AddComponent<SettingsMenuPresenter>();
         }
 
@@ -269,13 +279,6 @@ namespace Rescue.Unity.Presentation.Tests
         {
             sessionObject = new GameObject("PlayableLevelSessionTests");
             return sessionObject.AddComponent<PlayableLevelSession>();
-        }
-
-        private VisualElement RootElement()
-        {
-            Assert.That(presenterObject, Is.Not.Null);
-            UIDocument document = presenterObject!.GetComponent<UIDocument>();
-            return document.rootVisualElement;
         }
 
         private static void SetPrivateField(object target, string fieldName, object? value)
@@ -332,6 +335,59 @@ namespace Rescue.Unity.Presentation.Tests
                     UnityObject.DestroyImmediate(objects[i]);
                 }
             }
+        }
+
+        private static TextMeshProUGUI FindLabel(SettingsMenuView view, string name)
+        {
+            TextMeshProUGUI? label = Array.Find(
+                view.GetComponentsInChildren<TextMeshProUGUI>(includeInactive: true),
+                candidate => candidate.name == name);
+            Assert.That(label, Is.Not.Null, $"Expected TMP label '{name}'.");
+            return label!;
+        }
+
+        private static void AssertContainedInPanel(SettingsMenuView view, string childName)
+        {
+            RectTransform panel = view.PanelRoot.GetComponent<RectTransform>();
+            RectTransform? child = Array.Find(
+                view.PanelRoot.GetComponentsInChildren<RectTransform>(includeInactive: true),
+                candidate => candidate.name == childName);
+            Assert.That(child, Is.Not.Null, $"Expected panel child '{childName}'.");
+
+            Vector3[] childWorldCorners = new Vector3[4];
+            Vector3[] panelWorldCorners = new Vector3[4];
+            child!.GetWorldCorners(childWorldCorners);
+            panel.GetWorldCorners(panelWorldCorners);
+
+            const float tolerance = 0.5f;
+            Assert.That(childWorldCorners[0].x, Is.GreaterThanOrEqualTo(panelWorldCorners[0].x - tolerance), $"{childName} overflowed panel left.");
+            Assert.That(childWorldCorners[0].y, Is.GreaterThanOrEqualTo(panelWorldCorners[0].y - tolerance), $"{childName} overflowed panel bottom.");
+            Assert.That(childWorldCorners[2].x, Is.LessThanOrEqualTo(panelWorldCorners[2].x + tolerance), $"{childName} overflowed panel right.");
+            Assert.That(childWorldCorners[2].y, Is.LessThanOrEqualTo(panelWorldCorners[2].y + tolerance), $"{childName} overflowed panel top.");
+        }
+
+        private static void AssertRusticSlider(Slider slider)
+        {
+            Image? background = Array.Find(
+                slider.GetComponentsInChildren<Image>(includeInactive: true),
+                candidate => candidate.name == "Background");
+            Image? fill = Array.Find(
+                slider.GetComponentsInChildren<Image>(includeInactive: true),
+                candidate => candidate.name == "Fill");
+            Image? handle = Array.Find(
+                slider.GetComponentsInChildren<Image>(includeInactive: true),
+                candidate => candidate.name == "Handle");
+
+            Assert.That(background, Is.Not.Null);
+            Assert.That(fill, Is.Not.Null);
+            Assert.That(handle, Is.Not.Null);
+            Assert.That(background!.sprite, Is.Not.Null, "Slider background should use the rustic bar sprite.");
+            Assert.That(fill!.sprite, Is.Not.Null, "Slider fill should use the rustic bar sprite.");
+            Assert.That(handle!.sprite, Is.Not.Null, "Slider handle should use the paw handle sprite.");
+            Assert.That(background!.type, Is.EqualTo(Image.Type.Simple), "Thin slider bars should render the full painted sprite instead of collapsed 9-slice borders.");
+            Assert.That(fill!.type, Is.EqualTo(Image.Type.Simple), "Thin slider bars should render the full painted sprite instead of collapsed 9-slice borders.");
+            Assert.That(background.rectTransform.sizeDelta.y, Is.GreaterThanOrEqualTo(28f), "Slider bar should be visibly tall enough at mobile scale.");
+            Assert.That(fill.rectTransform.sizeDelta.y, Is.GreaterThanOrEqualTo(22f), "Slider fill should remain visible behind the handle.");
         }
 
         private sealed class PacketManifestSubset

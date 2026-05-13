@@ -1,53 +1,53 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Rescue.Content;
 using Rescue.Unity.Audio;
 using Rescue.Unity.Feedback;
 using Rescue.Unity.Haptics;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UIElements;
+using UnityEngine.UI;
 
 namespace Rescue.Unity.Presentation
 {
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(UIDocument))]
     public sealed class SettingsMenuPresenter : MonoBehaviour
     {
         private const string GameSceneName = "Game";
-        private const string RuntimeThemeResourcePath = "Rescue.Unity/Debug/UnityDefaultRuntimeTheme";
-        private const int PanelSortingOrder = 1000;
-        public const float PanelWidth = 400f;
+        private const string SettingsMenuPrefabResourcePath = "Rescue.Unity/UI/SettingsMenu";
+        public const float PanelWidth = 420f;
         public const float SliderTrackMinWidth = 220f;
 
         [SerializeField] private PlayableLevelSession? session;
         [SerializeField] private AudioSettingsController? audioSettings;
+        [SerializeField] private SettingsMenuView? view;
 
-        private UIDocument? document;
-        private VisualElement? panel;
-        private Button? toggleButton;
-        private Button? resumeButton;
-        private Button? restartButton;
-        private Button? tutorialButton;
-        private DropdownField? levelDropdown;
-        private Slider? musicSlider;
-        private Slider? fxSlider;
-        private Slider? hapticsStrengthSlider;
-        private VisualElement? hapticsStrengthRow;
-        private Toggle? muteMusicToggle;
-        private Toggle? muteFxToggle;
-        private Toggle? hapticsToggle;
-        private Label? musicValueLabel;
-        private Label? fxValueLabel;
-        private Label? hapticsStrengthValueLabel;
+        private readonly List<string> levelChoices = new List<string>();
         private float lastNonZeroMusicVolume = 1.0f;
         private float lastNonZeroFxVolume = 1.0f;
         private bool isOpen;
+        private bool isWired;
 
         public bool IsOpen => isOpen;
 
-        public IReadOnlyList<string> LevelChoices => levelDropdown?.choices ?? (IReadOnlyList<string>)Array.Empty<string>();
+        public SettingsMenuView View
+        {
+            get
+            {
+                EnsureView();
+                return view ?? throw new InvalidOperationException($"{nameof(SettingsMenuView)} could not be resolved.");
+            }
+        }
+
+        public IReadOnlyList<string> LevelChoices
+        {
+            get
+            {
+                EnsureLevelChoices();
+                return levelChoices;
+            }
+        }
 
         public bool IsMusicMuted => ResolveAudioSettings()?.MusicVolume <= 0f;
 
@@ -75,15 +75,28 @@ namespace Rescue.Unity.Presentation
             SettingsMenuPresenter? existing = FindAnyObjectByType<SettingsMenuPresenter>();
             if (existing is not null)
             {
-                existing.EnsureDocument();
+                existing.EnsureView();
                 existing.ResolveSceneReferences();
                 return existing;
             }
 
+            GameObject? prefab = Resources.Load<GameObject>(SettingsMenuPrefabResourcePath);
+            if (prefab is not null)
+            {
+                GameObject instance = Instantiate(prefab);
+                instance.name = "SettingsMenu";
+                SettingsMenuPresenter? prefabPresenter = instance.GetComponentInChildren<SettingsMenuPresenter>();
+                if (prefabPresenter is not null)
+                {
+                    prefabPresenter.EnsureView();
+                    prefabPresenter.ResolveSceneReferences();
+                    return prefabPresenter;
+                }
+            }
+
             GameObject host = new GameObject("SettingsMenu");
-            host.AddComponent<UIDocument>();
             SettingsMenuPresenter presenter = host.AddComponent<SettingsMenuPresenter>();
-            presenter.EnsureDocument();
+            presenter.EnsureView();
             presenter.ResolveSceneReferences();
             return presenter;
         }
@@ -106,12 +119,9 @@ namespace Rescue.Unity.Presentation
                 open = false;
             }
 
-            EnsureDocument();
+            EnsureView();
             isOpen = open;
-            if (panel is not null)
-            {
-                panel.style.display = open ? DisplayStyle.Flex : DisplayStyle.None;
-            }
+            view?.SetOpen(open);
 
             if (open)
             {
@@ -239,32 +249,14 @@ namespace Rescue.Unity.Presentation
 
         private void Awake()
         {
-            EnsureDocument();
+            EnsureView();
             ResolveSceneReferences();
             SetOpen(false);
         }
 
         private void OnDestroy()
         {
-            if (toggleButton is not null)
-            {
-                toggleButton.clicked -= Toggle;
-            }
-
-            if (resumeButton is not null)
-            {
-                resumeButton.clicked -= RequestResume;
-            }
-
-            if (restartButton is not null)
-            {
-                restartButton.clicked -= RequestRestart;
-            }
-
-            if (tutorialButton is not null)
-            {
-                tutorialButton.clicked -= RequestShowTutorial;
-            }
+            UnwireView();
         }
 
         private static void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -282,18 +274,62 @@ namespace Rescue.Unity.Presentation
             return EnsureInstance();
         }
 
-        private void EnsureDocument()
+        private void EnsureView()
         {
-            if (document is null)
+            if (view is null)
             {
-                document = GetComponent<UIDocument>();
-                document.panelSettings = CreatePanelSettings();
+                view = GetComponentInChildren<SettingsMenuView>(includeInactive: true);
             }
 
-            if (panel is null)
+            if (view is null)
             {
-                BuildVisualTree();
+                view = SettingsMenuView.CreateRuntime(this);
             }
+
+            view.EnsureBuilt();
+            WireView();
+        }
+
+        private void WireView()
+        {
+            if (view is null || isWired)
+            {
+                return;
+            }
+
+            view.RestartButton.onClick.AddListener(RequestRestart);
+            view.SettingsButton.onClick.AddListener(Toggle);
+            view.ResumeButton.onClick.AddListener(RequestResume);
+            view.ShowTutorialButton.onClick.AddListener(RequestShowTutorial);
+            view.LevelDropdown.onValueChanged.AddListener(HandleLevelDropdownChanged);
+            view.MusicSlider.onValueChanged.AddListener(HandleMusicSliderChanged);
+            view.FxSlider.onValueChanged.AddListener(HandleFxSliderChanged);
+            view.HapticsStrengthSlider.onValueChanged.AddListener(HandleHapticsStrengthSliderChanged);
+            view.MuteMusicToggle.onValueChanged.AddListener(SetMusicMuted);
+            view.MuteFxToggle.onValueChanged.AddListener(SetFxMuted);
+            view.HapticsToggle.onValueChanged.AddListener(SetHapticsEnabled);
+            isWired = true;
+        }
+
+        private void UnwireView()
+        {
+            if (view is null || !isWired)
+            {
+                return;
+            }
+
+            view.RestartButton.onClick.RemoveListener(RequestRestart);
+            view.SettingsButton.onClick.RemoveListener(Toggle);
+            view.ResumeButton.onClick.RemoveListener(RequestResume);
+            view.ShowTutorialButton.onClick.RemoveListener(RequestShowTutorial);
+            view.LevelDropdown.onValueChanged.RemoveListener(HandleLevelDropdownChanged);
+            view.MusicSlider.onValueChanged.RemoveListener(HandleMusicSliderChanged);
+            view.FxSlider.onValueChanged.RemoveListener(HandleFxSliderChanged);
+            view.HapticsStrengthSlider.onValueChanged.RemoveListener(HandleHapticsStrengthSliderChanged);
+            view.MuteMusicToggle.onValueChanged.RemoveListener(SetMusicMuted);
+            view.MuteFxToggle.onValueChanged.RemoveListener(SetFxMuted);
+            view.HapticsToggle.onValueChanged.RemoveListener(SetHapticsEnabled);
+            isWired = false;
         }
 
         private void ResolveSceneReferences()
@@ -327,386 +363,59 @@ namespace Rescue.Unity.Presentation
             }
         }
 
-        private PanelSettings CreatePanelSettings()
+        private void HandleLevelDropdownChanged(int index)
         {
-            PanelSettings settings = ScriptableObject.CreateInstance<PanelSettings>();
-            settings.scaleMode = PanelScaleMode.ScaleWithScreenSize;
-            settings.referenceResolution = new Vector2Int(975, 1536);
-            settings.screenMatchMode = PanelScreenMatchMode.MatchWidthOrHeight;
-            settings.match = 0.5f;
-            settings.sortingOrder = PanelSortingOrder;
-            settings.clearColor = false;
-            settings.colorClearValue = Color.clear;
-            ApplyRuntimeTheme(settings);
-            return settings;
+            if (view is null)
+            {
+                return;
+            }
+
+            SelectLevel(view.GetSelectedLevelChoice());
         }
 
-        private static void ApplyRuntimeTheme(PanelSettings settings)
+        private void HandleMusicSliderChanged(float value)
         {
-            Type? themeStyleSheetType = Type.GetType("UnityEngine.UIElements.ThemeStyleSheet, UnityEngine.UIElementsModule");
-            if (themeStyleSheetType is null)
+            if (IsTerminalScreenVisible())
             {
-                return;
-            }
-
-            UnityEngine.Object? themeStyleSheet = Resources.Load(RuntimeThemeResourcePath, themeStyleSheetType);
-            if (themeStyleSheet is null)
-            {
-                return;
-            }
-
-            const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-            Type settingsType = settings.GetType();
-
-            PropertyInfo? themeProperty = settingsType.GetProperty("themeStyleSheet", Flags)
-                ?? settingsType.GetProperty("themeUss", Flags);
-            if (themeProperty is not null && themeProperty.CanWrite && themeProperty.PropertyType.IsInstanceOfType(themeStyleSheet))
-            {
-                themeProperty.SetValue(settings, themeStyleSheet);
-                return;
-            }
-
-            FieldInfo? themeField = settingsType.GetField("themeStyleSheet", Flags)
-                ?? settingsType.GetField("themeUss", Flags);
-            if (themeField is not null && themeField.FieldType.IsInstanceOfType(themeStyleSheet))
-            {
-                themeField.SetValue(settings, themeStyleSheet);
-            }
-        }
-
-        private void BuildVisualTree()
-        {
-            if (document is null)
-            {
-                return;
-            }
-
-            VisualElement root = document.rootVisualElement;
-            root.Clear();
-            root.name = "settings-menu-root";
-            root.style.flexGrow = 1.0f;
-            root.style.position = Position.Absolute;
-            root.style.left = 0f;
-            root.style.top = 0f;
-            root.style.right = 0f;
-            root.style.bottom = 0f;
-            root.pickingMode = PickingMode.Ignore;
-
-            VisualElement anchor = new VisualElement { name = "settings-menu-anchor" };
-            anchor.style.position = Position.Absolute;
-            anchor.style.top = 64f;
-            anchor.style.right = 52f;
-            anchor.style.width = PanelWidth;
-            anchor.style.alignItems = Align.FlexEnd;
-            anchor.pickingMode = PickingMode.Position;
-
-            VisualElement topButtonRow = new VisualElement { name = "settings-top-button-row" };
-            topButtonRow.style.flexDirection = FlexDirection.Row;
-            topButtonRow.style.alignItems = Align.Center;
-            topButtonRow.style.justifyContent = Justify.FlexEnd;
-
-            restartButton = new Button(RequestRestart) { name = "restart-level-button", text = "Restart" };
-            StylePrimaryButton(restartButton);
-            restartButton.style.width = 104f;
-            restartButton.style.height = 42f;
-            restartButton.style.marginRight = 8f;
-
-            toggleButton = new Button(Toggle) { name = "settings-toggle-button", text = "Settings" };
-            StylePrimaryButton(toggleButton);
-            toggleButton.style.width = 112f;
-            toggleButton.style.height = 42f;
-
-            panel = new VisualElement { name = "settings-panel" };
-            panel.style.display = DisplayStyle.None;
-            panel.style.marginTop = 8f;
-            panel.style.width = PanelWidth;
-            panel.style.paddingTop = 14f;
-            panel.style.paddingRight = 16f;
-            panel.style.paddingBottom = 16f;
-            panel.style.paddingLeft = 16f;
-            panel.style.backgroundColor = new Color(0.055f, 0.075f, 0.085f, 0.94f);
-            panel.style.borderTopLeftRadius = 8f;
-            panel.style.borderTopRightRadius = 8f;
-            panel.style.borderBottomRightRadius = 8f;
-            panel.style.borderBottomLeftRadius = 8f;
-            panel.style.borderTopWidth = 1f;
-            panel.style.borderRightWidth = 1f;
-            panel.style.borderBottomWidth = 1f;
-            panel.style.borderLeftWidth = 1f;
-            panel.style.borderTopColor = new Color(1f, 1f, 1f, 0.08f);
-            panel.style.borderRightColor = new Color(1f, 1f, 1f, 0.08f);
-            panel.style.borderBottomColor = new Color(0f, 0f, 0f, 0.35f);
-            panel.style.borderLeftColor = new Color(1f, 1f, 1f, 0.08f);
-
-            VisualElement headerRow = new VisualElement { name = "settings-header-row" };
-            headerRow.style.flexDirection = FlexDirection.Row;
-            headerRow.style.alignItems = Align.Center;
-            headerRow.style.justifyContent = Justify.SpaceBetween;
-            headerRow.style.marginBottom = 12f;
-
-            Label titleLabel = new Label("Settings") { name = "settings-title-label" };
-            titleLabel.style.color = Color.white;
-            titleLabel.style.fontSize = 18;
-            titleLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
-
-            resumeButton = new Button(RequestResume) { name = "settings-resume-button", text = "Resume" };
-            StyleSecondaryButton(resumeButton);
-            resumeButton.style.width = 92f;
-            resumeButton.style.height = 34f;
-
-            headerRow.Add(titleLabel);
-            headerRow.Add(resumeButton);
-
-            tutorialButton = new Button(RequestShowTutorial) { name = "settings-show-tutorial-button", text = "Show Tutorial" };
-            StylePrimaryButton(tutorialButton);
-            tutorialButton.style.height = 40f;
-            tutorialButton.style.marginTop = 4f;
-            tutorialButton.style.marginBottom = 14f;
-
-            levelDropdown = new DropdownField("Level")
-            {
-                name = "settings-level-dropdown",
-                choices = BuildLevelChoices(),
-            };
-            levelDropdown.RegisterValueChangedCallback(evt => SelectLevel(evt.newValue));
-            StyleDropdown(levelDropdown);
-
-            Label audioSectionLabel = new Label("Audio") { name = "settings-audio-section-label" };
-            audioSectionLabel.style.color = new Color(1f, 1f, 1f, 0.84f);
-            audioSectionLabel.style.fontSize = 13;
-            audioSectionLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
-            audioSectionLabel.style.marginTop = 2f;
-            audioSectionLabel.style.marginBottom = 8f;
-
-            VisualElement musicRow = CreateSliderRow("settings-music-row", "Music", "settings-music-slider", out musicSlider, out musicValueLabel);
-            musicSlider.RegisterValueChangedCallback(evt =>
-            {
-                if (IsTerminalScreenVisible())
-                {
-                    RefreshAudioControls();
-                    return;
-                }
-
-                RememberNonZeroMusic(evt.newValue);
-                ResolveAudioSettings()?.SetMusicVolume(evt.newValue);
                 RefreshAudioControls();
-            });
+                return;
+            }
 
-            VisualElement fxRow = CreateSliderRow("settings-fx-row", "FX", "settings-fx-slider", out fxSlider, out fxValueLabel);
-            fxSlider.RegisterValueChangedCallback(evt =>
+            RememberNonZeroMusic(value);
+            ResolveAudioSettings()?.SetMusicVolume(value);
+            RefreshAudioControls();
+        }
+
+        private void HandleFxSliderChanged(float value)
+        {
+            if (IsTerminalScreenVisible())
             {
-                if (IsTerminalScreenVisible())
-                {
-                    RefreshAudioControls();
-                    return;
-                }
-
-                RememberNonZeroFx(evt.newValue);
-                ResolveAudioSettings()?.SetFxVolume(evt.newValue);
                 RefreshAudioControls();
-            });
+                return;
+            }
 
-            VisualElement muteRow = new VisualElement { name = "settings-mute-row" };
-            muteRow.style.flexDirection = FlexDirection.Row;
-            muteRow.style.marginTop = 4f;
-            muteRow.style.marginBottom = 2f;
+            RememberNonZeroFx(value);
+            ResolveAudioSettings()?.SetFxVolume(value);
+            RefreshAudioControls();
+        }
 
-            muteMusicToggle = CreateMuteToggle("settings-mute-music-toggle", "Mute Music");
-            muteMusicToggle.RegisterValueChangedCallback(evt => SetMusicMuted(evt.newValue));
-
-            muteFxToggle = CreateMuteToggle("settings-mute-fx-toggle", "Mute FX");
-            muteFxToggle.RegisterValueChangedCallback(evt => SetFxMuted(evt.newValue));
-            muteFxToggle.style.marginLeft = 14f;
-
-            muteRow.Add(muteMusicToggle);
-            muteRow.Add(muteFxToggle);
-
-            hapticsToggle = CreateMuteToggle("settings-haptics-toggle", "Vibrations");
-            hapticsToggle.RegisterValueChangedCallback(evt => SetHapticsEnabled(evt.newValue));
-            hapticsToggle.style.marginTop = 4f;
-            hapticsToggle.style.marginBottom = 4f;
-
-            hapticsStrengthRow = CreateSliderRow(
-                "settings-haptics-strength-row",
-                "Strength",
-                "settings-haptics-strength-slider",
-                out hapticsStrengthSlider,
-                out hapticsStrengthValueLabel);
-            hapticsStrengthSlider.RegisterValueChangedCallback(evt =>
+        private void HandleHapticsStrengthSliderChanged(float value)
+        {
+            if (IsTerminalScreenVisible())
             {
-                if (IsTerminalScreenVisible())
-                {
-                    RefreshAudioControls();
-                    return;
-                }
-
-                ResolveAudioSettings()?.SetHapticsStrength(evt.newValue);
                 RefreshAudioControls();
-            });
-
-            panel.Add(headerRow);
-            panel.Add(tutorialButton);
-            panel.Add(levelDropdown);
-            panel.Add(audioSectionLabel);
-            panel.Add(musicRow);
-            panel.Add(fxRow);
-            panel.Add(muteRow);
-            panel.Add(hapticsToggle);
-            panel.Add(hapticsStrengthRow);
-            topButtonRow.Add(restartButton);
-            topButtonRow.Add(toggleButton);
-            anchor.Add(topButtonRow);
-            anchor.Add(panel);
-            root.Add(anchor);
-            RefreshValues();
-        }
-
-        private static void StylePrimaryButton(Button button)
-        {
-            button.style.backgroundColor = new Color(0.93f, 0.73f, 0.26f, 0.95f);
-            button.style.color = new Color(0.08f, 0.08f, 0.08f, 1f);
-            button.style.unityFontStyleAndWeight = FontStyle.Bold;
-            button.style.fontSize = 15;
-            button.style.borderTopWidth = 0f;
-            button.style.borderRightWidth = 0f;
-            button.style.borderBottomWidth = 0f;
-            button.style.borderLeftWidth = 0f;
-            button.style.borderTopLeftRadius = 3f;
-            button.style.borderTopRightRadius = 3f;
-            button.style.borderBottomRightRadius = 3f;
-            button.style.borderBottomLeftRadius = 3f;
-        }
-
-        private static void StyleSecondaryButton(Button button)
-        {
-            button.style.backgroundColor = new Color(1f, 1f, 1f, 0.10f);
-            button.style.color = Color.white;
-            button.style.unityFontStyleAndWeight = FontStyle.Bold;
-            button.style.fontSize = 13;
-            button.style.borderTopWidth = 1f;
-            button.style.borderRightWidth = 1f;
-            button.style.borderBottomWidth = 1f;
-            button.style.borderLeftWidth = 1f;
-            button.style.borderTopColor = new Color(1f, 1f, 1f, 0.12f);
-            button.style.borderRightColor = new Color(1f, 1f, 1f, 0.12f);
-            button.style.borderBottomColor = new Color(1f, 1f, 1f, 0.12f);
-            button.style.borderLeftColor = new Color(1f, 1f, 1f, 0.12f);
-            button.style.borderTopLeftRadius = 3f;
-            button.style.borderTopRightRadius = 3f;
-            button.style.borderBottomRightRadius = 3f;
-            button.style.borderBottomLeftRadius = 3f;
-        }
-
-        private static void StyleField(VisualElement element)
-        {
-            element.style.color = Color.white;
-            element.style.fontSize = 13;
-        }
-
-        private static void StyleDropdown(DropdownField dropdown)
-        {
-            StyleField(dropdown);
-            dropdown.style.marginBottom = 14f;
-            dropdown.style.height = 40f;
-            dropdown.style.backgroundColor = new Color(1f, 1f, 1f, 0.08f);
-            dropdown.style.borderTopWidth = 1f;
-            dropdown.style.borderRightWidth = 1f;
-            dropdown.style.borderBottomWidth = 1f;
-            dropdown.style.borderLeftWidth = 1f;
-            dropdown.style.borderTopColor = new Color(1f, 1f, 1f, 0.16f);
-            dropdown.style.borderRightColor = new Color(1f, 1f, 1f, 0.16f);
-            dropdown.style.borderBottomColor = new Color(1f, 1f, 1f, 0.16f);
-            dropdown.style.borderLeftColor = new Color(1f, 1f, 1f, 0.16f);
-            dropdown.style.borderTopLeftRadius = 4f;
-            dropdown.style.borderTopRightRadius = 4f;
-            dropdown.style.borderBottomRightRadius = 4f;
-            dropdown.style.borderBottomLeftRadius = 4f;
-            dropdown.Query<VisualElement>().ForEach(child => child.style.color = Color.white);
-
-            Label? label = dropdown.Q<Label>(className: "unity-label");
-            if (label is not null)
-            {
-                label.style.width = 56f;
-                label.style.color = Color.white;
-                label.style.fontSize = 14;
+                return;
             }
 
-            VisualElement? input = dropdown.Q<VisualElement>(className: "unity-base-field__input");
-            if (input is not null)
-            {
-                input.style.backgroundColor = new Color(1f, 1f, 1f, 0.10f);
-                input.style.borderTopWidth = 1f;
-                input.style.borderRightWidth = 1f;
-                input.style.borderBottomWidth = 1f;
-                input.style.borderLeftWidth = 1f;
-                input.style.borderTopColor = new Color(1f, 1f, 1f, 0.14f);
-                input.style.borderRightColor = new Color(1f, 1f, 1f, 0.14f);
-                input.style.borderBottomColor = new Color(1f, 1f, 1f, 0.14f);
-                input.style.borderLeftColor = new Color(1f, 1f, 1f, 0.14f);
-                input.style.borderTopLeftRadius = 4f;
-                input.style.borderTopRightRadius = 4f;
-                input.style.borderBottomRightRadius = 4f;
-                input.style.borderBottomLeftRadius = 4f;
-            }
-
-            TextElement? selectedText = dropdown.Q<TextElement>(className: "unity-dropdown-field__text");
-            if (selectedText is not null)
-            {
-                selectedText.style.color = Color.white;
-                selectedText.style.fontSize = 13;
-            }
-        }
-
-        private static VisualElement CreateSliderRow(string rowName, string labelText, string sliderName, out Slider slider, out Label valueLabel)
-        {
-            VisualElement row = new VisualElement { name = rowName };
-            row.style.flexDirection = FlexDirection.Row;
-            row.style.alignItems = Align.Center;
-            row.style.marginBottom = 10f;
-            row.style.height = 34f;
-
-            Label label = new Label(labelText) { name = $"{rowName}-label" };
-            label.style.color = Color.white;
-            label.style.fontSize = 14;
-            label.style.width = 56f;
-
-            slider = new Slider(0f, 1f)
-            {
-                name = sliderName,
-                showInputField = false,
-            };
-            slider.style.flexGrow = 1f;
-            slider.style.minWidth = SliderTrackMinWidth;
-            slider.style.height = 24f;
-            slider.style.marginLeft = 10f;
-            slider.style.marginRight = 10f;
-
-            valueLabel = new Label("100%") { name = $"{sliderName}-value-label" };
-            valueLabel.style.color = new Color(1f, 1f, 1f, 0.84f);
-            valueLabel.style.fontSize = 13;
-            valueLabel.style.unityTextAlign = TextAnchor.MiddleRight;
-            valueLabel.style.width = 44f;
-
-            row.Add(label);
-            row.Add(slider);
-            row.Add(valueLabel);
-            return row;
-        }
-
-        private static Toggle CreateMuteToggle(string name, string label)
-        {
-            Toggle toggle = new Toggle(label) { name = name };
-            toggle.style.flexGrow = 1f;
-            toggle.style.minHeight = 30f;
-            toggle.style.color = new Color(1f, 1f, 1f, 0.92f);
-            toggle.style.fontSize = 13;
-            return toggle;
+            ResolveAudioSettings()?.SetHapticsStrength(value);
+            RefreshAudioControls();
         }
 
         private void RefreshAudioControls()
         {
+            EnsureView();
             AudioSettingsController? settings = ResolveAudioSettings();
-            if (settings is null)
+            if (settings is null || view is null)
             {
                 return;
             }
@@ -714,39 +423,34 @@ namespace Rescue.Unity.Presentation
             RememberNonZeroMusic(settings.MusicVolume);
             RememberNonZeroFx(settings.FxVolume);
 
-            musicSlider?.SetValueWithoutNotify(settings.MusicVolume);
-            fxSlider?.SetValueWithoutNotify(settings.FxVolume);
-            hapticsStrengthSlider?.SetValueWithoutNotify(settings.HapticsStrength);
-            muteMusicToggle?.SetValueWithoutNotify(settings.MusicVolume <= 0f);
-            muteFxToggle?.SetValueWithoutNotify(settings.FxVolume <= 0f);
-            hapticsToggle?.SetValueWithoutNotify(settings.HapticsEnabled);
-            hapticsStrengthSlider?.SetEnabled(settings.HapticsEnabled);
-            if (hapticsStrengthRow is not null)
-            {
-                hapticsStrengthRow.style.opacity = settings.HapticsEnabled ? 1.0f : 0.45f;
-            }
-
-            UpdateValueLabel(musicValueLabel, settings.MusicVolume);
-            UpdateValueLabel(fxValueLabel, settings.FxVolume);
-            UpdateValueLabel(hapticsStrengthValueLabel, settings.HapticsStrength);
+            view.SetMusicValue(settings.MusicVolume, FormatPercent(settings.MusicVolume));
+            view.SetFxValue(settings.FxVolume, FormatPercent(settings.FxVolume));
+            view.SetHapticsStrengthValue(settings.HapticsStrength, FormatPercent(settings.HapticsStrength));
+            view.SetToggleValues(settings.MusicVolume <= 0f, settings.FxVolume <= 0f, settings.HapticsEnabled);
         }
 
         private void RefreshValues()
         {
+            EnsureView();
             ResolveSceneReferences();
+            EnsureLevelChoices();
 
-            if (levelDropdown is not null && session is not null)
+            if (view is not null && session is not null)
             {
-                string choice = ToLevelChoice(session.CurrentLevelId);
-                if (!levelDropdown.choices.Contains(choice))
-                {
-                    levelDropdown.choices = BuildLevelChoices();
-                }
-
-                levelDropdown.SetValueWithoutNotify(choice);
+                view.SetLevelChoices(levelChoices, ToLevelChoice(session.CurrentLevelId));
             }
 
             RefreshAudioControls();
+        }
+
+        private void EnsureLevelChoices()
+        {
+            if (levelChoices.Count > 0)
+            {
+                return;
+            }
+
+            levelChoices.AddRange(BuildLevelChoices());
         }
 
         private AudioSettingsController? ResolveAudioSettings()
@@ -806,12 +510,9 @@ namespace Rescue.Unity.Presentation
             return separator > 0 ? choice.Substring(0, separator) : choice;
         }
 
-        private static void UpdateValueLabel(Label? label, float value)
+        private static string FormatPercent(float value)
         {
-            if (label is not null)
-            {
-                label.text = $"{Mathf.RoundToInt(Mathf.Clamp01(value) * 100f)}%";
-            }
+            return $"{Mathf.RoundToInt(Mathf.Clamp01(value) * 100f)}%";
         }
 
         private static float ResolveRestoreVolume(float value)

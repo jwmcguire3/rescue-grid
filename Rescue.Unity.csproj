@@ -77,6 +77,7 @@
     <Compile Include="Assets\Rescue.Unity\FX\FxDebugFramePlayer.cs" />
     <Compile Include="Assets\Rescue.Unity\Feedback\FeedbackEventId.cs" />
     <Compile Include="Assets\Rescue.Unity\Haptics\HapticCooldownKey.cs" />
+    <Compile Include="Assets\Rescue.Unity\Presentation\SettingsMenuView.cs" />
     <Compile Include="Assets\Rescue.Unity\Haptics\HandheldHapticPlatformAdapter.cs" />
     <Compile Include="Assets\Rescue.Unity\UI\DockViewPresenter.cs" />
     <Compile Include="Assets\Rescue.Unity\Art\Registries\RegistryWarnings.cs" />

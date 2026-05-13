@@ -14,7 +14,6 @@ using Rescue.Unity.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
-using UnityEngine.UIElements;
 using UnityObject = UnityEngine.Object;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -65,10 +64,11 @@ namespace Rescue.PlayMode.Tests.Smoke
         {
             PlayableLevelSession session = FindRequired<PlayableLevelSession>();
             SettingsMenuPresenter settings = FindRequired<SettingsMenuPresenter>();
-            UIDocument settingsDocument = settings.GetComponent<UIDocument>();
-            Assert.That(settingsDocument.rootVisualElement.Q<Button>("restart-level-button"), Is.Not.Null);
-            Assert.That(settingsDocument.rootVisualElement.Q<Button>("settings-restart-button"), Is.Null);
-            Assert.That(settingsDocument.rootVisualElement.Q<Button>("settings-show-tutorial-button"), Is.Not.Null);
+            SettingsMenuView settingsView = FindRequired<SettingsMenuView>();
+            Assert.That(settings.View, Is.SameAs(settingsView));
+            Assert.That(settingsView.RestartButton, Is.Not.Null);
+            Assert.That(settingsView.SettingsButton, Is.Not.Null);
+            Assert.That(settingsView.ShowTutorialButton, Is.Not.Null);
 
             Assert.That(settings.IsOpen, Is.False);
             settings.Toggle();

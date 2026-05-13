@@ -904,7 +904,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
         [TestCase(1, 1, 1, 0, -1f, 0f)]
         [TestCase(1, 1, 0, 1, 0f, 1f)]
         [TestCase(1, 1, 2, 1, 0f, -1f)]
-        public void BoardContentViewPresenter_RescuePathMarkerPointsOutwardFromTarget(
+        public void BoardContentViewPresenter_RescuePathMarkerRemainsTopOriented(
             int targetRow,
             int targetCol,
             int pathRow,
@@ -924,11 +924,11 @@ namespace Rescue.Unity.BoardPresentation.Tests
 
             GameObject? pathObject = GetRegisteredPieceObject(harness.ContentPresenter, "RescuePath", pathCoord);
             Assert.That(pathObject, Is.Not.Null);
-            AssertRescuePathDirection(pathObject!, new Vector3(expectedX, 0f, expectedZ));
+            Assert.That(Quaternion.Angle(Quaternion.identity, pathObject!.transform.localRotation), Is.LessThan(0.001f));
         }
 
         [Test]
-        public void BoardContentViewPresenter_RescuePathMarkerUsesFirstAdjacentResolvedTarget()
+        public void BoardContentViewPresenter_RescuePathMarkerIgnoresAdjacentTargetDirection()
         {
             PresenterHarness harness = CreateHarness();
             TileCoord pathCoord = new TileCoord(1, 1);
@@ -952,7 +952,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
 
             GameObject? pathObject = GetRegisteredPieceObject(harness.ContentPresenter, "RescuePath", pathCoord);
             Assert.That(pathObject, Is.Not.Null);
-            AssertRescuePathDirection(pathObject!, Vector3.right);
+            Assert.That(Quaternion.Angle(Quaternion.identity, pathObject!.transform.localRotation), Is.LessThan(0.001f));
         }
 
         [Test]
@@ -1895,7 +1895,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
 
         private static void AssertRescuePathMarkerShape(GameObject pathObject)
         {
-            Assert.That(pathObject.transform.Find("RescuePathWash"), Is.Not.Null);
+            Assert.That(pathObject.transform.Find("RescuePathWash"), Is.Null);
             Transform? paw = pathObject.transform.Find("RescuePathPaw");
             Assert.That(paw, Is.Not.Null);
             Assert.That(pathObject.transform.Find("RescuePathChevron_00"), Is.Null);
@@ -1905,12 +1905,12 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Assert.That(Quaternion.Angle(Quaternion.identity, pawVisual!.localRotation), Is.LessThan(0.001f));
             Assert.That(pathObject.GetComponentsInChildren<Collider>(includeInactive: true), Is.Empty);
             Renderer[] renderers = pathObject.GetComponentsInChildren<Renderer>(includeInactive: true);
-            Assert.That(renderers.Length, Is.GreaterThanOrEqualTo(2));
+            Assert.That(renderers.Length, Is.GreaterThanOrEqualTo(1));
             for (int i = 0; i < renderers.Length; i++)
             {
                 Material? material = renderers[i].sharedMaterial;
                 Assert.That(material, Is.Not.Null);
-                Assert.That(material!.color.a, Is.LessThan(1f));
+                Assert.That(material!.color.a, Is.GreaterThan(0f));
                 Assert.That(material.renderQueue, Is.GreaterThanOrEqualTo((int)UnityEngine.Rendering.RenderQueue.Transparent));
                 if (material.HasProperty("_ZWrite"))
                 {

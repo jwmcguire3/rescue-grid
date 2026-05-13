@@ -3,7 +3,9 @@
   "rootNamespace": "Rescue.Unity.Presentation.Tests",
   "references": [
     "Rescue.Core",
-    "Rescue.Unity"
+    "Rescue.Unity",
+    "Unity.TextMeshPro",
+    "Unity.UGUI"
   ],
   "includePlatforms": [
     "Editor"

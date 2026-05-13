@@ -5,22 +5,22 @@ namespace Rescue.Unity.BoardPresentation
 {
     internal static class BoardContentMarkerFactory
     {
-        private const string RescuePathWashName = "RescuePathWash";
         private const string RescuePathPawName = "RescuePathPaw";
         private const string RescuePathPawModelResourcePath = "Meshy_AI_Teal_Paw_0513020745_texture";
         private const string RescuePathPawTextureResourcePath = "Textures/Meshy_AI_Teal_Paw_0513020745_texture";
         private const string TargetReadabilityMarkerName = "TargetReadabilityMarker";
         private const int TargetMarkerCircleSegments = 32;
+        private const float RescuePathPawTargetFootprint = 0.72f;
+        private const float RescuePathPawMinimumScaleFactor = 0.01f;
+        private const float RescuePathPawMaximumScaleFactor = 500f;
 
         private static readonly Vector3 TargetReadabilityMarkerLocalPosition = new Vector3(0f, 0.025f, 0f);
         private static readonly Vector3 TargetReadabilityMarkerLocalScale = new Vector3(0.7f, 1f, 0.7f);
         private static readonly Vector3 TargetLastObstacleMarkerLocalPosition = new Vector3(0f, 0.035f, 0f);
         private static readonly Vector3 TargetLastObstacleMarkerLocalScale = new Vector3(0.6f, 1f, 0.6f);
-        private static readonly Color RescuePathWashColor = new Color(0.118f, 0.522f, 0.467f, 0.24f);
-        private static readonly Color RescuePathPawTintColor = new Color(0.55f, 0.93f, 0.84f, 0.9f);
+        private static readonly Color RescuePathPawTintColor = new Color(0.82f, 1.0f, 0.95f, 0.56f);
         private static readonly Color TargetMarkerNeutralColor = new Color(0.9f, 0.9f, 0.84f, 0.5f);
 
-        private static Material? rescuePathWashMaterial;
         private static Material? rescuePathPawMaterial;
         private static Material? targetMarkerMaterial;
 
@@ -49,7 +49,6 @@ namespace Rescue.Unity.BoardPresentation
             }
 
             markerTransform.localScale = Vector3.one;
-            CreateRescuePathWash(markerTransform);
             CreateRescuePathPaw(markerTransform);
             ConfigureRescuePathMarker(markerObject, outwardDirection);
             return markerObject;
@@ -57,13 +56,7 @@ namespace Rescue.Unity.BoardPresentation
 
         public static void ConfigureRescuePathMarker(GameObject markerObject, Vector3 outwardDirection)
         {
-            Vector3 flattened = new Vector3(outwardDirection.x, 0f, outwardDirection.z);
-            if (flattened.sqrMagnitude <= 0.0001f)
-            {
-                flattened = Vector3.forward;
-            }
-
-            markerObject.transform.localRotation = Quaternion.LookRotation(flattened.normalized, Vector3.up);
+            markerObject.transform.localRotation = Quaternion.identity;
         }
 
         public static void SyncTargetReadabilityMarker(GameObject targetObject, TargetReadiness readiness)
@@ -137,18 +130,6 @@ namespace Rescue.Unity.BoardPresentation
             }
         }
 
-        private static void CreateRescuePathWash(Transform parent)
-        {
-            GameObject wash = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            wash.name = RescuePathWashName;
-            RemoveCollider(wash);
-            wash.transform.SetParent(parent, worldPositionStays: false);
-            wash.transform.localPosition = new Vector3(0f, 0.004f, 0f);
-            wash.transform.localRotation = Quaternion.identity;
-            wash.transform.localScale = new Vector3(0.84f, 0.012f, 0.84f);
-            AssignGeneratedRescuePathWashMaterial(wash);
-        }
-
         private static void CreateRescuePathPaw(Transform parent)
         {
             GameObject paw = new GameObject(RescuePathPawName);
@@ -184,28 +165,58 @@ namespace Rescue.Unity.BoardPresentation
 
         private static void FitVisualToRescuePathTile(GameObject visual)
         {
-            Renderer[] renderers = visual.GetComponentsInChildren<Renderer>(includeInactive: true);
-            if (renderers.Length == 0)
+            if (!TryGetVisualBounds(visual, out Bounds bounds))
             {
                 return;
             }
 
-            Bounds bounds = renderers[0].bounds;
+            Vector3 size = bounds.size;
+            float footprint = Mathf.Max(size.x, size.z);
+            if (footprint <= 0.0001f)
+            {
+                footprint = Mathf.Max(size.x, size.y);
+            }
+
+            if (footprint > 0.0001f)
+            {
+                float scale = Mathf.Clamp(
+                    RescuePathPawTargetFootprint / footprint,
+                    RescuePathPawMinimumScaleFactor,
+                    RescuePathPawMaximumScaleFactor);
+                visual.transform.localScale *= scale;
+            }
+
+            if (!TryGetVisualBounds(visual, out bounds))
+            {
+                return;
+            }
+
+            Vector3 targetPosition = visual.transform.parent is null
+                ? visual.transform.position
+                : visual.transform.parent.position;
+            Vector3 center = bounds.center;
+            visual.transform.position += new Vector3(
+                targetPosition.x - center.x,
+                targetPosition.y - bounds.min.y,
+                targetPosition.z - center.z);
+        }
+
+        private static bool TryGetVisualBounds(GameObject visual, out Bounds bounds)
+        {
+            Renderer[] renderers = visual.GetComponentsInChildren<Renderer>(includeInactive: true);
+            if (renderers.Length == 0)
+            {
+                bounds = default;
+                return false;
+            }
+
+            bounds = renderers[0].bounds;
             for (int i = 1; i < renderers.Length; i++)
             {
                 bounds.Encapsulate(renderers[i].bounds);
             }
 
-            Vector3 size = bounds.size;
-            float footprint = Mathf.Max(size.x, size.z);
-            if (footprint > 0.0001f)
-            {
-                float scale = Mathf.Min(1f, 0.72f / footprint);
-                visual.transform.localScale *= scale;
-            }
-
-            Vector3 center = bounds.center;
-            visual.transform.position -= new Vector3(center.x, bounds.min.y, center.z);
+            return true;
         }
 
         private static void RemoveColliders(GameObject contentObject)
@@ -356,27 +367,6 @@ namespace Rescue.Unity.BoardPresentation
             renderer.SetPropertyBlock(propertyBlock);
         }
 
-        private static void AssignGeneratedRescuePathWashMaterial(GameObject contentObject)
-        {
-            Renderer? renderer = contentObject.GetComponent<Renderer>();
-            if (renderer is not null)
-            {
-                renderer.sharedMaterial = GetRescuePathWashMaterial();
-                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                renderer.receiveShadows = false;
-            }
-        }
-
-        private static Material GetRescuePathWashMaterial()
-        {
-            if (rescuePathWashMaterial == null)
-            {
-                rescuePathWashMaterial = CreateGeneratedTransparentMaterial(RescuePathWashColor);
-            }
-
-            return rescuePathWashMaterial;
-        }
-
         private static Material GetRescuePathPawMaterial()
         {
             if (rescuePathPawMaterial == null)
@@ -387,6 +377,8 @@ namespace Rescue.Unity.BoardPresentation
                 {
                     rescuePathPawMaterial.mainTexture = texture;
                 }
+
+                ApplyPawTint(rescuePathPawMaterial);
             }
 
             return rescuePathPawMaterial;
@@ -449,6 +441,19 @@ namespace Rescue.Unity.BoardPresentation
             }
 
             return material;
+        }
+
+        private static void ApplyPawTint(Material material)
+        {
+            if (material.HasProperty("_BaseColor"))
+            {
+                material.SetColor("_BaseColor", RescuePathPawTintColor);
+            }
+
+            if (material.HasProperty("_Color"))
+            {
+                material.SetColor("_Color", RescuePathPawTintColor);
+            }
         }
 
         private static void AttachOrUpdateBoardCellView(GameObject contentObject, TileCoord coord)

@@ -4,7 +4,9 @@
   "references": [
     "Rescue.Core",
     "Rescue.Content",
-    "Rescue.Unity"
+    "Rescue.Unity",
+    "Unity.TextMeshPro",
+    "Unity.UGUI"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],
