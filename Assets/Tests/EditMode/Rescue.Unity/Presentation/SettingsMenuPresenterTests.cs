@@ -107,6 +107,15 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(restartImage.type, Is.EqualTo(Image.Type.Simple), "Small top plaques should render the full painted sprite instead of collapsed 9-slice borders.");
             Assert.That(settingsImage.type, Is.EqualTo(Image.Type.Simple), "Small top plaques should render the full painted sprite instead of collapsed 9-slice borders.");
             Assert.That(panelImage.type, Is.EqualTo(Image.Type.Sliced));
+            LayoutElement restartLayout = view.RestartButton.GetComponent<LayoutElement>();
+            LayoutElement settingsLayout = view.SettingsButton.GetComponent<LayoutElement>();
+            Assert.That(restartLayout.preferredWidth, Is.EqualTo(208f));
+            Assert.That(restartLayout.preferredHeight, Is.EqualTo(60f));
+            Assert.That(settingsLayout.preferredHeight, Is.EqualTo(80f));
+            Assert.That(settingsLayout.preferredHeight * 651f / 1024f, Is.EqualTo(restartLayout.preferredHeight * 872f / 1024f).Within(0.5f));
+            RectTransform topRowRect = FindRectTransform(view, "SettingsTopButtonRow");
+            Assert.That(topRowRect.sizeDelta.x, Is.EqualTo(420f));
+            Assert.That(topRowRect.sizeDelta.y, Is.EqualTo(92f));
 
             AssertContainedInPanel(view, "SettingsTitle");
             AssertContainedInPanel(view, "ResumeButton");
@@ -344,6 +353,15 @@ namespace Rescue.Unity.Presentation.Tests
                 candidate => candidate.name == name);
             Assert.That(label, Is.Not.Null, $"Expected TMP label '{name}'.");
             return label!;
+        }
+
+        private static RectTransform FindRectTransform(SettingsMenuView view, string name)
+        {
+            RectTransform? rect = Array.Find(
+                view.GetComponentsInChildren<RectTransform>(includeInactive: true),
+                candidate => candidate.name == name);
+            Assert.That(rect, Is.Not.Null, $"Expected rect transform '{name}'.");
+            return rect!;
         }
 
         private static void AssertContainedInPanel(SettingsMenuView view, string childName)

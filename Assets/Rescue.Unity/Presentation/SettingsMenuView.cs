@@ -21,6 +21,8 @@ namespace Rescue.Unity.Presentation
         private const float SliderControlHeight = 44f;
         private const float SliderBarHeight = 42f;
         private const float SliderHandleSize = 38f;
+        private const float TopPlaqueHeight = 60f;
+        private const float SettingsPlaqueHeight = 80f;
 
         [Header("Top Buttons")]
         [SerializeField] private Button? restartButton;
@@ -209,7 +211,7 @@ namespace Rescue.Unity.Presentation
             topRowRect.anchorMax = new Vector2(1f, 1f);
             topRowRect.pivot = new Vector2(1f, 1f);
             topRowRect.anchoredPosition = Vector2.zero;
-            topRowRect.sizeDelta = new Vector2(390f, 72f);
+            topRowRect.sizeDelta = new Vector2(420f, 92f);
             HorizontalLayoutGroup topLayout = topRow.AddComponent<HorizontalLayoutGroup>();
             topLayout.childAlignment = TextAnchor.MiddleRight;
             topLayout.spacing = 10f;
@@ -218,8 +220,8 @@ namespace Rescue.Unity.Presentation
             topLayout.childForceExpandWidth = false;
             topLayout.childForceExpandHeight = false;
 
-            restartButton = CreatePlaqueButton(topRow.transform, "RestartButton", "RESTART", restartButtonSprite, Teal, Cream, new Vector2(178f, 60f), tealPawSprite);
-            settingsButton = CreatePlaqueButton(topRow.transform, "SettingsButton", "SETTINGS", settingsButtonSprite, Cream, DarkInk, new Vector2(188f, 60f), amberPawSprite);
+            restartButton = CreatePlaqueButton(topRow.transform, "RestartButton", "RESTART", restartButtonSprite, Teal, Cream, new Vector2(208f, TopPlaqueHeight), tealPawSprite);
+            settingsButton = CreatePlaqueButton(topRow.transform, "SettingsButton", "SETTINGS", settingsButtonSprite, Cream, DarkInk, new Vector2(188f, SettingsPlaqueHeight), amberPawSprite);
 
             panelRoot = CreateChild("SettingsPanel", anchor);
             RectTransform panelRect = panelRoot.GetComponent<RectTransform>();
