@@ -386,8 +386,23 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(handle!.sprite, Is.Not.Null, "Slider handle should use the paw handle sprite.");
             Assert.That(background!.type, Is.EqualTo(Image.Type.Simple), "Thin slider bars should render the full painted sprite instead of collapsed 9-slice borders.");
             Assert.That(fill!.type, Is.EqualTo(Image.Type.Simple), "Thin slider bars should render the full painted sprite instead of collapsed 9-slice borders.");
-            Assert.That(background.rectTransform.sizeDelta.y, Is.GreaterThanOrEqualTo(28f), "Slider bar should be visibly tall enough at mobile scale.");
-            Assert.That(fill.rectTransform.sizeDelta.y, Is.GreaterThanOrEqualTo(22f), "Slider fill should remain visible behind the handle.");
+            Assert.That(background.color.a, Is.EqualTo(0f).Within(0.001f), "Slider background should be an invisible full-width hit target.");
+            Assert.That(fill.enabled, Is.True, "Slider fill should draw the only visible bar so it ends at the paw handle.");
+            Assert.That(background.raycastTarget, Is.True, "Slider track should receive pointer hits for click-to-set volume.");
+            Assert.That(fill.raycastTarget, Is.False, "Slider fill should not block track pointer hits.");
+            Assert.That(handle.raycastTarget, Is.True, "Paw handle should receive pointer hits for dragging volume.");
+            Assert.That(background.rectTransform.sizeDelta.y, Is.GreaterThanOrEqualTo(40f), "Slider bar should be visibly tall enough at mobile scale.");
+            Assert.That(fill.rectTransform.sizeDelta.y, Is.GreaterThanOrEqualTo(40f), "Slider fill should remain the visible bar behind the handle.");
+            Assert.That(slider.fillRect, Is.SameAs(fill.rectTransform), "Slider fillRect should drive the rustic fill image.");
+            Assert.That(slider.handleRect, Is.SameAs(handle.rectTransform), "Slider handleRect should drive the paw handle image.");
+            Assert.That(handle.rectTransform.sizeDelta.x, Is.GreaterThanOrEqualTo(38f), "Paw handle should remain large enough to visibly cap the bar.");
+            Assert.That(handle.rectTransform.anchorMin.x, Is.EqualTo(1f).Within(0.001f), "A full-value slider should initialize the paw at the bar end.");
+            Assert.That(handle.rectTransform.anchorMax.x, Is.EqualTo(1f).Within(0.001f), "A full-value slider should initialize the paw at the bar end.");
+
+            LayoutElement? layout = slider.GetComponent<LayoutElement>();
+            Assert.That(layout, Is.Not.Null, "Slider layout should prevent row-driven height collapse.");
+            Assert.That(layout!.minHeight, Is.GreaterThanOrEqualTo(44f), "Slider minHeight should keep the rustic bar visible.");
+            Assert.That(layout.preferredHeight, Is.GreaterThanOrEqualTo(44f), "Slider preferredHeight should keep the rustic bar visible.");
         }
 
         private sealed class PacketManifestSubset

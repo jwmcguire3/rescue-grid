@@ -18,6 +18,9 @@ namespace Rescue.Unity.Presentation
         private static readonly Color Teal = new Color(0.29f, 0.62f, 0.64f, 1f);
         private static readonly Color Amber = new Color(0.79f, 0.48f, 0.15f, 1f);
         private static readonly Color SliderBed = new Color(0.22f, 0.16f, 0.12f, 1f);
+        private const float SliderControlHeight = 44f;
+        private const float SliderBarHeight = 42f;
+        private const float SliderHandleSize = 38f;
 
         [Header("Top Buttons")]
         [SerializeField] private Button? restartButton;
@@ -272,6 +275,8 @@ namespace Rescue.Unity.Presentation
             LayoutElement hapticsSliderLayout = hapticsStrengthSlider.gameObject.AddComponent<LayoutElement>();
             hapticsSliderLayout.flexibleWidth = 1f;
             hapticsSliderLayout.minWidth = 178f;
+            hapticsSliderLayout.minHeight = SliderControlHeight;
+            hapticsSliderLayout.preferredHeight = SliderControlHeight;
             hapticsStrengthValueLabel = CreateLabel(strengthRow.transform, "HapticsStrengthValue", "100%", 22f, Cream, TextAlignmentOptions.MidlineRight);
             hapticsStrengthValueLabel.gameObject.AddComponent<LayoutElement>().preferredWidth = 60f;
 
@@ -470,6 +475,8 @@ namespace Rescue.Unity.Presentation
             LayoutElement sliderLayout = slider.gameObject.AddComponent<LayoutElement>();
             sliderLayout.flexibleWidth = 1f;
             sliderLayout.minWidth = 190f;
+            sliderLayout.minHeight = SliderControlHeight;
+            sliderLayout.preferredHeight = SliderControlHeight;
             valueLabel = CreateLabel(row.transform, $"{labelText}Value", "100%", 22f, Cream, TextAlignmentOptions.MidlineRight);
             valueLabel.gameObject.AddComponent<LayoutElement>().preferredWidth = 64f;
             return slider;
@@ -479,7 +486,7 @@ namespace Rescue.Unity.Presentation
         {
             GameObject sliderObject = CreateChild(name, parent);
             RectTransform sliderRect = sliderObject.GetComponent<RectTransform>();
-            sliderRect.sizeDelta = new Vector2(230f, 40f);
+            sliderRect.sizeDelta = new Vector2(230f, SliderControlHeight);
             Slider slider = sliderObject.AddComponent<Slider>();
             slider.minValue = 0f;
             slider.maxValue = 1f;
@@ -487,11 +494,13 @@ namespace Rescue.Unity.Presentation
 
             Image background = CreateImage(sliderObject.transform, "Background", sliderBarSprite, SliderBed);
             background.type = Image.Type.Simple;
+            background.color = Color.clear;
+            background.raycastTarget = true;
             RectTransform backgroundRect = background.rectTransform;
             backgroundRect.anchorMin = new Vector2(0f, 0.5f);
             backgroundRect.anchorMax = new Vector2(1f, 0.5f);
             backgroundRect.anchoredPosition = Vector2.zero;
-            backgroundRect.sizeDelta = new Vector2(0f, 30f);
+            backgroundRect.sizeDelta = new Vector2(0f, SliderBarHeight);
 
             GameObject fillArea = CreateChild("Fill Area", sliderObject.transform);
             RectTransform fillAreaRect = fillArea.GetComponent<RectTransform>();
@@ -506,7 +515,7 @@ namespace Rescue.Unity.Presentation
             fillRect.anchorMin = new Vector2(0f, 0.5f);
             fillRect.anchorMax = new Vector2(1f, 0.5f);
             fillRect.anchoredPosition = Vector2.zero;
-            fillRect.sizeDelta = new Vector2(0f, 24f);
+            fillRect.sizeDelta = new Vector2(0f, SliderBarHeight);
 
             GameObject handleArea = CreateChild("Handle Slide Area", sliderObject.transform);
             RectTransform handleAreaRect = handleArea.GetComponent<RectTransform>();
@@ -516,8 +525,13 @@ namespace Rescue.Unity.Presentation
 
             Image handle = CreateImage(handleArea.transform, "Handle", sliderHandleSprite, Cream);
             handle.preserveAspect = true;
+            handle.raycastTarget = true;
             RectTransform handleRect = handle.rectTransform;
-            handleRect.sizeDelta = new Vector2(38f, 38f);
+            handleRect.anchorMin = new Vector2(1f, 0.5f);
+            handleRect.anchorMax = new Vector2(1f, 0.5f);
+            handleRect.pivot = new Vector2(0.5f, 0.5f);
+            handleRect.anchoredPosition = Vector2.zero;
+            handleRect.sizeDelta = new Vector2(SliderHandleSize, SliderHandleSize);
 
             slider.fillRect = fillRect;
             slider.handleRect = handleRect;
