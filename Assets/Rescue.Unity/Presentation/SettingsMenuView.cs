@@ -212,25 +212,25 @@ namespace Rescue.Unity.Presentation
             topRowRect.anchorMin = new Vector2(1f, 1f);
             topRowRect.anchorMax = new Vector2(1f, 1f);
             topRowRect.pivot = new Vector2(1f, 1f);
-            topRowRect.anchoredPosition = Vector2.zero;
-            topRowRect.sizeDelta = new Vector2(420f, 92f);
-            HorizontalLayoutGroup topLayout = topRow.AddComponent<HorizontalLayoutGroup>();
-            topLayout.childAlignment = TextAnchor.MiddleRight;
-            topLayout.spacing = 10f;
+            topRowRect.anchoredPosition = new Vector2(18f, -40f);
+            topRowRect.sizeDelta = new Vector2(220f, 156f);
+            VerticalLayoutGroup topLayout = topRow.AddComponent<VerticalLayoutGroup>();
+            topLayout.childAlignment = TextAnchor.UpperRight;
+            topLayout.spacing = 8f;
             topLayout.childControlWidth = true;
             topLayout.childControlHeight = true;
             topLayout.childForceExpandWidth = false;
             topLayout.childForceExpandHeight = false;
 
-            restartButton = CreatePlaqueButton(topRow.transform, "RestartButton", "RESTART", restartButtonSprite, Teal, Cream, new Vector2(208f, TopPlaqueHeight), tealPawSprite);
             settingsButton = CreatePlaqueButton(topRow.transform, "SettingsButton", "SETTINGS", settingsButtonSprite, Cream, DarkInk, new Vector2(188f, SettingsPlaqueHeight), amberPawSprite);
+            restartButton = CreatePlaqueButton(topRow.transform, "RestartButton", "RESTART", restartButtonSprite, Teal, Cream, new Vector2(208f, TopPlaqueHeight), tealPawSprite);
 
-            panelRoot = CreateChild("SettingsPanel", anchor);
+            panelRoot = CreateChild("SettingsPanel", root);
             RectTransform panelRect = panelRoot.GetComponent<RectTransform>();
-            panelRect.anchorMin = new Vector2(1f, 1f);
-            panelRect.anchorMax = new Vector2(1f, 1f);
-            panelRect.pivot = new Vector2(1f, 1f);
-            panelRect.anchoredPosition = new Vector2(0f, -84f);
+            panelRect.anchorMin = new Vector2(0.5f, 0.5f);
+            panelRect.anchorMax = new Vector2(0.5f, 0.5f);
+            panelRect.pivot = new Vector2(0.5f, 0.5f);
+            panelRect.anchoredPosition = Vector2.zero;
             panelRect.sizeDelta = new Vector2(482f, 742f);
 
             Image panelImage = panelRoot.AddComponent<Image>();
@@ -245,8 +245,8 @@ namespace Rescue.Unity.Presentation
             TextMeshProUGUI title = CreateLabel(panelRoot.transform, "SettingsTitle", "SETTINGS", 42f, Cream, TextAlignmentOptions.MidlineLeft);
             title.fontStyle = FontStyles.Bold;
             SetPanelRect(title.rectTransform, PanelContentLeft, 54f, 260f, 58f);
-            resumeButton = CreatePlaqueButton(panelRoot.transform, "ResumeButton", "RESUME", tealPlaqueSprite, Teal, Cream, new Vector2(130f, 48f), null);
-            SetPanelRect((RectTransform)resumeButton.transform, 282f, 54f, 130f, 48f);
+            resumeButton = CreateCloseButton(panelRoot.transform);
+            SetPanelRect((RectTransform)resumeButton.transform, 396f, 40f, 44f, 44f);
             showTutorialButton = CreatePlaqueButton(panelRoot.transform, "ShowTutorialButton", "SHOW TUTORIAL", amberPlaqueSprite, Amber, DarkInk, new Vector2(0f, 68f), amberPawSprite);
             SetPanelRect((RectTransform)showTutorialButton.transform, PanelContentLeft, 118f, PanelContentWidth, 66f);
 
@@ -370,6 +370,19 @@ namespace Rescue.Unity.Presentation
             LayoutElement labelLayout = label.gameObject.AddComponent<LayoutElement>();
             labelLayout.flexibleWidth = 1f;
             labelLayout.preferredHeight = size.y - 8f;
+            return button;
+        }
+
+        private Button CreateCloseButton(Transform parent)
+        {
+            GameObject buttonObject = CreateChild("ResumeButton", parent);
+            Image image = buttonObject.AddComponent<Image>();
+            image.type = Image.Type.Simple;
+            image.color = new Color(1f, 1f, 1f, 0.001f);
+            image.raycastTarget = true;
+
+            Button button = buttonObject.AddComponent<Button>();
+            button.targetGraphic = image;
             return button;
         }
 

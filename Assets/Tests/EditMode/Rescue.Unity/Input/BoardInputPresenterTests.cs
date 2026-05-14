@@ -148,6 +148,25 @@ namespace Rescue.Unity.Input.Tests
         }
 
         [Test]
+        public void BoardInputPresenter_SettingsAndTutorialLocksDoNotClearEachOther()
+        {
+            BoardInputPresenter presenter = CreateInputPresenter(gridView: null, gameStateView: null);
+            GameState initialState = CreateValidPairState();
+            presenter.SetCurrentState(initialState, refreshView: false);
+
+            presenter.SetInputBlocked(true);
+            presenter.SetSettingsInputBlocked(true);
+            presenter.SetSettingsInputBlocked(false);
+
+            Assert.That(presenter.IsInputBlocked, Is.True, "Closing settings should not clear a tutorial/modal input lock.");
+            Assert.That(presenter.TryRunActionAt(new TileCoord(0, 0)), Is.False);
+
+            presenter.SetInputBlocked(false);
+
+            Assert.That(presenter.IsInputBlocked, Is.False);
+        }
+
+        [Test]
         public void BoardInputPresenter_AllowsValidActionAfterTerminalInputUnlocks()
         {
             BoardInputPresenter presenter = CreateInputPresenter(gridView: null, gameStateView: null);

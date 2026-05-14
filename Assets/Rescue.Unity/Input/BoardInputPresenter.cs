@@ -22,11 +22,12 @@ namespace Rescue.Unity.Input
 
         private GameState? fallbackState;
         private bool inputBlocked;
+        private bool settingsInputBlocked;
         private bool terminalInputLocked;
 
         public GameState? CurrentState => gameStateView?.CurrentState ?? fallbackState;
 
-        public bool IsInputBlocked => inputBlocked || terminalInputLocked;
+        public bool IsInputBlocked => inputBlocked || settingsInputBlocked || terminalInputLocked;
 
         public bool IsTerminalInputLocked => terminalInputLocked;
 
@@ -66,6 +67,11 @@ namespace Rescue.Unity.Input
         public void SetInputBlocked(bool blocked)
         {
             inputBlocked = blocked;
+        }
+
+        public void SetSettingsInputBlocked(bool blocked)
+        {
+            settingsInputBlocked = blocked;
         }
 
         public void SetTerminalInputLocked(bool locked)

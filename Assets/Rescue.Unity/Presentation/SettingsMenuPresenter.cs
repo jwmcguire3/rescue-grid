@@ -4,6 +4,7 @@ using Rescue.Content;
 using Rescue.Unity.Audio;
 using Rescue.Unity.Feedback;
 using Rescue.Unity.Haptics;
+using Rescue.Unity.Input;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -20,6 +21,7 @@ namespace Rescue.Unity.Presentation
         public const float SliderTrackMinWidth = 220f;
 
         [SerializeField] private PlayableLevelSession? session;
+        [SerializeField] private BoardInputPresenter? boardInput;
         [SerializeField] private AudioSettingsController? audioSettings;
         [SerializeField] private SettingsMenuView? view;
 
@@ -120,8 +122,10 @@ namespace Rescue.Unity.Presentation
             }
 
             EnsureView();
+            ResolveSceneReferences();
             isOpen = open;
             view?.SetOpen(open);
+            boardInput?.SetSettingsInputBlocked(open);
 
             if (open)
             {
@@ -337,6 +341,11 @@ namespace Rescue.Unity.Presentation
             if (session is null)
             {
                 session = FindAnyObjectByType<PlayableLevelSession>();
+            }
+
+            if (boardInput is null)
+            {
+                boardInput = FindAnyObjectByType<BoardInputPresenter>();
             }
 
             if (audioSettings is null)

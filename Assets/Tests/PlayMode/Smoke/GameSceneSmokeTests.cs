@@ -63,6 +63,7 @@ namespace Rescue.PlayMode.Tests.Smoke
         public System.Collections.IEnumerator GameScene_SettingsMenuRestartAndLevelSelectDrivePlayerFlow()
         {
             PlayableLevelSession session = FindRequired<PlayableLevelSession>();
+            BoardInputPresenter boardInput = FindRequired<BoardInputPresenter>();
             SettingsMenuPresenter settings = FindRequired<SettingsMenuPresenter>();
             SettingsMenuView settingsView = FindRequired<SettingsMenuView>();
             Assert.That(settings.View, Is.SameAs(settingsView));
@@ -73,6 +74,8 @@ namespace Rescue.PlayMode.Tests.Smoke
             Assert.That(settings.IsOpen, Is.False);
             settings.Toggle();
             Assert.That(settings.IsOpen, Is.True);
+            Assert.That(boardInput.IsInputBlocked, Is.True, "Opening settings should block board touches.");
+            Assert.That(boardInput.TryRunActionAt(new TileCoord(4, 0)), Is.False, "Board input should be ignored while settings is open.");
             Assert.That(settings.LevelChoices, Has.Count.EqualTo(PlayableLevelSession.LevelIds.Count));
             for (int i = 0; i < PlayableLevelSession.LevelIds.Count; i++)
             {
@@ -187,6 +190,8 @@ namespace Rescue.PlayMode.Tests.Smoke
             Assert.That(session.CurrentState?.ActionCount, Is.EqualTo(initialState.ActionCount));
 
             intro.Dismiss();
+            Assert.That(boardInput.IsInputBlocked, Is.True, "Dismissing the intro should keep board input blocked for the dismissal frame.");
+            Assert.That(boardInput.TryRunActionAt(new TileCoord(4, 0)), Is.False, "The dismissing tap should not pass through to the board.");
             yield return null;
 
             Assert.That(intro.IsVisible, Is.False);

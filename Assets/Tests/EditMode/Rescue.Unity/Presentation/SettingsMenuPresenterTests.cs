@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using NUnit.Framework;
 using Rescue.Unity.Audio;
+using Rescue.Unity.Input;
 using Rescue.Unity.Presentation;
 using TMPro;
 using UnityEngine;
@@ -116,8 +117,17 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(settingsLayout.preferredHeight, Is.EqualTo(80f));
             Assert.That(settingsLayout.preferredHeight * 651f / 1024f, Is.EqualTo(restartLayout.preferredHeight * 872f / 1024f).Within(0.5f));
             RectTransform topRowRect = FindRectTransform(view, "SettingsTopButtonRow");
-            Assert.That(topRowRect.sizeDelta.x, Is.EqualTo(420f));
-            Assert.That(topRowRect.sizeDelta.y, Is.EqualTo(92f));
+            Assert.That(topRowRect.sizeDelta.x, Is.EqualTo(220f));
+            Assert.That(topRowRect.sizeDelta.y, Is.EqualTo(156f));
+            Assert.That(topRowRect.anchoredPosition.x, Is.EqualTo(18f).Within(0.001f));
+            Assert.That(topRowRect.anchoredPosition.y, Is.EqualTo(-40f).Within(0.001f));
+            Assert.That(view.SettingsButton.transform.GetSiblingIndex(), Is.LessThan(view.RestartButton.transform.GetSiblingIndex()), "Settings should sit above Restart in the top-right stack.");
+
+            RectTransform panelRect = view.PanelRoot.GetComponent<RectTransform>();
+            Assert.That(panelRect.anchorMin, Is.EqualTo(new Vector2(0.5f, 0.5f)));
+            Assert.That(panelRect.anchorMax, Is.EqualTo(new Vector2(0.5f, 0.5f)));
+            Assert.That(panelRect.pivot, Is.EqualTo(new Vector2(0.5f, 0.5f)));
+            Assert.That(panelRect.anchoredPosition, Is.EqualTo(Vector2.zero));
 
             AssertContainedInPanel(view, "SettingsTitle");
             AssertContainedInPanel(view, "ResumeButton");
@@ -130,7 +140,7 @@ namespace Rescue.Unity.Presentation.Tests
             AssertContainedInPanel(view, "HapticsStrengthRow");
             AssertBottomPaddingInPanel(view, "HapticsStrengthRow", 80f);
             AssertHorizontalPaddingInPanel(view, "SettingsTitle", 68f, 150f);
-            AssertHorizontalPaddingInPanel(view, "ResumeButton", 270f, 68f);
+            AssertHorizontalPaddingInPanel(view, "ResumeButton", 390f, 40f);
             AssertHorizontalPaddingInPanel(view, "ShowTutorialButton", 68f, 68f);
             AssertHorizontalPaddingInPanel(view, "LevelDropdownRow", 68f, 68f);
             AssertHorizontalPaddingInPanel(view, "MusicSliderRow", 68f, 68f);
@@ -143,6 +153,7 @@ namespace Rescue.Unity.Presentation.Tests
             AssertPreferredHeightAtLeast(view, "MuteRow", 48f);
             AssertPreferredHeightAtLeast(view, "HapticsStrengthRow", 46f);
             AssertFullWidthCompactLevelDropdown(view);
+            AssertCloseButtonReplacesResumePlaque(view);
 
             AssertRusticSlider(view.MusicSlider);
             AssertRusticSlider(view.FxSlider);
@@ -290,6 +301,24 @@ namespace Rescue.Unity.Presentation.Tests
 
             Assert.That(presenter.IsOpen, Is.False);
             Assert.That(session.CurrentLevelId, Is.EqualTo("L01"));
+        }
+
+        [Test]
+        public void SettingsMenuPresenter_OpenStateBlocksBoardInputOnlyWhileSettingsVisible()
+        {
+            SettingsMenuPresenter presenter = CreatePresenter(out _);
+            GameObject inputObject = new GameObject("BoardInputPresenterTests");
+            BoardInputPresenter boardInput = inputObject.AddComponent<BoardInputPresenter>();
+            SetPrivateField(presenter, "boardInput", boardInput);
+            terminalObject = inputObject;
+
+            presenter.SetOpen(true);
+
+            Assert.That(boardInput.IsInputBlocked, Is.True);
+
+            presenter.SetOpen(false);
+
+            Assert.That(boardInput.IsInputBlocked, Is.False);
         }
 
         private SettingsMenuPresenter CreatePresenter(out AudioSettingsController audioSettings)
@@ -465,6 +494,25 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(dropdown.itemText.fontSize, Is.EqualTo(18f).Within(0.001f));
             Assert.That(dropdown.itemText.rectTransform.offsetMin.x, Is.EqualTo(10f).Within(0.001f));
             Assert.That(dropdown.itemText.rectTransform.offsetMax.x, Is.EqualTo(-10f).Within(0.001f));
+        }
+
+        private static void AssertCloseButtonReplacesResumePlaque(SettingsMenuView view)
+        {
+            Button closeButton = view.ResumeButton;
+            Image closeImage = closeButton.GetComponent<Image>();
+            Assert.That(closeImage, Is.Not.Null, "Close button should provide a raycastable top-right hit target.");
+            Assert.That(closeImage.sprite, Is.Null, "Close button should use the steel X already painted into the settings background.");
+            Assert.That(closeImage.color.a, Is.LessThan(0.01f), "Close button hit target should be visually transparent.");
+            Assert.That(closeImage.raycastTarget, Is.True);
+
+            TextMeshProUGUI? resumeLabel = Array.Find(
+                closeButton.GetComponentsInChildren<TextMeshProUGUI>(includeInactive: true),
+                candidate => string.Equals(candidate.text, "RESUME", StringComparison.Ordinal));
+            Assert.That(resumeLabel, Is.Null, "The settings panel should not show the old RESUME plaque.");
+
+            RectTransform closeRect = (RectTransform)closeButton.transform;
+            Assert.That(closeRect.sizeDelta.x, Is.EqualTo(44f).Within(0.001f));
+            Assert.That(closeRect.sizeDelta.y, Is.EqualTo(44f).Within(0.001f));
         }
 
         private static T FindDescendant<T>(Component root, string name)

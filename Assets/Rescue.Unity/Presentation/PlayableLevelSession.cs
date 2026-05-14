@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Rescue.Content;
 using Rescue.Core.Pipeline;
@@ -57,6 +58,7 @@ namespace Rescue.Unity.Presentation
 
         private string currentLevelId = InitialLevelId;
         private GameState? initialState;
+        private Coroutine? releaseTutorialInputBlockCoroutine;
 
         public string CurrentLevelId => currentLevelId;
 
@@ -136,6 +138,7 @@ namespace Rescue.Unity.Presentation
         public void ShowTutorialImage()
         {
             ResolveSceneReferences();
+            CancelPendingTutorialInputRelease();
             boardInput?.SetInputBlocked(true);
             l00IntroImage?.Show();
         }
@@ -233,6 +236,8 @@ namespace Rescue.Unity.Presentation
             {
                 l00IntroImage.Dismissed -= HandleL00IntroDismissed;
             }
+
+            CancelPendingTutorialInputRelease();
         }
 
         private static void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -374,6 +379,11 @@ namespace Rescue.Unity.Presentation
             }
 
             bool shouldShow = string.Equals(currentLevelId, InitialLevelId, StringComparison.Ordinal);
+            if (shouldShow)
+            {
+                CancelPendingTutorialInputRelease();
+            }
+
             boardInput?.SetInputBlocked(shouldShow);
             if (shouldShow)
             {
@@ -387,7 +397,29 @@ namespace Rescue.Unity.Presentation
 
         private void HandleL00IntroDismissed()
         {
-            boardInput?.SetInputBlocked(false);
+            CancelPendingTutorialInputRelease();
+            releaseTutorialInputBlockCoroutine = StartCoroutine(ReleaseTutorialInputBlockNextFrame());
+        }
+
+        private IEnumerator ReleaseTutorialInputBlockNextFrame()
+        {
+            yield return null;
+            releaseTutorialInputBlockCoroutine = null;
+            if (l00IntroImage is null || !l00IntroImage.IsVisible)
+            {
+                boardInput?.SetInputBlocked(false);
+            }
+        }
+
+        private void CancelPendingTutorialInputRelease()
+        {
+            if (releaseTutorialInputBlockCoroutine is null)
+            {
+                return;
+            }
+
+            StopCoroutine(releaseTutorialInputBlockCoroutine);
+            releaseTutorialInputBlockCoroutine = null;
         }
 
         private void SyncTerminalInputLock()
