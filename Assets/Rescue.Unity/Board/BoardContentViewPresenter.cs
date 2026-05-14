@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using Rescue.Core.Pipeline;
 using Rescue.Core.State;
 using Rescue.Unity.Art.Registries;
+using Rescue.Unity.Presentation.Targets;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -625,6 +626,7 @@ namespace Rescue.Unity.BoardPresentation
 
             GameObject targetObject = targetView.Object;
             targetView.IsExtracting = true;
+            targetObject.GetComponentInChildren<TargetPuppyAnimator>(true)?.PlayExtract();
 
             if (!Application.isPlaying || !isActiveAndEnabled || effectiveDurationSeconds <= 0f)
             {
@@ -1898,6 +1900,7 @@ namespace Rescue.Unity.BoardPresentation
 
             targetObject.transform.localScale = scale;
             BoardContentMarkerFactory.SyncTargetReadabilityMarker(targetObject, readiness);
+            targetObject.GetComponentInChildren<TargetPuppyAnimator>(true)?.ApplyReadiness(readiness);
         }
 
         private static void ApplyTint(GameObject contentObject, Color tint)

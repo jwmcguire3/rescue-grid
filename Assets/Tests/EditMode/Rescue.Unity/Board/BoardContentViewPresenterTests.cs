@@ -7,6 +7,7 @@ using Rescue.Core.State;
 using Rescue.Unity.Art.Registries;
 using Rescue.Unity.BoardPresentation;
 using Rescue.Unity.Presentation;
+using Rescue.Unity.Presentation.Targets;
 using UnityEngine;
 using UnityEngine.TestTools.Utils;
 using CoreBoard = Rescue.Core.State.Board;
@@ -264,6 +265,86 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Assert.That(FindChildByName(harness.ContentRoot, "Target_puppy-1"), Is.Not.Null);
             Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-1", out GameObject? targetObject), Is.True);
             Assert.That(targetObject, Is.Not.Null);
+            Assert.That(targetObject!.GetComponentInChildren<TargetPuppyAnimator>(true), Is.Null);
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_TargetAnimatorReceivesInitialTrappedReadiness()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameObject targetPrefab = CreateTrackedGameObject("AnimatedTargetPrefab");
+            targetPrefab.AddComponent<TargetPuppyAnimator>();
+            TargetVisualRegistry targetRegistry = CreateRegistry<TargetVisualRegistry>();
+            targetRegistry.FallbackTargetPrefab = targetPrefab;
+            SetPrivateField(harness.ContentPresenter, "targetRegistry", targetRegistry);
+            GameState state = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new TargetTile("puppy-1", Extracted: false))),
+                ImmutableArray.Create(new TargetState("puppy-1", new TileCoord(0, 0), TargetReadiness.Trapped)));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-1", out GameObject? targetObject), Is.True);
+            TargetPuppyAnimator? targetAnimator = targetObject!.GetComponentInChildren<TargetPuppyAnimator>(true);
+            Assert.That(targetAnimator, Is.Not.Null);
+            Assert.That(targetAnimator!.CurrentAppliedReadiness, Is.EqualTo(TargetReadiness.Trapped));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_TargetAnimatorReceivesProgressingReadinessUpdate()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameObject targetPrefab = CreateTrackedGameObject("AnimatedTargetPrefab");
+            targetPrefab.AddComponent<TargetPuppyAnimator>();
+            TargetVisualRegistry targetRegistry = CreateRegistry<TargetVisualRegistry>();
+            targetRegistry.FallbackTargetPrefab = targetPrefab;
+            SetPrivateField(harness.ContentPresenter, "targetRegistry", targetRegistry);
+            GameState trappedState = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new TargetTile("puppy-1", Extracted: false))),
+                ImmutableArray.Create(new TargetState("puppy-1", new TileCoord(0, 0), TargetReadiness.Trapped)));
+            GameState progressingState = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new TargetTile("puppy-1", Extracted: false))),
+                ImmutableArray.Create(new TargetState("puppy-1", new TileCoord(0, 0), TargetReadiness.Progressing)));
+
+            harness.GridPresenter.RebuildGrid(trappedState);
+            harness.ContentPresenter.SyncImmediate(trappedState);
+            harness.ContentPresenter.SyncImmediate(progressingState);
+
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-1", out GameObject? targetObject), Is.True);
+            TargetPuppyAnimator? targetAnimator = targetObject!.GetComponentInChildren<TargetPuppyAnimator>(true);
+            Assert.That(targetAnimator, Is.Not.Null);
+            Assert.That(targetAnimator!.CurrentAppliedReadiness, Is.EqualTo(TargetReadiness.Progressing));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_TargetAnimatorReceivesOneClearAwayReadinessUpdate()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameObject targetPrefab = CreateTrackedGameObject("AnimatedTargetPrefab");
+            targetPrefab.AddComponent<TargetPuppyAnimator>();
+            TargetVisualRegistry targetRegistry = CreateRegistry<TargetVisualRegistry>();
+            targetRegistry.FallbackTargetPrefab = targetPrefab;
+            SetPrivateField(harness.ContentPresenter, "targetRegistry", targetRegistry);
+            GameState progressingState = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new TargetTile("puppy-1", Extracted: false))),
+                ImmutableArray.Create(new TargetState("puppy-1", new TileCoord(0, 0), TargetReadiness.Progressing)));
+            GameState oneClearAwayState = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new TargetTile("puppy-1", Extracted: false))),
+                ImmutableArray.Create(new TargetState("puppy-1", new TileCoord(0, 0), TargetReadiness.OneClearAway)));
+
+            harness.GridPresenter.RebuildGrid(progressingState);
+            harness.ContentPresenter.SyncImmediate(progressingState);
+            harness.ContentPresenter.SyncImmediate(oneClearAwayState);
+
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-1", out GameObject? targetObject), Is.True);
+            TargetPuppyAnimator? targetAnimator = targetObject!.GetComponentInChildren<TargetPuppyAnimator>(true);
+            Assert.That(targetAnimator, Is.Not.Null);
+            Assert.That(targetAnimator!.CurrentAppliedReadiness, Is.EqualTo(TargetReadiness.OneClearAway));
         }
 
         [Test]
@@ -1383,6 +1464,37 @@ namespace Rescue.Unity.BoardPresentation.Tests
 
             harness.ContentPresenter.AnimateTargetExtract(new TargetExtracted("puppy-1", new TileCoord(0, 0)));
 
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-1", out GameObject? targetAfterExtract), Is.False);
+            Assert.That(targetAfterExtract, Is.Null);
+            Assert.That(FindChildByName(harness.ContentRoot, "Target_puppy-1"), Is.Null);
+            Assert.That(harness.ContentRoot.childCount, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_AnimateTargetExtractPlaysOptionalTargetAnimator()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameObject targetPrefab = CreateTrackedGameObject("AnimatedTargetPrefab");
+            targetPrefab.AddComponent<TargetPuppyAnimator>();
+            TargetVisualRegistry targetRegistry = CreateRegistry<TargetVisualRegistry>();
+            targetRegistry.FallbackTargetPrefab = targetPrefab;
+            SetPrivateField(harness.ContentPresenter, "targetRegistry", targetRegistry);
+            TileCoord targetCoord = new TileCoord(0, 0);
+            GameState state = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new TargetTile("puppy-1", Extracted: false))),
+                ImmutableArray.Create(new TargetState("puppy-1", targetCoord, TargetReadiness.OneClearAway)));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-1", out GameObject? targetBeforeExtract), Is.True);
+            TargetPuppyAnimator? targetAnimator = targetBeforeExtract!.GetComponentInChildren<TargetPuppyAnimator>(true);
+            Assert.That(targetAnimator, Is.Not.Null);
+
+            harness.ContentPresenter.AnimateTargetExtract(new TargetExtracted("puppy-1", targetCoord));
+
+            Assert.That(targetAnimator!.IsExtracting, Is.True);
             Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-1", out GameObject? targetAfterExtract), Is.False);
             Assert.That(targetAfterExtract, Is.Null);
             Assert.That(FindChildByName(harness.ContentRoot, "Target_puppy-1"), Is.Null);
