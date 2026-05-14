@@ -169,6 +169,7 @@ namespace Rescue.PlayMode.Tests.Smoke
             AssertCameraUsesFrontTableOrthographicView();
             AssertBoardStageLayout(boardRoot, boardContentRoot, waterRoot, dockRoot);
             AssertBoardFitsGameplayViewport(boardRoot, currentState.Board.Width, currentState.Board.Height);
+            AssertCameraRaysHitVisibleCells(boardRoot, currentState.Board.Width, currentState.Board.Height);
             AssertDirectionalLightMatchesStaging();
 
             yield return null;
@@ -433,15 +434,25 @@ namespace Rescue.PlayMode.Tests.Smoke
                 throw new AssertionException("Game.unity should include a tagged Main Camera.");
             }
 
-            Assert.That(camera.orthographic, Is.True, "Game camera should stay orthographic for grid readability.");
-            Assert.That(camera.orthographicSize, Is.EqualTo(PortraitGameSceneLayout.CameraPortraitOrthographicSize).Within(0.001f));
-            Assert.That(Vector3.Distance(camera.transform.position, PortraitGameSceneLayout.CameraPortraitPosition), Is.LessThan(0.001f));
-            Assert.That(Quaternion.Angle(camera.transform.rotation, PortraitGameSceneLayout.CameraPortraitRotation), Is.LessThan(0.1f));
-            Assert.That(camera.transform.forward.y, Is.LessThan(-0.99f), "Game camera should look straight down so the board starts square in frame.");
+            string diagnostics = BuildCameraDiagnostics(camera);
+            TestContext.Out.WriteLine(diagnostics);
+            Assert.That(camera.name, Is.EqualTo("Main Camera"), diagnostics);
+            Assert.That(camera.CompareTag("MainCamera"), Is.True, diagnostics);
+            Assert.That(camera.enabled, Is.True, diagnostics);
+            Assert.That(camera.gameObject.activeInHierarchy, Is.True, diagnostics);
+            Assert.That(camera.targetDisplay, Is.EqualTo(0), diagnostics);
+            Assert.That(camera.targetTexture, Is.Null, diagnostics);
+            Assert.That(camera.orthographic, Is.True, $"Game camera should stay orthographic for grid readability.\n{diagnostics}");
+            Assert.That(camera.orthographicSize, Is.EqualTo(PortraitGameSceneLayout.CameraPortraitOrthographicSize).Within(0.001f), diagnostics);
+            Assert.That(Vector3.Distance(camera.transform.position, PortraitGameSceneLayout.CameraPortraitPosition), Is.LessThan(0.001f), diagnostics);
+            Assert.That(Quaternion.Angle(camera.transform.rotation, PortraitGameSceneLayout.CameraPortraitRotation), Is.LessThan(0.1f), diagnostics);
+            Assert.That(camera.transform.forward.y, Is.LessThan(-0.99f), $"Game camera should look straight down so the board starts square in frame.\n{diagnostics}");
+            AssertNoCompetingGameplayCamera(camera, diagnostics);
         }
 
         private static void AssertBoardStageLayout(Transform boardRoot, Transform boardContentRoot, Transform waterRoot, Transform dockRoot)
         {
+            Transform? viewRoot = GameObject.Find("GameStateViewRoot")?.transform;
             Transform? stageRoot = boardRoot.parent;
             Assert.That(stageRoot, Is.Not.Null, "BoardRoot should be parented under BoardStageRoot.");
             if (stageRoot is null)
@@ -449,16 +460,27 @@ namespace Rescue.PlayMode.Tests.Smoke
                 throw new AssertionException("BoardRoot should be parented under BoardStageRoot.");
             }
 
+            string diagnostics = BuildRootDiagnostics(viewRoot, stageRoot, boardRoot, boardContentRoot, waterRoot, dockRoot, Camera.main?.transform);
+            TestContext.Out.WriteLine(diagnostics);
+            Assert.That(viewRoot, Is.Not.Null, diagnostics);
+            Assert.That(Quaternion.Angle(viewRoot!.localRotation, Quaternion.identity), Is.LessThan(0.1f), "GameStateViewRoot should not rotate board/input space.");
             Assert.That(stageRoot.name, Is.EqualTo("BoardStageRoot"));
             Assert.That(boardContentRoot.parent, Is.SameAs(stageRoot), "Board content should share the board stage transform.");
             Assert.That(waterRoot.parent, Is.SameAs(stageRoot), "Water overlays should share the board stage transform.");
             Assert.That(dockRoot.parent, Is.Not.SameAs(stageRoot), "DockRoot should stay separate so its staging can be tuned independently.");
-            Assert.That(Vector3.Distance(stageRoot.localPosition, PortraitGameSceneLayout.BoardPortraitPosition), Is.LessThan(0.001f));
-            Assert.That(Quaternion.Angle(stageRoot.localRotation, PortraitGameSceneLayout.BoardPortraitRotation), Is.LessThan(0.1f), "BoardStageRoot should keep the gameplay/input coordinate contract aligned.");
-            Assert.That(Vector3.Distance(stageRoot.localScale, PortraitGameSceneLayout.BoardPortraitScale), Is.LessThan(0.001f));
-            Assert.That(Vector3.Distance(dockRoot.localPosition, PortraitGameSceneLayout.DockPortraitPosition), Is.LessThan(0.001f));
-            Assert.That(Quaternion.Angle(dockRoot.localRotation, PortraitGameSceneLayout.DockPortraitRotation), Is.LessThan(0.1f), "DockRoot should match the portrait staged dock tilt.");
-            Assert.That(Vector3.Distance(dockRoot.localScale, PortraitGameSceneLayout.DockPortraitScale), Is.LessThan(0.001f));
+            Assert.That(Vector3.Distance(stageRoot.localPosition, PortraitGameSceneLayout.BoardPortraitPosition), Is.LessThan(0.001f), diagnostics);
+            Assert.That(Quaternion.Angle(stageRoot.localRotation, PortraitGameSceneLayout.BoardPortraitRotation), Is.LessThan(0.1f), $"BoardStageRoot should keep the gameplay/input coordinate contract aligned.\n{diagnostics}");
+            Assert.That(Vector3.Distance(stageRoot.localScale, PortraitGameSceneLayout.BoardPortraitScale), Is.LessThan(0.001f), diagnostics);
+            Assert.That(Vector3.Distance(boardRoot.localPosition, Vector3.zero), Is.LessThan(0.001f), diagnostics);
+            Assert.That(Quaternion.Angle(boardRoot.localRotation, Quaternion.identity), Is.LessThan(0.1f), diagnostics);
+            Assert.That(Vector3.Distance(boardContentRoot.localPosition, Vector3.zero), Is.LessThan(0.001f), diagnostics);
+            Assert.That(Quaternion.Angle(boardContentRoot.localRotation, Quaternion.identity), Is.LessThan(0.1f), diagnostics);
+            Assert.That(Vector3.Distance(waterRoot.localPosition, Vector3.zero), Is.LessThan(0.001f), diagnostics);
+            Assert.That(Quaternion.Angle(waterRoot.localRotation, Quaternion.identity), Is.LessThan(0.1f), diagnostics);
+            Assert.That(Vector3.Distance(dockRoot.localPosition, PortraitGameSceneLayout.DockPortraitPosition), Is.LessThan(0.001f), diagnostics);
+            Assert.That(Quaternion.Angle(dockRoot.localRotation, PortraitGameSceneLayout.DockPortraitRotation), Is.LessThan(0.1f), $"DockRoot should match the portrait staged dock tilt.\n{diagnostics}");
+            Assert.That(Vector3.Distance(dockRoot.localScale, PortraitGameSceneLayout.DockPortraitScale), Is.LessThan(0.001f), diagnostics);
+            AssertPlanarAxesAgree(stageRoot, dockRoot, diagnostics);
         }
 
         private static void AssertBoardFitsGameplayViewport(Transform boardRoot, int boardWidth, int boardHeight)
@@ -479,23 +501,191 @@ namespace Rescue.PlayMode.Tests.Smoke
             Vector3 topRightViewport = camera.WorldToViewportPoint(topRight.position);
             Vector3 bottomLeftViewport = camera.WorldToViewportPoint(bottomLeft.position);
             Vector3 bottomRightViewport = camera.WorldToViewportPoint(bottomRight.position);
+            string diagnostics = BuildProjectionDiagnostics(camera, topLeft, topRight, bottomLeft, bottomRight);
+            TestContext.Out.WriteLine(diagnostics);
 
-            AssertViewportPointVisible(topLeftViewport, "top-left");
-            AssertViewportPointVisible(topRightViewport, "top-right");
-            AssertViewportPointVisible(bottomLeftViewport, "bottom-left");
-            AssertViewportPointVisible(bottomRightViewport, "bottom-right");
+            AssertViewportPointVisible(topLeftViewport, "top-left", diagnostics);
+            AssertViewportPointVisible(topRightViewport, "top-right", diagnostics);
+            AssertViewportPointVisible(bottomLeftViewport, "bottom-left", diagnostics);
+            AssertViewportPointVisible(bottomRightViewport, "bottom-right", diagnostics);
 
-            Assert.That(topRightViewport.x, Is.GreaterThan(topLeftViewport.x), "Top board row should project left-to-right.");
-            Assert.That(Mathf.Abs(topRightViewport.y - topLeftViewport.y), Is.LessThan(0.01f), "Top board row should project horizontally.");
-            Assert.That(Mathf.Abs(bottomLeftViewport.x - topLeftViewport.x), Is.LessThan(0.01f), "Left board column should project vertically.");
-            Assert.That(topLeftViewport.y, Is.GreaterThan(bottomLeftViewport.y), "Board rows should advance top-to-bottom.");
+            Assert.That(topRightViewport.x, Is.GreaterThan(topLeftViewport.x), $"Top board row should project left-to-right.\n{diagnostics}");
+            Assert.That(Mathf.Abs(topRightViewport.y - topLeftViewport.y), Is.LessThan(0.01f), $"Top board row should project horizontally.\n{diagnostics}");
+            Assert.That(Mathf.Abs(bottomLeftViewport.x - topLeftViewport.x), Is.LessThan(0.01f), $"Left board column should project vertically.\n{diagnostics}");
+            Assert.That(topLeftViewport.y, Is.GreaterThan(bottomLeftViewport.y), $"Board rows should advance top-to-bottom.\n{diagnostics}");
         }
 
-        private static void AssertViewportPointVisible(Vector3 viewportPoint, string label)
+        private static void AssertViewportPointVisible(Vector3 viewportPoint, string label, string diagnostics)
         {
-            Assert.That(viewportPoint.z, Is.GreaterThan(0f), $"{label} board corner should be in front of the camera.");
-            Assert.That(viewportPoint.x, Is.InRange(0.05f, 0.95f), $"{label} board corner should stay inside the gameplay viewport horizontally.");
-            Assert.That(viewportPoint.y, Is.InRange(0.05f, 0.95f), $"{label} board corner should stay inside the gameplay viewport vertically.");
+            Assert.That(viewportPoint.z, Is.GreaterThan(0f), $"{label} board corner should be in front of the camera.\n{diagnostics}");
+            Assert.That(viewportPoint.x, Is.InRange(0.05f, 0.95f), $"{label} board corner should stay inside the gameplay viewport horizontally.\n{diagnostics}");
+            Assert.That(viewportPoint.y, Is.InRange(0.05f, 0.95f), $"{label} board corner should stay inside the gameplay viewport vertically.\n{diagnostics}");
+        }
+
+        private static void AssertCameraRaysHitVisibleCells(Transform boardRoot, int boardWidth, int boardHeight)
+        {
+            Camera? camera = Camera.main;
+            Assert.That(camera, Is.Not.Null, "Game.unity should include a tagged Main Camera.");
+            if (camera is null)
+            {
+                throw new AssertionException("Game.unity should include a tagged Main Camera.");
+            }
+
+            Physics.SyncTransforms();
+            AssertCameraRayHitsCell(camera, boardRoot.Find("Cell_00_00"), new TileCoord(0, 0), "top-left");
+            AssertCameraRayHitsCell(camera, boardRoot.Find($"Cell_00_{boardWidth - 1:00}"), new TileCoord(0, boardWidth - 1), "top-right");
+            AssertCameraRayHitsCell(camera, boardRoot.Find($"Cell_{boardHeight - 1:00}_00"), new TileCoord(boardHeight - 1, 0), "bottom-left");
+            AssertCameraRayHitsCell(camera, boardRoot.Find($"Cell_{boardHeight - 1:00}_{boardWidth - 1:00}"), new TileCoord(boardHeight - 1, boardWidth - 1), "bottom-right");
+        }
+
+        private static void AssertCameraRayHitsCell(Camera camera, Transform? anchor, TileCoord expectedCoord, string label)
+        {
+            Assert.That(anchor, Is.Not.Null, $"Expected {label} board cell.");
+            if (anchor is null)
+            {
+                throw new AssertionException($"Expected {label} board cell.");
+            }
+
+            Vector3 screen = camera.WorldToScreenPoint(anchor.position);
+            Ray ray = camera.ScreenPointToRay(screen);
+            Assert.That(Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, ~0, QueryTriggerInteraction.Ignore), Is.True, $"{label} ray should hit a board cell from screen={FormatVector(screen)}.");
+            BoardCellView? cellView = hit.collider.GetComponentInParent<BoardCellView>();
+            Assert.That(cellView, Is.Not.Null, $"{label} ray hit '{hit.collider.name}' without a BoardCellView parent.");
+            Assert.That(cellView!.Coord, Is.EqualTo(expectedCoord), $"{label} ray hit '{hit.collider.name}' at {FormatVector(hit.point)}.");
+        }
+
+        private static void AssertNoCompetingGameplayCamera(Camera mainCamera, string diagnostics)
+        {
+            Camera[] cameras = UnityObject.FindObjectsByType<Camera>(FindObjectsSortMode.None);
+            for (int i = 0; i < cameras.Length; i++)
+            {
+                Camera candidate = cameras[i];
+                if (!IsGameplayRenderCamera(candidate, mainCamera))
+                {
+                    continue;
+                }
+
+                Assert.That(candidate.depth, Is.LessThan(mainCamera.depth), $"An enabled camera can render over Camera.main.\n{diagnostics}");
+            }
+        }
+
+        private static bool IsGameplayRenderCamera(Camera candidate, Camera mainCamera)
+        {
+            if (candidate == mainCamera ||
+                !candidate.enabled ||
+                !candidate.gameObject.activeInHierarchy ||
+                candidate.targetTexture is not null ||
+                candidate.targetDisplay != mainCamera.targetDisplay)
+            {
+                return false;
+            }
+
+            if (candidate.hideFlags != HideFlags.None ||
+                candidate.gameObject.hideFlags != HideFlags.None)
+            {
+                return false;
+            }
+
+            Scene candidateScene = candidate.gameObject.scene;
+            Scene mainScene = mainCamera.gameObject.scene;
+            if (!candidateScene.IsValid() || !candidateScene.isLoaded)
+            {
+                return false;
+            }
+
+            return candidateScene == mainScene ||
+                string.Equals(candidateScene.name, "DontDestroyOnLoad", System.StringComparison.Ordinal);
+        }
+
+        private static void AssertPlanarAxesAgree(Transform boardStageRoot, Transform dockRoot, string diagnostics)
+        {
+            Vector3 boardRight = Vector3.ProjectOnPlane(boardStageRoot.right, Vector3.up).normalized;
+            Vector3 dockRight = Vector3.ProjectOnPlane(dockRoot.right, Vector3.up).normalized;
+            Vector3 boardForward = Vector3.ProjectOnPlane(boardStageRoot.forward, Vector3.up).normalized;
+            Vector3 dockForward = Vector3.ProjectOnPlane(dockRoot.forward, Vector3.up).normalized;
+            Assert.That(Vector3.Dot(boardRight, dockRight), Is.GreaterThan(0.99f), $"Board and dock right axes should agree.\n{diagnostics}");
+            Assert.That(Vector3.Dot(boardForward, dockForward), Is.GreaterThan(0.96f), $"Board and dock forward axes should agree in the gameplay plane.\n{diagnostics}");
+        }
+
+        private static string BuildCameraDiagnostics(Camera mainCamera)
+        {
+            System.Text.StringBuilder builder = new System.Text.StringBuilder();
+            builder.AppendLine($"[CameraDiagnostics] activeScene={SceneManager.GetActiveScene().name} screen={Screen.width}x{Screen.height}");
+            Camera[] cameras = UnityObject.FindObjectsByType<Camera>(FindObjectsSortMode.None);
+            for (int i = 0; i < cameras.Length; i++)
+            {
+                Camera camera = cameras[i];
+                builder.AppendLine(
+                    $"camera[{i}] name='{camera.name}' path='{GetHierarchyPath(camera.transform)}' scene='{camera.gameObject.scene.name}' scenePath='{camera.gameObject.scene.path}' hideFlags={camera.hideFlags} objectHideFlags={camera.gameObject.hideFlags} isMain={camera == mainCamera} tag='{camera.tag}' active={camera.gameObject.activeInHierarchy} enabled={camera.enabled} depth={camera.depth:0.###} display={camera.targetDisplay} targetTexture={(camera.targetTexture == null ? "<null>" : camera.targetTexture.name)} ortho={camera.orthographic} orthoSize={camera.orthographicSize:0.###} pos={FormatVector(camera.transform.position)} euler={FormatVector(camera.transform.eulerAngles)} forward={FormatVector(camera.transform.forward)} up={FormatVector(camera.transform.up)}");
+            }
+
+            return builder.ToString();
+        }
+
+        private static string BuildRootDiagnostics(
+            Transform? viewRoot,
+            Transform boardStageRoot,
+            Transform boardRoot,
+            Transform boardContentRoot,
+            Transform waterRoot,
+            Transform dockRoot,
+            Transform? cameraRoot)
+        {
+            System.Text.StringBuilder builder = new System.Text.StringBuilder();
+            builder.AppendLine("[RootDiagnostics]");
+            AppendTransformDiagnostics(builder, "GameStateViewRoot", viewRoot);
+            AppendTransformDiagnostics(builder, "BoardStageRoot", boardStageRoot);
+            AppendTransformDiagnostics(builder, "BoardRoot", boardRoot);
+            AppendTransformDiagnostics(builder, "BoardContentRoot", boardContentRoot);
+            AppendTransformDiagnostics(builder, "WaterRoot", waterRoot);
+            AppendTransformDiagnostics(builder, "DockRoot", dockRoot);
+            AppendTransformDiagnostics(builder, "Main Camera", cameraRoot);
+            return builder.ToString();
+        }
+
+        private static string BuildProjectionDiagnostics(Camera camera, Transform topLeft, Transform topRight, Transform bottomLeft, Transform bottomRight)
+        {
+            System.Text.StringBuilder builder = new System.Text.StringBuilder();
+            builder.AppendLine("[ProjectionDiagnostics]");
+            AppendProjectionDiagnostics(builder, camera, "Cell_00_00", topLeft);
+            AppendProjectionDiagnostics(builder, camera, topRight.name, topRight);
+            AppendProjectionDiagnostics(builder, camera, bottomLeft.name, bottomLeft);
+            AppendProjectionDiagnostics(builder, camera, bottomRight.name, bottomRight);
+            return builder.ToString();
+        }
+
+        private static void AppendProjectionDiagnostics(System.Text.StringBuilder builder, Camera camera, string label, Transform transform)
+        {
+            builder.AppendLine($"{label}: world={FormatVector(transform.position)} viewport={FormatVector(camera.WorldToViewportPoint(transform.position))} screen={FormatVector(camera.WorldToScreenPoint(transform.position))}");
+        }
+
+        private static void AppendTransformDiagnostics(System.Text.StringBuilder builder, string label, Transform? transform)
+        {
+            if (transform is null)
+            {
+                builder.AppendLine($"{label}: <missing>");
+                return;
+            }
+
+            builder.AppendLine($"{label}: parent='{(transform.parent is null ? "<none>" : transform.parent.name)}' localPos={FormatVector(transform.localPosition)} localEuler={FormatVector(transform.localEulerAngles)} localScale={FormatVector(transform.localScale)} worldPos={FormatVector(transform.position)} worldEuler={FormatVector(transform.eulerAngles)} right={FormatVector(transform.right)} forward={FormatVector(transform.forward)}");
+        }
+
+        private static string GetHierarchyPath(Transform transform)
+        {
+            System.Text.StringBuilder builder = new System.Text.StringBuilder(transform.name);
+            Transform? current = transform.parent;
+            while (current is not null)
+            {
+                builder.Insert(0, $"{current.name}/");
+                current = current.parent;
+            }
+
+            return builder.ToString();
+        }
+
+        private static string FormatVector(Vector3 value)
+        {
+            return $"({value.x:0.###},{value.y:0.###},{value.z:0.###})";
         }
 
         private static void AssertDirectionalLightMatchesStaging()

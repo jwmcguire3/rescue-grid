@@ -269,6 +269,71 @@ namespace Rescue.Unity.BoardPresentation.Tests
         }
 
         [Test]
+        public void BoardContentViewPresenter_CentersTargetRendererFootprintOnCell()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameObject targetPrefab = CreateTrackedGameObject("OffsetTargetPrefab");
+            GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            createdObjects.Add(visual);
+            visual.name = "Visual";
+            visual.transform.SetParent(targetPrefab.transform, false);
+            visual.transform.localPosition = new Vector3(-0.25f, 0f, 0.3f);
+            visual.transform.localScale = new Vector3(0.25f, 0.25f, 0.25f);
+            TargetVisualRegistry targetRegistry = CreateRegistry<TargetVisualRegistry>();
+            targetRegistry.FallbackTargetPrefab = targetPrefab;
+            SetPrivateField(harness.ContentPresenter, "targetRegistry", targetRegistry);
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new TargetTile("puppy-1", Extracted: false))),
+                ImmutableArray.Create(new TargetState("puppy-1", new TileCoord(0, 0), TargetReadiness.OneClearAway)));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-1", out GameObject? targetObject), Is.True);
+            Assert.That(targetObject, Is.Not.Null);
+            Assert.That(harness.GridPresenter.TryGetCellAnchor(new TileCoord(0, 0), out Transform anchor), Is.True);
+            Bounds worldBounds = CalculateWorldRendererBounds(targetObject!);
+            Assert.That(Mathf.Abs(worldBounds.center.x - anchor.position.x), Is.LessThan(0.01f), $"center={worldBounds.center}, anchor={anchor.position}");
+            Assert.That(Mathf.Abs(worldBounds.center.z - anchor.position.z), Is.LessThan(0.01f), $"center={worldBounds.center}, anchor={anchor.position}");
+            Assert.That(Mathf.Abs(targetObject!.transform.position.x - anchor.position.x), Is.LessThan(0.01f), "Target root should remain on the logical cell anchor.");
+            Assert.That(Mathf.Abs(targetObject.transform.position.z - anchor.position.z), Is.LessThan(0.01f), "Target root should remain on the logical cell anchor.");
+            Assert.That(targetObject.GetComponent<BoardCellView>()!.Coord, Is.EqualTo(new TileCoord(0, 0)));
+            Transform? marker = FindChildByName(targetObject.transform, "TargetReadabilityMarker");
+            Assert.That(marker, Is.Not.Null);
+            Assert.That(marker!.localPosition.x, Is.EqualTo(0f).Within(0.001f));
+            Assert.That(marker.localPosition.z, Is.EqualTo(0f).Within(0.001f));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_DisablesNestedTargetPrefabCameras()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameObject targetPrefab = CreateTrackedGameObject("CameraBearingTargetPrefab");
+            GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            createdObjects.Add(visual);
+            visual.name = "Visual";
+            visual.transform.SetParent(targetPrefab.transform, false);
+            GameObject cameraObject = CreateTrackedGameObject("Camera");
+            cameraObject.transform.SetParent(visual.transform, false);
+            Camera nestedCamera = cameraObject.AddComponent<Camera>();
+            nestedCamera.enabled = true;
+            TargetVisualRegistry targetRegistry = CreateRegistry<TargetVisualRegistry>();
+            targetRegistry.FallbackTargetPrefab = targetPrefab;
+            SetPrivateField(harness.ContentPresenter, "targetRegistry", targetRegistry);
+            GameState state = CreateState(ImmutableArray.Create(
+                ImmutableArray.Create<Tile>(new TargetTile("puppy-camera", Extracted: false))),
+                ImmutableArray.Create(new TargetState("puppy-camera", new TileCoord(0, 0), TargetReadiness.Trapped)));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-camera", out GameObject? targetObject), Is.True);
+            Camera spawnedCamera = targetObject!.GetComponentInChildren<Camera>(true)!;
+            Assert.That(spawnedCamera, Is.Not.Null);
+            Assert.That(spawnedCamera.enabled, Is.False, "Imported cameras inside target art should not render over the gameplay camera.");
+        }
+
+        [Test]
         public void BoardContentViewPresenter_TargetAnimatorReceivesInitialTrappedReadiness()
         {
             PresenterHarness harness = CreateHarness();
@@ -1945,6 +2010,21 @@ namespace Rescue.Unity.BoardPresentation.Tests
             }
 
             field.SetValue(target, value);
+        }
+
+        private static Bounds CalculateWorldRendererBounds(GameObject root)
+        {
+            Renderer[] renderers = root.GetComponentsInChildren<Renderer>(true);
+            Assert.That(renderers.Length, Is.GreaterThan(0), "Expected target prefab to include renderers.");
+
+            Bounds combined = renderers[0].bounds;
+
+            for (int rendererIndex = 1; rendererIndex < renderers.Length; rendererIndex++)
+            {
+                combined.Encapsulate(renderers[rendererIndex].bounds);
+            }
+
+            return combined;
         }
 
         private static GameObject? GetRegisteredPieceObject(

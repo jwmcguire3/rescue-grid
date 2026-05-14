@@ -25,6 +25,7 @@ namespace Rescue.Unity.BoardPresentation
         private const float MinimumTimelineDurationSeconds = 0.01f;
         private const float MoveLandingPhaseRatio = 0.35f;
         private const string VinePreviewLabel = "VineGrowthPreview";
+        private const string TargetReadabilityMarkerNamePrefix = "TargetReadabilityMarker";
         private const float VinePreviewYOffsetRatio = 1.0f;
         private const float VinePreviewReadabilityLift = 0.055f;
         private const float VinePreviewContentClearance = 0.08f;
@@ -1413,8 +1414,9 @@ namespace Rescue.Unity.BoardPresentation
                 if (!existingView.IsExtracting)
                 {
                     MoveContentObjectToAnchor(existingView.Object, anchor, coord, contentLabel, contentYOffset);
-                    CenterTargetVisualFootprint(existingView.Object);
+                    DisableNestedTargetCameras(existingView.Object);
                     ApplyTargetVisualState(existingView.Object, targetState.Readiness);
+                    CenterTargetVisualFootprint(existingView.Object);
                     return;
                 }
 
@@ -1431,9 +1433,10 @@ namespace Rescue.Unity.BoardPresentation
 
             if (spawnedObject is not null)
             {
-                CenterTargetVisualFootprint(spawnedObject);
                 spawnedTargetsById[targetId] = new TargetVisualView(spawnedObject);
+                DisableNestedTargetCameras(spawnedObject);
                 ApplyTargetVisualState(spawnedObject, targetState.Readiness);
+                CenterTargetVisualFootprint(spawnedObject);
             }
         }
 
@@ -1921,7 +1924,21 @@ namespace Rescue.Unity.BoardPresentation
             }
 
             Transform targetTransform = targetObject.transform;
+            if (TryOffsetTargetVisualChildren(targetTransform, planarOffset))
+            {
+                return;
+            }
+
             targetTransform.position += targetTransform.TransformVector(planarOffset);
+        }
+
+        private static void DisableNestedTargetCameras(GameObject targetObject)
+        {
+            Camera[] cameras = targetObject.GetComponentsInChildren<Camera>(includeInactive: true);
+            for (int cameraIndex = 0; cameraIndex < cameras.Length; cameraIndex++)
+            {
+                cameras[cameraIndex].enabled = false;
+            }
         }
 
         private static Bounds? CalculateLocalRendererBounds(GameObject root)
@@ -1938,6 +1955,11 @@ namespace Rescue.Unity.BoardPresentation
 
             for (int rendererIndex = 0; rendererIndex < renderers.Length; rendererIndex++)
             {
+                if (IsGeneratedTargetMarkerRenderer(root.transform, renderers[rendererIndex]))
+                {
+                    continue;
+                }
+
                 Bounds rendererBounds = renderers[rendererIndex].bounds;
                 Vector3 min = rendererBounds.min;
                 Vector3 max = rendererBounds.max;
@@ -1969,6 +1991,68 @@ namespace Rescue.Unity.BoardPresentation
             }
 
             return combined;
+        }
+
+        private static bool TryOffsetTargetVisualChildren(Transform targetRoot, Vector3 localPlanarOffset)
+        {
+            Renderer[] renderers = targetRoot.GetComponentsInChildren<Renderer>(includeInactive: true);
+            HashSet<Transform> directVisualChildren = new HashSet<Transform>();
+
+            for (int rendererIndex = 0; rendererIndex < renderers.Length; rendererIndex++)
+            {
+                Renderer renderer = renderers[rendererIndex];
+                if (IsGeneratedTargetMarkerRenderer(targetRoot, renderer))
+                {
+                    continue;
+                }
+
+                Transform? directChild = ResolveDirectChildUnder(targetRoot, renderer.transform);
+                if (directChild is null)
+                {
+                    return false;
+                }
+
+                directVisualChildren.Add(directChild);
+            }
+
+            if (directVisualChildren.Count == 0)
+            {
+                return false;
+            }
+
+            foreach (Transform directChild in directVisualChildren)
+            {
+                directChild.localPosition += localPlanarOffset;
+            }
+
+            return true;
+        }
+
+        private static Transform? ResolveDirectChildUnder(Transform root, Transform descendant)
+        {
+            Transform current = descendant;
+            while (current.parent is not null && current.parent != root)
+            {
+                current = current.parent;
+            }
+
+            return current.parent == root ? current : null;
+        }
+
+        private static bool IsGeneratedTargetMarkerRenderer(Transform targetRoot, Renderer renderer)
+        {
+            Transform? current = renderer.transform;
+            while (current is not null && current != targetRoot)
+            {
+                if (current.name.StartsWith(TargetReadabilityMarkerNamePrefix, System.StringComparison.Ordinal))
+                {
+                    return true;
+                }
+
+                current = current.parent;
+            }
+
+            return false;
         }
 
         private static void ApplyTint(GameObject contentObject, Color tint)
