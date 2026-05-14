@@ -138,6 +138,7 @@
     <Compile Include="Assets\Rescue.Unity\Art\Validation\MeshyAssetValidationItem.cs" />
     <Compile Include="Assets\Rescue.Unity\Board\WaterRowResolver.cs" />
     <Compile Include="Assets\Rescue.Unity\Presentation\ActionPlaybackBuilder.cs" />
+    <Compile Include="Assets\Rescue.Unity\Diagnostics\AndroidWhiteoutCommandBridge.cs" />
     <Compile Include="Assets\Rescue.Unity\Debug\DebugPanel.cs" />
     <Compile Include="Assets\Rescue.Unity\Presentation\ActionPlaybackRouting.cs" />
   </ItemGroup>

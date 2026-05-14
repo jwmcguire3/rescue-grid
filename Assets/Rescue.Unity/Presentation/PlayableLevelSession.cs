@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Rescue.Content;
 using Rescue.Core.Pipeline;
+using Rescue.Core.Rules;
 using Rescue.Core.State;
 using Rescue.Core.Undo;
 using Rescue.Unity.Haptics;
@@ -209,11 +211,70 @@ namespace Rescue.Unity.Presentation
             return true;
         }
 
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+        public bool TryRunDiagnosticAction(TileCoord coord)
+        {
+            ResolveSceneReferences();
+            GameState? current = CurrentState;
+            if (current is null || gameStateView is null)
+            {
+                return false;
+            }
+
+            ActionResult result = Pipeline.RunAction(current, new ActionInput(coord));
+            if (result.State.ActionCount <= current.ActionCount)
+            {
+                return false;
+            }
+
+            gameStateView.ForceSyncToState(
+                result.State,
+                "android whiteout diagnostics",
+                cancelActivePlayback: true,
+                clearPlaybackPlan: true);
+            boardInput?.SetCurrentState(result.State, refreshView: false);
+            return true;
+        }
+
+        public bool TryFindFirstDiagnosticMove(out TileCoord coord, out int groupSize)
+        {
+            coord = default;
+            groupSize = 0;
+            GameState? current = CurrentState;
+            if (current is null)
+            {
+                return false;
+            }
+
+            for (int row = 0; row < current.Board.Height; row++)
+            {
+                for (int col = 0; col < current.Board.Width; col++)
+                {
+                    TileCoord candidate = new TileCoord(row, col);
+                    ImmutableArray<TileCoord>? group = GroupOps.FindGroup(current.Board, candidate);
+                    if (!group.HasValue)
+                    {
+                        continue;
+                    }
+
+                    coord = candidate;
+                    groupSize = group.Value.Length;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+#endif
+
         private void Awake()
         {
             ResolveSceneReferences();
             currentLevelId = string.IsNullOrWhiteSpace(startingLevelId) ? InitialLevelId : startingLevelId;
             BindTerminalButtons();
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+            Rescue.Unity.Diagnostics.AndroidWhiteoutCommandBridge.EnsureInstance();
+#endif
         }
 
         private void Start()

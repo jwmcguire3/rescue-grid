@@ -309,10 +309,10 @@ namespace Rescue.Unity.BoardPresentation.Tests
         }
 
         [Test]
-        public void BoardContentViewPresenter_DisablesNestedTargetPrefabCameras()
+        public void BoardContentViewPresenter_DisablesNestedTargetPrefabCamerasAndLights()
         {
             PresenterHarness harness = CreateHarness();
-            GameObject targetPrefab = CreateTrackedGameObject("CameraBearingTargetPrefab");
+            GameObject targetPrefab = CreateTrackedGameObject("SceneDeviceBearingTargetPrefab");
             GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
             createdObjects.Add(visual);
             visual.name = "Visual";
@@ -321,6 +321,10 @@ namespace Rescue.Unity.BoardPresentation.Tests
             cameraObject.transform.SetParent(visual.transform, false);
             Camera nestedCamera = cameraObject.AddComponent<Camera>();
             nestedCamera.enabled = true;
+            GameObject lightObject = CreateTrackedGameObject("Light");
+            lightObject.transform.SetParent(visual.transform, false);
+            Light nestedLight = lightObject.AddComponent<Light>();
+            nestedLight.enabled = true;
             TargetVisualRegistry targetRegistry = CreateRegistry<TargetVisualRegistry>();
             targetRegistry.FallbackTargetPrefab = targetPrefab;
             SetPrivateField(harness.ContentPresenter, "targetRegistry", targetRegistry);
@@ -335,6 +339,9 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Camera spawnedCamera = targetObject!.GetComponentInChildren<Camera>(true)!;
             Assert.That(spawnedCamera, Is.Not.Null);
             Assert.That(spawnedCamera.enabled, Is.False, "Imported cameras inside target art should not render over the gameplay camera.");
+            Light spawnedLight = targetObject.GetComponentInChildren<Light>(true)!;
+            Assert.That(spawnedLight, Is.Not.Null);
+            Assert.That(spawnedLight.enabled, Is.False, "Imported lights inside target art should not brighten or wash out board visuals.");
         }
 
 #if UNITY_EDITOR
@@ -382,6 +389,12 @@ namespace Rescue.Unity.BoardPresentation.Tests
             for (int cameraIndex = 0; cameraIndex < nestedCameras.Length; cameraIndex++)
             {
                 Assert.That(nestedCameras[cameraIndex].enabled, Is.False, "Imported target cameras must not render over the gameplay camera.");
+            }
+
+            Light[] nestedLights = targetObject.GetComponentsInChildren<Light>(includeInactive: true);
+            for (int lightIndex = 0; lightIndex < nestedLights.Length; lightIndex++)
+            {
+                Assert.That(nestedLights[lightIndex].enabled, Is.False, "Imported target lights must not brighten or wash out board visuals.");
             }
 
             Assert.That(harness.GridPresenter.TryGetCellAnchor(new TileCoord(0, 0), out Transform anchor), Is.True);

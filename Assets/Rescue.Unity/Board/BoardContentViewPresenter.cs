@@ -1474,7 +1474,7 @@ namespace Rescue.Unity.BoardPresentation
                 if (!existingView.IsExtracting)
                 {
                     MoveContentObjectToAnchor(existingView.Object, anchor, coord, contentLabel, contentYOffset);
-                    DisableNestedTargetCameras(existingView.Object);
+                    DisableNestedTargetSceneDevices(existingView.Object);
                     ApplyTargetVisualState(existingView.Object, targetState.Readiness);
                     CenterTargetVisualFootprint(existingView.Object);
                     return;
@@ -1494,7 +1494,7 @@ namespace Rescue.Unity.BoardPresentation
             if (spawnedObject is not null)
             {
                 spawnedTargetsById[targetId] = new TargetVisualView(spawnedObject);
-                DisableNestedTargetCameras(spawnedObject);
+                DisableNestedTargetSceneDevices(spawnedObject);
                 ApplyTargetVisualState(spawnedObject, targetState.Readiness);
                 CenterTargetVisualFootprint(spawnedObject);
             }
@@ -2000,12 +2000,18 @@ namespace Rescue.Unity.BoardPresentation
             targetTransform.position += targetTransform.TransformVector(planarOffset);
         }
 
-        private static void DisableNestedTargetCameras(GameObject targetObject)
+        private static void DisableNestedTargetSceneDevices(GameObject targetObject)
         {
             Camera[] cameras = targetObject.GetComponentsInChildren<Camera>(includeInactive: true);
             for (int cameraIndex = 0; cameraIndex < cameras.Length; cameraIndex++)
             {
                 cameras[cameraIndex].enabled = false;
+            }
+
+            Light[] lights = targetObject.GetComponentsInChildren<Light>(includeInactive: true);
+            for (int lightIndex = 0; lightIndex < lights.Length; lightIndex++)
+            {
+                lights[lightIndex].enabled = false;
             }
         }
 
