@@ -97,6 +97,7 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(view.ReadableLabels, Has.All.TypeOf<TextMeshProUGUI>());
             Assert.That(view.ReadableLabels, Has.Some.Matches<TextMeshProUGUI>(label => label.text == "Vibrations"));
             Assert.That(view.ReadableLabels, Has.Some.Matches<TextMeshProUGUI>(label => label.text == "Strength"));
+            AssertSettingsMenuFonts(view);
 
             Image restartImage = view.RestartButton.GetComponent<Image>();
             Image settingsImage = view.SettingsButton.GetComponent<Image>();
@@ -513,6 +514,46 @@ namespace Rescue.Unity.Presentation.Tests
             RectTransform closeRect = (RectTransform)closeButton.transform;
             Assert.That(closeRect.sizeDelta.x, Is.EqualTo(44f).Within(0.001f));
             Assert.That(closeRect.sizeDelta.y, Is.EqualTo(44f).Within(0.001f));
+        }
+
+        private static void AssertSettingsMenuFonts(SettingsMenuView view)
+        {
+            TMP_FontAsset displayFont = LoadFont("Rye SDF");
+            TMP_FontAsset bodyFont = LoadFont("DM Sans SDF");
+            TMP_FontAsset fallbackDisplayFont = LoadFont("Roboto Slab SDF");
+
+            Assert.That(displayFont.fallbackFontAssetTable, Is.Not.Null);
+            Assert.That(displayFont.fallbackFontAssetTable, Has.Some.SameAs(fallbackDisplayFont));
+
+            AssertLabelFont(view, "SettingsButtonLabel", displayFont);
+            AssertLabelFont(view, "RestartButtonLabel", displayFont);
+            AssertLabelFont(view, "SettingsTitle", displayFont);
+            AssertLabelFont(view, "AudioLabel", displayFont);
+            AssertLabelFont(view, "ShowTutorialButtonLabel", displayFont);
+
+            AssertLabelFont(view, "MusicLabel", bodyFont);
+            AssertLabelFont(view, "MusicValue", bodyFont);
+            AssertLabelFont(view, "FXLabel", bodyFont);
+            AssertLabelFont(view, "FXValue", bodyFont);
+            AssertLabelFont(view, "MuteMusicToggleLabel", bodyFont);
+            AssertLabelFont(view, "MuteFxToggleLabel", bodyFont);
+            AssertLabelFont(view, "VibrationsToggleLabel", bodyFont);
+            AssertLabelFont(view, "HapticsStrengthLabel", bodyFont);
+            AssertLabelFont(view, "HapticsStrengthValue", bodyFont);
+            Assert.That(view.LevelDropdown.captionText.font, Is.SameAs(bodyFont));
+            Assert.That(view.LevelDropdown.itemText.font, Is.SameAs(bodyFont));
+        }
+
+        private static TMP_FontAsset LoadFont(string name)
+        {
+            TMP_FontAsset? font = Resources.Load<TMP_FontAsset>($"Rescue.Unity/UI/Fonts/{name}");
+            Assert.That(font, Is.Not.Null, $"Expected settings font asset '{name}'.");
+            return font!;
+        }
+
+        private static void AssertLabelFont(SettingsMenuView view, string labelName, TMP_FontAsset expectedFont)
+        {
+            Assert.That(FindLabel(view, labelName).font, Is.SameAs(expectedFont), $"{labelName} should use {expectedFont.name}.");
         }
 
         private static T FindDescendant<T>(Component root, string name)

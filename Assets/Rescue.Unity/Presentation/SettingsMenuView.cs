@@ -12,6 +12,9 @@ namespace Rescue.Unity.Presentation
     public sealed class SettingsMenuView : MonoBehaviour
     {
         private const string SpriteResourceRoot = "Rescue.Unity/UI/Settings/";
+        private const string FontResourceRoot = "Rescue.Unity/UI/Fonts/";
+        private const string DisplayFontResourcePath = FontResourceRoot + "Rye SDF";
+        private const string BodyFontResourcePath = FontResourceRoot + "DM Sans SDF";
 
         private static readonly Color Cream = new Color(0.89f, 0.82f, 0.68f, 1f);
         private static readonly Color DarkInk = new Color(0.09f, 0.08f, 0.06f, 1f);
@@ -62,8 +65,16 @@ namespace Rescue.Unity.Presentation
         [SerializeField] private Sprite? checkedBoxSprite;
         [SerializeField] private Sprite? tealPawSprite;
         [SerializeField] private Sprite? amberPawSprite;
+        [SerializeField] private TMP_FontAsset? displayFontAsset;
+        [SerializeField] private TMP_FontAsset? bodyFontAsset;
 
         private readonly List<TextMeshProUGUI> readableLabels = new List<TextMeshProUGUI>();
+
+        private enum FontRole
+        {
+            Body,
+            Display
+        }
 
         public Button RestartButton => Require(restartButton, nameof(restartButton));
 
@@ -194,6 +205,7 @@ namespace Rescue.Unity.Presentation
         private void BuildDefaultHierarchy()
         {
             CacheSprites();
+            CacheFonts();
             readableLabels.Clear();
 
             RectTransform root = EnsureRectTransform(gameObject);
@@ -242,7 +254,7 @@ namespace Rescue.Unity.Presentation
             panelImage.type = GetImageType(settingsBackgroundSprite);
             panelImage.color = settingsBackgroundSprite is null ? new Color(0.08f, 0.12f, 0.14f, 0.96f) : Color.white;
 
-            TextMeshProUGUI title = CreateLabel(panelRoot.transform, "SettingsTitle", "SETTINGS", 42f, Cream, TextAlignmentOptions.MidlineLeft);
+            TextMeshProUGUI title = CreateLabel(panelRoot.transform, "SettingsTitle", "SETTINGS", 42f, Cream, TextAlignmentOptions.MidlineLeft, FontRole.Display);
             title.fontStyle = FontStyles.Bold;
             SetPanelRect(title.rectTransform, PanelContentLeft, 54f, 260f, 58f);
             resumeButton = CreateCloseButton(panelRoot.transform);
@@ -253,7 +265,7 @@ namespace Rescue.Unity.Presentation
             levelDropdown = CreateDropdown(panelRoot.transform);
             SetPanelRect((RectTransform)levelDropdown.transform.parent, PanelContentLeft, 214f, PanelContentWidth, 52f);
 
-            TextMeshProUGUI audioLabel = CreateLabel(panelRoot.transform, "AudioLabel", "AUDIO", 26f, Teal, TextAlignmentOptions.MidlineLeft);
+            TextMeshProUGUI audioLabel = CreateLabel(panelRoot.transform, "AudioLabel", "AUDIO", 26f, Teal, TextAlignmentOptions.MidlineLeft, FontRole.Display);
             audioLabel.fontStyle = FontStyles.Bold;
             SetPanelRect(audioLabel.rectTransform, PanelContentLeft, 286f, 126f, 38f);
 
@@ -302,6 +314,12 @@ namespace Rescue.Unity.Presentation
             checkedBoxSprite ??= LoadSprite("checked_box");
             tealPawSprite ??= LoadSprite("teal_paw_icon");
             amberPawSprite ??= LoadSprite("amber_paw_icon");
+        }
+
+        private void CacheFonts()
+        {
+            displayFontAsset ??= Resources.Load<TMP_FontAsset>(DisplayFontResourcePath);
+            bodyFontAsset ??= Resources.Load<TMP_FontAsset>(BodyFontResourcePath);
         }
 
         private Button CreatePlaqueButton(
@@ -362,7 +380,7 @@ namespace Rescue.Unity.Presentation
                 iconLayout.flexibleHeight = 0f;
             }
 
-            TextMeshProUGUI label = CreateLabel(buttonObject.transform, $"{name}Label", text, 22f, textColor, TextAlignmentOptions.Center);
+            TextMeshProUGUI label = CreateLabel(buttonObject.transform, $"{name}Label", text, 22f, textColor, TextAlignmentOptions.Center, FontRole.Display);
             label.fontStyle = FontStyles.Bold;
             label.enableAutoSizing = true;
             label.fontSizeMin = 12f;
@@ -618,18 +636,31 @@ namespace Rescue.Unity.Presentation
             return row;
         }
 
-        private TextMeshProUGUI CreateLabel(Transform parent, string name, string text, float fontSize, Color color, TextAlignmentOptions alignment)
+        private TextMeshProUGUI CreateLabel(
+            Transform parent,
+            string name,
+            string text,
+            float fontSize,
+            Color color,
+            TextAlignmentOptions alignment,
+            FontRole role = FontRole.Body)
         {
             GameObject labelObject = CreateChild(name, parent);
             TextMeshProUGUI label = labelObject.AddComponent<TextMeshProUGUI>();
             label.text = text;
             label.color = color;
             label.fontSize = fontSize;
+            label.font = ResolveFont(role);
             label.alignment = alignment;
             label.textWrappingMode = TextWrappingModes.NoWrap;
             label.raycastTarget = false;
             readableLabels.Add(label);
             return label;
+        }
+
+        private TMP_FontAsset? ResolveFont(FontRole role)
+        {
+            return role == FontRole.Display ? displayFontAsset : bodyFontAsset;
         }
 
         private static Image CreateImage(Transform parent, string name, Sprite? sprite, Color fallbackColor)
