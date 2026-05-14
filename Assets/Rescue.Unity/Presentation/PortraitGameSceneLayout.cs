@@ -17,8 +17,8 @@ namespace Rescue.Unity.Presentation
         private const float BoardCellSize = 1.0f;
         private const float MinimumBoardPortraitScale = 0.66f;
 
-        public static readonly Vector3 CameraPortraitPosition = new Vector3(0f, 20.0f, -2.6f);
-        public static readonly Quaternion CameraPortraitRotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
+        public static readonly Vector3 CameraPortraitPosition = new Vector3(0f, 20.0f, -14.0f);
+        public static readonly Quaternion CameraPortraitRotation = Quaternion.Euler(60.0f, 0.0f, 0.0f);
         public const float CameraPortraitOrthographicSize = 7.2f;
         public const int MobileTargetFrameRate = 60;
 

@@ -446,7 +446,9 @@ namespace Rescue.PlayMode.Tests.Smoke
             Assert.That(camera.orthographicSize, Is.EqualTo(PortraitGameSceneLayout.CameraPortraitOrthographicSize).Within(0.001f), diagnostics);
             Assert.That(Vector3.Distance(camera.transform.position, PortraitGameSceneLayout.CameraPortraitPosition), Is.LessThan(0.001f), diagnostics);
             Assert.That(Quaternion.Angle(camera.transform.rotation, PortraitGameSceneLayout.CameraPortraitRotation), Is.LessThan(0.1f), diagnostics);
-            Assert.That(camera.transform.forward.y, Is.LessThan(-0.99f), $"Game camera should look straight down so the board starts square in frame.\n{diagnostics}");
+            Assert.That(camera.transform.forward.y, Is.LessThan(-0.85f), $"Game camera should keep a readable downward angle.\n{diagnostics}");
+            Assert.That(camera.transform.forward.z, Is.GreaterThan(0.45f), $"Game camera should use the front-table presentation pitch instead of a straight-down diagnostic view.\n{diagnostics}");
+            Assert.That(camera.transform.up.z, Is.GreaterThan(0.80f), $"Game camera up should keep board rows reading top-to-bottom.\n{diagnostics}");
             AssertNoCompetingGameplayCamera(camera, diagnostics);
         }
 

@@ -10,6 +10,9 @@ using Rescue.Unity.Presentation;
 using Rescue.Unity.Presentation.Targets;
 using UnityEngine;
 using UnityEngine.TestTools.Utils;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using CoreBoard = Rescue.Core.State.Board;
 using CoreDock = Rescue.Core.State.Dock;
 
@@ -17,6 +20,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
 {
     public sealed class BoardContentViewPresenterTests
     {
+        private const string DaisyTargetPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Targets/PF_Target_Daisy_Puppy.prefab";
         private readonly List<Object> createdObjects = new List<Object>();
 
         [TearDown]
@@ -332,6 +336,62 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Assert.That(spawnedCamera, Is.Not.Null);
             Assert.That(spawnedCamera.enabled, Is.False, "Imported cameras inside target art should not render over the gameplay camera.");
         }
+
+#if UNITY_EDITOR
+        [Test]
+        public void BoardContentViewPresenter_DaisyTargetUsesBoardSurfacePoseAfterSync()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameObject daisyPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(DaisyTargetPrefabPath);
+            Assert.That(daisyPrefab, Is.Not.Null, $"Expected Daisy target prefab at {DaisyTargetPrefabPath}.");
+            if (daisyPrefab is null)
+            {
+                return;
+            }
+
+            TargetVisualRegistry targetRegistry = CreateRegistry<TargetVisualRegistry>();
+            targetRegistry.PuppyPrefab = daisyPrefab;
+            targetRegistry.FallbackTargetPrefab = daisyPrefab;
+            SetPrivateField(harness.ContentPresenter, "targetRegistry", targetRegistry);
+            GameState state = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new TargetTile("puppy-1", Extracted: false))),
+                ImmutableArray.Create(new TargetState("puppy-1", new TileCoord(0, 0), TargetReadiness.Trapped)));
+
+            harness.GridPresenter.RebuildGrid(state);
+            harness.ContentPresenter.SyncImmediate(state);
+
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-1", out GameObject? targetObject), Is.True);
+            Assert.That(targetObject, Is.Not.Null);
+            if (targetObject is null)
+            {
+                return;
+            }
+
+            Transform? visual = targetObject.transform.Find("Visual");
+            Assert.That(visual, Is.Not.Null, "Daisy prefab should keep the imported art under a single visual child.");
+            if (visual is not null)
+            {
+                string visualDiagnostics = $"right={visual.right}, up={visual.up}, forward={visual.forward}, localEuler={visual.localEulerAngles}";
+                Assert.That(Vector3.Dot(visual.up.normalized, Vector3.up), Is.GreaterThan(0.99f), $"Daisy's visual up axis should belong to the board surface normal. {visualDiagnostics}");
+                Assert.That(Mathf.Abs(Vector3.Dot(visual.forward.normalized, Vector3.up)), Is.LessThan(0.01f), $"Daisy's visual forward axis should stay in the board plane. {visualDiagnostics}");
+            }
+
+            Camera[] nestedCameras = targetObject.GetComponentsInChildren<Camera>(includeInactive: true);
+            Assert.That(nestedCameras.Length, Is.GreaterThan(0), "Daisy currently imports a nested camera, so the presenter should explicitly disable it.");
+            for (int cameraIndex = 0; cameraIndex < nestedCameras.Length; cameraIndex++)
+            {
+                Assert.That(nestedCameras[cameraIndex].enabled, Is.False, "Imported target cameras must not render over the gameplay camera.");
+            }
+
+            Assert.That(harness.GridPresenter.TryGetCellAnchor(new TileCoord(0, 0), out Transform anchor), Is.True);
+            Bounds worldBounds = CalculateWorldRendererBounds(targetObject);
+            Assert.That(Mathf.Abs(worldBounds.center.x - anchor.position.x), Is.LessThan(0.01f), $"center={worldBounds.center}, anchor={anchor.position}");
+            Assert.That(Mathf.Abs(worldBounds.center.z - anchor.position.z), Is.LessThan(0.01f), $"center={worldBounds.center}, anchor={anchor.position}");
+            Assert.That(Mathf.Abs(targetObject.transform.position.x - anchor.position.x), Is.LessThan(0.01f), "Target root should remain on the logical cell anchor.");
+            Assert.That(Mathf.Abs(targetObject.transform.position.z - anchor.position.z), Is.LessThan(0.01f), "Target root should remain on the logical cell anchor.");
+        }
+#endif
 
         [Test]
         public void BoardContentViewPresenter_TargetAnimatorReceivesInitialTrappedReadiness()

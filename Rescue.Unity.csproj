@@ -132,6 +132,7 @@
     <Compile Include="Assets\Rescue.Unity\Capture\CaptureRunner.cs" />
     <Compile Include="Assets\Rescue.Unity\Audio\AudioSettingsController.cs" />
     <Compile Include="Assets\Rescue.Unity\Audio\MusicPlaylist.cs" />
+    <Compile Include="Assets\Rescue.Unity\Presentation\Targets\TargetSurfacePoseAdapter.cs" />
     <Compile Include="Assets\Rescue.Unity\Art\Validation\MeshyAssetValidationItem.cs" />
     <Compile Include="Assets\Rescue.Unity\Board\WaterRowResolver.cs" />
     <Compile Include="Assets\Rescue.Unity\Presentation\ActionPlaybackBuilder.cs" />

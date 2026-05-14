@@ -26,6 +26,7 @@ namespace Rescue.Unity.BoardPresentation
         private const float MoveLandingPhaseRatio = 0.35f;
         private const string VinePreviewLabel = "VineGrowthPreview";
         private const string TargetReadabilityMarkerNamePrefix = "TargetReadabilityMarker";
+        private const string TargetVisualChildName = "Visual";
         private const float VinePreviewYOffsetRatio = 1.0f;
         private const float VinePreviewReadabilityLift = 0.055f;
         private const float VinePreviewContentClearance = 0.08f;
@@ -50,6 +51,7 @@ namespace Rescue.Unity.BoardPresentation
         private static readonly Vector3 TargetOneClearAwayScale = new Vector3(1.08f, 1.08f, 1.08f);
         private static readonly Vector3 TargetExtractableScale = new Vector3(1.16f, 1.16f, 1.16f);
         private static readonly Vector3 TargetDistressedScale = new Vector3(1.08f, 1.08f, 1.08f);
+        private static readonly Quaternion TargetVisualSurfaceLocalRotation = Quaternion.Euler(0f, 180f, 0f);
 
         [SerializeField] private BoardGridViewPresenter? gridView;
         [SerializeField] private PieceVisualRegistry? pieceRegistry;
@@ -1906,6 +1908,10 @@ namespace Rescue.Unity.BoardPresentation
             targetObject.transform.localScale = scale;
             BoardContentMarkerFactory.SyncTargetReadabilityMarker(targetObject, readiness);
             targetObject.GetComponentInChildren<TargetPuppyAnimator>(true)?.ApplyReadiness(readiness);
+            TargetSurfacePoseAdapter.Ensure(
+                targetObject,
+                TargetVisualChildName,
+                TargetVisualSurfaceLocalRotation);
         }
 
         private static void CenterTargetVisualFootprint(GameObject targetObject)
