@@ -173,6 +173,20 @@ namespace Rescue.Unity.Art.Tests
             Assert.That(CreateScriptableObject<FxVisualRegistry>(), Is.Not.Null);
         }
 
+        [Test]
+        public void TargetVisualRegistry_ReturnsFallbackWhenPuppyPrefabMissing()
+        {
+            TargetVisualRegistry registry = CreateScriptableObject<TargetVisualRegistry>();
+            GameObject fallbackPrefab = CreatePrefab("FallbackTarget");
+            registry.FallbackTargetPrefab = fallbackPrefab;
+
+            LogAssert.Expect(LogType.Warning, new Regex("missing prefab for target 'unknown-target'"));
+
+            GameObject? result = registry.GetTargetPrefab("unknown-target");
+
+            Assert.That(result, Is.SameAs(fallbackPrefab));
+        }
+
         private T CreateScriptableObject<T>()
             where T : ScriptableObject
         {

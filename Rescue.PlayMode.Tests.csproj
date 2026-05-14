@@ -60,6 +60,7 @@
     <Compile Include="Assets\Tests\PlayMode\Debug\TunePanelSmokeTests.cs" />
     <Compile Include="Assets\Tests\PlayMode\Smoke\LifecycleSmokeTests.cs" />
     <Compile Include="Assets\Tests\PlayMode\Smoke\PerfSmokeTests.cs" />
+    <Compile Include="Assets\Tests\PlayMode\Smoke\DaisyTargetSceneAssertions.cs" />
     <Compile Include="Assets\Tests\PlayMode\Debug\DebugGameplaySceneSmokeTests.cs" />
   </ItemGroup>
   <ItemGroup>

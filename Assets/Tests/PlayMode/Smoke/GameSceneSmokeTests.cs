@@ -176,6 +176,20 @@ namespace Rescue.PlayMode.Tests.Smoke
         }
 
         [UnityTest]
+        public System.Collections.IEnumerator GameScene_L00RendersDaisyTargetPrefab()
+        {
+            GameStateViewPresenter presenter = FindRequired<GameStateViewPresenter>();
+            BoardContentViewPresenter contentPresenter = FindRequired<BoardContentViewPresenter>();
+
+            GameState currentState = presenter.CurrentState ?? throw new AssertionException("Game scene did not load a state.");
+
+            DaisyTargetSceneAssertions.AssertLiveTargetsAreDaisyBacked(currentState, contentPresenter);
+            LogAssert.NoUnexpectedReceived();
+
+            yield return null;
+        }
+
+        [UnityTest]
         public System.Collections.IEnumerator GameScene_L00IntroImageBlocksInputUntilDismissedAndReturnsOnReload()
         {
             PlayableLevelSession session = FindRequired<PlayableLevelSession>();

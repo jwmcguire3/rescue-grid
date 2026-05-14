@@ -5,6 +5,7 @@ using Rescue.Core.State;
 using Rescue.Unity.BoardPresentation;
 using Rescue.Unity.Debugging;
 using Rescue.Unity.Presentation;
+using Rescue.PlayMode.Tests.Smoke;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
@@ -78,7 +79,23 @@ namespace Rescue.PlayMode.Tests.Debug
             Transform waterRoot = GameObject.Find("WaterRoot").transform;
             Transform dockRoot = GameObject.Find("DockRoot").transform;
             Transform? dockPieces = dockRoot.Find("DockPieces");
+            GameStateViewPresenter? presenter = Object.FindFirstObjectByType<GameStateViewPresenter>();
 
+            Assert.That(presenter, Is.Not.Null, "Expected DebugGameplay to include a GameStateViewPresenter.");
+            if (presenter is null)
+            {
+                throw new AssertionException("Expected DebugGameplay to include a GameStateViewPresenter.");
+            }
+
+            BoardContentViewPresenter? contentPresenter = Object.FindFirstObjectByType<BoardContentViewPresenter>();
+            Assert.That(contentPresenter, Is.Not.Null, "Expected DebugGameplay to include a BoardContentViewPresenter.");
+            if (contentPresenter is null)
+            {
+                throw new AssertionException("Expected DebugGameplay to include a BoardContentViewPresenter.");
+            }
+
+            GameState currentState = presenter.CurrentState ?? throw new AssertionException("DebugPanel did not load a test state.");
+            DaisyTargetSceneAssertions.AssertLiveTargetsAreDaisyBacked(currentState, contentPresenter);
             LogAssert.NoUnexpectedReceived();
             Assert.That(boardRoot.childCount, Is.GreaterThan(0), "Expected the grid presenter to generate board anchors.");
             Assert.That(boardContentRoot.childCount, Is.GreaterThan(0), "Expected the content presenter to generate visible board content.");
@@ -96,8 +113,6 @@ namespace Rescue.PlayMode.Tests.Debug
 
             Assert.That(panel.StepOneAction(), Is.True);
 
-            GameStateViewPresenter? presenter = Object.FindFirstObjectByType<GameStateViewPresenter>();
-            Assert.That(presenter, Is.Not.Null, "Expected DebugGameplay to include a GameStateViewPresenter.");
             float timeoutAt = Time.realtimeSinceStartup + 2f;
             while (presenter is not null && presenter.IsPlaybackActive && Time.realtimeSinceStartup < timeoutAt)
             {

@@ -322,12 +322,18 @@ namespace Rescue.Unity.Art.Tests
         [Test]
         public void RealPrefabs_DoNotReferenceMissingMaterials()
         {
-            string[] prefabGuids = AssetDatabase.FindAssets("t:Prefab", new[] { Phase1PrefabsPath });
-            Assert.That(prefabGuids.Length, Is.GreaterThan(0));
-
-            for (int prefabIndex = 0; prefabIndex < prefabGuids.Length; prefabIndex++)
+            List<string> prefabPaths = AssetDatabase.FindAssets("t:Prefab", new[] { Phase1PrefabsPath })
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .ToList();
+            Assert.That(prefabPaths.Count, Is.GreaterThan(0));
+            if (!prefabPaths.Contains(DaisyTargetPrefabPath))
             {
-                string prefabPath = AssetDatabase.GUIDToAssetPath(prefabGuids[prefabIndex]);
+                prefabPaths.Add(DaisyTargetPrefabPath);
+            }
+
+            for (int prefabIndex = 0; prefabIndex < prefabPaths.Count; prefabIndex++)
+            {
+                string prefabPath = prefabPaths[prefabIndex];
                 GameObject prefabRoot = PrefabUtility.LoadPrefabContents(prefabPath);
 
                 try
@@ -340,6 +346,11 @@ namespace Rescue.Unity.Art.Tests
                         for (int materialIndex = 0; materialIndex < materials.Length; materialIndex++)
                         {
                             Assert.That(materials[materialIndex], Is.Not.Null, $"{prefabPath} has a missing material reference.");
+                            Assert.That(materials[materialIndex].shader, Is.Not.Null, $"{prefabPath} has a material with a missing shader.");
+                            Assert.That(
+                                materials[materialIndex].shader.name,
+                                Does.Not.Contain("InternalErrorShader"),
+                                $"{prefabPath} has a material that would render as Unity missing-material pink.");
                         }
                     }
                 }
