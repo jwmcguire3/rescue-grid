@@ -126,6 +126,20 @@ namespace Rescue.Unity.Presentation.Tests
             AssertContainedInPanel(view, "MuteRow");
             AssertContainedInPanel(view, "VibrationsToggle");
             AssertContainedInPanel(view, "HapticsStrengthRow");
+            AssertBottomPaddingInPanel(view, "HapticsStrengthRow", 80f);
+            AssertHorizontalPaddingInPanel(view, "SettingsTitle", 56f, 160f);
+            AssertHorizontalPaddingInPanel(view, "ResumeButton", 280f, 56f);
+            AssertHorizontalPaddingInPanel(view, "ShowTutorialButton", 56f, 56f);
+            AssertHorizontalPaddingInPanel(view, "LevelDropdownRow", 56f, 56f);
+            AssertHorizontalPaddingInPanel(view, "MusicSliderRow", 56f, 56f);
+            AssertHorizontalPaddingInPanel(view, "FXSliderRow", 56f, 56f);
+            AssertHorizontalPaddingInPanel(view, "MuteRow", 56f, 56f);
+            AssertHorizontalPaddingInPanel(view, "HapticsStrengthRow", 56f, 56f);
+            AssertPreferredHeightAtLeast(view, "LevelDropdownRow", 52f);
+            AssertPreferredHeightAtLeast(view, "MusicSliderRow", 46f);
+            AssertPreferredHeightAtLeast(view, "FXSliderRow", 46f);
+            AssertPreferredHeightAtLeast(view, "MuteRow", 48f);
+            AssertPreferredHeightAtLeast(view, "HapticsStrengthRow", 46f);
 
             AssertRusticSlider(view.MusicSlider);
             AssertRusticSlider(view.FxSlider);
@@ -382,6 +396,44 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(childWorldCorners[0].y, Is.GreaterThanOrEqualTo(panelWorldCorners[0].y - tolerance), $"{childName} overflowed panel bottom.");
             Assert.That(childWorldCorners[2].x, Is.LessThanOrEqualTo(panelWorldCorners[2].x + tolerance), $"{childName} overflowed panel right.");
             Assert.That(childWorldCorners[2].y, Is.LessThanOrEqualTo(panelWorldCorners[2].y + tolerance), $"{childName} overflowed panel top.");
+        }
+
+        private static void AssertBottomPaddingInPanel(SettingsMenuView view, string childName, float minimumPadding)
+        {
+            RectTransform panel = view.PanelRoot.GetComponent<RectTransform>();
+            RectTransform child = FindRectTransform(view, childName);
+
+            Vector3[] childWorldCorners = new Vector3[4];
+            Vector3[] panelWorldCorners = new Vector3[4];
+            child.GetWorldCorners(childWorldCorners);
+            panel.GetWorldCorners(panelWorldCorners);
+
+            float bottomPadding = childWorldCorners[0].y - panelWorldCorners[0].y;
+            Assert.That(bottomPadding, Is.GreaterThanOrEqualTo(minimumPadding), $"{childName} should sit visibly above the panel bottom.");
+        }
+
+        private static void AssertHorizontalPaddingInPanel(SettingsMenuView view, string childName, float minimumLeftPadding, float minimumRightPadding)
+        {
+            RectTransform panel = view.PanelRoot.GetComponent<RectTransform>();
+            RectTransform child = FindRectTransform(view, childName);
+
+            Vector3[] childWorldCorners = new Vector3[4];
+            Vector3[] panelWorldCorners = new Vector3[4];
+            child.GetWorldCorners(childWorldCorners);
+            panel.GetWorldCorners(panelWorldCorners);
+
+            float leftPadding = childWorldCorners[0].x - panelWorldCorners[0].x;
+            float rightPadding = panelWorldCorners[2].x - childWorldCorners[2].x;
+            Assert.That(leftPadding, Is.GreaterThanOrEqualTo(minimumLeftPadding), $"{childName} should sit visibly inside the panel left edge.");
+            Assert.That(rightPadding, Is.GreaterThanOrEqualTo(minimumRightPadding), $"{childName} should sit visibly inside the panel right edge.");
+        }
+
+        private static void AssertPreferredHeightAtLeast(SettingsMenuView view, string childName, float minimumHeight)
+        {
+            RectTransform rect = FindRectTransform(view, childName);
+            LayoutElement? layout = rect.GetComponent<LayoutElement>();
+            Assert.That(layout, Is.Not.Null, $"{childName} should have an explicit layout height.");
+            Assert.That(layout!.preferredHeight, Is.GreaterThanOrEqualTo(minimumHeight), $"{childName} should remain large enough for mobile input.");
         }
 
         private static void AssertRusticSlider(Slider slider)

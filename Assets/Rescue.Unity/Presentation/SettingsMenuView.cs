@@ -23,6 +23,8 @@ namespace Rescue.Unity.Presentation
         private const float SliderHandleSize = 38f;
         private const float TopPlaqueHeight = 60f;
         private const float SettingsPlaqueHeight = 80f;
+        private const float PanelContentLeft = 58f;
+        private const float PanelContentWidth = 366f;
 
         [Header("Top Buttons")]
         [SerializeField] private Button? restartButton;
@@ -242,37 +244,37 @@ namespace Rescue.Unity.Presentation
 
             TextMeshProUGUI title = CreateLabel(panelRoot.transform, "SettingsTitle", "SETTINGS", 42f, Cream, TextAlignmentOptions.MidlineLeft);
             title.fontStyle = FontStyles.Bold;
-            SetPanelRect(title.rectTransform, 42f, 40f, 260f, 58f);
+            SetPanelRect(title.rectTransform, PanelContentLeft, 40f, 260f, 58f);
             resumeButton = CreatePlaqueButton(panelRoot.transform, "ResumeButton", "RESUME", tealPlaqueSprite, Teal, Cream, new Vector2(130f, 48f), null);
-            SetPanelRect((RectTransform)resumeButton.transform, 310f, 48f, 130f, 48f);
+            SetPanelRect((RectTransform)resumeButton.transform, 294f, 48f, 130f, 48f);
             showTutorialButton = CreatePlaqueButton(panelRoot.transform, "ShowTutorialButton", "SHOW TUTORIAL", amberPlaqueSprite, Amber, DarkInk, new Vector2(0f, 68f), amberPawSprite);
-            SetPanelRect((RectTransform)showTutorialButton.transform, 42f, 128f, 398f, 66f);
+            SetPanelRect((RectTransform)showTutorialButton.transform, PanelContentLeft, 118f, PanelContentWidth, 66f);
 
             levelDropdown = CreateDropdown(panelRoot.transform);
-            SetPanelRect((RectTransform)levelDropdown.transform.parent, 42f, 236f, 398f, 52f);
+            SetPanelRect((RectTransform)levelDropdown.transform.parent, PanelContentLeft, 214f, PanelContentWidth, 52f);
 
             TextMeshProUGUI audioLabel = CreateLabel(panelRoot.transform, "AudioLabel", "AUDIO", 26f, Teal, TextAlignmentOptions.MidlineLeft);
             audioLabel.fontStyle = FontStyles.Bold;
-            SetPanelRect(audioLabel.rectTransform, 42f, 318f, 126f, 38f);
+            SetPanelRect(audioLabel.rectTransform, PanelContentLeft, 286f, 126f, 38f);
 
             musicSlider = CreateSliderRow(panelRoot.transform, "Music", out musicValueLabel);
-            SetPanelRect((RectTransform)musicSlider.transform.parent, 42f, 382f, 398f, 48f);
+            SetPanelRect((RectTransform)musicSlider.transform.parent, PanelContentLeft, 340f, PanelContentWidth, 48f);
             fxSlider = CreateSliderRow(panelRoot.transform, "FX", out fxValueLabel);
-            SetPanelRect((RectTransform)fxSlider.transform.parent, 42f, 452f, 398f, 48f);
+            SetPanelRect((RectTransform)fxSlider.transform.parent, PanelContentLeft, 408f, PanelContentWidth, 48f);
 
             GameObject muteRow = CreateRow(panelRoot.transform, "MuteRow", 48f);
-            SetPanelRect((RectTransform)muteRow.transform, 42f, 526f, 398f, 48f);
+            SetPanelRect((RectTransform)muteRow.transform, PanelContentLeft, 478f, PanelContentWidth, 48f);
             muteMusicToggle = CreateToggle(muteRow.transform, "MuteMusicToggle", "Mute Music");
             muteFxToggle = CreateToggle(muteRow.transform, "MuteFxToggle", "Mute FX");
 
             hapticsToggle = CreateToggle(panelRoot.transform, "VibrationsToggle", "Vibrations");
-            SetPanelRect((RectTransform)hapticsToggle.transform, 42f, 596f, 190f, 46f);
+            SetPanelRect((RectTransform)hapticsToggle.transform, PanelContentLeft, 544f, 190f, 46f);
 
             GameObject strengthRow = CreateRow(panelRoot.transform, "HapticsStrengthRow", 46f);
-            SetPanelRect((RectTransform)strengthRow.transform, 42f, 648f, 398f, 48f);
+            SetPanelRect((RectTransform)strengthRow.transform, PanelContentLeft, 594f, PanelContentWidth, 48f);
             hapticsStrengthGroup = strengthRow.AddComponent<CanvasGroup>();
             TextMeshProUGUI strengthLabel = CreateLabel(strengthRow.transform, "HapticsStrengthLabel", "Strength", 23f, Cream, TextAlignmentOptions.MidlineLeft);
-            strengthLabel.gameObject.AddComponent<LayoutElement>().preferredWidth = 116f;
+            strengthLabel.gameObject.AddComponent<LayoutElement>().preferredWidth = 92f;
             hapticsStrengthSlider = CreateSlider(strengthRow.transform, "HapticsStrengthSlider");
             LayoutElement hapticsSliderLayout = hapticsStrengthSlider.gameObject.AddComponent<LayoutElement>();
             hapticsSliderLayout.flexibleWidth = 1f;
@@ -375,7 +377,7 @@ namespace Rescue.Unity.Presentation
         {
             GameObject row = CreateRow(parent, "LevelDropdownRow", 52f);
             TextMeshProUGUI label = CreateLabel(row.transform, "LevelLabel", "Level", 24f, Cream, TextAlignmentOptions.MidlineLeft);
-            label.gameObject.AddComponent<LayoutElement>().preferredWidth = 112f;
+            label.gameObject.AddComponent<LayoutElement>().preferredWidth = 92f;
 
             GameObject dropdownObject = CreateChild("LevelDropdown", row.transform);
             LayoutElement dropdownLayout = dropdownObject.AddComponent<LayoutElement>();
