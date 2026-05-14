@@ -186,17 +186,22 @@ namespace Rescue.PlayMode.Tests.Smoke
         }
 
         [UnityTest]
-        public System.Collections.IEnumerator VinePreviewSmokeUsesOverlayPrefabWithoutLighting()
+        public System.Collections.IEnumerator VinePreviewSmokeUsesVinePrefabWithoutLighting()
         {
             PlaybackHarness harness = CreateHarness();
             BlockerVisualRegistry blockerRegistry = CreateRegistry<BlockerVisualRegistry>();
-            GameObject vinePrefab = CreateTrackedGameObject("VinePrefab");
+            GameObject vinePrefab = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            createdObjects.Add(vinePrefab);
+            vinePrefab.name = "VinePrefab";
             GameObject overlayPrefab = GameObject.CreatePrimitive(PrimitiveType.Quad);
             createdObjects.Add(overlayPrefab);
             overlayPrefab.name = "VineOverlayPrefab";
             CreateTrackedGameObject("VinePrefabMarker").transform.SetParent(vinePrefab.transform, false);
             CreateTrackedGameObject("OverlayPrefabMarker").transform.SetParent(overlayPrefab.transform, false);
 
+            MeshRenderer vineRenderer = vinePrefab.GetComponent<MeshRenderer>();
+            vineRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+            vineRenderer.receiveShadows = true;
             MeshRenderer overlayRenderer = overlayPrefab.GetComponent<MeshRenderer>();
             overlayRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
             overlayRenderer.receiveShadows = true;
@@ -208,8 +213,8 @@ namespace Rescue.PlayMode.Tests.Smoke
             yield return null;
 
             Transform preview = FindRequiredChildContaining(harness.ContentRoot, "VineGrowthPreview");
-            Assert.That(preview.Find("OverlayPrefabMarker"), Is.Not.Null);
-            Assert.That(preview.Find("VinePrefabMarker"), Is.Null);
+            Assert.That(preview.Find("VinePrefabMarker"), Is.Not.Null);
+            Assert.That(preview.Find("OverlayPrefabMarker"), Is.Null);
             Assert.That(CountChildrenContaining(harness.ContentRoot, "VineGrowthPreview"), Is.EqualTo(1));
 
             MeshRenderer previewRenderer = preview.GetComponent<MeshRenderer>();

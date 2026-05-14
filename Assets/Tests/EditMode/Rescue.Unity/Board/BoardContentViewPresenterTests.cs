@@ -993,7 +993,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
         }
 
         [Test]
-        public void BoardContentViewPresenter_VinePreviewUsesRegisteredOverlayBeforeFullVine()
+        public void BoardContentViewPresenter_VinePreviewUsesRegisteredVineBeforeOverlayFallback()
         {
             PresenterHarness harness = CreateHarness();
             BlockerVisualRegistry blockerRegistry = CreateRegistry<BlockerVisualRegistry>();
@@ -1019,8 +1019,8 @@ namespace Rescue.Unity.BoardPresentation.Tests
 
             Transform? preview = FindChildByName(harness.ContentRoot, "VineGrowthPreview");
             Assert.That(preview, Is.Not.Null);
-            Assert.That(preview!.Find("OverlayPrefabMarker"), Is.Not.Null);
-            Assert.That(preview.Find("VinePrefabMarker"), Is.Null);
+            Assert.That(preview!.Find("VinePrefabMarker"), Is.Not.Null);
+            Assert.That(preview.Find("OverlayPrefabMarker"), Is.Null);
         }
 
         [Test]
