@@ -1,0 +1,20 @@
+{
+  "levelId": "L27",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 8,
+  "actions": [
+    { "row": 4, "col": 0, "intent": "Start lower route progress without rushing the ice." },
+    { "row": 7, "col": 1, "intent": "Open the lower rescue edge and bring it near extraction." },
+    { "row": 3, "col": 2, "intent": "Break the key ice and adjacent route tax after the dock has room." },
+    { "row": 7, "col": 1, "intent": "Keep the lower route under control." },
+    { "row": 2, "col": 4, "intent": "Stabilize dock with a planned clear before extracting." },
+    { "row": 5, "col": 0, "intent": "Extract the urgent lower puppy before water pressure dominates." },
+    { "row": 0, "col": 3, "intent": "Cash another stabilizing clear during the pivot." },
+    { "row": 2, "col": 3, "intent": "Break the remaining route blockers and extract the upper puppy." }
+  ],
+  "expectedEventsInOrder": ["TargetOneClearAway", "BlockerBroken", "DockCleared", "TargetExtractionLatched", "TargetExtracted", "WaterRose", "TargetExtracted", "Won"],
+  "expectedExtractionOrder": ["0", "1"],
+  "notes": "Designer golden for ice/dock timing: route progress, dock stabilization, ice break, urgent rescue, controlled pivot."
+}

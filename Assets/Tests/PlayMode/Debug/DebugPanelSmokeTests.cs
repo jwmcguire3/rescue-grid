@@ -260,8 +260,9 @@ namespace Rescue.PlayMode.Tests.Debug
         [UnityTest]
         public System.Collections.IEnumerator VictoryNextLevelDisabledOnFinalAuthoredLevel()
         {
+            string finalLevelId = LoadExpectedLevelIdsFromManifest()[^1];
             DebugPanel panel = DebugPanel.EnsureInstance();
-            panel.LoadLevel(Loader.LoadLevelDefinition("L20"), seed: 7);
+            panel.LoadLevel(Loader.LoadLevelDefinition(finalLevelId), seed: 7);
             VictoryScreenPresenter victoryScreen = VictoryScreenPresenter.EnsureInstance();
 
             yield return null;
@@ -274,7 +275,7 @@ namespace Rescue.PlayMode.Tests.Debug
 
             yield return null;
 
-            Assert.That(panel.CurrentLevelId, Is.EqualTo("L20"));
+            Assert.That(panel.CurrentLevelId, Is.EqualTo(finalLevelId));
         }
 
         [UnityTest]
@@ -293,7 +294,7 @@ namespace Rescue.PlayMode.Tests.Debug
             CollectionAssert.AreEqual(expectedLevelIds, levelSelector!.choices);
             Assert.That(panel.HasNextLevel(), Is.True);
 
-            panel.LoadLevel(Loader.LoadLevelDefinition("L20"), seed: 7);
+            panel.LoadLevel(Loader.LoadLevelDefinition(expectedLevelIds[^1]), seed: 7);
 
             yield return null;
 

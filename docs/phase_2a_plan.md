@@ -56,7 +56,7 @@ Technical:
 - Level validation passes.
 - Solve verification passes.
 - APK works on device.
-- L00-L20 still play in order.
+- L00-L28 still play in order.
 - No new mechanics added outside approved scope.
 
 Player readability, measured with 3-5 cold players:

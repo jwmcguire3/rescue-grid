@@ -352,7 +352,7 @@ namespace Rescue.LevelTelemetryTool.Tests
 
             Assert.That(authoring, Does.Contain("## Generate difficulty telemetry"));
             Assert.That(authoring, Does.Contain("dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --level L01"));
-            Assert.That(authoring, Does.Contain("dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --range L00-L20 --samples 200 --max-actions 30"));
+            Assert.That(authoring, Does.Contain("dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- --range L00-L28 --samples 200 --max-actions 30"));
             Assert.That(authoring, Does.Contain("dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- summarize-level L03"));
             Assert.That(authoring, Does.Contain("dotnet run --project Tools/LevelTelemetry/LevelTelemetry.csproj -- summarize-all"));
             Assert.That(authoring, Does.Contain("Telemetry reports are offline design diagnostics, not runtime analytics."));

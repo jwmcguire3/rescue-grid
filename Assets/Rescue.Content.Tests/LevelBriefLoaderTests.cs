@@ -108,9 +108,12 @@ namespace Rescue.Content.Tests
         public void LoadDirectory_CurrentRepoBriefs_LoadsInOrder()
         {
             IReadOnlyList<LevelBrief> briefs = LevelBriefLoader.LoadDirectory(GetBriefsDirectory());
+            string[] expectedIds = Directory.GetFiles(GetBriefsDirectory(), "*.brief.json", SearchOption.TopDirectoryOnly)
+                .Select(path => Path.GetFileName(path).Replace(".brief.json", string.Empty))
+                .OrderBy(id => id, StringComparer.Ordinal)
+                .ToArray();
 
-            Assert.That(briefs.Count, Is.EqualTo(21));
-            Assert.That(briefs.Select(brief => brief.Id), Is.EqualTo(Enumerable.Range(0, 21).Select(index => $"L{index:00}")));
+            Assert.That(briefs.Select(brief => brief.Id), Is.EqualTo(expectedIds));
         }
 
         [Test]

@@ -2,7 +2,7 @@
   "packetId": "phase1",
   "displayName": "Phase 1 Level Packet",
   "firstLevelId": "L00",
-  "lastLevelId": "L25",
+  "lastLevelId": "L28",
   "expectedLevelIds": [
     "L00",
     "L01",
@@ -29,7 +29,10 @@
     "L22",
     "L23",
     "L24",
-    "L25"
+    "L25",
+    "L26",
+    "L27",
+    "L28"
   ],
   "ruleTeachLevelIds": ["L00"],
   "dockJamLevelIds": ["L01", "L02"],
@@ -42,10 +45,10 @@
     },
     {
       "firstLevelId": "L05",
-      "lastLevelId": "L25",
+      "lastLevelId": "L28",
       "debrisTypePoolSize": 6
     }
   ],
   "waterIntervalMinimum": 6,
-  "notes": "Matches the current authored playable files in Assets/StreamingAssets/Levels: L00-L25. L00 is the rule-teach opener and is exempt from the normal water interval floor. L02 intentionally teaches Dock Jam with no water pressure. Acceptance verification is driven by this manifest."
+  "notes": "Defines the current Phase 1 packet as L00-L28. L00 is the rule-teach opener and is exempt from the normal water interval floor. L02 intentionally teaches Dock Jam with no water pressure. Acceptance verification and packet-facing level selectors are driven by this manifest; exploratory authored files may exist outside the packet."
 }

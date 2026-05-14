@@ -60,6 +60,14 @@ namespace Rescue.Unity.Debugging
             "L18",
             "L19",
             "L20",
+            "L21",
+            "L22",
+            "L23",
+            "L24",
+            "L25",
+            "L26",
+            "L27",
+            "L28",
         };
         private static readonly DebrisType[] OverflowDockPattern =
         {
@@ -1910,20 +1918,7 @@ namespace Rescue.Unity.Debugging
 
         private static List<string> EnumerateLevelIds()
         {
-            HashSet<string> ids = new HashSet<string>(StringComparer.Ordinal);
-
-            AddIdsFromDirectory(Path.Combine(Application.dataPath, "StreamingAssets", "Levels"), ids);
-            if (ids.Count == 0)
-            {
-                for (int i = 0; i < PacketLevelIds.Length; i++)
-                {
-                    ids.Add(PacketLevelIds[i]);
-                }
-            }
-
-            List<string> sorted = new List<string>(ids);
-            sorted.Sort(StringComparer.Ordinal);
-            return sorted;
+            return new List<string>(PacketLevelIds);
         }
 
         private string? GetNextLevelId()

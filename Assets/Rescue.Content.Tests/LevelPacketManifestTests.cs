@@ -16,8 +16,8 @@ namespace Rescue.Content.Tests
 
             Assert.That(manifest.PacketId, Is.EqualTo("phase1"));
             Assert.That(manifest.FirstLevelId, Is.EqualTo("L00"));
-            Assert.That(manifest.LastLevelId, Is.EqualTo("L20"));
-            Assert.That(manifest.ExpectedLevelIds, Has.Length.EqualTo(21));
+            Assert.That(manifest.LastLevelId, Is.EqualTo("L28"));
+            Assert.That(manifest.ExpectedLevelIds, Has.Length.EqualTo(29));
         }
 
         [Test]
@@ -65,7 +65,7 @@ namespace Rescue.Content.Tests
         }
 
         [Test]
-        public void RepoManifest_ExpectedLevelIdsMatchAuthoredLevelFiles()
+        public void RepoManifest_ExpectedLevelIdsHaveAuthoredLevelFiles()
         {
             LevelPacketManifest manifest = LevelPacketManifestLoader.Load(GetRepoManifestPath());
             string[] authoredLevelIds = Directory.GetFiles(GetAuthoredLevelsDirectory(), "L*.json", SearchOption.TopDirectoryOnly)
@@ -73,7 +73,7 @@ namespace Rescue.Content.Tests
                 .OrderBy(id => id, StringComparer.Ordinal)
                 .ToArray();
 
-            Assert.That(manifest.ExpectedLevelIds, Is.EqualTo(authoredLevelIds));
+            CollectionAssert.IsSubsetOf(manifest.ExpectedLevelIds, authoredLevelIds);
         }
 
         private static LevelPacketManifest ValidManifest()

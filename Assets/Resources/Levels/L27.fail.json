@@ -1,0 +1,45 @@
+{
+  "levelId": "L27",
+  "seed": 1,
+  "pathType": "expected_fail",
+  "expectedOutcome": "LossDockOverflow",
+  "expectedLossReason": "LossDockOverflow",
+  "maxActions": 6,
+  "actions": [
+    {
+      "row": 1,
+      "col": 0,
+      "intent": "Open with a clean-looking side triple instead of lower route progress."
+    },
+    {
+      "row": 4,
+      "col": 6,
+      "intent": "Continue protecting dock tempo away from the urgent ice lane."
+    },
+    {
+      "row": 0,
+      "col": 2,
+      "intent": "Spend another upper-board clear and delay the key ice break."
+    },
+    {
+      "row": 0,
+      "col": 4,
+      "intent": "Keep adding residue instead of stabilizing around the rescue route."
+    },
+    {
+      "row": 1,
+      "col": 4,
+      "intent": "Overcommit to side material while the lower route remains unresolved."
+    },
+    {
+      "row": 2,
+      "col": 0,
+      "intent": "Overflow from broad clearing before the ice/dock timing decision is recovered."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "DockOverflowTriggered",
+    "Lost"
+  ],
+  "notes": "Verified fail: overprotecting/side-clearing delays the key ice route and produces self-authored dock overflow."
+}

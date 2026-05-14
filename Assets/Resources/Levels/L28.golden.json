@@ -1,0 +1,22 @@
+{
+  "levelId": "L28",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 10,
+  "actions": [
+    { "row": 6, "col": 6, "intent": "Take a clean lower-side setup clear before the ice investment." },
+    { "row": 5, "col": 4, "intent": "Break the lower iced route early." },
+    { "row": 4, "col": 0, "intent": "Open the lower rescue corridor." },
+    { "row": 4, "col": 0, "intent": "Continue lower route progress instead of generic clearing." },
+    { "row": 6, "col": 2, "intent": "Break the crate route tax and bring the lower puppy to one-clear-away." },
+    { "row": 5, "col": 2, "intent": "Extract the lower puppy before water catches the pivot." },
+    { "row": 2, "col": 2, "intent": "Break the upper ice route for the second rescue." },
+    { "row": 1, "col": 2, "intent": "Clear the upper route tax and stabilize dock." },
+    { "row": 5, "col": 1, "intent": "Use a safe recovery clear during the pivot." },
+    { "row": 2, "col": 4, "intent": "Finish the upper rescue route and win." }
+  ],
+  "expectedEventsInOrder": ["BlockerBroken", "TargetOneClearAway", "TargetExtractionLatched", "TargetExtracted", "WaterRose", "BlockerBroken", "TargetExtracted", "Won"],
+  "expectedExtractionOrder": ["0", "1"],
+  "notes": "Designer golden for the future-value exam: invest in lower ice early, rescue before water, then pivot through the upper ice route."
+}

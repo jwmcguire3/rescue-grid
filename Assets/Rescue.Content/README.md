@@ -28,7 +28,7 @@
 
 ## Authored level storage
 
-Authored playable levels live in `Assets/StreamingAssets/Levels/`. The current authored campaign content is `L00.json` through `L20.json`, and these files are the authoritative playable level definitions.
+Authored playable levels live in `Assets/StreamingAssets/Levels/`. The current Phase 1 packet content is `L00.json` through `L28.json`; the packet manifest defines which authored files are packet-facing.
 
 Playable JSON remains the source of layout truth. Briefs, solve scripts, golden paths, fail paths, telemetry summaries, and review markdown verify, explain, or approve a level; they do not define the board layout.
 
@@ -36,7 +36,7 @@ Unity `.meta` files are asset metadata, not level definitions.
 
 ## Solve/replay script storage
 
-Solve and replay scripts live in `Assets/Resources/Levels/`. The current pattern is `L00.solve.json` through `L20.solve.json`.
+Solve and replay scripts live in `Assets/Resources/Levels/`. The current Phase 1 packet pattern is `L00.solve.json` through `L28.solve.json`.
 
 These scripts verify expected behavior. They are not the source of layout truth.
 
@@ -80,13 +80,13 @@ Wrapper scripts:
 
 Runtime gameplay loads by level id through `Loader.LoadLevel(...)` from `Assets/StreamingAssets/Levels/`.
 
-The debug panel discovers and loads levels from `Assets/StreamingAssets/Levels/` when present in the repo.
+The debug panel exposes the Phase 1 packet list for normal packet playback. Direct loading by id can still load authored levels that exist outside the packet.
 
 Smoke, replay, and capture tools consume solve scripts from `Assets/Resources/Levels/`.
 
 ## Current content status
 
-The current authored playable content is `L00` through `L20`. Phase 1 packet policy checks are driven by `docs/level-packets/phase1.packet.json`.
+The current Phase 1 packet content is `L00` through `L28`. Phase 1 packet policy checks are driven by `docs/level-packets/phase1.packet.json`.
 
 Do not hardcode stale validation results here. If status needs to be reported, run:
 

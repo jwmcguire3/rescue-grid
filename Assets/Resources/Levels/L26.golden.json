@@ -1,0 +1,22 @@
+{
+  "levelId": "L26",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 10,
+  "actions": [
+    { "row": 1, "col": 6, "intent": "Take a safe opener while preserving the shared choke read." },
+    { "row": 4, "col": 2, "intent": "Open the lower target side and set up the shared lane." },
+    { "row": 0, "col": 1, "intent": "Stabilize dock before committing deeper into the choke." },
+    { "row": 3, "col": 5, "intent": "Open the upper target side without overworking crates." },
+    { "row": 6, "col": 3, "intent": "Use lower board material to keep the dock controlled." },
+    { "row": 4, "col": 5, "intent": "Break the key ice in the shared choke." },
+    { "row": 4, "col": 4, "intent": "Use the opened frozen lane to extract the lower puppy." },
+    { "row": 4, "col": 0, "intent": "Keep pressure under control during the pivot." },
+    { "row": 3, "col": 0, "intent": "Cash a dock clear before the final rescue." },
+    { "row": 2, "col": 5, "intent": "Finish the upper route and extract the second puppy." }
+  ],
+  "expectedEventsInOrder": ["TargetOneClearAway", "BlockerBroken", "TargetExtractionLatched", "TargetExtracted", "WaterRose", "TargetExtracted", "Won"],
+  "expectedExtractionOrder": ["0", "1"],
+  "notes": "Designer golden for the ice choke variation: open the shared ice lane, rescue lower target, then pivot through the same lane."
+}

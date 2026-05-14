@@ -1,0 +1,35 @@
+{
+  "levelId": "L26",
+  "seed": 1,
+  "pathType": "expected_fail",
+  "expectedOutcome": "LossDockOverflow",
+  "expectedLossReason": "LossDockOverflow",
+  "maxActions": 4,
+  "actions": [
+    {
+      "row": 0,
+      "col": 0,
+      "intent": "Open with a broad side clear instead of the shared ice choke."
+    },
+    {
+      "row": 0,
+      "col": 1,
+      "intent": "Continue taking side value and add dock residue."
+    },
+    {
+      "row": 3,
+      "col": 1,
+      "intent": "Work the crate-side lane before breaking the frozen choke."
+    },
+    {
+      "row": 3,
+      "col": 5,
+      "intent": "Take one more side clear and overflow before either rescue route is controlled."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "DockOverflowTriggered",
+    "Lost"
+  ],
+  "notes": "Verified fail: crate/side-first play leaves the frozen choke unresolved and overfills the dock."
+}
