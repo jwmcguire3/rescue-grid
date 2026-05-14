@@ -1,0 +1,19 @@
+{
+  "LevelId": "L40",
+  "Seed": 1,
+  "AlternateSeed": 1001,
+  "ExpectedOutcome": "Win",
+  "ExpectAlternateSeedDivergence": false,
+  "Actions": [
+    { "Row": 5, "Col": 0 },
+    { "Row": 6, "Col": 2 },
+    { "Row": 0, "Col": 7 },
+    { "Row": 4, "Col": 1 },
+    { "Row": 2, "Col": 2 },
+    { "Row": 0, "Col": 5 },
+    { "Row": 4, "Col": 6 },
+    { "Row": 6, "Col": 4 },
+    { "Row": 0, "Col": 3 },
+    { "Row": 1, "Col": 3 }
+  ]
+}

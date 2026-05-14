@@ -1,0 +1,54 @@
+{
+  "id": "L40",
+  "name": "Water Rescue Order Capstone",
+  "board": {
+    "width": 8,
+    "height": 9,
+    "tiles": [
+      ["F", "F", "A", "A", "T2", "B", "B", "E"],
+      ["D", "D", "CR", "C", "C", "CR", "E", "E"],
+      ["A", "CR", "B", "B", "E", "D", "D", "F"],
+      ["A", "CR", "T1", "CR", "C", "C", "F", "F"],
+      ["E", "E", "D", "D", "CR", "IA", "B", "B"],
+      ["C", "CR", "T0", "CR", "A", "A", "E", "F"],
+      ["C", "C", "D", "D", "B", "B", "CR", "F"],
+      ["A", "A", "E", "E", "C", "F", "F", "D"],
+      [".", ".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 5, "col": 2 },
+    { "id": "1", "row": 3, "col": 2 },
+    { "id": "2", "row": 0, "col": 4 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 6
+  },
+  "vine": {
+    "growthThreshold": 999,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.25,
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
+  },
+  "meta": {
+    "intent": "Cap the water rescue order band with a three-target board where the lower puppy is clearly first, the middle puppy is the contested pivot, and the top puppy is safest.",
+    "expectedPath": "Rescue the lower water-threatened puppy first, use a planned dock-safe recovery during the pivot, then extract the middle target before finishing the safe top target.",
+    "expectedFailMode": "The player chases safe top or broad side value first, delaying the lower target until water tempo or dock pressure makes the route fail.",
+    "whatItProves": "Water exposure can govern a three-target capstone without vines, reinforced crates, or any mechanic outside the current rules.",
+    "notes": "Role: capstone. Full density is intentional for a late-band exam; crates and one ice tile frame route cost while the empty flooded row keeps water order readable.",
+    "isRuleTeach": false
+  }
+}

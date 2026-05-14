@@ -1,0 +1,53 @@
+{
+  "id": "L38",
+  "name": "Water Order Exam",
+  "board": {
+    "width": 8,
+    "height": 9,
+    "tiles": [
+      ["A", "A", "B", "B", "C", "C", ".", "."],
+      ["E", "F", "F", "CR", "D", "A", "A", "D"],
+      ["E", "E", "T1", "C", "IA", "B", "B", "F"],
+      ["D", "D", "C", ".", "A", "A", "F", "."],
+      ["A", "B", "B", "C", "C", "E", "E", "D"],
+      ["A", "CR", "D", ".", "T0", "C", "C", "F"],
+      [".", "B", "B", "E", "E", "CR", "F", "D"],
+      [".", "A", "A", "C", "C", "F", ".", "D"],
+      [".", ".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 5, "col": 4 },
+    { "id": "1", "row": 2, "col": 2 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 6
+  },
+  "vine": {
+    "growthThreshold": 999,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.20,
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
+  },
+  "meta": {
+    "intent": "Examine integrated water rescue order by requiring the lower exposed puppy before the safer upper puppy.",
+    "expectedPath": "Identify the lower water-threatened target first, clear its crate-and-ice route, make one dock-safe stabilizing pivot, then finish the safer upper target.",
+    "expectedFailMode": "Generic clearing or wrong rescue order loses water tempo before the lower rescue is secured, with dock overflow as the secondary fair mistake.",
+    "whatItProves": "The water-rescue-order band can require disciplined priority reading under blocker and dock pressure without adding new mechanics.",
+    "notes": "Role: exam. Density sits in the late-level target band; assistance is lower than the preceding pressure-choice level so the authored order carries the proof.",
+    "isRuleTeach": false
+  }
+}

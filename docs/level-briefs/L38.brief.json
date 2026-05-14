@@ -1,0 +1,19 @@
+{
+  "id": "L38",
+  "title": "Water Order Exam",
+  "campaignBand": "water_rescue_order",
+  "role": "exam",
+  "primarySkill": "integrated_water_rescue_order",
+  "secondarySkill": "blocker_dock_sequence",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "ice", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate", "vine"],
+  "boardSize": { "width": 8, "height": 9 },
+  "targetCount": 2,
+  "densityTarget": "80-90%",
+  "targetFirstAttemptWinRate": "45-65%",
+  "intendedTensionBeat": "Both puppies are reachable, but water, blockers, and dock residue make the correct rescue order non-optional.",
+  "intendedReleaseBeat": "A disciplined lower-first rescue followed by a dock-safe pivot proves the player understands the band.",
+  "expectedPath": "Read the water-threatened target, clear its blocker route, stabilize dock during the pivot, then finish the safer target.",
+  "expectedFailMode": "Generic clearing or wrong target order causes water loss or dock overflow before the first rescue is secured.",
+  "designNotes": "Exam level: no new mechanic. The dominant failure should clearly be wrong rescue order under water pressure."
+}

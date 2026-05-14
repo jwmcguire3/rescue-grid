@@ -1,0 +1,27 @@
+{
+  "levelId": "L38",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 10,
+  "actions": [
+    { "row": 4, "col": 3, "intent": "Advance the lower water-threatened route immediately." },
+    { "row": 6, "col": 3, "intent": "Break the lower route tax and bring the priority puppy near extraction." },
+    { "row": 5, "col": 5, "intent": "Finish the urgent side while watching dock residue." },
+    { "row": 4, "col": 1, "intent": "Use a planned stabilizer so dock pressure serves the water race." },
+    { "row": 1, "col": 1, "intent": "Clear safe material during the pivot rather than overfilling the dock." },
+    { "row": 3, "col": 2, "intent": "Reconnect through the route after the dock has been stabilized." },
+    { "row": 2, "col": 3, "intent": "Complete the first rescue before water can punish the route." },
+    { "row": 6, "col": 1, "intent": "Pivot through lower-left material toward the safer puppy." },
+    { "row": 0, "col": 0, "intent": "Keep the rack controlled during the second rescue setup." },
+    { "row": 2, "col": 1, "intent": "Finish the upper puppy after proving the water-order exam." }
+  ],
+  "expectedEventsInOrder": [
+    "BlockerBroken",
+    "TargetExtracted",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": ["0", "1"],
+  "notes": "Designer golden for the exam: lower water priority first, one dock-safe pivot, then the calmer upper rescue."
+}

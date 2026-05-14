@@ -1,0 +1,32 @@
+{
+  "levelId": "L40",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 10,
+  "actions": [
+    { "row": 5, "col": 0, "intent": "Open the lower rescue route and break the left crate near the most threatened puppy." },
+    { "row": 6, "col": 2, "intent": "Break the lower right route tax and bring the first priority to one-clear-away." },
+    { "row": 0, "col": 7, "intent": "Make a controlled top-side pivot without making the safe puppy first." },
+    { "row": 4, "col": 1, "intent": "Extract the lower puppy and clear the dock residue created by the opening route." },
+    { "row": 2, "col": 2, "intent": "Commit to the middle puppy as the second priority instead of drifting into top cleanup." },
+    { "row": 0, "col": 5, "intent": "Open one side of the safe top target while cashing a planned dock recovery." },
+    { "row": 4, "col": 6, "intent": "Break the right-side ice support during the controlled pivot." },
+    { "row": 6, "col": 4, "intent": "Take the lower-side dock recovery before the final top extraction setup." },
+    { "row": 0, "col": 3, "intent": "Bring the top target to one-clear-away after the lower and middle rescues are secured." },
+    { "row": 1, "col": 3, "intent": "Finish the safe top puppy after the capstone order is proven." }
+  ],
+  "expectedEventsInOrder": [
+    "TargetOneClearAway",
+    "DockCleared",
+    "TargetExtracted",
+    "TargetExtracted",
+    "WaterWarning",
+    "WaterRose",
+    "DockCleared",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": ["0", "1", "2"],
+  "notes": "Designer golden for the capstone: lower water priority first, one planned dock recovery, middle pivot second, top target last."
+}

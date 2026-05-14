@@ -1,0 +1,19 @@
+{
+  "id": "L40",
+  "title": "Water Rescue Order Capstone",
+  "campaignBand": "water_rescue_order",
+  "role": "capstone",
+  "primarySkill": "water_priority_capstone",
+  "secondarySkill": "three_target_order",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "ice", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate", "vine"],
+  "boardSize": { "width": 8, "height": 9 },
+  "targetCount": 3,
+  "densityTarget": "80-90%",
+  "targetFirstAttemptWinRate": "45-70%",
+  "intendedTensionBeat": "Three rescues compete, but water exposure should make the first priority clear and the second priority arguable.",
+  "intendedReleaseBeat": "Correct target order turns a dangerous board into a controlled sequence with one planned dock recovery.",
+  "expectedPath": "Rescue the most water-threatened puppy first, use a dock-safe pivot, then choose the next exposed target before finishing the safest puppy.",
+  "expectedFailMode": "Player rescues an easy or emotionally tempting puppy first, delaying the water-threatened target until loss or near-loss.",
+  "designNotes": "Band capstone. This should prove water rescue order, not just general difficulty. Use three targets only if the order logic is visually clear."
+}

@@ -1,0 +1,52 @@
+{
+  "id": "L39",
+  "name": "Last Dry Tile",
+  "board": {
+    "width": 8,
+    "height": 8,
+    "tiles": [
+      ["A", "A", "B", "B", "C", ".", ".", "D"],
+      [".", "E", "F", "C", "C", "A", "A", "D"],
+      ["B", "B", "T1", ".", "F", "D", "D", "E"],
+      ["C", "C", "D", "D", "A", "A", ".", "E"],
+      ["E", ".", "C", "C", "F", "E", "E", "D"],
+      ["A", "B", "B", "T0", "C", "C", "D", "D"],
+      [".", "B", "B", ".", "E", "E", ".", "F"],
+      [".", ".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 5, "col": 3 },
+    { "id": "1", "row": 2, "col": 2 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 6
+  },
+  "vine": {
+    "growthThreshold": 999,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.35,
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
+  },
+  "meta": {
+    "intent": "Create a capture-friendly last-dry-tile rescue beat after the exam while keeping the urgent route obvious and fair.",
+    "expectedPath": "Follow the lower urgent route, use one dock-safe stabilizer during the approach, extract the hero puppy on the water-rise action, then finish the calmer upper puppy.",
+    "expectedFailMode": "Wrong play spends safe side clears first and lets the hero route become too tight, usually ending in a rescue-path flood if the player ignores the urgent line.",
+    "whatItProves": "A water rescue can feel cinematic and generous while still using only action-count pressure and target-order reading.",
+    "notes": "Role: spectacle/recovery. No ice, vine, or reinforced crates; empty cells are route, spawn, water, and mobile-readability space.",
+    "isRuleTeach": false
+  }
+}

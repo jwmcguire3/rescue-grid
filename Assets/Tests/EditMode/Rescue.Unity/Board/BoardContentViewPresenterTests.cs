@@ -993,7 +993,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
         }
 
         [Test]
-        public void BoardContentViewPresenter_VinePreviewUsesRegisteredVineBeforeOverlayFallback()
+        public void BoardContentViewPresenter_VinePreviewUsesRegisteredOverlayBeforeFullVine()
         {
             PresenterHarness harness = CreateHarness();
             BlockerVisualRegistry blockerRegistry = CreateRegistry<BlockerVisualRegistry>();
@@ -1019,8 +1019,74 @@ namespace Rescue.Unity.BoardPresentation.Tests
 
             Transform? preview = FindChildByName(harness.ContentRoot, "VineGrowthPreview");
             Assert.That(preview, Is.Not.Null);
-            Assert.That(preview!.Find("VinePrefabMarker"), Is.Not.Null);
-            Assert.That(preview.Find("OverlayPrefabMarker"), Is.Null);
+            Assert.That(preview!.Find("OverlayPrefabMarker"), Is.Not.Null);
+            Assert.That(preview.Find("VinePrefabMarker"), Is.Null);
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_VinePreviewDisablesRendererLighting()
+        {
+            PresenterHarness harness = CreateHarness();
+            BlockerVisualRegistry blockerRegistry = CreateRegistry<BlockerVisualRegistry>();
+            GameObject overlayPrefab = CreateTrackedPrimitive(PrimitiveType.Quad, "VineOverlayPrefab");
+            MeshRenderer prefabRenderer = overlayPrefab.GetComponent<MeshRenderer>();
+            prefabRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+            prefabRenderer.receiveShadows = true;
+            blockerRegistry.VineOverlayPrefab = overlayPrefab;
+            SetPrivateField(harness.ContentPresenter, "blockerRegistry", blockerRegistry);
+            GameState previewState = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new EmptyTile())),
+                vine: new VineState(
+                    ActionsSinceLastClear: 3,
+                    GrowthThreshold: 4,
+                    GrowthPriorityList: ImmutableArray.Create(new TileCoord(0, 0)),
+                    PriorityCursor: 0,
+                    PendingGrowthTile: new TileCoord(0, 0)));
+
+            harness.GridPresenter.RebuildGrid(previewState);
+            harness.ContentPresenter.SyncImmediate(previewState);
+
+            Transform? preview = FindChildByName(harness.ContentRoot, "VineGrowthPreview");
+            Assert.That(preview, Is.Not.Null);
+            MeshRenderer renderer = preview!.GetComponent<MeshRenderer>();
+            Assert.That(renderer.shadowCastingMode, Is.EqualTo(UnityEngine.Rendering.ShadowCastingMode.Off));
+            Assert.That(renderer.receiveShadows, Is.False);
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_VinePreviewCoverageUsesStableBasePosition()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameState previewState = CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new EmptyTile(), new EmptyTile())),
+                vine: new VineState(
+                    ActionsSinceLastClear: 3,
+                    GrowthThreshold: 4,
+                    GrowthPriorityList: ImmutableArray.Create(new TileCoord(0, 1)),
+                    PriorityCursor: 0,
+                    PendingGrowthTile: new TileCoord(0, 1),
+                    PlannedGrowthTile: null,
+                    GrowthSourceTile: new TileCoord(0, 0)));
+
+            harness.GridPresenter.RebuildGrid(previewState);
+            harness.ContentPresenter.SyncImmediate(previewState);
+            Transform? preview = FindChildByName(harness.ContentRoot, "VineGrowthPreview");
+            Assert.That(preview, Is.Not.Null);
+
+            InvokePrivateInstanceMethod(
+                harness.ContentPresenter,
+                "ApplyVinePreviewCoverage",
+                new Vector3(0.70f, 0.70f, 0.42f));
+            Vector3 firstPosition = preview!.position;
+
+            InvokePrivateInstanceMethod(
+                harness.ContentPresenter,
+                "ApplyVinePreviewCoverage",
+                new Vector3(0.70f, 0.70f, 0.42f));
+
+            Assert.That(Vector3.Distance(preview.position, firstPosition), Is.LessThan(0.001f));
         }
 
         [Test]
@@ -2166,14 +2232,14 @@ namespace Rescue.Unity.BoardPresentation.Tests
             field.SetValue(target, value);
         }
 
-        private static void InvokePrivateInstanceMethod(object target, string methodName)
+        private static void InvokePrivateInstanceMethod(object target, string methodName, params object[] arguments)
         {
             System.Reflection.MethodInfo? method = target.GetType().GetMethod(
                 methodName,
                 System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
 
             Assert.That(method, Is.Not.Null, $"Expected private method '{methodName}'.");
-            method?.Invoke(target, null);
+            method?.Invoke(target, arguments);
         }
 
         private static Bounds CalculateWorldRendererBounds(GameObject root)

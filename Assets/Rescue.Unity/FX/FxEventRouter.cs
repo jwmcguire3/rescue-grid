@@ -15,6 +15,7 @@ namespace Rescue.Unity.FX
         public const float DefaultFxPlaybackSpeedMultiplier = 1.0f;
         public const float MinFxPlaybackSpeedMultiplier = 0.25f;
         public const float MaxFxPlaybackSpeedMultiplier = 4.0f;
+        private static readonly Color VinePreviewFxTint = new Color(0.52f, 0.95f, 0.48f, 0.72f);
 
         [SerializeField] private FxVisualRegistry? fxRegistry;
         [SerializeField] private Transform? fxRoot;
@@ -761,6 +762,7 @@ namespace Rescue.Unity.FX
                 ResolveFxWorldPosition(worldPosition, hook) + (presentationRotation * prefab.transform.localPosition),
                 presentationRotation * prefab.transform.localRotation);
             ApplyFxPlaybackSpeed(instance);
+            ApplyVinePreviewFxTint(instance, hook);
             ApplyDiagnosticVisibility(instance, hook);
             return instance;
         }
@@ -777,6 +779,20 @@ namespace Rescue.Unity.FX
                 {
                     player.RestartPlayback();
                 }
+            }
+        }
+
+        private static void ApplyVinePreviewFxTint(GameObject instance, FxEventHook hook)
+        {
+            if (hook is not FxEventHook.VineGrowthPreview and not FxEventHook.VineGrowth)
+            {
+                return;
+            }
+
+            SpriteRenderer[] renderers = instance.GetComponentsInChildren<SpriteRenderer>(includeInactive: true);
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                renderers[i].color = VinePreviewFxTint;
             }
         }
 

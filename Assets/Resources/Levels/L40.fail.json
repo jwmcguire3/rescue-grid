@@ -1,0 +1,25 @@
+{
+  "levelId": "L40",
+  "seed": 1,
+  "pathType": "expected_fail",
+  "expectedOutcome": "LossDockOverflow",
+  "expectedLossReason": "LossDockOverflow",
+  "maxActions": 8,
+  "actions": [
+    { "row": 0, "col": 7, "intent": "Open with a tempting safe-side clear instead of the lower water-facing rescue." },
+    { "row": 2, "col": 7, "intent": "Continue broad right-side clearing and delay the endangered lower puppy." },
+    { "row": 0, "col": 0, "intent": "Spend another action on general board value rather than rescue order." },
+    { "row": 0, "col": 2, "intent": "Keep building dock residue while the lower route remains unfinished." },
+    { "row": 0, "col": 0, "intent": "Take a refreshed top clear and accept more dock pressure." },
+    { "row": 0, "col": 6, "intent": "Push the dock higher instead of cashing the planned pivot triple." },
+    { "row": 0, "col": 7, "intent": "Continue broad clearing after water has advanced." },
+    { "row": 1, "col": 3, "intent": "Touch the middle route too late and overflow before the capstone rescue order is recovered." }
+  ],
+  "expectedEventsInOrder": [
+    "WaterWarning",
+    "WaterRose",
+    "DockOverflowTriggered",
+    "Lost"
+  ],
+  "notes": "Verified fail target: tempting broad clears delay the endangered puppy and overflow the dock after the first water rise."
+}

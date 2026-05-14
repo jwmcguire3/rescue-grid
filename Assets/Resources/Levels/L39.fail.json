@@ -1,0 +1,23 @@
+{
+  "levelId": "L39",
+  "seed": 1,
+  "pathType": "expected_fail",
+  "expectedOutcome": "LossRescuePathFlooded",
+  "expectedLossReason": "LossRescuePathFlooded",
+  "maxActions": 6,
+  "actions": [
+    { "row": 0, "col": 4, "intent": "Start with safe upper value instead of the hero route." },
+    { "row": 4, "col": 7, "intent": "Spend a second action on side value while the lower rescue path is already exposed." },
+    { "row": 2, "col": 7, "intent": "Continue clearing away from the hero puppy." },
+    { "row": 0, "col": 1, "intent": "Take a comfortable dock-neutral clear rather than commit to extraction." },
+    { "row": 0, "col": 4, "intent": "Let the forecast warning arrive with the hero route unresolved." },
+    { "row": 0, "col": 7, "intent": "Choose one more safe upper clear and flood the lower rescue path." }
+  ],
+  "expectedEventsInOrder": [
+    "WaterWarning",
+    "WaterRose",
+    "TargetRescuePathFlooded",
+    "Lost"
+  ],
+  "notes": "Verified fail: ignoring the obvious hero route leaves the lower rescue-path tile locked when the next row floods."
+}

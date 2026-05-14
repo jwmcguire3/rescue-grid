@@ -1,0 +1,27 @@
+{
+  "levelId": "L39",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 9,
+  "actions": [
+    { "row": 5, "col": 4, "intent": "Open the hero puppy's water-facing side immediately." },
+    { "row": 3, "col": 2, "intent": "Shape the urgent route while also starting the later upper pivot." },
+    { "row": 3, "col": 3, "intent": "Bring the hero puppy to one-clear-away and cash the first dock stabilizer." },
+    { "row": 4, "col": 6, "intent": "Take a side stabilizer without abandoning the urgent line." },
+    { "row": 2, "col": 1, "intent": "Prepare the calmer upper puppy only after the hero route is nearly ready." },
+    { "row": 3, "col": 1, "intent": "Extract the hero puppy on the water-rise beat." },
+    { "row": 0, "col": 2, "intent": "Clear a safe upper route group and recover dock shape after the close call." },
+    { "row": 1, "col": 0, "intent": "Use a calm second-rescue setup after the spectacle moment." },
+    { "row": 0, "col": 2, "intent": "Finish the upper puppy without needing another water race." }
+  ],
+  "expectedEventsInOrder": [
+    "WaterWarning",
+    "TargetExtracted",
+    "WaterRose",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": ["0", "1"],
+  "notes": "Designer golden for the spectacle/recovery beat: clear the urgent lower route, rescue just ahead of water, then finish calmly."
+}

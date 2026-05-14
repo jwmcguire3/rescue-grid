@@ -1,0 +1,29 @@
+{
+  "levelId": "L38",
+  "seed": 1,
+  "pathType": "expected_fail",
+  "expectedOutcome": "LossRescuePathFlooded",
+  "expectedLossReason": "LossRescuePathFlooded",
+  "maxActions": 12,
+  "actions": [
+    { "row": 1, "col": 0, "intent": "Open with a dock-safe side clear instead of advancing the urgent lower route." },
+    { "row": 0, "col": 4, "intent": "Continue stabilizing away from the water-threatened puppy." },
+    { "row": 6, "col": 0, "intent": "Take lower-left value without opening the required route." },
+    { "row": 0, "col": 4, "intent": "Clear another safe group while the forecast pressure grows." },
+    { "row": 0, "col": 6, "intent": "Prioritize dock comfort over rescue tempo." },
+    { "row": 0, "col": 7, "intent": "Let the first water rise happen with the lower route still unresolved." },
+    { "row": 0, "col": 0, "intent": "Repair rack shape instead of committing to extraction." },
+    { "row": 0, "col": 6, "intent": "Keep choosing low-risk clears and delay the route pivot." },
+    { "row": 0, "col": 7, "intent": "Spend another action that does not secure the endangered puppy." },
+    { "row": 5, "col": 0, "intent": "Break side material too late to preserve water tempo." },
+    { "row": 3, "col": 3, "intent": "Only now open the lower route as the next flood row is forecast." },
+    { "row": 6, "col": 3, "intent": "Make the route one-clear-away on the same action water floods it." }
+  ],
+  "expectedEventsInOrder": [
+    "WaterWarning",
+    "WaterRose",
+    "TargetRescuePathFlooded",
+    "Lost"
+  ],
+  "notes": "Verified fail target: overprotecting dock and side value costs water tempo, so the urgent route floods before rescue order is recovered."
+}

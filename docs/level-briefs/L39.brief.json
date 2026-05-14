@@ -1,0 +1,19 @@
+{
+  "id": "L39",
+  "title": "Last Dry Tile",
+  "campaignBand": "water_rescue_order",
+  "role": "spectacle",
+  "primarySkill": "close_call_water_rescue",
+  "secondarySkill": "confidence_recovery",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate", "vine"],
+  "boardSize": { "width": 8, "height": 8 },
+  "targetCount": 2,
+  "densityTarget": "75-85%",
+  "targetFirstAttemptWinRate": "70-90%",
+  "intendedTensionBeat": "The main puppy appears one step from danger, but the correct rescue line is readable and satisfying.",
+  "intendedReleaseBeat": "A dramatic last-dry-step extraction delivers a memorable water rescue without feeling unfair.",
+  "expectedPath": "Follow the obvious urgent route, make one dock-safe stabilizer if needed, rescue just ahead of water, then finish the secondary puppy calmly.",
+  "expectedFailMode": "Wrong play delays the hero rescue, but the level should mostly serve as recovery and spectacle after L38.",
+  "designNotes": "Capture-friendly water moment. This should be the band's memorable emotional rescue beat."
+}

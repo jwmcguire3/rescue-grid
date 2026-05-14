@@ -4,6 +4,7 @@ using NUnit.Framework;
 using Rescue.Core.Pipeline;
 using Rescue.Core.Rng;
 using Rescue.Core.State;
+using Rescue.Unity.Art.Registries;
 using Rescue.Unity.BoardPresentation;
 using Rescue.Unity.Input;
 using Rescue.Unity.Presentation;
@@ -185,6 +186,39 @@ namespace Rescue.PlayMode.Tests.Smoke
         }
 
         [UnityTest]
+        public System.Collections.IEnumerator VinePreviewSmokeUsesOverlayPrefabWithoutLighting()
+        {
+            PlaybackHarness harness = CreateHarness();
+            BlockerVisualRegistry blockerRegistry = CreateRegistry<BlockerVisualRegistry>();
+            GameObject vinePrefab = CreateTrackedGameObject("VinePrefab");
+            GameObject overlayPrefab = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            createdObjects.Add(overlayPrefab);
+            overlayPrefab.name = "VineOverlayPrefab";
+            CreateTrackedGameObject("VinePrefabMarker").transform.SetParent(vinePrefab.transform, false);
+            CreateTrackedGameObject("OverlayPrefabMarker").transform.SetParent(overlayPrefab.transform, false);
+
+            MeshRenderer overlayRenderer = overlayPrefab.GetComponent<MeshRenderer>();
+            overlayRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+            overlayRenderer.receiveShadows = true;
+            blockerRegistry.VinePrefab = vinePrefab;
+            blockerRegistry.VineOverlayPrefab = overlayPrefab;
+            SetPrivateField(harness.BoardContent, "blockerRegistry", blockerRegistry);
+
+            harness.ViewPresenter.Rebuild(CreateVinePreviewState());
+            yield return null;
+
+            Transform preview = FindRequiredChildContaining(harness.ContentRoot, "VineGrowthPreview");
+            Assert.That(preview.Find("OverlayPrefabMarker"), Is.Not.Null);
+            Assert.That(preview.Find("VinePrefabMarker"), Is.Null);
+            Assert.That(CountChildrenContaining(harness.ContentRoot, "VineGrowthPreview"), Is.EqualTo(1));
+
+            MeshRenderer previewRenderer = preview.GetComponent<MeshRenderer>();
+            Assert.That(previewRenderer.shadowCastingMode, Is.EqualTo(UnityEngine.Rendering.ShadowCastingMode.Off));
+            Assert.That(previewRenderer.receiveShadows, Is.False);
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [UnityTest]
         public System.Collections.IEnumerator TerminalLossPlaybackShowsLossOverlayAfterFinalSync()
         {
             PlaybackHarness harness = CreateHarness();
@@ -333,6 +367,7 @@ namespace Rescue.PlayMode.Tests.Smoke
                 inputPresenter,
                 viewPresenter,
                 playbackController,
+                boardContent,
                 boardContentRoot,
                 waterOverlayRoot,
                 dockPieceContainer,
@@ -347,6 +382,13 @@ namespace Rescue.PlayMode.Tests.Smoke
             GameObject gameObject = new GameObject(name);
             createdObjects.Add(gameObject);
             return gameObject;
+        }
+
+        private T CreateRegistry<T>() where T : ScriptableObject
+        {
+            T registry = ScriptableObject.CreateInstance<T>();
+            createdObjects.Add(registry);
+            return registry;
         }
 
         private static void AssertBoardContentMatchesState(Transform contentRoot, GameState state)
@@ -443,6 +485,20 @@ namespace Rescue.PlayMode.Tests.Smoke
             }
 
             return null;
+        }
+
+        private static int CountChildrenContaining(Transform parent, string partialName)
+        {
+            int count = 0;
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                if (parent.GetChild(i).name.Contains(partialName))
+                {
+                    count++;
+                }
+            }
+
+            return count;
         }
 
         private static Transform FindRequiredChildContaining(Transform parent, string partialName)
@@ -694,6 +750,7 @@ namespace Rescue.PlayMode.Tests.Smoke
                 BoardInputPresenter inputPresenter,
                 GameStateViewPresenter viewPresenter,
                 ActionPlaybackController playbackController,
+                BoardContentViewPresenter boardContent,
                 Transform contentRoot,
                 Transform waterRoot,
                 Transform dockPieceContainer,
@@ -705,6 +762,7 @@ namespace Rescue.PlayMode.Tests.Smoke
                 InputPresenter = inputPresenter;
                 ViewPresenter = viewPresenter;
                 PlaybackController = playbackController;
+                BoardContent = boardContent;
                 ContentRoot = contentRoot;
                 WaterRoot = waterRoot;
                 DockPieceContainer = dockPieceContainer;
@@ -719,6 +777,8 @@ namespace Rescue.PlayMode.Tests.Smoke
             public GameStateViewPresenter ViewPresenter { get; }
 
             public ActionPlaybackController PlaybackController { get; }
+
+            public BoardContentViewPresenter BoardContent { get; }
 
             public Transform ContentRoot { get; }
 

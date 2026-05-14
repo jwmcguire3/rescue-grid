@@ -111,6 +111,9 @@ namespace Rescue.Unity.Presentation
             boardInput?.SetCurrentState(loaded, refreshView: false);
             SyncTerminalInputLock();
             SyncL00IntroImage();
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+            Rescue.Unity.Diagnostics.AndroidWhiteoutDiagnostics.LogLevelVisualState(levelId);
+#endif
         }
 
         public void ReplayCurrentLevel()

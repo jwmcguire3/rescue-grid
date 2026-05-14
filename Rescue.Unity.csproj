@@ -53,6 +53,7 @@
     <Compile Include="Assets\Rescue.Unity\Art\Validation\MeshyAssetValidationSettings.cs" />
     <Compile Include="Assets\Rescue.Unity\Haptics\IHapticPlatformAdapter.cs" />
     <Compile Include="Assets\Rescue.Unity\Haptics\HapticFeedbackSignal.cs" />
+    <Compile Include="Assets\Rescue.Unity\Diagnostics\AndroidWhiteoutDiagnostics.cs" />
     <Compile Include="Assets\Rescue.Unity\UI\DockPiecePoseHelper.cs" />
     <Compile Include="Assets\Rescue.Unity\Feedback\AudioFeedbackEntry.cs" />
     <Compile Include="Assets\Rescue.Unity\Feedback\AudioEventRouter.cs" />
