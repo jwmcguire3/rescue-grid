@@ -13,17 +13,22 @@ The implemented gameplay rules authority is `docs/phase_1_spec.md`. Do not imple
 
 ## Current State
 
-Phase 1 is complete as an engineering/prototype milestone: EditMode and PlayMode pass, level validation and solve verification pass, the accepted packet is L00-L20, and the APK works on device. It should not be treated as a finished product.
+Phase 1 is complete as an engineering/prototype milestone: EditMode and PlayMode have passing wrapper evidence, level validation and solve verification are established gates, the manifest-backed accepted packet is L00-L28, and the APK works on device. It should not be treated as a finished product.
 
 The active focus is Phase 2A: readability, animation/feedback, level-authoring tools, and capture proof without expanding mechanics. The current repository has a deterministic core, authored packet, player scene, debug scene, tooling, first-pass presentation, and dev build scripts for Android, iOS, WebGL, and capture builds. The strongest areas are:
 
 - Immutable `Rescue.Core` state and deterministic rules.
 - A fixed action pipeline with isolated steps and regression tests.
-- Authored L00-L20 level JSON content, solve scripts, and accepted golden paths.
+- Manifest-backed L00-L28 packet content with level JSON, briefs, solve scripts, golden paths, fail paths where authored, and packet acceptance tooling.
+- Exploratory L29-L30 ice future-value levels with briefs and solve/replay artifacts; these exist outside the packet-facing manifest and selectors unless that authority is deliberately changed.
 - Level validation, replay, solve-authoring, telemetry-report, and capture tooling.
 - An automated level-authoring gate for level JSON, briefs, solve scripts, golden paths, and offline telemetry bots.
 - A functional Unity player flow in `Game.unity` and a tuning/debug flow in `DebugGameplay.unity`, with board, dock, water forecast, target, playback, Mae reaction, victory, and loss presentation.
+- Daisy puppy target prefab, registry, and scene wiring are implemented and covered by presentation tests.
+- Recent target readability work covers Daisy pose stability, gameplay camera coverage, board ray coverage, extraction jump/fly arc staging, and readiness animation resolution.
 - Phase 1 visual assets, audio feedback, prefabs, registries, and FX hooks for the presentation path.
+
+The current worktree also contains in-progress Daisy target procedural behavior and look-at support. Treat that local work as active development until it is committed and covered by the normal validation/audit trail.
 
 The remaining risk is Phase 2A proof quality: a cold player should be able to read water pressure, dock failures, vine pressure, rescue order, and the puppy extraction beat without relying on debug context. That is a playtest/presentation-readability risk, not evidence that those systems are absent.
 
@@ -42,7 +47,7 @@ In scope:
 - One free undo per level.
 - Dock Jam as an early teaching variant for L01-L02.
 - L00 rule-teach level.
-- L01-L20 main packet, governed by `docs/level-packets/phase1.packet.json`.
+- L01-L28 main packet, governed by `docs/level-packets/phase1.packet.json`.
 - One-clear-away target state.
 - Persistent next-flood-row forecast support with row overlay and countdown fill.
 - Authored vine growth priority and preview events.
@@ -115,9 +120,11 @@ Authored level content lives in `Assets/StreamingAssets/Levels/`.
 Current packet:
 
 - `L00.json`: rule-teach opener.
-- `L01.json` through `L20.json`: main Phase 1 packet.
+- `L01.json` through `L28.json`: main Phase 1 packet, as defined by `docs/level-packets/phase1.packet.json`.
 
-Solve files live in `Assets/Resources/Levels/` as `L00.solve.json` through `L20.solve.json`. Golden paths follow the same level-id range. The committed L15 capture source of truth remains `Assets/Resources/Levels/L15.solve.json`; generated capture reports are written at runtime under `persistentDataPath/capture/` or by verification under `Build/Logs/`, and the workflow is documented in `docs/capture.md`.
+Exploratory authored levels `L29.json` and `L30.json` currently exist with briefs and solve/replay artifacts for the ice future-value band, but they are not part of the packet-facing manifest or normal player/debug selectors.
+
+Solve files live in `Assets/Resources/Levels/` as `L00.solve.json` through `L28.solve.json` for the packet. Golden paths follow the same packet level-id range, with additional artifacts for exploratory levels when authored. The committed L15 capture source of truth remains `Assets/Resources/Levels/L15.solve.json`; generated capture reports are written at runtime under `persistentDataPath/capture/` or by verification under `Build/Logs/`, and the workflow is documented in `docs/capture.md`.
 
 The level schema currently supports:
 
@@ -141,7 +148,7 @@ Current scenes:
 - `Assets/Scenes/Game.unity`
 - `Assets/Scenes/DebugGameplay.unity`
 
-Open the project with Unity `6000.4.3f1`. `Game.unity` is the main playable/player scene and clean capture entry point. It boots L00 through the player-facing level session, progresses through L01-L20 from the victory screen, and keeps the debug panel out of the default player flow. `DebugGameplay.unity` is the existing debug/testing/playback scene for tuning, replay, and debug UI work.
+Open the project with Unity `6000.4.3f1`. `Game.unity` is the main playable/player scene and clean capture entry point. It boots L00 through the player-facing level session, progresses through L01-L28 from the victory screen, and keeps the debug panel out of the default player flow. `DebugGameplay.unity` is the existing debug/testing/playback scene for tuning, replay, and debug UI work.
 
 Unity implementation areas:
 
@@ -154,6 +161,14 @@ Unity implementation areas:
 - `Assets/Rescue.Unity/Capture/`: L15 capture runner.
 - `Assets/Rescue.Unity/Art/`: Phase 1 prefabs, textures, materials, registries, and validation helpers.
 - `Assets/Rescue.Unity.EditorTools/`: editor-only diagnostics and prefab generation helpers.
+
+Current Daisy target presentation state:
+
+- `PF_Target_Daisy_Puppy` is the Phase 1 target prefab through the target visual registry.
+- `Game.unity` and `DebugGameplay.unity` both serialize the target registry used by the board presenter.
+- `TargetPuppyAnimator` maps trapped, progressing, one-clear-away, extractable/extracted, and extraction intents to Daisy animator states.
+- `docs/audits/daisy-target-animation-wiring.md` records the latest committed wiring audit and PlayMode scene smoke coverage.
+- Local in-progress work is extending procedural fidgets/barks and target look-at behavior; keep README language about that work provisional until committed.
 
 Playback currently maps the main visible action events:
 
@@ -235,7 +250,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1 -Platforms EditMode
 powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1 -Platforms PlayMode
 ```
 
-Verified during this README audit on May 6, 2026: EditMode passed `793/793` and PlayMode passed `42/42`. If you need current status later, rerun the wrappers above and report the result from the generated result XML/logs.
+Latest committed Daisy wiring audit on May 14, 2026 reports successful EditMode and PlayMode wrapper runs in `docs/audits/daisy-target-animation-wiring.md`. For fresh status, rerun the wrappers above and report the result from generated result XML/logs rather than relying on old README pass counts.
 
 Unity `6000.4.3f1` may show a Windows breakpoint dialog before the test runner writes result XML or logs, especially from a restricted shell. If that happens and no result XML or Unity log exists, report it as `Unity launch failed before tests started` / environment-level launch failure, not as a gameplay or test failure. Do not repeatedly retry the same failing sandboxed launch.
 
@@ -302,8 +317,8 @@ See `docs/distribution.md` for platform install notes and telemetry collection, 
 - `Assets/Rescue.Core.Tests/`: core EditMode tests.
 - `Assets/Rescue.Content/`: level schema, loader, validator, ASCII preview.
 - `Assets/Rescue.Content.Tests/`: content tests.
-- `Assets/StreamingAssets/Levels/`: authored L00-L20 level JSON.
-- `Assets/Resources/Levels/`: authored solve and golden path files.
+- `Assets/StreamingAssets/Levels/`: authored level JSON, including packet L00-L28 and exploratory L29-L30.
+- `Assets/Resources/Levels/`: authored solve, golden path, and fail-path files.
 - `Assets/Rescue.Replay/`: replay runtime code.
 - `Assets/Rescue.Telemetry/`: telemetry schema and logger/hooks.
 - `Assets/Rescue.Unity/`: Unity presentation, debug UI, capture, art integration.
@@ -321,10 +336,10 @@ Phase 2A is the active workstream. It is about readability, animation/feedback, 
 Near-term Phase 2A work:
 
 - Strengthen `TargetOneClearAway`, `WaterWarning`, `VinePreviewChanged`, and `VineGrown` as player-facing presentation where playtesting shows ambiguity.
-- Tune persistent next-flood-row forecast readability across L00-L20.
+- Tune persistent next-flood-row forecast readability across L00-L28.
 - Make dock overflow, Dock Jam, win, and loss causality unmistakable.
 - Tune invalid-tap reject bump/audio while preserving zero state change.
-- Strengthen target extraction so it reads as a rescue beat.
+- Continue strengthening Daisy target readiness, look-at, and extraction so puppy state changes read as rescue beats rather than generic board cleanup.
 - Improve Mae reaction and aftercare support only where it improves clarity or emotional grounding.
 - Improve level-authoring and capture workflows where they are fragile or slow.
 
