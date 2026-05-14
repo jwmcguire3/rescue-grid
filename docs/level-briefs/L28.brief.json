@@ -1,0 +1,19 @@
+{
+  "id": "L28",
+  "title": "Future Value Exam",
+  "campaignBand": "ice_future_value",
+  "role": "exam",
+  "primarySkill": "integrated_ice_future_value",
+  "secondarySkill": "water_dock_blocker_sequence",
+  "allowedMechanics": ["debris", "dock", "water", "ice", "crate", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate", "vine"],
+  "boardSize": { "width": 8, "height": 9 },
+  "targetCount": 2,
+  "densityTarget": "80-90%",
+  "targetFirstAttemptWinRate": "45-65%",
+  "intendedTensionBeat": "The board offers several plausible clears, but only early ice investment keeps rescue order, dock, and water aligned.",
+  "intendedReleaseBeat": "A mid-level ice break opens the pivot route and visibly converts pressure into control.",
+  "expectedPath": "Identify the iced rescue route early, avoid broad low-value clears, break ice before water forces panic, then use a planned dock triple during the pivot.",
+  "expectedFailMode": "Generic clearing delays the ice route, causing either dock overflow or water pressure before the first rescue is secure.",
+  "designNotes": "Exam level: combine known ice, dock, water, and crate skills without adding vine or any new mechanic."
+}

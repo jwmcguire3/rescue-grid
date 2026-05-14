@@ -1,0 +1,19 @@
+{
+  "id": "L26",
+  "title": "Ice Choke Variation",
+  "campaignBand": "ice_future_value",
+  "role": "variation",
+  "primarySkill": "ice_choke_reading",
+  "secondarySkill": "crate_route_sequence",
+  "allowedMechanics": ["debris", "dock", "water", "ice", "crate", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate", "vine"],
+  "boardSize": { "width": 8, "height": 8 },
+  "targetCount": 2,
+  "densityTarget": "80-90%",
+  "targetFirstAttemptWinRate": "70-85%",
+  "intendedTensionBeat": "The rescue route passes through a shared choke where ice and crate sequencing both matter.",
+  "intendedReleaseBeat": "Correctly opening the frozen choke makes both rescues feel planned rather than accidental.",
+  "expectedPath": "Clear near the shared choke, break the ice before overworking the crate side, rescue the first puppy, then use the opened lane for the second.",
+  "expectedFailMode": "Player attacks the crate side first, spends dock space, and leaves the frozen choke blocking both rescues.",
+  "designNotes": "Same ice future-value lesson in a different board shape. Crates are route tax, not the main lesson."
+}

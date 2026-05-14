@@ -1,0 +1,52 @@
+{
+  "id": "L26",
+  "name": "Ice Choke Variation",
+  "board": {
+    "width": 8,
+    "height": 8,
+    "tiles": [
+      ["A", "A", "B", "B", "C", "C", ".", "D"],
+      ["E", ".", "F", "CR", "D", "D", "A", "A"],
+      ["E", "E", "B", "IB", "CR", "F", "F", "C"],
+      ["C", "D", "D", ".", "T1", "A", "B", "B"],
+      ["C", "C", "A", "T0", "IA", ".", "E", "E"],
+      ["F", "CR", "A", ".", "B", "D", "D", "F"],
+      [".", "B", "B", "E", "E", "C", ".", "F"],
+      [".", ".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 4, "col": 3 },
+    { "id": "1", "row": 3, "col": 4 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 8
+  },
+  "vine": {
+    "growthThreshold": 999,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.25,
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
+  },
+  "meta": {
+    "intent": "Vary ice future-value reading by putting both rescues behind a shared frozen choke.",
+    "expectedPath": "Clear near the shared choke, break the ice before overworking crates, rescue the lower puppy, then use the opened lane for the upper puppy.",
+    "expectedFailMode": "The player attacks the crate side first, fills dock with route tax, and leaves the frozen choke blocking both rescues.",
+    "whatItProves": "The ice route-value lesson works in a wider board shape with two targets and crate tax.",
+    "notes": "Role: variation. Crates frame the choke but the ice is the meaningful future-value investment; empty cells clarify the shared lane and water edge.",
+    "isRuleTeach": false
+  }
+}

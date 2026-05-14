@@ -1,0 +1,19 @@
+{
+  "id": "L27",
+  "title": "Ice or Stabilize",
+  "campaignBand": "ice_future_value",
+  "role": "pressure_choice",
+  "primarySkill": "ice_dock_timing",
+  "secondarySkill": "dock_rescue_choice",
+  "allowedMechanics": ["debris", "dock", "water", "ice", "crate", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate", "vine"],
+  "boardSize": { "width": 8, "height": 9 },
+  "targetCount": 2,
+  "densityTarget": "80-90%",
+  "targetFirstAttemptWinRate": "55-75%",
+  "intendedTensionBeat": "The key ice break is urgent, but taking it at the wrong moment leaves the dock unstable.",
+  "intendedReleaseBeat": "A planned stabilizing triple before or immediately after the ice break makes the rescue feel controlled.",
+  "expectedPath": "Make one route-progress clear, stabilize dock with a clean triple, then break the key ice and finish the urgent rescue.",
+  "expectedFailMode": "Player either overprotects dock and delays the ice break, or rushes ice and overflows from route residue.",
+  "designNotes": "This is the band’s dock integration pressure level. The best path should feel disciplined, not exact-sequence hidden."
+}

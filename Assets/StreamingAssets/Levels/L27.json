@@ -1,0 +1,53 @@
+{
+  "id": "L27",
+  "name": "Ice or Stabilize",
+  "board": {
+    "width": 8,
+    "height": 9,
+    "tiles": [
+      ["A", "A", "B", "B", "C", "C", ".", "D"],
+      ["E", "F", "F", ".", "D", "D", "A", "A"],
+      ["E", "E", "CR", "C", "C", "B", "B", "F"],
+      ["D", "D", "A", "IB", ".", "F", "CR", "E"],
+      ["C", "C", "A", "T1", "B", "B", "E", "."],
+      ["F", ".", "D", "CR", "IA", "A", "E", "E"],
+      ["T0", "CR", "D", ".", "B", "C", "C", "F"],
+      ["CR", "A", "A", "E", ".", "D", "F", "."],
+      [".", ".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 6, "col": 0 },
+    { "id": "1", "row": 4, "col": 3 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 6
+  },
+  "vine": {
+    "growthThreshold": 999,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.25,
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
+  },
+  "meta": {
+    "intent": "Ask the player to time the key ice break around dock stabilization instead of treating either system alone.",
+    "expectedPath": "Make one lower route-progress clear, stabilize dock with a clean triple, break the key ice, and finish the urgent rescue before pivoting.",
+    "expectedFailMode": "The player either delays the ice break too long while protecting dock or rushes route clears into overflow.",
+    "whatItProves": "Ice future value can integrate with dock timing without hiding an exact sequence.",
+    "notes": "Role: pressure_choice. Water and dock are both active, but the visible lower ice lane remains the primary decision.",
+    "isRuleTeach": false
+  }
+}

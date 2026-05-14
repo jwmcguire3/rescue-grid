@@ -1,0 +1,53 @@
+{
+  "id": "L28",
+  "name": "Future Value Exam",
+  "board": {
+    "width": 8,
+    "height": 9,
+    "tiles": [
+      ["A", "A", "B", "B", "C", "C", ".", "D"],
+      ["E", "F", "F", "CR", "D", "D", "A", "A"],
+      ["E", "E", "C", "IC", ".", "B", "B", "F"],
+      ["D", "CR", "C", "T1", "A", "A", "F", "."],
+      ["D", "D", "B", ".", "IB", "E", "E", "C"],
+      ["F", "CR", "B", "T0", "A", ".", "C", "C"],
+      ["A", "A", "E", "CR", "D", "D", "B", "F"],
+      ["CR", ".", "E", "E", "C", "B", "B", "."],
+      [".", ".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 5, "col": 3 },
+    { "id": "1", "row": 3, "col": 3 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 6
+  },
+  "vine": {
+    "growthThreshold": 999,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.20,
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
+  },
+  "meta": {
+    "intent": "Exam the ice future-value band by combining ice, crate tax, dock residue, and water-facing rescue order.",
+    "expectedPath": "Identify the iced lower rescue route early, avoid broad low-value clears, break ice before water forces panic, then use a planned dock triple during the upper pivot.",
+    "expectedFailMode": "Generic clearing delays the ice route, causing dock overflow or water pressure before the first rescue is secure.",
+    "whatItProves": "The player can integrate known ice, dock, water, and crate skills without vine or any new mechanic.",
+    "notes": "Role: exam. The two iced route blockers create the future-value read; crates add route tax without becoming the primary lesson.",
+    "isRuleTeach": false
+  }
+}
