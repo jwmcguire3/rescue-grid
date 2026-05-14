@@ -1733,19 +1733,51 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Vector3 basePosition = targetTransform.localPosition;
             Vector3 baseScale = targetTransform.localScale;
 
-            InvokeTargetExtractPose(targetTransform, 0.20f, basePosition, baseScale);
+            InvokeTargetExtractPose(targetTransform, 0.10f, basePosition, baseScale);
 
-            Assert.That(targetTransform.localPosition.y, Is.EqualTo(basePosition.y).Within(0.001f));
+            Assert.That(Mathf.Abs(targetTransform.localPosition.y - basePosition.y), Is.LessThan(0.04f));
             Assert.That(targetTransform.localPosition.x, Is.EqualTo(basePosition.x).Within(0.001f));
             Assert.That(targetTransform.localPosition.z, Is.EqualTo(basePosition.z).Within(0.001f));
-            Assert.That(ResolveTargetExtractAlpha(0.20f), Is.EqualTo(1f).Within(0.001f));
+            Assert.That(ResolveTargetExtractAlpha(0.10f), Is.EqualTo(1f).Within(0.001f));
+
+            InvokeTargetExtractPose(targetTransform, 0.45f, basePosition, baseScale);
+            float jumpY = targetTransform.localPosition.y;
+
+            Assert.That(jumpY - basePosition.y, Is.GreaterThan(0.25f));
+            Assert.That(targetTransform.localPosition.x, Is.EqualTo(basePosition.x).Within(0.001f));
+            Assert.That(targetTransform.localPosition.z, Is.EqualTo(basePosition.z).Within(0.001f));
+
+            InvokeTargetExtractPose(targetTransform, 0.85f, basePosition, baseScale);
+            float flyY = targetTransform.localPosition.y;
+
+            Assert.That(flyY, Is.GreaterThan(jumpY));
+            Assert.That(targetTransform.localPosition.x, Is.EqualTo(basePosition.x).Within(0.001f));
+            Assert.That(targetTransform.localPosition.z - basePosition.z, Is.GreaterThan(0.10f));
 
             InvokeTargetExtractPose(targetTransform, 1.0f, basePosition, baseScale);
 
-            Assert.That(targetTransform.localPosition.y - basePosition.y, Is.GreaterThan(0.18f));
+            Assert.That(targetTransform.localPosition.y, Is.GreaterThan(flyY));
             Assert.That(targetTransform.localPosition.x, Is.EqualTo(basePosition.x).Within(0.001f));
-            Assert.That(targetTransform.localPosition.z, Is.EqualTo(basePosition.z).Within(0.001f));
+            Assert.That(targetTransform.localPosition.z - basePosition.z, Is.GreaterThan(0.18f));
             Assert.That(ResolveTargetExtractAlpha(1.0f), Is.EqualTo(0f).Within(0.001f));
+        }
+
+        [Test]
+        public void BoardContentViewPresenter_TargetExtractMotionHelperShapesJumpAndFlyArc()
+        {
+            Vector3 anticipationOffset = ResolveTargetExtractLocalOffset(0.10f);
+            Vector3 jumpOffset = ResolveTargetExtractLocalOffset(0.45f);
+            Vector3 flyOffset = ResolveTargetExtractLocalOffset(0.85f);
+            Vector3 finalOffset = ResolveTargetExtractLocalOffset(1.0f);
+
+            Assert.That(Mathf.Abs(anticipationOffset.y), Is.LessThan(0.04f));
+            Assert.That(anticipationOffset.z, Is.EqualTo(0f).Within(0.001f));
+            Assert.That(jumpOffset.y, Is.GreaterThan(0.25f));
+            Assert.That(jumpOffset.z, Is.EqualTo(0f).Within(0.001f));
+            Assert.That(flyOffset.y, Is.GreaterThan(jumpOffset.y));
+            Assert.That(flyOffset.z, Is.GreaterThan(0.10f));
+            Assert.That(finalOffset.y, Is.GreaterThan(flyOffset.y));
+            Assert.That(finalOffset.z, Is.EqualTo(flyOffset.z).Within(0.001f));
         }
 
         [Test]
@@ -2369,6 +2401,16 @@ namespace Rescue.Unity.BoardPresentation.Tests
 
             Assert.That(method, Is.Not.Null, "Expected private method 'ResolveTargetExtractAlpha'.");
             return (float)(method?.Invoke(null, new object[] { normalized }) ?? 0f);
+        }
+
+        private static Vector3 ResolveTargetExtractLocalOffset(float normalized)
+        {
+            System.Reflection.MethodInfo? method = typeof(BoardContentViewPresenter).GetMethod(
+                "ResolveTargetExtractLocalOffset",
+                System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+
+            Assert.That(method, Is.Not.Null, "Expected private method 'ResolveTargetExtractLocalOffset'.");
+            return (Vector3)(method?.Invoke(null, new object[] { normalized }) ?? Vector3.zero);
         }
 
         private static ImmutableArray<ImmutableArray<Tile>> CreateRowsWithTargetAndPath(

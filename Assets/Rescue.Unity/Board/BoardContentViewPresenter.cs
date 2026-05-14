@@ -15,11 +15,17 @@ namespace Rescue.Unity.BoardPresentation
         private const float HiddenDebrisYOffsetRatio = 0.5f;
         private const float DefaultDebrisClearLiftDistance = 0.42f;
         private const float DefaultDebrisClearShrinkScale = 0.88f;
-        private const float DefaultTargetExtractLiftDistance = 0.42f;
+        private const float DefaultTargetExtractAnticipationDipDistance = 0.025f;
+        private const float DefaultTargetExtractJumpLiftDistance = 0.34f;
+        private const float DefaultTargetExtractFlyLiftDistance = 0.78f;
+        private const float DefaultTargetExtractForwardDriftDistance = 0.22f;
         private const float DefaultTargetExtractPulseScale = 1.18f;
-        private const float TargetExtractHoldPhaseRatio = 0.25f;
+        private const float TargetExtractAnticipationEndRatio = 0.18f;
+        private const float TargetExtractJumpEndRatio = 0.45f;
+        private const float TargetExtractFlyEndRatio = 0.85f;
         private const float TargetExtractFadeStartRatio = 0.45f;
         private const float TargetExtractBrightnessBoost = 1.25f;
+        private const float TargetExtractWarmthBoost = 0.18f;
         private const float DefaultBlockerDamagePulseScale = 1.06f;
         private const float DefaultBlockerDamageAlphaFloor = 0.70f;
         private const float MinimumTimelineDurationSeconds = 0.01f;
@@ -798,7 +804,8 @@ namespace Rescue.Unity.BoardPresentation
                     graphics,
                     graphicBaseColors,
                     ResolveTargetExtractAlpha(normalized),
-                    ResolveTargetExtractBrightness(normalized));
+                    ResolveTargetExtractBrightness(normalized),
+                    ResolveTargetExtractWarmth(normalized));
                 yield return null;
             }
 
@@ -1045,16 +1052,50 @@ namespace Rescue.Unity.BoardPresentation
             Vector3 baseLocalPosition,
             Vector3 baseLocalScale)
         {
-            float clamped = Mathf.Clamp01(normalized);
-            float liftProgress = Mathf.InverseLerp(TargetExtractHoldPhaseRatio, 1f, clamped);
-            float easedLift = 1f - Mathf.Pow(1f - liftProgress, 3f);
-            float reliefPulse = Mathf.Sin(Mathf.Clamp01(clamped / TargetExtractFadeStartRatio) * Mathf.PI);
+            Vector3 localOffset = ResolveTargetExtractLocalOffset(normalized);
+            float scaleMultiplier = ResolveTargetExtractScaleMultiplier(normalized);
 
-            targetTransform.localPosition = baseLocalPosition + new Vector3(0f, DefaultTargetExtractLiftDistance * easedLift, 0f);
-            targetTransform.localScale = Vector3.LerpUnclamped(
-                baseLocalScale,
-                baseLocalScale * DefaultTargetExtractPulseScale,
-                reliefPulse);
+            targetTransform.localPosition = baseLocalPosition + localOffset;
+            targetTransform.localScale = baseLocalScale * scaleMultiplier;
+        }
+
+        private static Vector3 ResolveTargetExtractLocalOffset(float normalized)
+        {
+            float clamped = Mathf.Clamp01(normalized);
+            if (clamped <= TargetExtractAnticipationEndRatio)
+            {
+                float anticipationProgress = Mathf.InverseLerp(0f, TargetExtractAnticipationEndRatio, clamped);
+                float anticipationDip = Mathf.Sin(anticipationProgress * Mathf.PI) * -DefaultTargetExtractAnticipationDipDistance;
+                return new Vector3(0f, anticipationDip, 0f);
+            }
+
+            if (clamped <= TargetExtractJumpEndRatio)
+            {
+                float jumpProgress = Mathf.InverseLerp(TargetExtractAnticipationEndRatio, TargetExtractJumpEndRatio, clamped);
+                float easedJump = EaseOutCubic(jumpProgress);
+                return new Vector3(0f, DefaultTargetExtractJumpLiftDistance * easedJump, 0f);
+            }
+
+            float liftProgress = Mathf.InverseLerp(TargetExtractJumpEndRatio, 1f, clamped);
+            float driftProgress = Mathf.InverseLerp(TargetExtractJumpEndRatio, TargetExtractFlyEndRatio, clamped);
+            float lift = Mathf.LerpUnclamped(
+                DefaultTargetExtractJumpLiftDistance,
+                DefaultTargetExtractFlyLiftDistance,
+                EaseOutCubic(liftProgress));
+            float drift = Mathf.LerpUnclamped(
+                0f,
+                DefaultTargetExtractForwardDriftDistance,
+                Mathf.SmoothStep(0f, 1f, driftProgress));
+
+            return new Vector3(0f, lift, drift);
+        }
+
+        private static float ResolveTargetExtractScaleMultiplier(float normalized)
+        {
+            float clamped = Mathf.Clamp01(normalized);
+            float pulseProgress = Mathf.Clamp01(clamped / TargetExtractFlyEndRatio);
+            float reliefPulse = Mathf.Sin(pulseProgress * Mathf.PI);
+            return Mathf.LerpUnclamped(1f, DefaultTargetExtractPulseScale, reliefPulse);
         }
 
         private static float ResolveTargetExtractAlpha(float normalized)
@@ -1065,8 +1106,20 @@ namespace Rescue.Unity.BoardPresentation
 
         private static float ResolveTargetExtractBrightness(float normalized)
         {
-            float pulse = Mathf.Sin(Mathf.Clamp01(normalized / TargetExtractFadeStartRatio) * Mathf.PI);
+            float pulse = Mathf.Sin(Mathf.Clamp01(normalized / TargetExtractFlyEndRatio) * Mathf.PI);
             return Mathf.LerpUnclamped(1f, TargetExtractBrightnessBoost, pulse);
+        }
+
+        private static float ResolveTargetExtractWarmth(float normalized)
+        {
+            float fadeProgress = Mathf.InverseLerp(TargetExtractFadeStartRatio, 1f, Mathf.Clamp01(normalized));
+            return Mathf.SmoothStep(0f, 1f, fadeProgress);
+        }
+
+        private static float EaseOutCubic(float value)
+        {
+            float clamped = Mathf.Clamp01(value);
+            return 1f - Mathf.Pow(1f - clamped, 3f);
         }
 
         private static void SetTargetVisualAlpha(GameObject targetObject, float alpha)
@@ -1102,7 +1155,8 @@ namespace Rescue.Unity.BoardPresentation
             Graphic[] graphics,
             Color[] graphicBaseColors,
             float alpha,
-            float brightness)
+            float brightness,
+            float warmth)
         {
             for (int i = 0; i < spriteRenderers.Length; i++)
             {
@@ -1111,7 +1165,7 @@ namespace Rescue.Unity.BoardPresentation
                     continue;
                 }
 
-                spriteRenderers[i].color = ResolveExtractColor(spriteBaseColors[i], alpha, brightness);
+                spriteRenderers[i].color = ResolveExtractColor(spriteBaseColors[i], alpha, brightness, warmth);
             }
 
             for (int i = 0; i < graphics.Length; i++)
@@ -1121,17 +1175,18 @@ namespace Rescue.Unity.BoardPresentation
                     continue;
                 }
 
-                graphics[i].color = ResolveExtractColor(graphicBaseColors[i], alpha, brightness);
+                graphics[i].color = ResolveExtractColor(graphicBaseColors[i], alpha, brightness, warmth);
             }
         }
 
-        private static Color ResolveExtractColor(Color baseColor, float alpha, float brightness)
+        private static Color ResolveExtractColor(Color baseColor, float alpha, float brightness, float warmth)
         {
             float clampedBrightness = Mathf.Max(0f, brightness);
+            float clampedWarmth = Mathf.Clamp01(warmth) * TargetExtractWarmthBoost;
             return new Color(
-                Mathf.Clamp01(baseColor.r * clampedBrightness),
-                Mathf.Clamp01(baseColor.g * clampedBrightness),
-                Mathf.Clamp01(baseColor.b * clampedBrightness),
+                Mathf.Clamp01((baseColor.r * clampedBrightness) + clampedWarmth),
+                Mathf.Clamp01((baseColor.g * clampedBrightness) + (clampedWarmth * 0.45f)),
+                Mathf.Clamp01((baseColor.b * clampedBrightness) * Mathf.Lerp(1f, 0.92f, Mathf.Clamp01(warmth))),
                 Mathf.Clamp01(baseColor.a * alpha));
         }
 
