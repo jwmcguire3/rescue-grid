@@ -1,0 +1,59 @@
+{
+  "levelId": "L25",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 8,
+  "actions": [
+    {
+      "row": 5,
+      "col": 2,
+      "intent": "Start with a low-risk route-support clear."
+    },
+    {
+      "row": 2,
+      "col": 2,
+      "intent": "Break the central ice and reveal the rescue payoff."
+    },
+    {
+      "row": 3,
+      "col": 4,
+      "intent": "Open the right side of the puppy."
+    },
+    {
+      "row": 4,
+      "col": 0,
+      "intent": "Use a clean side clear to keep the board generous."
+    },
+    {
+      "row": 0,
+      "col": 4,
+      "intent": "Preserve dock room before the extraction sequence."
+    },
+    {
+      "row": 5,
+      "col": 3,
+      "intent": "Open the lower rescue side."
+    },
+    {
+      "row": 0,
+      "col": 4,
+      "intent": "Use refreshed upper material as a recovery beat."
+    },
+    {
+      "row": 1,
+      "col": 3,
+      "intent": "Finish the thawed route and extract the puppy."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "BlockerBroken",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "0"
+  ],
+  "notes": "Designer golden for the post-pressure ice payoff: break ice early and enjoy a forgiving rescue finish."
+}

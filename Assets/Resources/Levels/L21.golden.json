@@ -1,0 +1,61 @@
+{
+  "levelId": "L21",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 8,
+  "actions": [
+    {
+      "row": 2,
+      "col": 2,
+      "intent": "Break the key ice on the rescue route before spending actions on side value."
+    },
+    {
+      "row": 4,
+      "col": 4,
+      "intent": "Open the right side of the puppy and show immediate rescue progress from the ice investment."
+    },
+    {
+      "row": 5,
+      "col": 4,
+      "intent": "Stabilize the dock with a clean B clear while staying near the rescue lane."
+    },
+    {
+      "row": 4,
+      "col": 1,
+      "intent": "Open the left side and bring the puppy to one-clear-away."
+    },
+    {
+      "row": 6,
+      "col": 1,
+      "intent": "Cash a B triple before the final route clear."
+    },
+    {
+      "row": 6,
+      "col": 2,
+      "intent": "Use a low-residue side clear to keep the dock recoverable."
+    },
+    {
+      "row": 0,
+      "col": 5,
+      "intent": "Accept a brief full-dock warning while preserving the final rescue clear."
+    },
+    {
+      "row": 3,
+      "col": 2,
+      "intent": "Clear the final route side and extract the puppy."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "BlockerBroken",
+    "TargetOneClearAway",
+    "TargetExtractionLatched",
+    "DockCleared",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "0"
+  ],
+  "notes": "Designer golden for the ice-route teach: break ice first, preserve dock, then finish the puppy."
+}

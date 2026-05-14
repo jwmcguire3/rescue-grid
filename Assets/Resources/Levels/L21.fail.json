@@ -1,0 +1,56 @@
+{
+  "levelId": "L21",
+  "seed": 1,
+  "pathType": "expected_fail",
+  "expectedOutcome": "LossDockOverflow",
+  "expectedLossReason": "LossDockOverflow",
+  "maxActions": 8,
+  "actions": [
+    {
+      "row": 2,
+      "col": 2,
+      "intent": "Start correctly by breaking the ice route."
+    },
+    {
+      "row": 4,
+      "col": 4,
+      "intent": "Open the right route side."
+    },
+    {
+      "row": 5,
+      "col": 4,
+      "intent": "Take a dock-stabilizing B clear."
+    },
+    {
+      "row": 4,
+      "col": 1,
+      "intent": "Bring the puppy to one-clear-away."
+    },
+    {
+      "row": 6,
+      "col": 1,
+      "intent": "Cash the B triple but leave the final rescue clear for later."
+    },
+    {
+      "row": 6,
+      "col": 2,
+      "intent": "Spend another non-extraction action and fill the dock."
+    },
+    {
+      "row": 0,
+      "col": 5,
+      "intent": "Push the dock to the edge instead of finishing the rescue."
+    },
+    {
+      "row": 3,
+      "col": 0,
+      "intent": "Take a side clear while the puppy is one-clear-away and overflow the dock."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetOneClearAway",
+    "DockOverflowTriggered",
+    "Lost"
+  ],
+  "notes": "Verified fail: the player sees the rescue route but chooses side value with a full dock."
+}

@@ -1,0 +1,68 @@
+{
+  "levelId": "L24",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 9,
+  "actions": [
+    {
+      "row": 2,
+      "col": 2,
+      "intent": "Start near the lower route and break the first route tax."
+    },
+    {
+      "row": 4,
+      "col": 0,
+      "intent": "Prioritize the lower water-facing puppy."
+    },
+    {
+      "row": 7,
+      "col": 1,
+      "intent": "Open the lower rescue edge before water rises."
+    },
+    {
+      "row": 1,
+      "col": 1,
+      "intent": "Use a stabilizing clear while staying on rescue tempo."
+    },
+    {
+      "row": 2,
+      "col": 0,
+      "intent": "Continue lower-route progress."
+    },
+    {
+      "row": 4,
+      "col": 0,
+      "intent": "Extract the lower puppy before the flooded row catches the route."
+    },
+    {
+      "row": 2,
+      "col": 2,
+      "intent": "Begin the upper pivot after the urgent rescue."
+    },
+    {
+      "row": 2,
+      "col": 4,
+      "intent": "Break the key ice on the upper route."
+    },
+    {
+      "row": 3,
+      "col": 4,
+      "intent": "Finish the opened route and extract the second puppy."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "BlockerBroken",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "WaterRose",
+    "BlockerBroken",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "0",
+    "1"
+  ],
+  "notes": "Designer golden for ice under water pressure: lower urgent rescue first, then ice-enabled upper pivot."
+}

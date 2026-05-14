@@ -1,0 +1,82 @@
+{
+  "levelId": "L25",
+  "seed": 1,
+  "pathType": "expected_fail",
+  "expectedOutcome": "LossDockOverflow",
+  "expectedLossReason": "LossDockOverflow",
+  "maxActions": 13,
+  "actions": [
+    {
+      "row": 3,
+      "col": 4,
+      "intent": "Open with a route-adjacent clear but skip the ice payoff."
+    },
+    {
+      "row": 0,
+      "col": 0,
+      "intent": "Spend a side action on broad board value."
+    },
+    {
+      "row": 0,
+      "col": 4,
+      "intent": "Continue side clearing instead of breaking the central ice."
+    },
+    {
+      "row": 0,
+      "col": 2,
+      "intent": "Keep adding dock residue."
+    },
+    {
+      "row": 5,
+      "col": 2,
+      "intent": "Spend another side action instead of converting the ice break into rescue progress."
+    },
+    {
+      "row": 0,
+      "col": 0,
+      "intent": "Repair one dock set but keep avoiding the final rescue lane."
+    },
+    {
+      "row": 0,
+      "col": 2,
+      "intent": "Continue broad clearing while the puppy remains trapped."
+    },
+    {
+      "row": 2,
+      "col": 6,
+      "intent": "Take a side clear and allow the water to advance."
+    },
+    {
+      "row": 0,
+      "col": 4,
+      "intent": "Continue side clearing after water rises."
+    },
+    {
+      "row": 2,
+      "col": 0,
+      "intent": "Repair one dock set but keep delaying the extraction route."
+    },
+    {
+      "row": 3,
+      "col": 6,
+      "intent": "Spend another side action instead of finishing the rescue."
+    },
+    {
+      "row": 4,
+      "col": 4,
+      "intent": "Crowd the dock with route-adjacent residue."
+    },
+    {
+      "row": 4,
+      "col": 4,
+      "intent": "Repeat the side clear and overflow before the payoff lands."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "BlockerBroken",
+    "WaterRose",
+    "DockOverflowTriggered",
+    "Lost"
+  ],
+  "notes": "Verified fail: repeated side clearing makes even the generous ice payoff collapse into dock overflow."
+}

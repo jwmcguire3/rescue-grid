@@ -1,0 +1,67 @@
+{
+  "levelId": "L23",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 9,
+  "actions": [
+    {
+      "row": 5,
+      "col": 0,
+      "intent": "Open the visible lower path and expose its dock cost."
+    },
+    {
+      "row": 4,
+      "col": 4,
+      "intent": "Touch the center lane before committing fully to either rescue."
+    },
+    {
+      "row": 5,
+      "col": 4,
+      "intent": "Continue route shaping while keeping dock pressure visible."
+    },
+    {
+      "row": 7,
+      "col": 1,
+      "intent": "Extract the lower puppy after paying the visible route tax."
+    },
+    {
+      "row": 0,
+      "col": 4,
+      "intent": "Break the iced center route and begin the pivot."
+    },
+    {
+      "row": 1,
+      "col": 1,
+      "intent": "Open the center route after the ice break."
+    },
+    {
+      "row": 0,
+      "col": 2,
+      "intent": "Use upper material to keep dock pressure recoverable."
+    },
+    {
+      "row": 3,
+      "col": 1,
+      "intent": "Clear the center route tax."
+    },
+    {
+      "row": 2,
+      "col": 2,
+      "intent": "Finish the frozen route pivot and extract the center puppy."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetExtracted",
+    "BlockerBroken",
+    "WaterRose",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "0",
+    "1"
+  ],
+  "notes": "Verified winning route for the current board. Design review note: this mechanically proves a win, but the extraction order is visible path before frozen path, so the board may need tuning if L23 must prove frozen-route-first choice."
+}

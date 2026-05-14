@@ -1,0 +1,50 @@
+{
+  "levelId": "L22",
+  "seed": 1,
+  "pathType": "expected_fail",
+  "expectedOutcome": "LossDockOverflow",
+  "expectedLossReason": "LossDockOverflow",
+  "maxActions": 7,
+  "actions": [
+    {
+      "row": 0,
+      "col": 0,
+      "intent": "Open with broad side material instead of the iced rescue route."
+    },
+    {
+      "row": 0,
+      "col": 0,
+      "intent": "Keep chasing refreshed side value."
+    },
+    {
+      "row": 1,
+      "col": 0,
+      "intent": "Continue general cleanup while the route remains blocked."
+    },
+    {
+      "row": 1,
+      "col": 1,
+      "intent": "Add dock residue without improving the puppy route."
+    },
+    {
+      "row": 2,
+      "col": 5,
+      "intent": "Spend another side action and only partially repair the dock."
+    },
+    {
+      "row": 3,
+      "col": 0,
+      "intent": "Delay ice again with a side clear."
+    },
+    {
+      "row": 3,
+      "col": 6,
+      "intent": "Overflow from broad clearing before the rescue route is finished."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "DockOverflowTriggered",
+    "Lost"
+  ],
+  "notes": "Verified fail: treating ice as optional cleanup turns side clears into self-authored dock failure."
+}

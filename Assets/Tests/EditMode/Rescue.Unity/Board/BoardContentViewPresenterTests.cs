@@ -391,6 +391,64 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Assert.That(Mathf.Abs(targetObject.transform.position.x - anchor.position.x), Is.LessThan(0.01f), "Target root should remain on the logical cell anchor.");
             Assert.That(Mathf.Abs(targetObject.transform.position.z - anchor.position.z), Is.LessThan(0.01f), "Target root should remain on the logical cell anchor.");
         }
+
+        [Test]
+        public void BoardContentViewPresenter_DaisyTargetKeepsSurfacePoseThroughReadinessUpdatesAndLateUpdate()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameObject daisyPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(DaisyTargetPrefabPath);
+            Assert.That(daisyPrefab, Is.Not.Null, $"Expected Daisy target prefab at {DaisyTargetPrefabPath}.");
+            if (daisyPrefab is null)
+            {
+                return;
+            }
+
+            TargetVisualRegistry targetRegistry = CreateRegistry<TargetVisualRegistry>();
+            targetRegistry.PuppyPrefab = daisyPrefab;
+            targetRegistry.FallbackTargetPrefab = daisyPrefab;
+            SetPrivateField(harness.ContentPresenter, "targetRegistry", targetRegistry);
+
+            GameState trappedState = CreateSingleTargetState(TargetReadiness.Trapped);
+            harness.GridPresenter.RebuildGrid(trappedState);
+            harness.ContentPresenter.SyncImmediate(trappedState);
+
+            Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-1", out GameObject? targetObject), Is.True);
+            Assert.That(targetObject, Is.Not.Null);
+            if (targetObject is null)
+            {
+                return;
+            }
+
+            AssertDaisySurfacePoseAndCentered(harness, targetObject);
+
+            TargetReadiness[] readinessStates =
+            {
+                TargetReadiness.Progressing,
+                TargetReadiness.OneClearAway,
+                TargetReadiness.ExtractableLatched,
+                TargetReadiness.Distressed,
+            };
+
+            for (int stateIndex = 0; stateIndex < readinessStates.Length; stateIndex++)
+            {
+                GameState updatedState = CreateSingleTargetState(readinessStates[stateIndex]);
+                harness.ContentPresenter.SyncImmediate(updatedState);
+
+                Assert.That(harness.ContentPresenter.TryGetTargetInstance("puppy-1", out GameObject? updatedTargetObject), Is.True);
+                Assert.That(updatedTargetObject, Is.SameAs(targetObject));
+                AssertDaisySurfacePoseAndCentered(harness, targetObject);
+            }
+
+            Transform visual = targetObject.transform.Find("Visual")
+                ?? throw new AssertionException("Daisy prefab should keep the imported art under a single visual child.");
+            visual.localRotation = Quaternion.Euler(32f, 57f, 91f);
+            TargetSurfacePoseAdapter? poseAdapter = targetObject.GetComponent<TargetSurfacePoseAdapter>();
+            Assert.That(poseAdapter, Is.Not.Null, "Daisy target should keep a surface-pose adapter after readiness sync.");
+
+            InvokePrivateInstanceMethod(poseAdapter!, "LateUpdate");
+
+            AssertDaisySurfacePoseAndCentered(harness, targetObject);
+        }
 #endif
 
         [Test]
@@ -1678,11 +1736,15 @@ namespace Rescue.Unity.BoardPresentation.Tests
             InvokeTargetExtractPose(targetTransform, 0.20f, basePosition, baseScale);
 
             Assert.That(targetTransform.localPosition.y, Is.EqualTo(basePosition.y).Within(0.001f));
+            Assert.That(targetTransform.localPosition.x, Is.EqualTo(basePosition.x).Within(0.001f));
+            Assert.That(targetTransform.localPosition.z, Is.EqualTo(basePosition.z).Within(0.001f));
             Assert.That(ResolveTargetExtractAlpha(0.20f), Is.EqualTo(1f).Within(0.001f));
 
             InvokeTargetExtractPose(targetTransform, 1.0f, basePosition, baseScale);
 
             Assert.That(targetTransform.localPosition.y - basePosition.y, Is.GreaterThan(0.18f));
+            Assert.That(targetTransform.localPosition.x, Is.EqualTo(basePosition.x).Within(0.001f));
+            Assert.That(targetTransform.localPosition.z, Is.EqualTo(basePosition.z).Within(0.001f));
             Assert.That(ResolveTargetExtractAlpha(1.0f), Is.EqualTo(0f).Within(0.001f));
         }
 
@@ -2072,6 +2134,16 @@ namespace Rescue.Unity.BoardPresentation.Tests
             field.SetValue(target, value);
         }
 
+        private static void InvokePrivateInstanceMethod(object target, string methodName)
+        {
+            System.Reflection.MethodInfo? method = target.GetType().GetMethod(
+                methodName,
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+            Assert.That(method, Is.Not.Null, $"Expected private method '{methodName}'.");
+            method?.Invoke(target, null);
+        }
+
         private static Bounds CalculateWorldRendererBounds(GameObject root)
         {
             Renderer[] renderers = root.GetComponentsInChildren<Renderer>(true);
@@ -2230,6 +2302,29 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Assert.That(targetRendererCount, Is.GreaterThan(0));
         }
 
+#if UNITY_EDITOR
+        private static void AssertDaisySurfacePoseAndCentered(PresenterHarness harness, GameObject targetObject)
+        {
+            Transform? visual = targetObject.transform.Find("Visual");
+            Assert.That(visual, Is.Not.Null, "Daisy prefab should keep the imported art under a single visual child.");
+            if (visual is null)
+            {
+                return;
+            }
+
+            string visualDiagnostics = $"right={visual.right}, up={visual.up}, forward={visual.forward}, localEuler={visual.localEulerAngles}";
+            Assert.That(Vector3.Dot(visual.up.normalized, Vector3.up), Is.GreaterThan(0.99f), $"Daisy's visual up axis should belong to the board surface normal. {visualDiagnostics}");
+            Assert.That(Mathf.Abs(Vector3.Dot(visual.forward.normalized, Vector3.up)), Is.LessThan(0.01f), $"Daisy's visual forward axis should stay in the board plane. {visualDiagnostics}");
+
+            Assert.That(harness.GridPresenter.TryGetCellAnchor(new TileCoord(0, 0), out Transform anchor), Is.True);
+            Bounds worldBounds = CalculateWorldRendererBounds(targetObject);
+            Assert.That(Mathf.Abs(worldBounds.center.x - anchor.position.x), Is.LessThan(0.01f), $"center={worldBounds.center}, anchor={anchor.position}");
+            Assert.That(Mathf.Abs(worldBounds.center.z - anchor.position.z), Is.LessThan(0.01f), $"center={worldBounds.center}, anchor={anchor.position}");
+            Assert.That(Mathf.Abs(targetObject.transform.position.x - anchor.position.x), Is.LessThan(0.01f), "Target root should remain on the logical cell anchor.");
+            Assert.That(Mathf.Abs(targetObject.transform.position.z - anchor.position.z), Is.LessThan(0.01f), "Target root should remain on the logical cell anchor.");
+        }
+#endif
+
         private static void AssertVinePreviewDirection(Transform overlay, Vector3 expectedDirection)
         {
             Vector3 actualDirection = overlay.localRotation * Vector3.forward;
@@ -2362,6 +2457,14 @@ namespace Rescue.Unity.BoardPresentation.Tests
                 Frozen: false,
                 ConsecutiveEmergencySpawns: 0,
                 SpawnRecoveryCounter: 0);
+        }
+
+        private static GameState CreateSingleTargetState(TargetReadiness readiness)
+        {
+            return CreateState(
+                ImmutableArray.Create(
+                    ImmutableArray.Create<Tile>(new TargetTile("puppy-1", Extracted: false))),
+                ImmutableArray.Create(new TargetState("puppy-1", new TileCoord(0, 0), readiness)));
         }
 
         private readonly struct PresenterHarness

@@ -1,0 +1,41 @@
+{
+  "levelId": "L23",
+  "seed": 1,
+  "pathType": "expected_fail",
+  "expectedOutcome": "LossDockOverflow",
+  "expectedLossReason": "LossDockOverflow",
+  "maxActions": 5,
+  "actions": [
+    {
+      "row": 5,
+      "col": 0,
+      "intent": "Take the visible lower route first."
+    },
+    {
+      "row": 4,
+      "col": 4,
+      "intent": "Spend a route-shaping action without stabilizing dock."
+    },
+    {
+      "row": 5,
+      "col": 4,
+      "intent": "Continue adding route residue."
+    },
+    {
+      "row": 7,
+      "col": 1,
+      "intent": "Finish the visible rescue while the dock remains fragile."
+    },
+    {
+      "row": 2,
+      "col": 0,
+      "intent": "Choose broad side value after the first rescue and overflow before the frozen pivot is controlled."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "TargetExtracted",
+    "DockOverflowTriggered",
+    "Lost"
+  ],
+  "notes": "Verified fail: visible-path-first play can leave the dock too fragile to pivot cleanly."
+}

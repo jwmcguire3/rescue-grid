@@ -282,6 +282,9 @@ namespace Rescue.PlayMode.Tests.Debug
             AssertCameraRayHitsCell(camera, boardRoot.Find($"Cell_00_{boardWidth - 1:00}"), new TileCoord(0, boardWidth - 1), "top-right");
             AssertCameraRayHitsCell(camera, boardRoot.Find($"Cell_{boardHeight - 1:00}_00"), new TileCoord(boardHeight - 1, 0), "bottom-left");
             AssertCameraRayHitsCell(camera, boardRoot.Find($"Cell_{boardHeight - 1:00}_{boardWidth - 1:00}"), new TileCoord(boardHeight - 1, boardWidth - 1), "bottom-right");
+            int centerRow = boardHeight / 2;
+            int centerCol = boardWidth / 2;
+            AssertCameraRayHitsCell(camera, boardRoot.Find($"Cell_{centerRow:00}_{centerCol:00}"), new TileCoord(centerRow, centerCol), "center");
         }
 
         private static void AssertCameraRayHitsCell(Camera camera, Transform? anchor, TileCoord expectedCoord, string label)

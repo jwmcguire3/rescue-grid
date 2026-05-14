@@ -1,0 +1,46 @@
+{
+  "levelId": "L24",
+  "seed": 1,
+  "pathType": "expected_fail",
+  "expectedOutcome": "LossRescuePathFlooded",
+  "expectedLossReason": "LossRescuePathFlooded",
+  "maxActions": 6,
+  "actions": [
+    {
+      "row": 1,
+      "col": 3,
+      "intent": "Open with upper board value instead of the lower water-facing route."
+    },
+    {
+      "row": 7,
+      "col": 1,
+      "intent": "Touch the lower route late."
+    },
+    {
+      "row": 2,
+      "col": 3,
+      "intent": "Spend another action away from the urgent lower rescue."
+    },
+    {
+      "row": 4,
+      "col": 0,
+      "intent": "Return to the lower puppy after losing tempo."
+    },
+    {
+      "row": 3,
+      "col": 4,
+      "intent": "Chase the upper route as water pressure is nearly active."
+    },
+    {
+      "row": 0,
+      "col": 0,
+      "intent": "Spend one more side action and let water flood the lower rescue path."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "DockCleared",
+    "WaterRose",
+    "Lost"
+  ],
+  "notes": "Verified fail: delaying the lower puppy lets water flood the rescue path before the ice decision pays off."
+}

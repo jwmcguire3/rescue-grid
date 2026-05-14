@@ -1,0 +1,70 @@
+{
+  "levelId": "L22",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 10,
+  "actions": [
+    {
+      "row": 3,
+      "col": 2,
+      "intent": "Break the crate and key ice together to reveal the rescue route."
+    },
+    {
+      "row": 6,
+      "col": 4,
+      "intent": "Use a low-residue route-support clear near the bottom lane."
+    },
+    {
+      "row": 1,
+      "col": 4,
+      "intent": "Build route access while keeping dock residue manageable."
+    },
+    {
+      "row": 1,
+      "col": 0,
+      "intent": "Take a clean side triple to preserve dock room."
+    },
+    {
+      "row": 1,
+      "col": 4,
+      "intent": "Continue opening the route after gravity refreshes the lane."
+    },
+    {
+      "row": 0,
+      "col": 1,
+      "intent": "Use an upper clear to keep the dock from crowding the rescue sequence."
+    },
+    {
+      "row": 0,
+      "col": 5,
+      "intent": "Clear safe upper material before committing to extraction."
+    },
+    {
+      "row": 3,
+      "col": 6,
+      "intent": "Break the remaining crate pressure and stay ahead of water."
+    },
+    {
+      "row": 0,
+      "col": 3,
+      "intent": "Stabilize the board after the water rise."
+    },
+    {
+      "row": 3,
+      "col": 4,
+      "intent": "Finish the opened ice route and extract the puppy."
+    }
+  ],
+  "expectedEventsInOrder": [
+    "BlockerBroken",
+    "WaterRose",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": [
+    "0"
+  ],
+  "notes": "Designer golden for ice-route practice: use the opened ice lane, keep dock stable, then finish the rescue."
+}
