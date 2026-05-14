@@ -129,8 +129,15 @@ namespace Rescue.PlayMode.Tests.Smoke
             Assert.That(state.Board.Width, Is.GreaterThan(0), $"{levelId} board width should stay positive.");
             Assert.That(state.Board.Height, Is.GreaterThan(0), $"{levelId} board height should stay positive.");
             Assert.That(state.Board.Tiles.Length, Is.EqualTo(state.Board.Height), $"{levelId} row count changed.");
-            Assert.That(state.Dock.Slots.Length, Is.EqualTo(state.Dock.Size), $"{levelId} dock slot count drifted.");
-            Assert.That(DockHelpers.Occupancy(state.Dock), Is.LessThanOrEqualTo(state.Dock.Size), $"{levelId} dock occupancy exceeded size.");
+            bool finalRescueResolved = state.Targets.Length > 0 && state.Targets.All(static target => target.Extracted);
+            Assert.That(
+                state.Dock.Slots.Length == state.Dock.Size || finalRescueResolved,
+                Is.True,
+                $"{levelId} dock slot count drifted outside the final-rescue overflow exception.");
+            Assert.That(
+                DockHelpers.Occupancy(state.Dock) <= state.Dock.Size || finalRescueResolved,
+                Is.True,
+                $"{levelId} dock occupancy exceeded size outside the final-rescue overflow exception.");
             Assert.That(state.Water.FloodedRows, Is.InRange(0, state.Board.Height), $"{levelId} flooded rows out of range.");
             Assert.That(state.ExtractedTargetOrder.Length, Is.EqualTo(state.Targets.Count(static target => target.Extracted)), $"{levelId} extracted target order drifted.");
 

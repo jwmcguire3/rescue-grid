@@ -862,7 +862,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
         }
 
         [Test]
-        public void BoardContentViewPresenter_AnimateRescuePathLockedOrientsMarkerBeforeSpawning()
+        public void BoardContentViewPresenter_AnimateRescuePathLockedKeepsMarkerTopOrientedBeforeSpawning()
         {
             PresenterHarness harness = CreateHarness();
             GameState state = CreateState(ImmutableArray.Create(
@@ -879,7 +879,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
             GameObject? pathObject = GetRegisteredPieceObject(harness.ContentPresenter, "RescuePath", new TileCoord(0, 1));
             Assert.That(pathObject, Is.Not.Null);
             AssertRescuePathMarkerShape(pathObject!);
-            AssertRescuePathDirection(pathObject, Vector3.right);
+            Assert.That(Quaternion.Angle(Quaternion.identity, pathObject.transform.localRotation), Is.LessThan(0.001f));
         }
 
         [Test]
@@ -1976,15 +1976,6 @@ namespace Rescue.Unity.BoardPresentation.Tests
             }
 
             Assert.That(targetRendererCount, Is.GreaterThan(0));
-        }
-
-        private static void AssertRescuePathDirection(GameObject pathObject, Vector3 expectedDirection)
-        {
-            Vector3 actualDirection = pathObject.transform.localRotation * Vector3.forward;
-            actualDirection.y = 0f;
-            actualDirection.Normalize();
-            Vector3 normalizedExpected = expectedDirection.normalized;
-            Assert.That(Vector3.Dot(actualDirection, normalizedExpected), Is.GreaterThan(0.99f));
         }
 
         private static void AssertVinePreviewDirection(Transform overlay, Vector3 expectedDirection)
