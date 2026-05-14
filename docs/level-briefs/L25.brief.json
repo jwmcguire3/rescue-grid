@@ -1,0 +1,19 @@
+{
+  "id": "L25",
+  "title": "Thawed Rescue Payoff",
+  "campaignBand": "ice_future_value",
+  "role": "release",
+  "primarySkill": "ice_payoff_confidence",
+  "secondarySkill": "rescue_identity",
+  "allowedMechanics": ["debris", "dock", "water", "ice", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate", "vine"],
+  "boardSize": { "width": 7, "height": 8 },
+  "targetCount": 1,
+  "densityTarget": "75-85%",
+  "targetFirstAttemptWinRate": "80-95%",
+  "intendedTensionBeat": "A small amount of ice blocks the puppy, but the board is generous after the prior pressure level.",
+  "intendedReleaseBeat": "A clean ice break cascades into an obvious rescue, making the player feel competent rather than punished.",
+  "expectedPath": "Break the central ice route, use a clean triple or low-residue clear, then rescue with minimal dock danger.",
+  "expectedFailMode": "Wrong play is mostly inefficient; repeated side clearing can still delay the rescue but should be recoverable.",
+  "designNotes": "Recovery/release after L24. This level should make ice feel satisfying and useful."
+}

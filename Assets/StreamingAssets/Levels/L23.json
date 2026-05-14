@@ -1,0 +1,53 @@
+{
+  "id": "L23",
+  "name": "Visible Path, Frozen Path",
+  "board": {
+    "width": 7,
+    "height": 9,
+    "tiles": [
+      ["A", "A", "B", "B", "C", "C", "."],
+      ["E", ".", "F", "CR", "D", "E", "E"],
+      ["A", "A", "C", "IA", ".", "D", "B"],
+      ["F", "CR", "C", "T1", "B", "B", "E"],
+      ["F", "C", "C", ".", "A", "E", "E"],
+      ["D", "D", "A", "CR", "A", ".", "B"],
+      ["T0", "CR", "F", "F", "C", "C", "D"],
+      ["CR", "E", "E", ".", "D", ".", "A"],
+      [".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 6, "col": 0 },
+    { "id": "1", "row": 3, "col": 3 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 7
+  },
+  "vine": {
+    "growthThreshold": 999,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.25,
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
+  },
+  "meta": {
+    "intent": "Create the band's first comparison between an obvious dock-costly rescue and a frozen route with better future value.",
+    "expectedPath": "Invest in the iced route to the center puppy first, rescue it cleanly, then pivot to the lower visible puppy with dock under control.",
+    "expectedFailMode": "The player chases the lower visible path first, spends dock space on route tax, and loses tempo before opening the frozen route.",
+    "whatItProves": "Ice can create a fair future-value choice against an immediately visible rescue path.",
+    "notes": "Role: choice. The lower puppy is tempting and visible; the iced center route is deliberately cleaner once opened.",
+    "isRuleTeach": false
+  }
+}

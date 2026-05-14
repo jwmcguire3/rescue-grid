@@ -580,6 +580,32 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(harness.DockPieceContainer.childCount, Is.EqualTo(1));
         }
 
+        [Test]
+        public void GameStateViewPresenter_ForceSyncToStateDoesNotReapplyCameraLayout()
+        {
+            PresenterHarness harness = CreateHarness();
+            GameObject cameraObject = CreateTrackedGameObject("ManualMainCamera");
+            cameraObject.tag = "MainCamera";
+            Camera camera = cameraObject.AddComponent<Camera>();
+            camera.orthographic = false;
+            camera.orthographicSize = 3.5f;
+            Vector3 manualPosition = new Vector3(4f, 5f, 6f);
+            Quaternion manualRotation = Quaternion.Euler(12f, 34f, 56f);
+            camera.transform.SetPositionAndRotation(manualPosition, manualRotation);
+
+            harness.Presenter.Rebuild(CreateState());
+            camera.orthographic = false;
+            camera.orthographicSize = 3.5f;
+            camera.transform.SetPositionAndRotation(manualPosition, manualRotation);
+
+            harness.Presenter.ForceSyncToState(CreateState(), "manual camera preservation");
+
+            Assert.That(camera.orthographic, Is.False);
+            Assert.That(camera.orthographicSize, Is.EqualTo(3.5f).Within(0.001f));
+            Assert.That(Vector3.Distance(camera.transform.position, manualPosition), Is.LessThan(0.001f));
+            Assert.That(Quaternion.Angle(camera.transform.rotation, manualRotation), Is.LessThan(0.1f));
+        }
+
         private PresenterHarness CreateHarness(
             bool assignTargetFeedbackToPresenter = true,
             bool withPlaybackController = false,

@@ -1,0 +1,19 @@
+{
+  "id": "L24",
+  "title": "Ice Under Water Pressure",
+  "campaignBand": "ice_future_value",
+  "role": "pressure",
+  "primarySkill": "ice_before_water_tempo",
+  "secondarySkill": "lower_target_priority",
+  "allowedMechanics": ["debris", "dock", "water", "ice", "crate", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate", "vine"],
+  "boardSize": { "width": 7, "height": 9 },
+  "targetCount": 2,
+  "densityTarget": "80-90%",
+  "targetFirstAttemptWinRate": "55-75%",
+  "intendedTensionBeat": "The lower puppy is water-threatened, but reaching it requires investing in an ice break before the route looks fully open.",
+  "intendedReleaseBeat": "Breaking the ice in time creates a close but fair rescue before water becomes the dominant threat.",
+  "expectedPath": "Prioritize the lower water-facing puppy, break the key ice early, stabilize dock once, then extract before pivoting upward.",
+  "expectedFailMode": "Player waits until the route is visibly urgent before breaking ice, losing too much action tempo to water.",
+  "designNotes": "Water should sharpen the ice decision, not feel like a timer. Forecast readability matters here."
+}

@@ -1,0 +1,53 @@
+{
+  "id": "L24",
+  "name": "Ice Under Water Pressure",
+  "board": {
+    "width": 7,
+    "height": 9,
+    "tiles": [
+      ["A", "A", "B", "B", "C", "C", "."],
+      ["E", ".", "F", "D", "D", "CR", "E"],
+      ["A", "CR", "C", "C", ".", "B", "E"],
+      ["A", "D", "D", "T1", "IA", "F", "F"],
+      ["C", "C", "E", ".", "A", ".", "B"],
+      ["F", "CR", "E", "IB", "D", "D", "B"],
+      ["T0", "CR", "A", "B", "C", "C", "E"],
+      ["CR", "F", "F", ".", "E", ".", "D"],
+      [".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 6, "col": 0 },
+    { "id": "1", "row": 3, "col": 3 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 6
+  },
+  "vine": {
+    "growthThreshold": 999,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.25,
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
+  },
+  "meta": {
+    "intent": "Put the ice-route read under fair water pressure by making the lower puppy urgent but not hidden.",
+    "expectedPath": "Prioritize the lower puppy, break the key ice before the lane is fully urgent, stabilize dock once, then pivot upward.",
+    "expectedFailMode": "The player waits for the route to look urgent before breaking ice and loses too much action tempo to water.",
+    "whatItProves": "Water can sharpen the future-value ice decision without turning the level into a timer.",
+    "notes": "Role: pressure. Initial flood and water interval create urgency, but the iced lower lane is visible from the opening board.",
+    "isRuleTeach": false
+  }
+}

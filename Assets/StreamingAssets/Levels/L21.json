@@ -1,0 +1,51 @@
+{
+  "id": "L21",
+  "name": "Ice Route Teach",
+  "board": {
+    "width": 7,
+    "height": 8,
+    "tiles": [
+      ["A", "A", "B", "B", "C", "C", "D"],
+      ["E", ".", "F", "D", "D", ".", "A"],
+      ["E", "E", "B", "B", ".", "F", "F"],
+      ["C", "D", "D", "IA", "E", "E", "."],
+      ["C", "C", "A", "T0", "B", ".", "D"],
+      ["F", ".", "A", ".", "B", "E", "E"],
+      ["A", "B", "B", ".", ".", "C", "F"],
+      [".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 4, "col": 3 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 9
+  },
+  "vine": {
+    "growthThreshold": 999,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.35,
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
+  },
+  "meta": {
+    "intent": "Introduce the ice future-value band with a single readable iced rescue route.",
+    "expectedPath": "Clear the D pair beside the iced route, break the ice, then clear the revealed route material and finish the puppy with low dock residue.",
+    "expectedFailMode": "The player spends actions on broad side groups that do not touch the iced route and learns those clears do not advance rescue.",
+    "whatItProves": "Ice can read as rescue-route investment rather than generic obstruction.",
+    "notes": "Role: teach. Empty cells below and near the target are deliberate rescue-route, spawn-corridor, and mobile-readability space; water is forgiving so the ice lesson stays primary.",
+    "isRuleTeach": false
+  }
+}

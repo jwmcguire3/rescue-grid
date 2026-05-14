@@ -1,0 +1,19 @@
+{
+  "id": "L22",
+  "title": "Ice Route Practice",
+  "campaignBand": "ice_future_value",
+  "role": "practice",
+  "primarySkill": "ice_route_value",
+  "secondarySkill": "dock_remainder_reading",
+  "allowedMechanics": ["debris", "dock", "water", "ice", "crate", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate", "vine"],
+  "boardSize": { "width": 7, "height": 8 },
+  "targetCount": 1,
+  "densityTarget": "80-90%",
+  "targetFirstAttemptWinRate": "75-90%",
+  "intendedTensionBeat": "The player has multiple valid clears, but only the iced route advances rescue efficiently.",
+  "intendedReleaseBeat": "A clean ice break opens the rescue lane and produces a satisfying visible target-state improvement.",
+  "expectedPath": "Use one dock-safe clear to expose the ice-adjacent route, break the ice, then finish the rescue before broad side clears matter.",
+  "expectedFailMode": "Player treats ice as optional cleanup, fills dock with side material, and delays the only meaningful route.",
+  "designNotes": "First real-board repetition of L21. Add one crate only if it clarifies route shape rather than adding noise."
+}

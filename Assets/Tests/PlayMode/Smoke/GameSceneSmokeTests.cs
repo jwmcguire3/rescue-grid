@@ -168,6 +168,7 @@ namespace Rescue.PlayMode.Tests.Smoke
             Assert.That(waterRoot.childCount, Is.GreaterThan(0));
             AssertCameraUsesFrontTableOrthographicView();
             AssertBoardStageLayout(boardRoot, boardContentRoot, waterRoot, dockRoot);
+            AssertBoardFitsGameplayViewport(boardRoot, currentState.Board.Width, currentState.Board.Height);
             AssertDirectionalLightMatchesStaging();
 
             yield return null;
@@ -432,12 +433,11 @@ namespace Rescue.PlayMode.Tests.Smoke
                 throw new AssertionException("Game.unity should include a tagged Main Camera.");
             }
 
-            Vector3 forward = camera.transform.forward;
-            float horizontalForward = new Vector2(forward.x, forward.z).magnitude;
             Assert.That(camera.orthographic, Is.True, "Game camera should stay orthographic for grid readability.");
-            Assert.That(horizontalForward, Is.GreaterThan(0.1f), "Game camera should have a table-facing horizontal component instead of top-down.");
-            Assert.That(forward.y, Is.LessThan(-0.1f), "Game camera should look down toward the table.");
-            Assert.That(Quaternion.Angle(camera.transform.rotation, Quaternion.Euler(90f, 0f, 0f)), Is.GreaterThan(1f));
+            Assert.That(camera.orthographicSize, Is.EqualTo(PortraitGameSceneLayout.CameraPortraitOrthographicSize).Within(0.001f));
+            Assert.That(Vector3.Distance(camera.transform.position, PortraitGameSceneLayout.CameraPortraitPosition), Is.LessThan(0.001f));
+            Assert.That(Quaternion.Angle(camera.transform.rotation, PortraitGameSceneLayout.CameraPortraitRotation), Is.LessThan(0.1f));
+            Assert.That(camera.transform.forward.y, Is.LessThan(-0.99f), "Game camera should look straight down so the board starts square in frame.");
         }
 
         private static void AssertBoardStageLayout(Transform boardRoot, Transform boardContentRoot, Transform waterRoot, Transform dockRoot)
@@ -454,11 +454,48 @@ namespace Rescue.PlayMode.Tests.Smoke
             Assert.That(waterRoot.parent, Is.SameAs(stageRoot), "Water overlays should share the board stage transform.");
             Assert.That(dockRoot.parent, Is.Not.SameAs(stageRoot), "DockRoot should stay separate so its staging can be tuned independently.");
             Assert.That(Vector3.Distance(stageRoot.localPosition, PortraitGameSceneLayout.BoardPortraitPosition), Is.LessThan(0.001f));
-            Assert.That(Quaternion.Angle(stageRoot.localRotation, Quaternion.identity), Is.LessThan(0.1f), "BoardStageRoot should match the screenshot rotation.");
+            Assert.That(Quaternion.Angle(stageRoot.localRotation, PortraitGameSceneLayout.BoardPortraitRotation), Is.LessThan(0.1f), "BoardStageRoot should keep the gameplay/input coordinate contract aligned.");
             Assert.That(Vector3.Distance(stageRoot.localScale, PortraitGameSceneLayout.BoardPortraitScale), Is.LessThan(0.001f));
             Assert.That(Vector3.Distance(dockRoot.localPosition, PortraitGameSceneLayout.DockPortraitPosition), Is.LessThan(0.001f));
             Assert.That(Quaternion.Angle(dockRoot.localRotation, PortraitGameSceneLayout.DockPortraitRotation), Is.LessThan(0.1f), "DockRoot should match the portrait staged dock tilt.");
             Assert.That(Vector3.Distance(dockRoot.localScale, PortraitGameSceneLayout.DockPortraitScale), Is.LessThan(0.001f));
+        }
+
+        private static void AssertBoardFitsGameplayViewport(Transform boardRoot, int boardWidth, int boardHeight)
+        {
+            Camera? camera = Camera.main;
+            Assert.That(camera, Is.Not.Null, "Game.unity should include a tagged Main Camera.");
+            if (camera is null)
+            {
+                throw new AssertionException("Game.unity should include a tagged Main Camera.");
+            }
+
+            Transform topLeft = boardRoot.Find("Cell_00_00") ?? throw new AssertionException("Expected top-left board cell.");
+            Transform topRight = boardRoot.Find($"Cell_00_{boardWidth - 1:00}") ?? throw new AssertionException("Expected top-right board cell.");
+            Transform bottomLeft = boardRoot.Find($"Cell_{boardHeight - 1:00}_00") ?? throw new AssertionException("Expected bottom-left board cell.");
+            Transform bottomRight = boardRoot.Find($"Cell_{boardHeight - 1:00}_{boardWidth - 1:00}") ?? throw new AssertionException("Expected bottom-right board cell.");
+
+            Vector3 topLeftViewport = camera.WorldToViewportPoint(topLeft.position);
+            Vector3 topRightViewport = camera.WorldToViewportPoint(topRight.position);
+            Vector3 bottomLeftViewport = camera.WorldToViewportPoint(bottomLeft.position);
+            Vector3 bottomRightViewport = camera.WorldToViewportPoint(bottomRight.position);
+
+            AssertViewportPointVisible(topLeftViewport, "top-left");
+            AssertViewportPointVisible(topRightViewport, "top-right");
+            AssertViewportPointVisible(bottomLeftViewport, "bottom-left");
+            AssertViewportPointVisible(bottomRightViewport, "bottom-right");
+
+            Assert.That(topRightViewport.x, Is.GreaterThan(topLeftViewport.x), "Top board row should project left-to-right.");
+            Assert.That(Mathf.Abs(topRightViewport.y - topLeftViewport.y), Is.LessThan(0.01f), "Top board row should project horizontally.");
+            Assert.That(Mathf.Abs(bottomLeftViewport.x - topLeftViewport.x), Is.LessThan(0.01f), "Left board column should project vertically.");
+            Assert.That(topLeftViewport.y, Is.GreaterThan(bottomLeftViewport.y), "Board rows should advance top-to-bottom.");
+        }
+
+        private static void AssertViewportPointVisible(Vector3 viewportPoint, string label)
+        {
+            Assert.That(viewportPoint.z, Is.GreaterThan(0f), $"{label} board corner should be in front of the camera.");
+            Assert.That(viewportPoint.x, Is.InRange(0.05f, 0.95f), $"{label} board corner should stay inside the gameplay viewport horizontally.");
+            Assert.That(viewportPoint.y, Is.InRange(0.05f, 0.95f), $"{label} board corner should stay inside the gameplay viewport vertically.");
         }
 
         private static void AssertDirectionalLightMatchesStaging()

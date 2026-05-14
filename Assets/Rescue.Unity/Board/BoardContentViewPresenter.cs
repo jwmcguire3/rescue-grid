@@ -1413,6 +1413,7 @@ namespace Rescue.Unity.BoardPresentation
                 if (!existingView.IsExtracting)
                 {
                     MoveContentObjectToAnchor(existingView.Object, anchor, coord, contentLabel, contentYOffset);
+                    CenterTargetVisualFootprint(existingView.Object);
                     ApplyTargetVisualState(existingView.Object, targetState.Readiness);
                     return;
                 }
@@ -1430,6 +1431,7 @@ namespace Rescue.Unity.BoardPresentation
 
             if (spawnedObject is not null)
             {
+                CenterTargetVisualFootprint(spawnedObject);
                 spawnedTargetsById[targetId] = new TargetVisualView(spawnedObject);
                 ApplyTargetVisualState(spawnedObject, targetState.Readiness);
             }
@@ -1901,6 +1903,72 @@ namespace Rescue.Unity.BoardPresentation
             targetObject.transform.localScale = scale;
             BoardContentMarkerFactory.SyncTargetReadabilityMarker(targetObject, readiness);
             targetObject.GetComponentInChildren<TargetPuppyAnimator>(true)?.ApplyReadiness(readiness);
+        }
+
+        private static void CenterTargetVisualFootprint(GameObject targetObject)
+        {
+            Bounds? bounds = CalculateLocalRendererBounds(targetObject);
+            if (!bounds.HasValue)
+            {
+                return;
+            }
+
+            Vector3 center = bounds.Value.center;
+            Vector3 planarOffset = new Vector3(-center.x, 0f, -center.z);
+            if (planarOffset.sqrMagnitude <= 0.0001f)
+            {
+                return;
+            }
+
+            Transform targetTransform = targetObject.transform;
+            targetTransform.position += targetTransform.TransformVector(planarOffset);
+        }
+
+        private static Bounds? CalculateLocalRendererBounds(GameObject root)
+        {
+            Renderer[] renderers = root.GetComponentsInChildren<Renderer>(includeInactive: true);
+            if (renderers.Length == 0)
+            {
+                return null;
+            }
+
+            Matrix4x4 worldToRoot = root.transform.worldToLocalMatrix;
+            bool hasBounds = false;
+            Bounds combined = default;
+
+            for (int rendererIndex = 0; rendererIndex < renderers.Length; rendererIndex++)
+            {
+                Bounds rendererBounds = renderers[rendererIndex].bounds;
+                Vector3 min = rendererBounds.min;
+                Vector3 max = rendererBounds.max;
+                Vector3[] corners =
+                {
+                    new Vector3(min.x, min.y, min.z),
+                    new Vector3(min.x, min.y, max.z),
+                    new Vector3(min.x, max.y, min.z),
+                    new Vector3(min.x, max.y, max.z),
+                    new Vector3(max.x, min.y, min.z),
+                    new Vector3(max.x, min.y, max.z),
+                    new Vector3(max.x, max.y, min.z),
+                    new Vector3(max.x, max.y, max.z),
+                };
+
+                for (int cornerIndex = 0; cornerIndex < corners.Length; cornerIndex++)
+                {
+                    Vector3 localCorner = worldToRoot.MultiplyPoint3x4(corners[cornerIndex]);
+                    if (!hasBounds)
+                    {
+                        combined = new Bounds(localCorner, Vector3.zero);
+                        hasBounds = true;
+                    }
+                    else
+                    {
+                        combined.Encapsulate(localCorner);
+                    }
+                }
+            }
+
+            return combined;
         }
 
         private static void ApplyTint(GameObject contentObject, Color tint)

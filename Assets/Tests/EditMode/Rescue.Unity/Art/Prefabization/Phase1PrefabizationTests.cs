@@ -261,6 +261,25 @@ namespace Rescue.Unity.Art.Tests
         }
 
         [Test]
+        public void DaisyTargetPrefab_FitsBoardCellFootprintAfterRuntimeCentering()
+        {
+            GameObject prefabRoot = PrefabUtility.LoadPrefabContents(DaisyTargetPrefabPath);
+
+            try
+            {
+                Bounds localBounds = CalculateLocalRendererBounds(prefabRoot);
+                string summary = $"center={localBounds.center}, size={localBounds.size}";
+
+                Assert.That(localBounds.size.x, Is.LessThanOrEqualTo(0.78f), summary);
+                Assert.That(localBounds.size.z, Is.LessThanOrEqualTo(0.78f), summary);
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(prefabRoot);
+            }
+        }
+
+        [Test]
         public void Phase1FxRegistry_AssignsFourFrameTransientIceRevealFx()
         {
             FxVisualRegistry fxRegistry = LoadAsset<FxVisualRegistry>(FxRegistryPath);
@@ -375,6 +394,50 @@ namespace Rescue.Unity.Art.Tests
             T? asset = AssetDatabase.LoadAssetAtPath<T>(assetPath);
             Assert.That(asset, Is.Not.Null, $"Expected asset at '{assetPath}'.");
             return asset ?? throw new AssertionException($"Expected asset at '{assetPath}'.");
+        }
+
+        private static Bounds CalculateLocalRendererBounds(GameObject root)
+        {
+            Renderer[] renderers = root.GetComponentsInChildren<Renderer>(true);
+            Assert.That(renderers.Length, Is.GreaterThan(0), "Expected target prefab to include renderers.");
+
+            Matrix4x4 worldToRoot = root.transform.worldToLocalMatrix;
+            bool hasBounds = false;
+            Bounds combined = default;
+
+            for (int rendererIndex = 0; rendererIndex < renderers.Length; rendererIndex++)
+            {
+                Bounds rendererBounds = renderers[rendererIndex].bounds;
+                Vector3 min = rendererBounds.min;
+                Vector3 max = rendererBounds.max;
+                Vector3[] corners =
+                {
+                    new Vector3(min.x, min.y, min.z),
+                    new Vector3(min.x, min.y, max.z),
+                    new Vector3(min.x, max.y, min.z),
+                    new Vector3(min.x, max.y, max.z),
+                    new Vector3(max.x, min.y, min.z),
+                    new Vector3(max.x, min.y, max.z),
+                    new Vector3(max.x, max.y, min.z),
+                    new Vector3(max.x, max.y, max.z),
+                };
+
+                for (int cornerIndex = 0; cornerIndex < corners.Length; cornerIndex++)
+                {
+                    Vector3 localCorner = worldToRoot.MultiplyPoint3x4(corners[cornerIndex]);
+                    if (!hasBounds)
+                    {
+                        combined = new Bounds(localCorner, Vector3.zero);
+                        hasBounds = true;
+                    }
+                    else
+                    {
+                        combined.Encapsulate(localCorner);
+                    }
+                }
+            }
+
+            return combined;
         }
 
         private static void AssertWaterRiseCrop(Material material, Texture2D waterRiseFrame)

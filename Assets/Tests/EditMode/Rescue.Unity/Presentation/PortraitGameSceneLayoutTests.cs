@@ -36,10 +36,17 @@ namespace Rescue.Unity.Presentation.Tests
 
             PortraitGameSceneLayout.ApplyCameraLayout(camera, 9.0f / 16.0f);
 
-            Assert.That(camera.orthographic, Is.True);
-            Assert.That(camera.orthographicSize, Is.EqualTo(PortraitGameSceneLayout.CameraPortraitOrthographicSize).Within(0.001f));
-            Assert.That(Vector3.Distance(camera.transform.position, PortraitGameSceneLayout.CameraPortraitPosition), Is.LessThan(0.001f));
-            Assert.That(Quaternion.Angle(camera.transform.rotation, PortraitGameSceneLayout.CameraPortraitRotation), Is.LessThan(0.1f));
+            AssertCameraMatchesGameplayFraming(camera);
+        }
+
+        [Test]
+        public void ApplyCameraLayout_LandscapeAspectStillSetsPlayableFraming()
+        {
+            Camera camera = CreateCamera();
+
+            PortraitGameSceneLayout.ApplyCameraLayout(camera, 16.0f / 9.0f);
+
+            AssertCameraMatchesGameplayFraming(camera);
         }
 
         [Test]
@@ -66,9 +73,9 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
-        public void ResolveBoardPortraitScale_LeavesSmallBoardsAtDefaultScale()
+        public void ResolveBoardPortraitScale_LeavesSmallBoardsAtDefaultScaleInStandardPortrait()
         {
-            Vector3 scale = PortraitGameSceneLayout.ResolveBoardPortraitScale(6, 9.0f / 20.0f);
+            Vector3 scale = PortraitGameSceneLayout.ResolveBoardPortraitScale(6, 9.0f / 16.0f);
 
             Assert.That(scale, Is.EqualTo(PortraitGameSceneLayout.BoardPortraitScale));
         }
@@ -83,15 +90,38 @@ namespace Rescue.Unity.Presentation.Tests
             float viewportWidth = PortraitGameSceneLayout.CameraPortraitOrthographicSize * 2.0f * aspect;
             float boardWidth = 9.0f * scale.x;
             Assert.That(scale.x, Is.LessThan(PortraitGameSceneLayout.BoardPortraitScale.x));
-            Assert.That(boardWidth, Is.LessThan(viewportWidth));
+            Assert.That(boardWidth, Is.LessThan(viewportWidth + 0.001f));
+        }
+
+        [Test]
+        public void ResolveBoardPortraitScale_FitsEightColumnBoardsInNarrowPortrait()
+        {
+            const float aspect = 9.0f / 20.0f;
+
+            Vector3 scale = PortraitGameSceneLayout.ResolveBoardPortraitScale(8, aspect);
+
+            float viewportWidth = PortraitGameSceneLayout.CameraPortraitOrthographicSize * 2.0f * aspect;
+            float boardWidth = 8.0f * scale.x;
+            Assert.That(scale.x, Is.LessThan(PortraitGameSceneLayout.BoardPortraitScale.x));
+            Assert.That(boardWidth, Is.LessThan(viewportWidth + 0.001f));
         }
 
         private Camera CreateCamera()
         {
             cameraObject = new GameObject("Main Camera");
             Camera camera = cameraObject.AddComponent<Camera>();
-            camera.orthographic = true;
+            camera.orthographic = false;
+            camera.orthographicSize = 3.0f;
+            camera.transform.SetPositionAndRotation(new Vector3(2f, 3f, 4f), Quaternion.Euler(12f, 34f, 56f));
             return camera;
+        }
+
+        private static void AssertCameraMatchesGameplayFraming(Camera camera)
+        {
+            Assert.That(camera.orthographic, Is.True);
+            Assert.That(camera.orthographicSize, Is.EqualTo(PortraitGameSceneLayout.CameraPortraitOrthographicSize).Within(0.001f));
+            Assert.That(Vector3.Distance(camera.transform.position, PortraitGameSceneLayout.CameraPortraitPosition), Is.LessThan(0.001f));
+            Assert.That(Quaternion.Angle(camera.transform.rotation, PortraitGameSceneLayout.CameraPortraitRotation), Is.LessThan(0.1f));
         }
     }
 }

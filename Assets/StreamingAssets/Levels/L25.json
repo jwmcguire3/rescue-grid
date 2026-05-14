@@ -1,0 +1,51 @@
+{
+  "id": "L25",
+  "name": "Thawed Rescue Payoff",
+  "board": {
+    "width": 7,
+    "height": 8,
+    "tiles": [
+      ["A", "A", "B", "B", "C", "C", "."],
+      ["E", ".", "F", "F", "D", "A", "A"],
+      ["B", "C", "C", "IB", ".", "D", "E"],
+      ["B", "F", "F", "T0", "A", "E", "E"],
+      ["C", "C", "A", ".", "A", ".", "B"],
+      ["D", ".", "F", ".", "C", "C", "E"],
+      ["A", "F", "F", ".", "D", ".", "E"],
+      [".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 3, "col": 3 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 9
+  },
+  "vine": {
+    "growthThreshold": 999,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.35,
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
+  },
+  "meta": {
+    "intent": "Give a forgiving payoff after L24 where a central ice break clearly cascades into rescue progress.",
+    "expectedPath": "Break the central ice route, use clean low-residue clears around the puppy, and extract before dock pressure becomes sharp.",
+    "expectedFailMode": "The player can delay the rescue by side-clearing, but the board remains recoverable.",
+    "whatItProves": "Ice feels satisfying and useful after the first pressured ice decision.",
+    "notes": "Role: release. The target starts with generous route space by design; the board keeps enough surrounding material to avoid reading as a diagram.",
+    "isRuleTeach": false
+  }
+}

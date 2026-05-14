@@ -1,0 +1,19 @@
+{
+  "id": "L23",
+  "title": "Visible Path, Frozen Path",
+  "campaignBand": "ice_future_value",
+  "role": "choice",
+  "primarySkill": "future_value_choice",
+  "secondarySkill": "dock_cost_comparison",
+  "allowedMechanics": ["debris", "dock", "water", "ice", "crate", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate", "vine"],
+  "boardSize": { "width": 7, "height": 9 },
+  "targetCount": 2,
+  "densityTarget": "80-90%",
+  "targetFirstAttemptWinRate": "65-80%",
+  "intendedTensionBeat": "One puppy has an obvious visible path that costs dock space; the better route starts frozen but pays off cleaner.",
+  "intendedReleaseBeat": "Choosing the frozen route first creates a clean rescue pivot and shows the player they read future value correctly.",
+  "expectedPath": "Invest in the iced route before chasing the obvious broad clear, rescue the better-positioned puppy, then pivot with dock under control.",
+  "expectedFailMode": "Player takes the visible route first, creates dock residue, and loses tempo before realizing the frozen route was the cleaner rescue path.",
+  "designNotes": "This should be the first clear comparison level of the band: immediate-looking value versus future rescue value."
+}

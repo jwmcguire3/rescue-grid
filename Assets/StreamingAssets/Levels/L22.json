@@ -1,0 +1,51 @@
+{
+  "id": "L22",
+  "name": "Ice Route Practice",
+  "board": {
+    "width": 7,
+    "height": 8,
+    "tiles": [
+      ["A", "A", "C", "C", "D", "D", "E"],
+      ["F", ".", "B", "E", "E", "A", "A"],
+      ["F", "F", "CR", "C", ".", "B", "D"],
+      ["D", "D", "A", "IA", "B", "B", "E"],
+      ["C", "E", "A", "T0", "F", "CR", "E"],
+      ["C", "E", "D", ".", "F", ".", "B"],
+      ["A", "B", ".", ".", "C", "C", "B"],
+      [".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 4, "col": 3 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 8
+  },
+  "vine": {
+    "growthThreshold": 999,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.30,
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
+  },
+  "meta": {
+    "intent": "Practice ice route value on a denser board with a few plausible but lower-value side clears.",
+    "expectedPath": "Use a dock-safe route clear near the ice, break the iced lane, then clear the revealed material before broad side groups matter.",
+    "expectedFailMode": "The player treats ice as optional cleanup, takes side groups, and lets dock residue or water tempo crowd the rescue.",
+    "whatItProves": "The L21 ice-route read survives a real-board layout with one crate-shaped route tax.",
+    "notes": "Role: practice. Crates frame the lane but are not the main problem; the target starts close enough that ice remains the visible investment.",
+    "isRuleTeach": false
+  }
+}

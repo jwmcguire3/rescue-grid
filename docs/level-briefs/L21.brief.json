@@ -1,0 +1,19 @@
+{
+  "id": "L21",
+  "title": "Ice Route Teach",
+  "campaignBand": "ice_future_value",
+  "role": "teach",
+  "primarySkill": "ice_route_value",
+  "secondarySkill": "adjacency_literacy",
+  "allowedMechanics": ["debris", "dock", "water", "ice", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate", "vine"],
+  "boardSize": { "width": 7, "height": 8 },
+  "targetCount": 1,
+  "densityTarget": "75-85%",
+  "targetFirstAttemptWinRate": "85-95%",
+  "intendedTensionBeat": "The visible rescue route is blocked by ice, but the first useful ice clear is obvious and low-risk.",
+  "intendedReleaseBeat": "Breaking the ice immediately reveals rescue progress and teaches that ice is future value, not generic obstruction.",
+  "expectedPath": "Clear the debris adjacent to the iced route, break the ice, then finish opening the puppy with a clean low-residue dock path.",
+  "expectedFailMode": "Player ignores the iced route and spends actions on broad side clears that do not advance rescue.",
+  "designNotes": "First dedicated ice-band teach. Keep water forgiving; the lesson is route value, not pressure."
+}
