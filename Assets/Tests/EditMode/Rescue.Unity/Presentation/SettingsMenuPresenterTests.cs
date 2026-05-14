@@ -14,6 +14,8 @@ namespace Rescue.Unity.Presentation.Tests
 {
     public sealed class SettingsMenuPresenterTests
     {
+        private const float PanelContentWidth = 342f;
+
         private GameObject? presenterObject;
         private GameObject? audioObject;
         private GameObject? sessionObject;
@@ -127,19 +129,20 @@ namespace Rescue.Unity.Presentation.Tests
             AssertContainedInPanel(view, "VibrationsToggle");
             AssertContainedInPanel(view, "HapticsStrengthRow");
             AssertBottomPaddingInPanel(view, "HapticsStrengthRow", 80f);
-            AssertHorizontalPaddingInPanel(view, "SettingsTitle", 56f, 160f);
-            AssertHorizontalPaddingInPanel(view, "ResumeButton", 280f, 56f);
-            AssertHorizontalPaddingInPanel(view, "ShowTutorialButton", 56f, 56f);
-            AssertHorizontalPaddingInPanel(view, "LevelDropdownRow", 56f, 56f);
-            AssertHorizontalPaddingInPanel(view, "MusicSliderRow", 56f, 56f);
-            AssertHorizontalPaddingInPanel(view, "FXSliderRow", 56f, 56f);
-            AssertHorizontalPaddingInPanel(view, "MuteRow", 56f, 56f);
-            AssertHorizontalPaddingInPanel(view, "HapticsStrengthRow", 56f, 56f);
+            AssertHorizontalPaddingInPanel(view, "SettingsTitle", 68f, 150f);
+            AssertHorizontalPaddingInPanel(view, "ResumeButton", 270f, 68f);
+            AssertHorizontalPaddingInPanel(view, "ShowTutorialButton", 68f, 68f);
+            AssertHorizontalPaddingInPanel(view, "LevelDropdownRow", 68f, 68f);
+            AssertHorizontalPaddingInPanel(view, "MusicSliderRow", 68f, 68f);
+            AssertHorizontalPaddingInPanel(view, "FXSliderRow", 68f, 68f);
+            AssertHorizontalPaddingInPanel(view, "MuteRow", 68f, 68f);
+            AssertHorizontalPaddingInPanel(view, "HapticsStrengthRow", 68f, 68f);
             AssertPreferredHeightAtLeast(view, "LevelDropdownRow", 52f);
             AssertPreferredHeightAtLeast(view, "MusicSliderRow", 46f);
             AssertPreferredHeightAtLeast(view, "FXSliderRow", 46f);
             AssertPreferredHeightAtLeast(view, "MuteRow", 48f);
             AssertPreferredHeightAtLeast(view, "HapticsStrengthRow", 46f);
+            AssertFullWidthCompactLevelDropdown(view);
 
             AssertRusticSlider(view.MusicSlider);
             AssertRusticSlider(view.FxSlider);
@@ -434,6 +437,44 @@ namespace Rescue.Unity.Presentation.Tests
             LayoutElement? layout = rect.GetComponent<LayoutElement>();
             Assert.That(layout, Is.Not.Null, $"{childName} should have an explicit layout height.");
             Assert.That(layout!.preferredHeight, Is.GreaterThanOrEqualTo(minimumHeight), $"{childName} should remain large enough for mobile input.");
+        }
+
+        private static void AssertFullWidthCompactLevelDropdown(SettingsMenuView view)
+        {
+            TMP_Dropdown dropdown = view.LevelDropdown;
+            LayoutElement? dropdownLayout = dropdown.GetComponent<LayoutElement>();
+            Assert.That(dropdownLayout, Is.Not.Null, "Level dropdown should have explicit layout sizing.");
+            Assert.That(dropdownLayout!.minWidth, Is.EqualTo(PanelContentWidth).Within(0.001f), "Level dropdown should use the full settings content width.");
+            Assert.That(dropdownLayout.preferredWidth, Is.EqualTo(PanelContentWidth).Within(0.001f), "Level dropdown should not reserve width for a separate side label.");
+
+            TMP_Text caption = dropdown.captionText;
+            Assert.That(caption.enableAutoSizing, Is.True, "Long selected level names should shrink instead of overflowing the box.");
+            Assert.That(caption.fontSizeMin, Is.GreaterThanOrEqualTo(15f), "Caption auto-sizing should keep level names readable.");
+            Assert.That(caption.overflowMode, Is.EqualTo(TextOverflowModes.Ellipsis));
+            Assert.That(caption.rectTransform.offsetMin.x, Is.EqualTo(28f).Within(0.001f), "Caption should sit inside the painted level-box trim.");
+            Assert.That(caption.rectTransform.offsetMax.x, Is.LessThanOrEqualTo(-60f), "Caption should leave room for the dropdown arrow.");
+
+            RectTransform? template = dropdown.template;
+            Assert.That(template, Is.Not.Null, "Level dropdown should have a popup template.");
+            RectTransform arrow = FindDescendant<RectTransform>(dropdown, "Arrow");
+            Assert.That(arrow.anchoredPosition.x, Is.EqualTo(-32f).Within(0.001f), "Dropdown arrow should sit inside the level box.");
+            RectTransform item = FindDescendant<RectTransform>(template!, "Item");
+            LayoutElement? itemLayout = item.GetComponent<LayoutElement>();
+            Assert.That(itemLayout, Is.Not.Null, "Level dropdown item should have explicit compact height.");
+            Assert.That(itemLayout!.preferredHeight, Is.EqualTo(32f).Within(0.001f), "Level dropdown should show more levels by using compact rows.");
+            Assert.That(dropdown.itemText.fontSize, Is.EqualTo(18f).Within(0.001f));
+            Assert.That(dropdown.itemText.rectTransform.offsetMin.x, Is.EqualTo(10f).Within(0.001f));
+            Assert.That(dropdown.itemText.rectTransform.offsetMax.x, Is.EqualTo(-10f).Within(0.001f));
+        }
+
+        private static T FindDescendant<T>(Component root, string name)
+            where T : Component
+        {
+            T? child = Array.Find(
+                root.GetComponentsInChildren<T>(includeInactive: true),
+                candidate => candidate.name == name);
+            Assert.That(child, Is.Not.Null, $"Expected descendant '{name}'.");
+            return child!;
         }
 
         private static void AssertRusticSlider(Slider slider)

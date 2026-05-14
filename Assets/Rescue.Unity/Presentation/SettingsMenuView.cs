@@ -23,8 +23,8 @@ namespace Rescue.Unity.Presentation
         private const float SliderHandleSize = 38f;
         private const float TopPlaqueHeight = 60f;
         private const float SettingsPlaqueHeight = 80f;
-        private const float PanelContentLeft = 58f;
-        private const float PanelContentWidth = 366f;
+        private const float PanelContentLeft = 70f;
+        private const float PanelContentWidth = 342f;
 
         [Header("Top Buttons")]
         [SerializeField] private Button? restartButton;
@@ -244,9 +244,9 @@ namespace Rescue.Unity.Presentation
 
             TextMeshProUGUI title = CreateLabel(panelRoot.transform, "SettingsTitle", "SETTINGS", 42f, Cream, TextAlignmentOptions.MidlineLeft);
             title.fontStyle = FontStyles.Bold;
-            SetPanelRect(title.rectTransform, PanelContentLeft, 40f, 260f, 58f);
+            SetPanelRect(title.rectTransform, PanelContentLeft, 54f, 260f, 58f);
             resumeButton = CreatePlaqueButton(panelRoot.transform, "ResumeButton", "RESUME", tealPlaqueSprite, Teal, Cream, new Vector2(130f, 48f), null);
-            SetPanelRect((RectTransform)resumeButton.transform, 294f, 48f, 130f, 48f);
+            SetPanelRect((RectTransform)resumeButton.transform, 282f, 54f, 130f, 48f);
             showTutorialButton = CreatePlaqueButton(panelRoot.transform, "ShowTutorialButton", "SHOW TUTORIAL", amberPlaqueSprite, Amber, DarkInk, new Vector2(0f, 68f), amberPawSprite);
             SetPanelRect((RectTransform)showTutorialButton.transform, PanelContentLeft, 118f, PanelContentWidth, 66f);
 
@@ -376,14 +376,13 @@ namespace Rescue.Unity.Presentation
         private TMP_Dropdown CreateDropdown(Transform parent)
         {
             GameObject row = CreateRow(parent, "LevelDropdownRow", 52f);
-            TextMeshProUGUI label = CreateLabel(row.transform, "LevelLabel", "Level", 24f, Cream, TextAlignmentOptions.MidlineLeft);
-            label.gameObject.AddComponent<LayoutElement>().preferredWidth = 92f;
 
             GameObject dropdownObject = CreateChild("LevelDropdown", row.transform);
             LayoutElement dropdownLayout = dropdownObject.AddComponent<LayoutElement>();
             dropdownLayout.flexibleWidth = 1f;
+            dropdownLayout.minWidth = PanelContentWidth;
+            dropdownLayout.preferredWidth = PanelContentWidth;
             dropdownLayout.preferredHeight = 48f;
-            dropdownLayout.minWidth = 250f;
 
             Image image = dropdownObject.AddComponent<Image>();
             if (levelBoxSprite is not null)
@@ -397,18 +396,22 @@ namespace Rescue.Unity.Presentation
             TMP_Dropdown dropdown = dropdownObject.AddComponent<TMP_Dropdown>();
             dropdown.targetGraphic = image;
             dropdown.captionText = CreateLabel(dropdownObject.transform, "Caption", string.Empty, 22f, Cream, TextAlignmentOptions.MidlineLeft);
+            dropdown.captionText.enableAutoSizing = true;
+            dropdown.captionText.fontSizeMin = 15f;
+            dropdown.captionText.fontSizeMax = 22f;
+            dropdown.captionText.overflowMode = TextOverflowModes.Ellipsis;
             RectTransform captionRect = dropdown.captionText.rectTransform;
             captionRect.anchorMin = new Vector2(0f, 0f);
             captionRect.anchorMax = new Vector2(1f, 1f);
-            captionRect.offsetMin = new Vector2(18f, 0f);
-            captionRect.offsetMax = new Vector2(-52f, 0f);
+            captionRect.offsetMin = new Vector2(28f, 0f);
+            captionRect.offsetMax = new Vector2(-60f, 0f);
 
             Image arrow = CreateImage(dropdownObject.transform, "Arrow", dropdownArrowSprite, Color.white);
             RectTransform arrowRect = arrow.rectTransform;
             arrowRect.anchorMin = new Vector2(1f, 0.5f);
             arrowRect.anchorMax = new Vector2(1f, 0.5f);
             arrowRect.pivot = new Vector2(0.5f, 0.5f);
-            arrowRect.anchoredPosition = new Vector2(-24f, 0f);
+            arrowRect.anchoredPosition = new Vector2(-32f, 0f);
             arrowRect.sizeDelta = new Vector2(24f, 24f);
             arrow.preserveAspect = true;
 
@@ -441,7 +444,7 @@ namespace Rescue.Unity.Presentation
             contentRect.anchorMin = new Vector2(0f, 1f);
             contentRect.anchorMax = new Vector2(1f, 1f);
             contentRect.pivot = new Vector2(0.5f, 1f);
-            contentRect.sizeDelta = new Vector2(0f, 44f);
+            contentRect.sizeDelta = new Vector2(0f, 32f);
             VerticalLayoutGroup contentLayout = content.AddComponent<VerticalLayoutGroup>();
             contentLayout.childControlHeight = false;
             contentLayout.childControlWidth = true;
@@ -454,13 +457,13 @@ namespace Rescue.Unity.Presentation
             Image itemBackground = item.AddComponent<Image>();
             itemBackground.color = new Color(1f, 1f, 1f, 0.08f);
             itemToggle.targetGraphic = itemBackground;
-            item.AddComponent<LayoutElement>().preferredHeight = 42f;
+            item.AddComponent<LayoutElement>().preferredHeight = 32f;
 
-            TextMeshProUGUI itemLabel = CreateLabel(item.transform, "Item Label", "Option", 20f, Cream, TextAlignmentOptions.MidlineLeft);
+            TextMeshProUGUI itemLabel = CreateLabel(item.transform, "Item Label", "Option", 18f, Cream, TextAlignmentOptions.MidlineLeft);
             RectTransform itemLabelRect = itemLabel.rectTransform;
             Stretch(itemLabelRect);
-            itemLabelRect.offsetMin = new Vector2(14f, 0f);
-            itemLabelRect.offsetMax = new Vector2(-14f, 0f);
+            itemLabelRect.offsetMin = new Vector2(10f, 0f);
+            itemLabelRect.offsetMax = new Vector2(-10f, 0f);
             dropdown.itemText = itemLabel;
 
             scrollRect.content = contentRect;
