@@ -6,7 +6,9 @@ using Rescue.Unity.Art.Registries;
 using Rescue.Unity.EditorTools.Art.Prefabs;
 using Rescue.Unity.EditorTools.Diagnostics;
 using Rescue.Unity.FX;
+using Rescue.Unity.Presentation.Targets;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEngine;
 
 namespace Rescue.Unity.Art.Tests
@@ -27,6 +29,8 @@ namespace Rescue.Unity.Art.Tests
         private const string Phase1IceRevealFxPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/FX/IceRevealFx_Phase1.prefab";
         private const string Phase1VineGrowPreviewFxPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/FX/VineGrowPreviewFx.prefab";
         private const string Phase1DockInsertFxPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Phase1/FX/DockInsertFx.prefab";
+        private const string DaisyTargetPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Targets/PF_Target_Daisy_Puppy.prefab";
+        private const string DaisyAnimatorControllerPath = "Assets/Rescue.Unity/Art/Animation/Targets/Daisy/AC_Daisy_Target.controller";
         private const string WaterRiseFourthFramePath = "Assets/Rescue.Unity/Art/Sprites/WaterRiseFx_04.png";
         private const string WaterFloodedMaterialPath = "Assets/Rescue.Unity/Art/Materials/Water_Flooded.mat";
         private const string WaterForecastMaterialPath = "Assets/Rescue.Unity/Art/Materials/Water_Forecast.mat";
@@ -215,6 +219,48 @@ namespace Rescue.Unity.Art.Tests
         }
 
         [Test]
+        public void DaisyTargetPrefab_IsAnimatorBackedAndWiredToRegistry()
+        {
+            GameObject daisyPrefab = LoadAsset<GameObject>(DaisyTargetPrefabPath);
+            AnimatorController controller = LoadAsset<AnimatorController>(DaisyAnimatorControllerPath);
+            TargetVisualRegistry targetRegistry = LoadAsset<TargetVisualRegistry>(TargetRegistryPath);
+
+            Assert.That(targetRegistry.PuppyPrefab, Is.SameAs(daisyPrefab));
+            Assert.That(targetRegistry.FallbackTargetPrefab, Is.SameAs(daisyPrefab));
+
+            Animator? animator = daisyPrefab.GetComponentInChildren<Animator>(true);
+            TargetPuppyAnimator? puppyAnimator = daisyPrefab.GetComponent<TargetPuppyAnimator>();
+
+            Assert.That(animator, Is.Not.Null);
+            Assert.That(animator!.runtimeAnimatorController, Is.SameAs(controller));
+            Assert.That(animator.applyRootMotion, Is.False);
+            Assert.That(puppyAnimator, Is.Not.Null);
+
+            SerializedObject serializedAnimator = new SerializedObject(puppyAnimator!);
+            Assert.That(serializedAnimator.FindProperty("animator").objectReferenceValue, Is.SameAs(animator));
+            AssertSerializedString(serializedAnimator, "trappedIdleState", "Target_Trapped_Idle");
+            AssertSerializedString(serializedAnimator, "progressingIdleState", "Target_Progress_Idle");
+            AssertSerializedString(serializedAnimator, "oneClearAwayIdleState", "Target_OneClearAway_Idle");
+            AssertSerializedString(serializedAnimator, "extractStartState", "Target_Extract_Start");
+            AssertSerializedString(serializedAnimator, "extractAirState", "Target_Extract_Air");
+            AssertSerializedString(serializedAnimator, "progressingFidgetState", "Target_Progress_Fidget");
+            AssertSerializedString(serializedAnimator, "oneClearAwayBarkState", "Target_OneClearAway_Bark");
+
+            string[] controllerStateNames = controller.layers[0].stateMachine.states
+                .Select(state => state.state.name)
+                .OrderBy(name => name)
+                .ToArray();
+
+            Assert.That(controllerStateNames, Does.Contain("Target_Trapped_Idle"));
+            Assert.That(controllerStateNames, Does.Contain("Target_Progress_Idle"));
+            Assert.That(controllerStateNames, Does.Contain("Target_OneClearAway_Idle"));
+            Assert.That(controllerStateNames, Does.Contain("Target_Extract_Start"));
+            Assert.That(controllerStateNames, Does.Contain("Target_Extract_Air"));
+            Assert.That(controllerStateNames, Does.Contain("Target_Progress_Fidget"));
+            Assert.That(controllerStateNames, Does.Contain("Target_OneClearAway_Bark"));
+        }
+
+        [Test]
         public void Phase1FxRegistry_AssignsFourFrameTransientIceRevealFx()
         {
             FxVisualRegistry fxRegistry = LoadAsset<FxVisualRegistry>(FxRegistryPath);
@@ -346,6 +392,13 @@ namespace Rescue.Unity.Art.Tests
             SerializedProperty property = serializedObject.FindProperty(propertyName);
             Assert.That(property, Is.Not.Null, $"Expected serialized property '{propertyName}'.");
             return property.boolValue;
+        }
+
+        private static void AssertSerializedString(SerializedObject serializedObject, string propertyName, string expected)
+        {
+            SerializedProperty property = serializedObject.FindProperty(propertyName);
+            Assert.That(property, Is.Not.Null, $"Expected serialized property '{propertyName}'.");
+            Assert.That(property.stringValue, Is.EqualTo(expected));
         }
 
         private static void AssertFxPrefab(GameObject? prefab, string registrySlotName)

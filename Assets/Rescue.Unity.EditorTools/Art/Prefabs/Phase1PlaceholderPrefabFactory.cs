@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Rescue.Unity.Art.Registries;
 using Rescue.Unity.FX;
+using Rescue.Unity.Presentation.Targets;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEngine;
 
 namespace Rescue.Unity.EditorTools.Art.Prefabs
@@ -18,6 +20,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
         private const string TexturesFolderName = "Textures";
         private const string MaterialsFolderName = "Materials";
         private const string RegistriesFolderName = "Registries";
+        private const string AnimationFolderName = "Animation";
         private const string BoardFolderName = "Board";
         private const string PiecesFolderName = "Pieces";
         private const string BlockersFolderName = "Blockers";
@@ -50,9 +53,21 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             $"{TexturesFolderName}/{WaterFolderName}",
             $"{TexturesFolderName}/{FxFolderName}",
             MaterialsFolderName,
+            $"{MaterialsFolderName}/{TargetsFolderName}",
             $"{MaterialsFolderName}/{Phase1FolderName}",
+            AnimationFolderName,
+            $"{AnimationFolderName}/{TargetsFolderName}",
+            $"{AnimationFolderName}/{TargetsFolderName}/Daisy",
             RegistriesFolderName,
         };
+
+        private const string DaisyTrappedIdleState = "Target_Trapped_Idle";
+        private const string DaisyProgressIdleState = "Target_Progress_Idle";
+        private const string DaisyOneClearAwayIdleState = "Target_OneClearAway_Idle";
+        private const string DaisyExtractStartState = "Target_Extract_Start";
+        private const string DaisyExtractAirState = "Target_Extract_Air";
+        private const string DaisyProgressFidgetState = "Target_Progress_Fidget";
+        private const string DaisyOneClearAwayBarkState = "Target_OneClearAway_Bark";
 
         private static readonly AssetSizingProfile TileSizingProfile = new AssetSizingProfile(DefaultBoardCellSize);
         private static readonly AssetSizingProfile DebrisSizingProfile = new AssetSizingProfile(0.92f);
@@ -279,6 +294,10 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 CombinePath(materialsPath, "PuppyTarget_Phase1.mat"),
                 shader,
                 CombinePath(artRootPath, "Textures", "Targets", "Meshy_AI_Curious_Wet_Puppy_0424155427_texture.png"));
+            Material? daisyMaterial = CreateOrUpdateTexturedMaterial(
+                CombinePath(artRootPath, MaterialsFolderName, TargetsFolderName, "M_Daisy_Repainted.mat"),
+                shader,
+                CombinePath(artRootPath, TexturesFolderName, TargetsFolderName, "Puppy_Labrador_bake_albedo_4096_repainted.png"));
             Material? floodedRowMaterial = CreateOrUpdateTexturedMaterial(
                 CombinePath(materialsPath, "Water_Flooded_Row_Phase1.mat"),
                 shader,
@@ -401,6 +420,15 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 puppyMaterial,
                 TargetSizingProfile,
                 new Vector3(-90.0f, 135.0f, 0.0f));
+            GameObject? daisyPuppyPrefab = CreateDaisyTargetPrefab(
+                artRootPath,
+                daisyMaterial,
+                TargetSizingProfile);
+            if (daisyPuppyPrefab is not null)
+            {
+                puppyPrefab = daisyPuppyPrefab;
+            }
+
             GameObject? floodedRowOverlayPrefab = CreateMeshWrapperPrefab(
                 CombinePath(prefabsPath, WaterFolderName, "FloodedRowOverlay_Phase1.prefab"),
                 CombinePath(artRootPath, "Models", "Water", "Meshy_AI_Blue_Puddle_0425081657_texture.fbx"),
@@ -766,6 +794,213 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                 RemoveCollidersRecursively(art);
                 return root;
             });
+        }
+
+        private static GameObject? CreateDaisyTargetPrefab(
+            string artRootPath,
+            Material? daisyMaterial,
+            AssetSizingProfile sizingProfile)
+        {
+            string sourceModelPath = CombinePath(artRootPath, ModelsFolderName, TargetsFolderName, "daisy_final.fbx");
+            string repaintTexturePath = CombinePath(artRootPath, TexturesFolderName, TargetsFolderName, "Puppy_Labrador_bake_albedo_4096_repainted.png");
+            if (daisyMaterial is null
+                || AssetDatabase.LoadAssetAtPath<GameObject>(sourceModelPath) is null
+                || AssetDatabase.LoadAssetAtPath<Texture2D>(repaintTexturePath) is null)
+            {
+                return null;
+            }
+
+            ConfigureDaisyModelImporter(sourceModelPath);
+
+            AnimatorController? controller = CreateOrUpdateDaisyAnimatorController(
+                CombinePath(artRootPath, AnimationFolderName, TargetsFolderName, "Daisy", "AC_Daisy_Target.controller"),
+                sourceModelPath);
+            if (controller is null)
+            {
+                return null;
+            }
+
+            GameObject? sourceModel = AssetDatabase.LoadAssetAtPath<GameObject>(sourceModelPath);
+            if (sourceModel is null)
+            {
+                return null;
+            }
+
+            return CreateOrUpdatePrefab(
+                CombinePath(artRootPath, PrefabsFolderName, TargetsFolderName, "PF_Target_Daisy_Puppy.prefab"),
+                () =>
+                {
+                    GameObject root = new GameObject("PF_Target_Daisy_Puppy");
+                    GameObject art = (GameObject)PrefabUtility.InstantiatePrefab(sourceModel);
+                    art.name = "Visual";
+                    art.transform.SetParent(root.transform, false);
+                    NormalizeChildToFootprint(art, sizingProfile);
+                    art.transform.localRotation = Quaternion.Euler(-90.0f, 135.0f, 0.0f);
+
+                    AssignMaterialRecursively(art, daisyMaterial);
+                    RemoveCollidersRecursively(art);
+
+                    Animator animator = art.GetComponent<Animator>();
+                    if (animator is null)
+                    {
+                        animator = art.AddComponent<Animator>();
+                    }
+
+                    animator.runtimeAnimatorController = controller;
+                    animator.applyRootMotion = false;
+
+                    TargetPuppyAnimator puppyAnimator = root.AddComponent<TargetPuppyAnimator>();
+                    SerializedObject serializedPuppyAnimator = new SerializedObject(puppyAnimator);
+                    serializedPuppyAnimator.FindProperty("animator").objectReferenceValue = animator;
+                    serializedPuppyAnimator.FindProperty("trappedIdleState").stringValue = DaisyTrappedIdleState;
+                    serializedPuppyAnimator.FindProperty("progressingIdleState").stringValue = DaisyProgressIdleState;
+                    serializedPuppyAnimator.FindProperty("oneClearAwayIdleState").stringValue = DaisyOneClearAwayIdleState;
+                    serializedPuppyAnimator.FindProperty("extractStartState").stringValue = DaisyExtractStartState;
+                    serializedPuppyAnimator.FindProperty("extractAirState").stringValue = DaisyExtractAirState;
+                    serializedPuppyAnimator.FindProperty("progressingFidgetState").stringValue = DaisyProgressFidgetState;
+                    serializedPuppyAnimator.FindProperty("oneClearAwayBarkState").stringValue = DaisyOneClearAwayBarkState;
+                    serializedPuppyAnimator.ApplyModifiedPropertiesWithoutUndo();
+
+                    return root;
+                });
+        }
+
+        private static void ConfigureDaisyModelImporter(string sourceModelPath)
+        {
+            ModelImporter? importer = AssetImporter.GetAtPath(sourceModelPath) as ModelImporter;
+            if (importer is null)
+            {
+                return;
+            }
+
+            bool changed = false;
+            if (!importer.importAnimation)
+            {
+                importer.importAnimation = true;
+                changed = true;
+            }
+            if (importer.animationType != ModelImporterAnimationType.Generic)
+            {
+                importer.animationType = ModelImporterAnimationType.Generic;
+                changed = true;
+            }
+
+            if (importer.avatarSetup != ModelImporterAvatarSetup.CreateFromThisModel)
+            {
+                importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
+                changed = true;
+            }
+
+            ModelImporterClipAnimation[] clips = importer.defaultClipAnimations;
+            for (int clipIndex = 0; clipIndex < clips.Length; clipIndex++)
+            {
+                bool shouldLoop = IsDaisyLoopClip(clips[clipIndex].name);
+                if (clips[clipIndex].loopTime != shouldLoop)
+                {
+                    clips[clipIndex].loopTime = shouldLoop;
+                    changed = true;
+                }
+            }
+
+            if (clips.Length > 0)
+            {
+                importer.clipAnimations = clips;
+            }
+
+            if (changed)
+            {
+                importer.SaveAndReimport();
+            }
+        }
+
+        private static AnimatorController? CreateOrUpdateDaisyAnimatorController(string controllerPath, string sourceModelPath)
+        {
+            AnimatorController? controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(controllerPath);
+            if (controller is null)
+            {
+                controller = AnimatorController.CreateAnimatorControllerAtPath(controllerPath);
+            }
+
+            AnimatorControllerLayer layer = controller.layers[0];
+            AnimatorStateMachine stateMachine = layer.stateMachine;
+            ChildAnimatorState[] existingStates = stateMachine.states;
+            for (int stateIndex = 0; stateIndex < existingStates.Length; stateIndex++)
+            {
+                stateMachine.RemoveState(existingStates[stateIndex].state);
+            }
+
+            AddDaisyState(stateMachine, DaisyTrappedIdleState, FindAnimationClip(sourceModelPath, "Crouch_Idle_loop_2"), true, isDefault: true);
+            AddDaisyState(stateMachine, DaisyProgressIdleState, FindAnimationClip(sourceModelPath, "Sitting_loop_2"), true);
+            AddDaisyState(stateMachine, DaisyOneClearAwayIdleState, FindAnimationClip(sourceModelPath, "Idle_7"), true);
+            AddDaisyState(stateMachine, DaisyExtractStartState, FindAnimationClip(sourceModelPath, "JumpStart_Up"), false);
+            AddDaisyState(stateMachine, DaisyExtractAirState, FindAnimationClip(sourceModelPath, "JumpAir_Up"), false);
+            AddDaisyState(stateMachine, DaisyProgressFidgetState, FindAnimationClip(sourceModelPath, "Idle_5_loop"), true);
+            AddDaisyState(stateMachine, DaisyOneClearAwayBarkState, FindAnimationClip(sourceModelPath, "Bark"), false);
+
+            EditorUtility.SetDirty(controller);
+            return controller;
+        }
+
+        private static void AddDaisyState(
+            AnimatorStateMachine stateMachine,
+            string stateName,
+            AnimationClip? clip,
+            bool loop,
+            bool isDefault = false)
+        {
+            AnimatorState state = stateMachine.AddState(stateName);
+            if (clip is not null)
+            {
+                state.motion = clip;
+                SetAnimationClipLoop(clip, loop);
+            }
+
+            if (isDefault)
+            {
+                stateMachine.defaultState = state;
+            }
+        }
+
+        private static AnimationClip? FindAnimationClip(string sourceModelPath, string clipName)
+        {
+            UnityEngine.Object[] assets = AssetDatabase.LoadAllAssetsAtPath(sourceModelPath);
+            for (int assetIndex = 0; assetIndex < assets.Length; assetIndex++)
+            {
+                if (assets[assetIndex] is AnimationClip clip
+                    && (string.Equals(clip.name, clipName, StringComparison.Ordinal)
+                        || clip.name.EndsWith($"|{clipName}", StringComparison.Ordinal)))
+                {
+                    return clip;
+                }
+            }
+
+            return null;
+        }
+
+        private static void SetAnimationClipLoop(AnimationClip clip, bool loop)
+        {
+            AnimationClipSettings settings = AnimationUtility.GetAnimationClipSettings(clip);
+            if (settings.loopTime == loop)
+            {
+                return;
+            }
+
+            settings.loopTime = loop;
+            AnimationUtility.SetAnimationClipSettings(clip, settings);
+        }
+
+        private static bool IsDaisyLoopClip(string clipName)
+        {
+            return IsNamedDaisyClip(clipName, "Crouch_Idle_loop_2")
+                || IsNamedDaisyClip(clipName, "Sitting_loop_2")
+                || IsNamedDaisyClip(clipName, "Idle_7")
+                || IsNamedDaisyClip(clipName, "Idle_5_loop");
+        }
+
+        private static bool IsNamedDaisyClip(string actualName, string desiredName)
+        {
+            return string.Equals(actualName, desiredName, StringComparison.Ordinal)
+                || actualName.EndsWith($"|{desiredName}", StringComparison.Ordinal);
         }
 
         private static GameObject? CreateSpriteSequenceFxPrefab(

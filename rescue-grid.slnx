@@ -9,6 +9,7 @@
   <Project Path="Rescue.Unity.Presentation.EditMode.Tests.csproj" />
   <Project Path="Rescue.Content.EditMode.Tests.csproj" />
   <Project Path="Rescue.Unity.Haptics.EditMode.Tests.csproj" />
+  <Project Path="Rescue.Unity.Targets.EditMode.Tests.csproj" />
   <Project Path="Rescue.Unity.Art.Validation.EditMode.Tests.csproj" />
   <Project Path="Rescue.Unity.Art.Prefabization.EditMode.Tests.csproj" />
   <Project Path="Rescue.Unity.Art.EditMode.Tests.csproj" />
@@ -25,6 +26,5 @@
   <Project Path="Rescue.Unity.Audio.EditMode.Tests.csproj" />
   <Project Path="Rescue.Replay.csproj" />
   <Project Path="Rescue.Unity.Input.EditMode.Tests.csproj" />
-  <Project Path="Rescue.Unity.Targets.EditMode.Tests.csproj" />
   <Project Path="Tools/LevelTelemetry.Tests/LevelTelemetry.Tests.csproj" />
 </Solution>
