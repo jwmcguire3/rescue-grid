@@ -129,6 +129,7 @@
     <Compile Include="Assets\Rescue.Unity\Haptics\HapticEventId.cs" />
     <Compile Include="Assets\Rescue.Unity\Presentation\L00IntroImagePresenter.cs" />
     <Compile Include="Assets\Rescue.Unity\Art\Registries\BlockerVisualRegistry.cs" />
+    <Compile Include="Assets\Rescue.Unity\Presentation\Targets\TargetPuppyLookAt.cs" />
     <Compile Include="Assets\Rescue.Unity\Capture\CaptureRunner.cs" />
     <Compile Include="Assets\Rescue.Unity\Audio\AudioSettingsController.cs" />
     <Compile Include="Assets\Rescue.Unity\Audio\MusicPlaylist.cs" />

@@ -1,0 +1,37 @@
+{
+  "LevelId": "L33",
+  "Seed": 1,
+  "AlternateSeed": 1001,
+  "ExpectedOutcome": "Win",
+  "ExpectAlternateSeedDivergence": true,
+  "Actions": [
+    {
+      "Row": 1,
+      "Col": 1
+    },
+    {
+      "Row": 4,
+      "Col": 3
+    },
+    {
+      "Row": 3,
+      "Col": 2
+    },
+    {
+      "Row": 6,
+      "Col": 4
+    },
+    {
+      "Row": 7,
+      "Col": 3
+    },
+    {
+      "Row": 6,
+      "Col": 5
+    },
+    {
+      "Row": 1,
+      "Col": 2
+    }
+  ]
+}

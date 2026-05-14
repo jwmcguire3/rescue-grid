@@ -1,0 +1,19 @@
+{
+  "id": "L34",
+  "title": "Forecast Row Race",
+  "campaignBand": "water_rescue_order",
+  "role": "pressure",
+  "primarySkill": "forecast_driven_route_race",
+  "secondarySkill": "accepted_action_counting",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "ice", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate", "vine"],
+  "boardSize": { "width": 7, "height": 9 },
+  "targetCount": 2,
+  "densityTarget": "80-90%",
+  "targetFirstAttemptWinRate": "55-75%",
+  "intendedTensionBeat": "The forecast row clearly marks the coming danger, forcing the player to count accepted actions on the lower route.",
+  "intendedReleaseBeat": "A close lower rescue happens just before the forecast becomes flooded, proving the warning was actionable.",
+  "expectedPath": "Use the shortest meaningful lower route, avoid non-route clears, rescue before the forecast row advances, then stabilize and finish the second target.",
+  "expectedFailMode": "Player takes one or two attractive non-route clears and loses the water race despite having time to think.",
+  "designNotes": "Pressure should come from action order and forecast readability, not from real-time urgency."
+}

@@ -1,0 +1,53 @@
+{
+  "id": "L33",
+  "name": "Safe Puppy Trap",
+  "board": {
+    "width": 7,
+    "height": 9,
+    "tiles": [
+      ["A", "A", "B", "B", "C", ".", "D"],
+      ["E", "F", "F", ".", "C", "A", "A"],
+      ["B", "B", "C", "T1", ".", "D", "D"],
+      ["E", ".", "C", ".", "A", "A", "F"],
+      ["D", "D", "IC", "B", "B", "E", "E"],
+      ["A", ".", "C", "C", "F", "F", "D"],
+      ["A", "B", "CR", "T0", "C", "C", "D"],
+      [".", "B", "B", "E", "E", "F", "F"],
+      [".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 6, "col": 3 },
+    { "id": "1", "row": 2, "col": 3 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 7
+  },
+  "vine": {
+    "growthThreshold": 999,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.25,
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
+  },
+  "meta": {
+    "intent": "Make the safer upper puppy tempting while the lower puppy is the correct water-priority rescue.",
+    "expectedPath": "Ignore the nearly open upper puppy, break the lower route tax, open the lower puppy before water tightens, then finish the easy upper rescue.",
+    "expectedFailMode": "The player cashes the easy upper rescue first and gives the lower route too little water margin.",
+    "whatItProves": "Water-order priority can beat an emotionally tempting easy rescue without making the mistake feel cruel.",
+    "notes": "Role: choice. Ice is light future-value texture near the lower lane; it should not become the primary puzzle.",
+    "isRuleTeach": false
+  }
+}

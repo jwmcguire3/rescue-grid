@@ -859,10 +859,39 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                     serializedPuppyAnimator.FindProperty("extractAirState").stringValue = DaisyExtractAirState;
                     serializedPuppyAnimator.FindProperty("progressingFidgetState").stringValue = DaisyProgressFidgetState;
                     serializedPuppyAnimator.FindProperty("oneClearAwayBarkState").stringValue = DaisyOneClearAwayBarkState;
+                    serializedPuppyAnimator.FindProperty("playOneClearAwayBarkOnEntry").boolValue = true;
+                    serializedPuppyAnimator.FindProperty("progressingFidgetCooldownMinSeconds").floatValue = 4f;
+                    serializedPuppyAnimator.FindProperty("progressingFidgetCooldownMaxSeconds").floatValue = 7f;
+                    serializedPuppyAnimator.FindProperty("progressingFidgetDurationSeconds").floatValue = 1.25f;
+                    serializedPuppyAnimator.FindProperty("oneClearAwayBarkRepeatCooldownMinSeconds").floatValue = 8f;
+                    serializedPuppyAnimator.FindProperty("oneClearAwayBarkRepeatCooldownMaxSeconds").floatValue = 14f;
+                    serializedPuppyAnimator.FindProperty("oneClearAwayBarkDurationSeconds").floatValue = 0.85f;
                     serializedPuppyAnimator.ApplyModifiedPropertiesWithoutUndo();
+
+                    TargetPuppyLookAt puppyLookAt = root.AddComponent<TargetPuppyLookAt>();
+                    SerializedObject serializedPuppyLookAt = new SerializedObject(puppyLookAt);
+                    serializedPuppyLookAt.FindProperty("headBone").objectReferenceValue = FindChildTransform(art.transform, "head");
+                    serializedPuppyLookAt.FindProperty("neckBone").objectReferenceValue = FindChildTransform(art.transform, "neck");
+                    serializedPuppyLookAt.FindProperty("lookTarget").objectReferenceValue = null;
+                    serializedPuppyLookAt.FindProperty("smoothSeconds").floatValue = 0.16f;
+                    serializedPuppyLookAt.ApplyModifiedPropertiesWithoutUndo();
 
                     return root;
                 });
+        }
+
+        private static Transform? FindChildTransform(Transform root, string childName)
+        {
+            Transform[] children = root.GetComponentsInChildren<Transform>(includeInactive: true);
+            for (int i = 0; i < children.Length; i++)
+            {
+                if (children[i].name == childName)
+                {
+                    return children[i];
+                }
+            }
+
+            return null;
         }
 
         private static void ConfigureDaisyModelImporter(string sourceModelPath)

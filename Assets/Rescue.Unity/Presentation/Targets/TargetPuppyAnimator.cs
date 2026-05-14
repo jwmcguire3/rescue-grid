@@ -16,11 +16,23 @@ namespace Rescue.Unity.Presentation.Targets
         [SerializeField] private string extractAirState = string.Empty;
         [SerializeField] private string oneClearAwayBarkState = string.Empty;
         [SerializeField] private string progressingFidgetState = string.Empty;
+        [SerializeField] private bool playOneClearAwayBarkOnEntry = true;
+        [SerializeField] private float progressingFidgetCooldownMinSeconds = 4f;
+        [SerializeField] private float progressingFidgetCooldownMaxSeconds = 7f;
+        [SerializeField] private float progressingFidgetDurationSeconds = 1.25f;
+        [SerializeField] private float oneClearAwayBarkRepeatCooldownMinSeconds = 8f;
+        [SerializeField] private float oneClearAwayBarkRepeatCooldownMaxSeconds = 14f;
+        [SerializeField] private float oneClearAwayBarkDurationSeconds = 0.85f;
 
 #if UNITY_EDITOR
         private bool warnedAboutAnimatorState;
 #endif
         private int currentAppliedStateHash;
+        private TargetPuppyLookAt? lookAt;
+        private float progressingFidgetCooldownRemaining;
+        private float progressingFidgetRemaining;
+        private float oneClearAwayBarkCooldownRemaining;
+        private float oneClearAwayBarkRemaining;
 
         public TargetReadiness? CurrentAppliedReadiness { get; private set; }
 
@@ -28,35 +40,63 @@ namespace Rescue.Unity.Presentation.Targets
 
         public bool IsExtracting { get; private set; }
 
+        public TargetPuppyLookAt? ResolvedLookAt => lookAt;
+
         private void Awake()
         {
             ResolveAnimator();
+            ResolveLookAt();
             DisableRootMotion();
+        }
+
+        private void Update()
+        {
+            AdvanceProceduralAnimation(Time.deltaTime);
         }
 
         public void ApplyReadiness(TargetReadiness readiness)
         {
+            ResolveLookAt()?.ApplyReadiness(readiness);
             if (readiness == TargetReadiness.Extracted)
             {
+                StopProceduralAnimation();
                 return;
             }
 
+            TargetReadiness? previousReadiness = CurrentAppliedReadiness;
             CurrentAppliedReadiness = readiness;
 
             if (readiness == TargetReadiness.ExtractableLatched)
             {
+                StopProceduralAnimation();
                 return;
             }
 
             IsExtracting = false;
+            StopProceduralAnimation();
+
+            if (readiness == TargetReadiness.OneClearAway &&
+                previousReadiness != TargetReadiness.OneClearAway &&
+                playOneClearAwayBarkOnEntry &&
+                !string.IsNullOrWhiteSpace(oneClearAwayBarkState))
+            {
+                oneClearAwayBarkRemaining = Mathf.Max(0f, oneClearAwayBarkDurationSeconds);
+                ScheduleOneClearAwayBark();
+                PlayStateIntent(oneClearAwayBarkState);
+                return;
+            }
+
             string stateName = ResolveReadinessStateName(readiness);
 
             PlayStateIntent(stateName);
+            ScheduleProceduralAnimation(readiness);
         }
 
         public void PlayExtract()
         {
             IsExtracting = true;
+            StopProceduralAnimation();
+            ResolveLookAt()?.PlayExtract();
             string stateName = string.IsNullOrWhiteSpace(extractStartState)
                 ? extractAirState
                 : extractStartState;
@@ -64,22 +104,131 @@ namespace Rescue.Unity.Presentation.Targets
             PlayStateIntent(stateName);
         }
 
+        public void AdvanceProceduralAnimationForTests(float deltaTime)
+        {
+            AdvanceProceduralAnimation(Mathf.Max(0f, deltaTime));
+        }
+
         private string ResolveReadinessStateName(TargetReadiness readiness)
         {
             return readiness switch
             {
-                TargetReadiness.Progressing => FirstConfiguredState(progressingFidgetState, progressingIdleState),
-                TargetReadiness.OneClearAway => FirstConfiguredState(oneClearAwayBarkState, oneClearAwayIdleState),
+                TargetReadiness.Progressing => progressingIdleState,
+                TargetReadiness.OneClearAway => oneClearAwayIdleState,
                 TargetReadiness.Distressed => trappedIdleState,
                 _ => trappedIdleState,
             };
         }
 
-        private static string FirstConfiguredState(string preferredState, string fallbackState)
+        private void AdvanceProceduralAnimation(float deltaTime)
         {
-            return string.IsNullOrWhiteSpace(preferredState)
-                ? fallbackState
-                : preferredState;
+            if (IsExtracting || !CurrentAppliedReadiness.HasValue)
+            {
+                return;
+            }
+
+            if (CurrentAppliedReadiness.Value == TargetReadiness.Progressing)
+            {
+                AdvanceProgressingFidget(deltaTime);
+                return;
+            }
+
+            if (CurrentAppliedReadiness.Value == TargetReadiness.OneClearAway)
+            {
+                AdvanceOneClearAwayBark(deltaTime);
+            }
+        }
+
+        private void AdvanceProgressingFidget(float deltaTime)
+        {
+            if (progressingFidgetRemaining > 0f)
+            {
+                progressingFidgetRemaining = Mathf.Max(0f, progressingFidgetRemaining - deltaTime);
+                if (progressingFidgetRemaining <= 0f)
+                {
+                    PlayStateIntent(progressingIdleState);
+                    ScheduleProgressingFidget();
+                }
+
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(progressingFidgetState))
+            {
+                return;
+            }
+
+            progressingFidgetCooldownRemaining -= deltaTime;
+            if (progressingFidgetCooldownRemaining > 0f)
+            {
+                return;
+            }
+
+            progressingFidgetRemaining = Mathf.Max(0f, progressingFidgetDurationSeconds);
+            PlayStateIntent(progressingFidgetState);
+        }
+
+        private void AdvanceOneClearAwayBark(float deltaTime)
+        {
+            if (oneClearAwayBarkRemaining > 0f)
+            {
+                oneClearAwayBarkRemaining = Mathf.Max(0f, oneClearAwayBarkRemaining - deltaTime);
+                if (oneClearAwayBarkRemaining <= 0f)
+                {
+                    PlayStateIntent(oneClearAwayIdleState);
+                    ScheduleOneClearAwayBark();
+                }
+
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(oneClearAwayBarkState))
+            {
+                return;
+            }
+
+            oneClearAwayBarkCooldownRemaining -= deltaTime;
+            if (oneClearAwayBarkCooldownRemaining > 0f)
+            {
+                return;
+            }
+
+            oneClearAwayBarkRemaining = Mathf.Max(0f, oneClearAwayBarkDurationSeconds);
+            PlayStateIntent(oneClearAwayBarkState);
+        }
+
+        private void ScheduleProceduralAnimation(TargetReadiness readiness)
+        {
+            if (readiness == TargetReadiness.Progressing)
+            {
+                ScheduleProgressingFidget();
+            }
+            else if (readiness == TargetReadiness.OneClearAway)
+            {
+                ScheduleOneClearAwayBark();
+            }
+        }
+
+        private void StopProceduralAnimation()
+        {
+            progressingFidgetCooldownRemaining = 0f;
+            progressingFidgetRemaining = 0f;
+            oneClearAwayBarkCooldownRemaining = 0f;
+            oneClearAwayBarkRemaining = 0f;
+        }
+
+        private void ScheduleProgressingFidget()
+        {
+            progressingFidgetCooldownRemaining = Random.Range(
+                progressingFidgetCooldownMinSeconds,
+                Mathf.Max(progressingFidgetCooldownMinSeconds, progressingFidgetCooldownMaxSeconds));
+        }
+
+        private void ScheduleOneClearAwayBark()
+        {
+            oneClearAwayBarkCooldownRemaining = Random.Range(
+                oneClearAwayBarkRepeatCooldownMinSeconds,
+                Mathf.Max(oneClearAwayBarkRepeatCooldownMinSeconds, oneClearAwayBarkRepeatCooldownMaxSeconds));
         }
 
         private void PlayStateIntent(string stateName)
@@ -133,6 +282,21 @@ namespace Rescue.Unity.Presentation.Targets
             {
                 animator = GetComponentInChildren<Animator>(includeInactive: true);
             }
+        }
+
+        private TargetPuppyLookAt? ResolveLookAt()
+        {
+            if (lookAt == null)
+            {
+                lookAt = GetComponent<TargetPuppyLookAt>();
+            }
+
+            if (lookAt == null)
+            {
+                lookAt = GetComponentInChildren<TargetPuppyLookAt>(includeInactive: true);
+            }
+
+            return lookAt;
         }
 
         private static bool TryResolveAnimatorState(Animator targetAnimator, string stateName, out int stateHash)

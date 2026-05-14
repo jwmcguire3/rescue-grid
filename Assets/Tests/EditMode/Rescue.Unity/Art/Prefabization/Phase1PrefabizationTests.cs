@@ -230,11 +230,13 @@ namespace Rescue.Unity.Art.Tests
 
             Animator? animator = daisyPrefab.GetComponentInChildren<Animator>(true);
             TargetPuppyAnimator? puppyAnimator = daisyPrefab.GetComponent<TargetPuppyAnimator>();
+            TargetPuppyLookAt? puppyLookAt = daisyPrefab.GetComponent<TargetPuppyLookAt>();
 
             Assert.That(animator, Is.Not.Null);
             Assert.That(animator!.runtimeAnimatorController, Is.SameAs(controller));
             Assert.That(animator.applyRootMotion, Is.False);
             Assert.That(puppyAnimator, Is.Not.Null);
+            Assert.That(puppyLookAt, Is.Not.Null);
 
             SerializedObject serializedAnimator = new SerializedObject(puppyAnimator!);
             Assert.That(serializedAnimator.FindProperty("animator").objectReferenceValue, Is.SameAs(animator));
@@ -245,6 +247,11 @@ namespace Rescue.Unity.Art.Tests
             AssertSerializedString(serializedAnimator, "extractAirState", "Target_Extract_Air");
             AssertSerializedString(serializedAnimator, "progressingFidgetState", "Target_Progress_Fidget");
             AssertSerializedString(serializedAnimator, "oneClearAwayBarkState", "Target_OneClearAway_Bark");
+
+            SerializedObject serializedLookAt = new SerializedObject(puppyLookAt!);
+            AssertSerializedTransformName(serializedLookAt, "headBone", "head");
+            AssertSerializedTransformName(serializedLookAt, "neckBone", "neck");
+            Assert.That(serializedLookAt.FindProperty("lookTarget").objectReferenceValue, Is.Null);
 
             string[] controllerStateNames = controller.layers[0].stateMachine.states
                 .Select(state => state.state.name)
@@ -473,6 +480,17 @@ namespace Rescue.Unity.Art.Tests
             SerializedProperty property = serializedObject.FindProperty(propertyName);
             Assert.That(property, Is.Not.Null, $"Expected serialized property '{propertyName}'.");
             Assert.That(property.stringValue, Is.EqualTo(expected));
+        }
+
+        private static void AssertSerializedTransformName(
+            SerializedObject serializedObject,
+            string propertyName,
+            string expectedName)
+        {
+            SerializedProperty property = serializedObject.FindProperty(propertyName);
+            Assert.That(property, Is.Not.Null, $"Expected serialized property '{propertyName}'.");
+            Assert.That(property.objectReferenceValue, Is.TypeOf<Transform>());
+            Assert.That(property.objectReferenceValue.name, Is.EqualTo(expectedName));
         }
 
         private static void AssertFxPrefab(GameObject? prefab, string registrySlotName)

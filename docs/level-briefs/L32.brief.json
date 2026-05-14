@@ -1,0 +1,19 @@
+{
+  "id": "L32",
+  "title": "Water Order Practice",
+  "campaignBand": "water_rescue_order",
+  "role": "practice",
+  "primarySkill": "lower_target_priority",
+  "secondarySkill": "dock_safe_route_clearing",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate", "vine"],
+  "boardSize": { "width": 7, "height": 8 },
+  "targetCount": 2,
+  "densityTarget": "80-90%",
+  "targetFirstAttemptWinRate": "75-90%",
+  "intendedTensionBeat": "The lower puppy is still the priority, but the player must use one route-tax clear before extraction.",
+  "intendedReleaseBeat": "A clean lower rescue followed by a calm upper rescue reinforces the correct order.",
+  "expectedPath": "Clear the lower route tax, avoid broad side clears, rescue the lower puppy, then pivot to the upper puppy.",
+  "expectedFailMode": "Player spends early actions on non-route clears and lets water pressure become tighter than necessary.",
+  "designNotes": "Practice level should feel like real gameplay, not a diagram. Crate is route tax only."
+}

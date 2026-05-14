@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Tests\EditMode\Rescue.Unity\Targets\TargetPuppyAnimatorTests.cs" />
+    <Compile Include="Assets\Tests\EditMode\Rescue.Unity\Targets\TargetPuppyLookAtTests.cs" />
     <Compile Include="Assets\Tests\EditMode\Rescue.Unity\Targets\TargetFeedbackResolverTests.cs" />
     <Compile Include="Assets\Tests\EditMode\Rescue.Unity\Targets\TargetFeedbackPresenterTests.cs" />
   </ItemGroup>

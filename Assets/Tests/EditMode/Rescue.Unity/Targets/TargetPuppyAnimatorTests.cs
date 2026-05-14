@@ -180,7 +180,9 @@ namespace Rescue.Unity.Targets.Tests
             TargetPuppyAnimator puppyAnimator = InstantiateDaisyPrefab(out Animator unityAnimator);
 
             AssertDaisyStateExists(unityAnimator, TrappedIdleState);
+            AssertDaisyStateExists(unityAnimator, ProgressingIdleState);
             AssertDaisyStateExists(unityAnimator, ProgressingFidgetState);
+            AssertDaisyStateExists(unityAnimator, OneClearAwayIdleState);
             AssertDaisyStateExists(unityAnimator, OneClearAwayBarkState);
 
             puppyAnimator.ApplyReadiness(TargetReadiness.Trapped);
@@ -190,14 +192,80 @@ namespace Rescue.Unity.Targets.Tests
 
             puppyAnimator.ApplyReadiness(TargetReadiness.Progressing);
             Assert.That(puppyAnimator.CurrentAppliedReadiness, Is.EqualTo(TargetReadiness.Progressing));
-            Assert.That(puppyAnimator.CurrentAppliedStateName, Is.EqualTo(ProgressingFidgetState));
-            AssertAnimatorTargetsState(unityAnimator, ProgressingFidgetState);
+            Assert.That(puppyAnimator.CurrentAppliedStateName, Is.EqualTo(ProgressingIdleState));
+            AssertAnimatorTargetsState(unityAnimator, ProgressingIdleState);
 
             puppyAnimator.ApplyReadiness(TargetReadiness.OneClearAway);
             Assert.That(puppyAnimator.CurrentAppliedReadiness, Is.EqualTo(TargetReadiness.OneClearAway));
             Assert.That(puppyAnimator.CurrentAppliedStateName, Is.EqualTo(OneClearAwayBarkState));
             AssertAnimatorTargetsState(unityAnimator, OneClearAwayBarkState);
+
+            puppyAnimator.AdvanceProceduralAnimationForTests(1f);
+            Assert.That(puppyAnimator.CurrentAppliedStateName, Is.EqualTo(OneClearAwayIdleState));
+            AssertAnimatorTargetsState(unityAnimator, OneClearAwayIdleState);
             Assert.That(unityAnimator.applyRootMotion, Is.False);
+        }
+
+        [Test]
+        public void TargetPuppyAnimator_ProgressingFidgetTriggersAfterCooldownAndReturnsToIdle()
+        {
+            TargetPuppyAnimator animator = CreateAnimator();
+            SetPrivateField(animator, "progressingIdleState", "ProgressingIdle");
+            SetPrivateField(animator, "progressingFidgetState", "ProgressingFidget");
+            SetPrivateField(animator, "progressingFidgetCooldownMinSeconds", 0f);
+            SetPrivateField(animator, "progressingFidgetCooldownMaxSeconds", 0f);
+            SetPrivateField(animator, "progressingFidgetDurationSeconds", 0.25f);
+
+            animator.ApplyReadiness(TargetReadiness.Progressing);
+
+            Assert.That(animator.CurrentAppliedStateName, Is.EqualTo("ProgressingIdle"));
+
+            animator.AdvanceProceduralAnimationForTests(0.01f);
+            Assert.That(animator.CurrentAppliedStateName, Is.EqualTo("ProgressingFidget"));
+
+            animator.AdvanceProceduralAnimationForTests(0.3f);
+            Assert.That(animator.CurrentAppliedStateName, Is.EqualTo("ProgressingIdle"));
+        }
+
+        [Test]
+        public void TargetPuppyAnimator_OneClearAwayBarkIsEntryAndRareRepeatIntent()
+        {
+            TargetPuppyAnimator animator = CreateAnimator();
+            SetPrivateField(animator, "oneClearAwayIdleState", "OneClearAwayIdle");
+            SetPrivateField(animator, "oneClearAwayBarkState", "OneClearAwayBark");
+            SetPrivateField(animator, "oneClearAwayBarkDurationSeconds", 0.25f);
+            SetPrivateField(animator, "oneClearAwayBarkRepeatCooldownMinSeconds", 0f);
+            SetPrivateField(animator, "oneClearAwayBarkRepeatCooldownMaxSeconds", 0f);
+
+            animator.ApplyReadiness(TargetReadiness.OneClearAway);
+
+            Assert.That(animator.CurrentAppliedStateName, Is.EqualTo("OneClearAwayBark"));
+
+            animator.AdvanceProceduralAnimationForTests(0.3f);
+            Assert.That(animator.CurrentAppliedStateName, Is.EqualTo("OneClearAwayIdle"));
+
+            animator.AdvanceProceduralAnimationForTests(0.01f);
+            Assert.That(animator.CurrentAppliedStateName, Is.EqualTo("OneClearAwayBark"));
+        }
+
+        [Test]
+        public void TargetPuppyAnimator_PlayExtractSuppressesProceduralFidgetsAndForwardsLookAt()
+        {
+            TargetPuppyAnimator animator = CreateAnimator();
+            TargetPuppyLookAt lookAt = animator.gameObject.AddComponent<TargetPuppyLookAt>();
+            SetPrivateField(animator, "progressingIdleState", "ProgressingIdle");
+            SetPrivateField(animator, "progressingFidgetState", "ProgressingFidget");
+            SetPrivateField(animator, "extractStartState", "ExtractStart");
+            SetPrivateField(animator, "progressingFidgetCooldownMinSeconds", 0f);
+            SetPrivateField(animator, "progressingFidgetCooldownMaxSeconds", 0f);
+
+            animator.ApplyReadiness(TargetReadiness.Progressing);
+            animator.PlayExtract();
+            animator.AdvanceProceduralAnimationForTests(10f);
+
+            Assert.That(animator.IsExtracting, Is.True);
+            Assert.That(animator.CurrentAppliedStateName, Is.EqualTo("ExtractStart"));
+            Assert.That(lookAt.CurrentReadiness, Is.EqualTo(TargetReadiness.Extracted));
         }
 
         [Test]

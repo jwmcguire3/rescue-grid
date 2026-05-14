@@ -1,0 +1,52 @@
+{
+  "id": "L31",
+  "name": "Lower Puppy First",
+  "board": {
+    "width": 7,
+    "height": 8,
+    "tiles": [
+      ["A", "A", "B", "B", ".", "C", "."],
+      ["E", ".", "F", "A", "A", ".", "D"],
+      ["B", "B", "C", "C", "E", "E", "."],
+      ["D", "E", "T1", "C", ".", "A", "A"],
+      [".", "E", "E", "C", "F", "B", "."],
+      ["A", "A", "B", "T0", "C", "C", "D"],
+      [".", "F", "B", "B", "C", ".", "D"],
+      [".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 5, "col": 3 },
+    { "id": "1", "row": 3, "col": 2 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 9
+  },
+  "vine": {
+    "growthThreshold": 999,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.35,
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
+  },
+  "meta": {
+    "intent": "Teach that visible water proximity changes rescue priority by making the lower puppy the obvious first rescue.",
+    "expectedPath": "Clear the lower puppy's route groups first, extract it with wide water margin, then use the opened upper groups to rescue the safer puppy.",
+    "expectedFailMode": "The player spends early actions on the upper puppy and sees the lower puppy sit closer to the forecast row than necessary.",
+    "whatItProves": "Water can sharpen target priority without creating real-time pressure or harsh first-contact punishment.",
+    "notes": "Role: teach. Empty cells serve route readability, spawn corridors, and mobile-scale target readability while preserving a complete opening board.",
+    "isRuleTeach": false
+  }
+}

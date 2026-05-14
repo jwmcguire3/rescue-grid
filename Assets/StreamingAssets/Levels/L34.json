@@ -1,0 +1,53 @@
+{
+  "id": "L34",
+  "name": "Forecast Row Race",
+  "board": {
+    "width": 7,
+    "height": 9,
+    "tiles": [
+      ["A", "A", "B", ".", "C", "C", "."],
+      ["E", "F", "B", "B", "C", ".", "D"],
+      ["E", "F", "C", "C", "T1", "A", "A"],
+      ["D", "D", "IC", ".", "B", "B", "F"],
+      ["A", ".", "C", "C", "F", "E", "E"],
+      ["A", "B", "CR", "T0", "C", "C", "D"],
+      [".", "B", "B", "E", "E", "F", "."],
+      [".", ".", ".", ".", ".", ".", "."],
+      [".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 5, "col": 3 },
+    { "id": "1", "row": 2, "col": 4 }
+  ],
+  "initialFloodedRows": 2,
+  "water": {
+    "riseInterval": 6
+  },
+  "vine": {
+    "growthThreshold": 999,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.25,
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
+  },
+  "meta": {
+    "intent": "Create the first real forecast-row race where the urgent lower route must be cleared before the next dry row floods.",
+    "expectedPath": "Use the shortest lower route, break the crate, clear the bottom neighbor before the forecast row rises, rescue the lower puppy, then stabilize and finish the upper target.",
+    "expectedFailMode": "The player takes attractive non-route clears and lets the forecast row flood before the lower route is secure.",
+    "whatItProves": "Water pressure can feel like accepted-action counting rather than a timer when the forecast row is clear.",
+    "notes": "Role: pressure. The two flooded rows and water interval create the race; ice and crate are route framing, not new lessons.",
+    "isRuleTeach": false
+  }
+}

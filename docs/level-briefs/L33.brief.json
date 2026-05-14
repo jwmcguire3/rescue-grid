@@ -1,0 +1,19 @@
+{
+  "id": "L33",
+  "title": "Safe Puppy Trap",
+  "campaignBand": "water_rescue_order",
+  "role": "choice",
+  "primarySkill": "wrong_order_recognition",
+  "secondarySkill": "target_order_comparison",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "ice", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate", "vine"],
+  "boardSize": { "width": 7, "height": 9 },
+  "targetCount": 2,
+  "densityTarget": "80-90%",
+  "targetFirstAttemptWinRate": "65-80%",
+  "intendedTensionBeat": "The upper puppy is easier to reach, but the lower puppy is the correct first rescue because water is advancing.",
+  "intendedReleaseBeat": "Choosing the endangered lower puppy first makes the later easy rescue feel like a controlled payoff.",
+  "expectedPath": "Ignore the tempting easy upper route, open the lower route first, rescue the endangered puppy, then finish the upper puppy.",
+  "expectedFailMode": "Player takes the easy rescue first and discovers that water made the lower route too expensive afterward.",
+  "designNotes": "This is the first explicit wrong-order lesson of the band. The mistake should be visible, not cruel."
+}

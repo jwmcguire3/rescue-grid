@@ -1,0 +1,52 @@
+{
+  "id": "L32",
+  "name": "Water Order Practice",
+  "board": {
+    "width": 7,
+    "height": 8,
+    "tiles": [
+      ["A", "A", "B", "B", "C", ".", "D"],
+      ["E", ".", "F", "C", "C", "A", "A"],
+      ["B", "B", "E", "E", "F", "D", "."],
+      ["C", "C", "T1", "A", "A", "F", "E"],
+      ["D", ".", "C", "C", "F", "E", "E"],
+      ["A", "B", "CR", "T0", "C", "C", "D"],
+      [".", "B", "B", "E", "E", ".", "F"],
+      [".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 5, "col": 3 },
+    { "id": "1", "row": 3, "col": 2 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 8
+  },
+  "vine": {
+    "growthThreshold": 999,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.30,
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
+  },
+  "meta": {
+    "intent": "Practice lower-target priority with one crate route tax so water order starts to feel like real play.",
+    "expectedPath": "Break the lower route crate with the adjacent B clear, open the lower puppy's remaining neighbors, rescue it first, then pivot to the safer upper puppy.",
+    "expectedFailMode": "The player spends early actions on broad side clears or the upper puppy, making the lower rescue tighter than it needs to be.",
+    "whatItProves": "A crate can add one meaningful water-route tax without stealing focus from rescue order.",
+    "notes": "Role: practice. The crate is deliberately a route tax only; dock pressure is present through group remainders but should remain forgiving.",
+    "isRuleTeach": false
+  }
+}

@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2147428006358282497}
   - component: {fileID: 5993767043855393855}
+  - component: {fileID: 8520514023475616859}
   m_Layer: 0
   m_Name: PF_Target_Daisy_Puppy
   m_TagString: Untagged
@@ -53,6 +54,29 @@ MonoBehaviour:
   extractAirState: Target_Extract_Air
   oneClearAwayBarkState: Target_OneClearAway_Bark
   progressingFidgetState: Target_Progress_Fidget
+  playOneClearAwayBarkOnEntry: 1
+  progressingFidgetCooldownMinSeconds: 4
+  progressingFidgetCooldownMaxSeconds: 7
+  progressingFidgetDurationSeconds: 1.25
+  oneClearAwayBarkRepeatCooldownMinSeconds: 8
+  oneClearAwayBarkRepeatCooldownMaxSeconds: 14
+  oneClearAwayBarkDurationSeconds: 0.85
+--- !u!114 &8520514023475616859
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3639265039164299950}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42f31a37d2bf4c839ae6d357e7c540f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Rescue.Unity::Rescue.Unity.Presentation.Targets.TargetPuppyLookAt
+  headBone: {fileID: 6143779412521772673}
+  neckBone: {fileID: 6540825106612604912}
+  lookTarget: {fileID: 0}
+  smoothSeconds: 0.16
 --- !u!1001 &2305098082096505094
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -138,5 +162,15 @@ Transform:
 --- !u!95 &5663223582391229591 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: e09664181695c2e41854700aba19d7a6, type: 3}
+  m_PrefabInstance: {fileID: 2305098082096505094}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &6143779412521772673 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -3837545525645932665, guid: e09664181695c2e41854700aba19d7a6, type: 3}
+  m_PrefabInstance: {fileID: 2305098082096505094}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &6540825106612604912 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4988008964379782902, guid: e09664181695c2e41854700aba19d7a6, type: 3}
   m_PrefabInstance: {fileID: 2305098082096505094}
   m_PrefabAsset: {fileID: 0}

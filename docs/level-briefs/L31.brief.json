@@ -1,0 +1,19 @@
+{
+  "id": "L31",
+  "title": "Lower Puppy First",
+  "campaignBand": "water_rescue_order",
+  "role": "teach",
+  "primarySkill": "water_target_priority",
+  "secondarySkill": "action_based_danger",
+  "allowedMechanics": ["debris", "dock", "water", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate", "vine"],
+  "boardSize": { "width": 7, "height": 8 },
+  "targetCount": 2,
+  "densityTarget": "75-85%",
+  "targetFirstAttemptWinRate": "85-95%",
+  "intendedTensionBeat": "The lower puppy is visibly closer to water, making rescue order obvious without heavy punishment.",
+  "intendedReleaseBeat": "Saving the lower puppy first clearly confirms that water changes priority, not thinking time.",
+  "expectedPath": "Open the lower puppy route first, extract before water reaches it, then finish the safer upper puppy.",
+  "expectedFailMode": "Player rescues the upper puppy first and sees the lower puppy become more endangered by accepted actions.",
+  "designNotes": "First dedicated water-order teach. Keep dock generous and route shape readable."
+}
