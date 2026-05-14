@@ -68,6 +68,7 @@
     <Compile Include="Assets\Rescue.Unity\Haptics\HapticPatternStyle.cs" />
     <Compile Include="Assets\Rescue.Unity\Board\BoardGridViewPresenter.cs" />
     <Compile Include="Assets\Rescue.Unity\Haptics\HapticPattern.cs" />
+    <Compile Include="Assets\Rescue.Unity\Presentation\Targets\TargetPuppyAnimator.cs" />
     <Compile Include="Assets\Rescue.Unity\Haptics\HapticEventRouter.cs" />
     <Compile Include="Assets\Rescue.Unity\Audio\MusicTrackSelection.cs" />
     <Compile Include="Assets\Rescue.Unity\Board\TargetFeedbackResolver.cs" />
