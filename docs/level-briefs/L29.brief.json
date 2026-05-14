@@ -1,0 +1,19 @@
+{
+  "id": "L29",
+  "title": "Hidden Warm Path",
+  "campaignBand": "ice_future_value",
+  "role": "spectacle",
+  "primarySkill": "ice_reveal_rescue_payoff",
+  "secondarySkill": "confidence_recovery",
+  "allowedMechanics": ["debris", "dock", "water", "ice", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate", "vine"],
+  "boardSize": { "width": 8, "height": 8 },
+  "targetCount": 2,
+  "densityTarget": "75-85%",
+  "targetFirstAttemptWinRate": "75-90%",
+  "intendedTensionBeat": "The frozen path looks dramatic but the correct route is readable and generous after the prior exam.",
+  "intendedReleaseBeat": "Breaking the ice reveals a clean rescue path and creates a memorable extraction beat.",
+  "expectedPath": "Follow the obvious frozen rescue lane, break through it cleanly, rescue the hero puppy, then finish the secondary target with low dock risk.",
+  "expectedFailMode": "Wrong play is mostly inefficient; broad clearing can delay the spectacle route but should not create harsh early failure.",
+  "designNotes": "Capture-friendly recovery level. Use this to make ice emotionally satisfying, not merely mechanical."
+}

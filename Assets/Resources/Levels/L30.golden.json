@@ -1,0 +1,31 @@
+{
+  "levelId": "L30",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 9,
+  "actions": [
+    { "row": 6, "col": 2, "intent": "Start the priority lower rescue route and break crate tax." },
+    { "row": 5, "col": 2, "intent": "Open the lower route to one-clear-away." },
+    { "row": 1, "col": 4, "intent": "Stabilize dock while preparing the upper pivot." },
+    { "row": 6, "col": 6, "intent": "Use clean side material before the key ice break." },
+    { "row": 5, "col": 4, "intent": "Break the lower frozen route and extract the priority puppy." },
+    { "row": 2, "col": 4, "intent": "Break the upper ice route before water forces panic." },
+    { "row": 1, "col": 3, "intent": "Bring the upper target to one-clear-away." },
+    { "row": 0, "col": 0, "intent": "Cash a dock clear before the final route action." },
+    { "row": 3, "col": 2, "intent": "Finish the upper rescue and prove the band skill." }
+  ],
+  "expectedEventsInOrder": [
+    "TargetOneClearAway",
+    "DockCleared",
+    "BlockerBroken",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "WaterRose",
+    "BlockerBroken",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": ["0", "1"],
+  "notes": "Designer golden for the ice future-value capstone: lower frozen route first, then a controlled upper pivot."
+}

@@ -1,0 +1,22 @@
+{
+  "levelId": "L29",
+  "seed": 1,
+  "pathType": "expected_fail",
+  "expectedOutcome": "LossDockOverflow",
+  "expectedLossReason": "LossDockOverflow",
+  "maxActions": 7,
+  "actions": [
+    { "row": 0, "col": 0, "intent": "Open with broad side clearing instead of the frozen spectacle lane." },
+    { "row": 0, "col": 0, "intent": "Continue chasing refreshed side value." },
+    { "row": 0, "col": 6, "intent": "Clear upper material away from the rescue path." },
+    { "row": 1, "col": 1, "intent": "Keep delaying the ice reveal." },
+    { "row": 2, "col": 5, "intent": "Spend another non-critical side clear." },
+    { "row": 3, "col": 0, "intent": "Push dock pressure instead of converting rescue progress." },
+    { "row": 3, "col": 2, "intent": "Overflow from broad clearing before the spectacle route lands." }
+  ],
+  "expectedEventsInOrder": [
+    "DockOverflowTriggered",
+    "Lost"
+  ],
+  "notes": "Verified fail: repeated broad clearing makes even the generous spectacle board overflow before payoff."
+}

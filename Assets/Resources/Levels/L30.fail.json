@@ -1,0 +1,19 @@
+{
+  "levelId": "L30",
+  "seed": 1,
+  "pathType": "expected_fail",
+  "expectedOutcome": "LossDockOverflow",
+  "expectedLossReason": "LossDockOverflow",
+  "maxActions": 4,
+  "actions": [
+    { "row": 0, "col": 0, "intent": "Open with generic upper-board value instead of the frozen priority route." },
+    { "row": 0, "col": 2, "intent": "Continue broad clearing and build dock residue." },
+    { "row": 1, "col": 1, "intent": "Keep delaying the ice investment." },
+    { "row": 6, "col": 4, "intent": "Touch the lower side too late and overflow before the first rescue is secure." }
+  ],
+  "expectedEventsInOrder": [
+    "DockOverflowTriggered",
+    "Lost"
+  ],
+  "notes": "Verified capstone fail: generic clearing delays early ice investment and overflows before rescue order comes under control."
+}

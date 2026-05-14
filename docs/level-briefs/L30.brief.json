@@ -1,0 +1,19 @@
+{
+  "id": "L30",
+  "title": "Ice Future Value Capstone",
+  "campaignBand": "ice_future_value",
+  "role": "capstone",
+  "primarySkill": "ice_rescue_order_integration",
+  "secondarySkill": "two_target_priority",
+  "allowedMechanics": ["debris", "dock", "water", "ice", "crate", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate", "vine"],
+  "boardSize": { "width": 8, "height": 9 },
+  "targetCount": 2,
+  "densityTarget": "80-90%",
+  "targetFirstAttemptWinRate": "45-70%",
+  "intendedTensionBeat": "Two rescues compete: one path is visible but dock-costly, while the frozen route is the correct future-value investment.",
+  "intendedReleaseBeat": "Choosing the iced route first creates a controlled rescue sequence and proves the player understands the band.",
+  "expectedPath": "Read the frozen route as the better rescue investment, open it before broad visible clears, rescue the priority puppy, then pivot through a planned dock-safe sequence.",
+  "expectedFailMode": "Player chases the visible route first, overfills dock or loses water tempo, then discovers the frozen route too late.",
+  "designNotes": "Band capstone. Should prove ice as future value, not just ice as obstruction. No vine; save broader mixed pressure for later bands."
+}

@@ -1,0 +1,49 @@
+{
+  "LevelId": "L29",
+  "Seed": 1,
+  "AlternateSeed": 1001,
+  "ExpectedOutcome": "Win",
+  "ExpectAlternateSeedDivergence": true,
+  "Actions": [
+    {
+      "Row": 2,
+      "Col": 2
+    },
+    {
+      "Row": 2,
+      "Col": 5
+    },
+    {
+      "Row": 1,
+      "Col": 2
+    },
+    {
+      "Row": 2,
+      "Col": 1
+    },
+    {
+      "Row": 4,
+      "Col": 5
+    },
+    {
+      "Row": 0,
+      "Col": 6
+    },
+    {
+      "Row": 0,
+      "Col": 4
+    },
+    {
+      "Row": 2,
+      "Col": 4
+    },
+    {
+      "Row": 0,
+      "Col": 5
+    },
+    {
+      "Row": 2,
+      "Col": 4
+    }
+  ]
+}

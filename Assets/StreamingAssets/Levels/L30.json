@@ -1,0 +1,53 @@
+{
+  "id": "L30",
+  "name": "Ice Future Value Capstone",
+  "board": {
+    "width": 8,
+    "height": 9,
+    "tiles": [
+      ["A", "A", "B", "B", "C", "C", ".", "."],
+      ["E", "F", "F", "CR", "D", "D", "A", "A"],
+      ["E", "E", "C", "IB", ".", "B", "B", "F"],
+      ["D", "CR", "C", "T1", "A", "A", "F", "."],
+      ["D", "D", "B", ".", "IC", "E", "E", "C"],
+      ["F", "CR", "B", "T0", "A", ".", "C", "C"],
+      ["A", "A", "E", "CR", "D", "D", "B", "F"],
+      ["CR", ".", "E", "E", "C", "B", "B", "."],
+      [".", ".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 5, "col": 3 },
+    { "id": "1", "row": 3, "col": 3 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 6
+  },
+  "vine": {
+    "growthThreshold": 999,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.20,
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
+  },
+  "meta": {
+    "intent": "Cap the ice future-value band by making the frozen rescue investment the cleanest two-target order.",
+    "expectedPath": "Read the lower frozen route as the better rescue investment, open it before broad visible clears, rescue the priority puppy, then pivot through dock-safe clears to the second.",
+    "expectedFailMode": "The player chases visible side value first, overfills dock or loses water tempo, then reaches the frozen route too late.",
+    "whatItProves": "The player can integrate ice future value, rescue order, dock cost, water tempo, and crate route tax without vine or new mechanics.",
+    "notes": "Role: capstone. This intentionally echoes the L28 exam shape but tightens the crate/ice route read for a final band proof.",
+    "isRuleTeach": false
+  }
+}

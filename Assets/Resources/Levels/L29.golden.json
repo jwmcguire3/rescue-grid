@@ -1,0 +1,31 @@
+{
+  "levelId": "L29",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 10,
+  "actions": [
+    { "row": 2, "col": 2, "intent": "Break the first ice on the visible frozen rescue lane." },
+    { "row": 2, "col": 5, "intent": "Shape the right side of the spectacle lane without adding dock pressure." },
+    { "row": 1, "col": 2, "intent": "Clear supporting material above the frozen path." },
+    { "row": 2, "col": 1, "intent": "Bring the secondary puppy close to rescue readiness." },
+    { "row": 4, "col": 5, "intent": "Open the hero puppy's right side and cash a dock clear." },
+    { "row": 0, "col": 6, "intent": "Use safe upper material while keeping the route readable." },
+    { "row": 0, "col": 4, "intent": "Stabilize dock before the final ice reveal." },
+    { "row": 2, "col": 4, "intent": "Break the central ice that completes the warm path." },
+    { "row": 0, "col": 5, "intent": "Cash one more dock clear before the extraction beat." },
+    { "row": 2, "col": 4, "intent": "Finish the thawed lane and extract both puppies together." }
+  ],
+  "expectedEventsInOrder": [
+    "BlockerBroken",
+    "TargetOneClearAway",
+    "BlockerBroken",
+    "WaterRose",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": ["0", "1"],
+  "notes": "Designer golden for the spectacle recovery level: the frozen lane resolves into a simultaneous rescue payoff."
+}

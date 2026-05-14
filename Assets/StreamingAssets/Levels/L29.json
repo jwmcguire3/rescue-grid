@@ -1,0 +1,52 @@
+{
+  "id": "L29",
+  "name": "Hidden Warm Path",
+  "board": {
+    "width": 8,
+    "height": 8,
+    "tiles": [
+      ["A", "A", "B", "B", "C", "C", ".", "."],
+      ["D", ".", "E", "E", "F", "F", "A", "."],
+      ["B", "B", "C", "IA", ".", "D", "D", "E"],
+      ["F", ".", "C", "T1", "IB", "E", "A", "A"],
+      ["F", "D", "D", ".", "T0", "B", "B", "C"],
+      ["E", "E", "A", "IC", ".", "C", "D", "."],
+      ["A", "F", "F", ".", "B", "C", "C", "D"],
+      [".", ".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 4, "col": 4 },
+    { "id": "1", "row": 3, "col": 3 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 9
+  },
+  "vine": {
+    "growthThreshold": 999,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.35,
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
+  },
+  "meta": {
+    "intent": "Create a generous, capture-friendly ice payoff after the L28 exam.",
+    "expectedPath": "Follow the frozen rescue lane, break through the central ice, rescue the hero puppy, then finish the secondary target with low dock risk.",
+    "expectedFailMode": "Broad clearing delays the spectacle route, but the board stays recoverable unless the player repeatedly ignores rescue progress.",
+    "whatItProves": "Ice can feel emotionally satisfying and readable, not just like route obstruction.",
+    "notes": "Role: spectacle. Empty cells form the frozen rescue lane and water/readability space; no crates or vines so the ice payoff remains clean.",
+    "isRuleTeach": false
+  }
+}

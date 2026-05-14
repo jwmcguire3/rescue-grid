@@ -2,12 +2,25 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using Rescue.Core.State;
 using Rescue.Unity.Presentation.Targets;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Rescue.Unity.Targets.Tests
 {
     public sealed class TargetPuppyAnimatorTests
     {
+        private const int BaseLayer = 0;
+        private const string DaisyTargetPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Targets/PF_Target_Daisy_Puppy.prefab";
+        private const string BaseLayerName = "Base Layer";
+        private const string TrappedIdleState = "Target_Trapped_Idle";
+        private const string ProgressingIdleState = "Target_Progress_Idle";
+        private const string OneClearAwayIdleState = "Target_OneClearAway_Idle";
+        private const string ExtractStartState = "Target_Extract_Start";
+        private const string ExtractAirState = "Target_Extract_Air";
+        private const string ProgressingFidgetState = "Target_Progress_Fidget";
+        private const string OneClearAwayBarkState = "Target_OneClearAway_Bark";
+
         private readonly List<Object> createdObjects = new List<Object>();
 
         [TearDown]
@@ -152,9 +165,70 @@ namespace Rescue.Unity.Targets.Tests
             unityAnimator.applyRootMotion = true;
             TargetPuppyAnimator puppyAnimator = gameObject.AddComponent<TargetPuppyAnimator>();
             SetPrivateField(puppyAnimator, "trappedIdleState", "TrappedIdle");
+            LogAssert.Expect(
+                LogType.Warning,
+                "TargetPuppyAnimator could not find animator state 'TrappedIdle' on controller '<none>' layer 0 '<missing>' with 0 layer(s). Tried 'TrappedIdle' and '<missing>.TrappedIdle'.");
 
             puppyAnimator.ApplyReadiness(TargetReadiness.Trapped);
 
+            Assert.That(unityAnimator.applyRootMotion, Is.False);
+        }
+
+        [Test]
+        public void TargetPuppyAnimator_DaisyPrefabRuntimeAnimatorResolvesReadinessStates()
+        {
+            TargetPuppyAnimator puppyAnimator = InstantiateDaisyPrefab(out Animator unityAnimator);
+
+            AssertDaisyStateExists(unityAnimator, TrappedIdleState);
+            AssertDaisyStateExists(unityAnimator, ProgressingFidgetState);
+            AssertDaisyStateExists(unityAnimator, OneClearAwayBarkState);
+
+            puppyAnimator.ApplyReadiness(TargetReadiness.Trapped);
+            Assert.That(puppyAnimator.CurrentAppliedReadiness, Is.EqualTo(TargetReadiness.Trapped));
+            Assert.That(puppyAnimator.CurrentAppliedStateName, Is.EqualTo(TrappedIdleState));
+            AssertAnimatorTargetsState(unityAnimator, TrappedIdleState);
+
+            puppyAnimator.ApplyReadiness(TargetReadiness.Progressing);
+            Assert.That(puppyAnimator.CurrentAppliedReadiness, Is.EqualTo(TargetReadiness.Progressing));
+            Assert.That(puppyAnimator.CurrentAppliedStateName, Is.EqualTo(ProgressingFidgetState));
+            AssertAnimatorTargetsState(unityAnimator, ProgressingFidgetState);
+
+            puppyAnimator.ApplyReadiness(TargetReadiness.OneClearAway);
+            Assert.That(puppyAnimator.CurrentAppliedReadiness, Is.EqualTo(TargetReadiness.OneClearAway));
+            Assert.That(puppyAnimator.CurrentAppliedStateName, Is.EqualTo(OneClearAwayBarkState));
+            AssertAnimatorTargetsState(unityAnimator, OneClearAwayBarkState);
+            Assert.That(unityAnimator.applyRootMotion, Is.False);
+        }
+
+        [Test]
+        public void TargetPuppyAnimator_DaisyPrefabExtractableLatchedDoesNotEnterExtractState()
+        {
+            TargetPuppyAnimator puppyAnimator = InstantiateDaisyPrefab(out Animator unityAnimator);
+
+            puppyAnimator.ApplyReadiness(TargetReadiness.OneClearAway);
+            AssertAnimatorTargetsState(unityAnimator, OneClearAwayBarkState);
+
+            puppyAnimator.ApplyReadiness(TargetReadiness.ExtractableLatched);
+
+            Assert.That(puppyAnimator.CurrentAppliedReadiness, Is.EqualTo(TargetReadiness.ExtractableLatched));
+            Assert.That(puppyAnimator.CurrentAppliedStateName, Is.EqualTo(OneClearAwayBarkState));
+            Assert.That(puppyAnimator.IsExtracting, Is.False);
+            AssertAnimatorTargetsState(unityAnimator, OneClearAwayBarkState);
+        }
+
+        [Test]
+        public void TargetPuppyAnimator_DaisyPrefabPlayExtractEntersExtractStartState()
+        {
+            TargetPuppyAnimator puppyAnimator = InstantiateDaisyPrefab(out Animator unityAnimator);
+
+            AssertDaisyStateExists(unityAnimator, ExtractStartState);
+            AssertDaisyStateExists(unityAnimator, ExtractAirState);
+
+            puppyAnimator.PlayExtract();
+
+            Assert.That(puppyAnimator.IsExtracting, Is.True);
+            Assert.That(puppyAnimator.CurrentAppliedStateName, Is.EqualTo(ExtractStartState));
+            AssertAnimatorTargetsState(unityAnimator, ExtractStartState);
             Assert.That(unityAnimator.applyRootMotion, Is.False);
         }
 
@@ -163,6 +237,60 @@ namespace Rescue.Unity.Targets.Tests
             GameObject gameObject = new GameObject("TargetPuppyAnimatorTestObject");
             createdObjects.Add(gameObject);
             return gameObject.AddComponent<TargetPuppyAnimator>();
+        }
+
+        private TargetPuppyAnimator InstantiateDaisyPrefab(out Animator unityAnimator)
+        {
+            GameObject? prefab = AssetDatabase.LoadAssetAtPath<GameObject>(DaisyTargetPrefabPath);
+            Assert.That(prefab, Is.Not.Null, $"Expected Daisy prefab at {DaisyTargetPrefabPath}.");
+            if (prefab is null)
+            {
+                throw new AssertionException($"Expected Daisy prefab at {DaisyTargetPrefabPath}.");
+            }
+
+            GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+            createdObjects.Add(instance);
+
+            TargetPuppyAnimator? puppyAnimator = instance.GetComponent<TargetPuppyAnimator>();
+            Animator? resolvedAnimator = instance.GetComponentInChildren<Animator>(includeInactive: true);
+
+            Assert.That(puppyAnimator, Is.Not.Null);
+            Assert.That(resolvedAnimator, Is.Not.Null);
+            if (puppyAnimator is null || resolvedAnimator is null)
+            {
+                throw new AssertionException("Expected Daisy prefab instance to include TargetPuppyAnimator and Animator.");
+            }
+
+            unityAnimator = resolvedAnimator;
+            Assert.That(unityAnimator.runtimeAnimatorController, Is.Not.Null);
+            return puppyAnimator;
+        }
+
+        private static void AssertDaisyStateExists(Animator unityAnimator, string stateName)
+        {
+            Assert.That(unityAnimator.layerCount, Is.GreaterThan(BaseLayer));
+            Assert.That(unityAnimator.GetLayerName(BaseLayer), Is.EqualTo(BaseLayerName));
+            Assert.That(
+                unityAnimator.HasState(BaseLayer, Animator.StringToHash($"{BaseLayerName}.{stateName}")),
+                Is.True,
+                $"Expected Daisy controller to expose '{BaseLayerName}.{stateName}'.");
+        }
+
+        private static void AssertAnimatorTargetsState(Animator unityAnimator, string stateName)
+        {
+            int shortNameHash = Animator.StringToHash(stateName);
+            int fullPathHash = Animator.StringToHash($"{BaseLayerName}.{stateName}");
+
+            unityAnimator.Update(0.02f);
+            AnimatorStateInfo current = unityAnimator.GetCurrentAnimatorStateInfo(BaseLayer);
+            AnimatorStateInfo next = unityAnimator.GetNextAnimatorStateInfo(BaseLayer);
+
+            bool matchesCurrent = current.shortNameHash == shortNameHash || current.fullPathHash == fullPathHash;
+            bool matchesNext = next.shortNameHash == shortNameHash || next.fullPathHash == fullPathHash;
+            Assert.That(
+                matchesCurrent || matchesNext,
+                Is.True,
+                $"Expected Animator to target '{stateName}' but current={current.fullPathHash}/{current.shortNameHash}, next={next.fullPathHash}/{next.shortNameHash}.");
         }
 
         private static void SetPrivateField(object target, string fieldName, object? value)

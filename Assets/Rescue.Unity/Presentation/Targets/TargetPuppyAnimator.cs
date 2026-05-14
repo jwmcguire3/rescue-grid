@@ -20,6 +20,7 @@ namespace Rescue.Unity.Presentation.Targets
 #if UNITY_EDITOR
         private bool warnedAboutAnimatorState;
 #endif
+        private int currentAppliedStateHash;
 
         public TargetReadiness? CurrentAppliedReadiness { get; private set; }
 
@@ -48,13 +49,7 @@ namespace Rescue.Unity.Presentation.Targets
             }
 
             IsExtracting = false;
-            string stateName = readiness switch
-            {
-                TargetReadiness.Progressing => progressingIdleState,
-                TargetReadiness.OneClearAway => oneClearAwayIdleState,
-                TargetReadiness.Distressed => trappedIdleState,
-                _ => trappedIdleState,
-            };
+            string stateName = ResolveReadinessStateName(readiness);
 
             PlayStateIntent(stateName);
         }
@@ -67,6 +62,24 @@ namespace Rescue.Unity.Presentation.Targets
                 : extractStartState;
 
             PlayStateIntent(stateName);
+        }
+
+        private string ResolveReadinessStateName(TargetReadiness readiness)
+        {
+            return readiness switch
+            {
+                TargetReadiness.Progressing => FirstConfiguredState(progressingFidgetState, progressingIdleState),
+                TargetReadiness.OneClearAway => FirstConfiguredState(oneClearAwayBarkState, oneClearAwayIdleState),
+                TargetReadiness.Distressed => trappedIdleState,
+                _ => trappedIdleState,
+            };
+        }
+
+        private static string FirstConfiguredState(string preferredState, string fallbackState)
+        {
+            return string.IsNullOrWhiteSpace(preferredState)
+                ? fallbackState
+                : preferredState;
         }
 
         private void PlayStateIntent(string stateName)
@@ -85,13 +98,18 @@ namespace Rescue.Unity.Presentation.Targets
                 return;
             }
 
-            int stateHash = Animator.StringToHash(stateName);
-            if (!HasAnimatorState(targetAnimator, stateHash))
+            if (!TryResolveAnimatorState(targetAnimator, stateName, out int stateHash))
             {
-                LogMissingStateOnce(stateName);
+                LogMissingStateOnce(targetAnimator, stateName);
                 return;
             }
 
+            if (currentAppliedStateHash == stateHash)
+            {
+                return;
+            }
+
+            currentAppliedStateHash = stateHash;
             targetAnimator.CrossFade(stateHash, DefaultCrossFadeDuration, BaseLayer);
         }
 
@@ -110,16 +128,46 @@ namespace Rescue.Unity.Presentation.Targets
             {
                 animator = GetComponent<Animator>();
             }
+
+            if (animator == null)
+            {
+                animator = GetComponentInChildren<Animator>(includeInactive: true);
+            }
         }
 
-        private static bool HasAnimatorState(Animator targetAnimator, int stateHash)
+        private static bool TryResolveAnimatorState(Animator targetAnimator, string stateName, out int stateHash)
         {
-            return targetAnimator.runtimeAnimatorController != null
-                && targetAnimator.layerCount > BaseLayer
-                && targetAnimator.HasState(BaseLayer, stateHash);
+            stateHash = 0;
+            if (targetAnimator.runtimeAnimatorController == null ||
+                targetAnimator.layerCount <= BaseLayer)
+            {
+                return false;
+            }
+
+            int exactHash = Animator.StringToHash(stateName);
+            if (targetAnimator.HasState(BaseLayer, exactHash))
+            {
+                stateHash = exactHash;
+                return true;
+            }
+
+            string layerName = targetAnimator.GetLayerName(BaseLayer);
+            if (string.IsNullOrWhiteSpace(layerName))
+            {
+                return false;
+            }
+
+            int fullPathHash = Animator.StringToHash($"{layerName}.{stateName}");
+            if (!targetAnimator.HasState(BaseLayer, fullPathHash))
+            {
+                return false;
+            }
+
+            stateHash = fullPathHash;
+            return true;
         }
 
-        private void LogMissingStateOnce(string stateName)
+        private void LogMissingStateOnce(Animator targetAnimator, string stateName)
         {
 #if UNITY_EDITOR
             if (warnedAboutAnimatorState)
@@ -128,8 +176,19 @@ namespace Rescue.Unity.Presentation.Targets
             }
 
             warnedAboutAnimatorState = true;
+            string controllerName = targetAnimator.runtimeAnimatorController == null
+                ? "<none>"
+                : targetAnimator.runtimeAnimatorController.name;
+            string layerName = targetAnimator.layerCount > BaseLayer
+                ? targetAnimator.GetLayerName(BaseLayer)
+                : "<missing>";
+            string fullPathName = string.IsNullOrWhiteSpace(layerName)
+                ? stateName
+                : $"{layerName}.{stateName}";
             Debug.LogWarning(
-                $"{nameof(TargetPuppyAnimator)} could not find animator state '{stateName}'.",
+                $"{nameof(TargetPuppyAnimator)} could not find animator state '{stateName}' " +
+                $"on controller '{controllerName}' layer {BaseLayer} '{layerName}' " +
+                $"with {targetAnimator.layerCount} layer(s). Tried '{stateName}' and '{fullPathName}'.",
                 this);
 #endif
         }
