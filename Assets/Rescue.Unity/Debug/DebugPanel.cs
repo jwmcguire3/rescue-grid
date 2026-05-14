@@ -68,6 +68,18 @@ namespace Rescue.Unity.Debugging
             "L26",
             "L27",
             "L28",
+            "L29",
+            "L30",
+            "L31",
+            "L32",
+            "L33",
+            "L34",
+            "L35",
+            "L36",
+            "L37",
+            "L38",
+            "L39",
+            "L40",
         };
         private static readonly DebrisType[] OverflowDockPattern =
         {

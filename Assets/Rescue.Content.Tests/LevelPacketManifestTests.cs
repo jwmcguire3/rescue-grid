@@ -16,8 +16,8 @@ namespace Rescue.Content.Tests
 
             Assert.That(manifest.PacketId, Is.EqualTo("phase1"));
             Assert.That(manifest.FirstLevelId, Is.EqualTo("L00"));
-            Assert.That(manifest.LastLevelId, Is.EqualTo("L28"));
-            Assert.That(manifest.ExpectedLevelIds, Has.Length.EqualTo(29));
+            Assert.That(manifest.LastLevelId, Is.EqualTo("L40"));
+            Assert.That(manifest.ExpectedLevelIds, Has.Length.EqualTo(41));
         }
 
         [Test]
