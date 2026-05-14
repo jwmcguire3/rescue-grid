@@ -1,0 +1,22 @@
+{
+  "levelId": "L33",
+  "seed": 1,
+  "pathType": "expected_fail",
+  "expectedOutcome": "LossRescuePathFlooded",
+  "expectedLossReason": "LossRescuePathFlooded",
+  "maxActions": 7,
+  "actions": [
+    { "row": 1, "col": 1, "intent": "Take the tempting upper route first." },
+    { "row": 0, "col": 2, "intent": "Spend another action away from the lower water route." },
+    { "row": 0, "col": 4, "intent": "Continue generic upper-board clearing." },
+    { "row": 1, "col": 5, "intent": "Delay the endangered lower puppy while preserving the safe-puppy lure." },
+    { "row": 2, "col": 5, "intent": "Spend one more non-lower-route action." },
+    { "row": 0, "col": 0, "intent": "Let the forecast row get critical before addressing the lower route." },
+    { "row": 5, "col": 2, "intent": "Touch the lower route too late; the rescue path floods." }
+  ],
+  "expectedEventsInOrder": [
+    "WaterRose",
+    "Lost"
+  ],
+  "notes": "Verified fail: the safe-puppy temptation delays the lower route until water floods the rescue path."
+}

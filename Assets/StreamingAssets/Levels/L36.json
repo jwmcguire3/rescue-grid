@@ -1,0 +1,52 @@
+{
+  "id": "L36",
+  "name": "Side Flood Variation",
+  "board": {
+    "width": 8,
+    "height": 8,
+    "tiles": [
+      ["A", "A", "B", "B", "C", "C", ".", "D"],
+      ["E", "F", "F", "CR", "D", "A", "A", "D"],
+      ["E", "E", "C", "C", "IA", "B", "B", "F"],
+      ["D", "D", "T1", ".", "A", "A", "F", "."],
+      ["A", ".", "B", "B", "C", "C", "E", "E"],
+      ["A", "CR", "C", "C", ".", "T0", ".", "D"],
+      [".", "E", "E", "C", "C", ".", "D", "."],
+      [".", ".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 5, "col": 5 },
+    { "id": "1", "row": 3, "col": 2 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 8
+  },
+  "vine": {
+    "growthThreshold": 999,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.30,
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
+  },
+  "meta": {
+    "intent": "Vary water-order reading by making route exposure, not only target row, identify the first rescue.",
+    "expectedPath": "Read the right-side puppy as the route exposed to water first, clear its lane, extract, then pivot through the opened center toward the visually lower puppy.",
+    "expectedFailMode": "The player assumes the lower-looking puppy is automatically first and lets the exposed right-side route become too expensive.",
+    "whatItProves": "Water priority can remain readable in a new geometry without adding lateral flood rules.",
+    "notes": "Role: variation. Water still rises bottom-up; the side-flood title is expressed as side-lane route exposure under the current water model.",
+    "isRuleTeach": false
+  }
+}

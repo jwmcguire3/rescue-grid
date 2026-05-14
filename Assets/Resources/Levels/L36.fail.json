@@ -1,0 +1,25 @@
+{
+  "levelId": "L36",
+  "seed": 1,
+  "pathType": "expected_fail",
+  "expectedOutcome": "LossRescuePathFlooded",
+  "expectedLossReason": "LossRescuePathFlooded",
+  "maxActions": 8,
+  "actions": [
+    { "row": 5, "col": 2, "intent": "Open on the visually lower side and misread which route water threatens first." },
+    { "row": 1, "col": 0, "intent": "Spend another action on broad side clearing instead of the exposed route." },
+    { "row": 0, "col": 0, "intent": "Chase a clean top group and let the urgent lane wait." },
+    { "row": 0, "col": 7, "intent": "Continue stabilizing the board away from the priority puppy." },
+    { "row": 2, "col": 0, "intent": "Commit to the wrong-order side and burn more accepted actions." },
+    { "row": 0, "col": 0, "intent": "Recover dock shape instead of rescuing the exposed puppy." },
+    { "row": 0, "col": 6, "intent": "Take the final non-route action before the forecast row advances." },
+    { "row": 0, "col": 0, "intent": "Let water flood the exposed right-side rescue path." }
+  ],
+  "expectedEventsInOrder": [
+    "WaterWarning",
+    "WaterRose",
+    "TargetRescuePathFlooded",
+    "Lost"
+  ],
+  "notes": "Verified fail: assuming the lower-looking puppy is first costs enough actions for the actually exposed route to flood."
+}

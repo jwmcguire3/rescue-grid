@@ -1,0 +1,22 @@
+{
+  "levelId": "L32",
+  "seed": 1,
+  "pathType": "expected_fail",
+  "expectedOutcome": "LossDockOverflow",
+  "expectedLossReason": "LossDockOverflow",
+  "maxActions": 7,
+  "actions": [
+    { "row": 3, "col": 6, "intent": "Start on the safer side instead of paying the lower route tax." },
+    { "row": 0, "col": 4, "intent": "Spend an early clear away from the lower puppy." },
+    { "row": 1, "col": 0, "intent": "Continue broad upper-board clearing." },
+    { "row": 2, "col": 0, "intent": "Chase value while the lower route remains blocked." },
+    { "row": 3, "col": 0, "intent": "Keep delaying the crate-tax clear and grow dock residue." },
+    { "row": 3, "col": 0, "intent": "Take another broad clear with the dock already unstable." },
+    { "row": 5, "col": 4, "intent": "Overflow before the lower route is rescued." }
+  ],
+  "expectedEventsInOrder": [
+    "DockOverflowTriggered",
+    "Lost"
+  ],
+  "notes": "Verified fail: practicing the wrong order and broad clears overflows before the route-tax lesson resolves."
+}

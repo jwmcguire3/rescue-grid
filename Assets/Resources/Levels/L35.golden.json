@@ -1,0 +1,26 @@
+{
+  "levelId": "L35",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 10,
+  "actions": [
+    { "row": 3, "col": 2, "intent": "Begin by shaping the lower puppy's route instead of drifting into upper-board value." },
+    { "row": 0, "col": 0, "intent": "Take a safe stabilizer while keeping the lower rescue as the priority." },
+    { "row": 5, "col": 4, "intent": "Open the lower puppy's water-facing side with a clean route clear." },
+    { "row": 5, "col": 1, "intent": "Continue the lower route and keep dock residue manageable." },
+    { "row": 3, "col": 3, "intent": "Finish the lower route setup before pivoting upward." },
+    { "row": 4, "col": 4, "intent": "Use a dock-safe clear that preserves the lower-first rescue margin." },
+    { "row": 1, "col": 1, "intent": "Pivot after the urgent puppy is secured enough to finish cleanly." },
+    { "row": 2, "col": 5, "intent": "Open the safer upper puppy route without broad side clearing." },
+    { "row": 5, "col": 5, "intent": "Convert the remaining lower-side material into the planned rescue sequence." },
+    { "row": 1, "col": 2, "intent": "Finish the upper puppy after the lower-first lesson has landed." }
+  ],
+  "expectedEventsInOrder": [
+    "TargetExtracted",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": ["0", "1"],
+  "notes": "Designer golden for the release beat: lower puppy first with generous water margin, then a calm upper rescue."
+}

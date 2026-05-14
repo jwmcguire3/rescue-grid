@@ -1,0 +1,19 @@
+{
+  "id": "L35",
+  "title": "Dry Step Rescue",
+  "campaignBand": "water_rescue_order",
+  "role": "release",
+  "primarySkill": "water_order_confidence",
+  "secondarySkill": "rescue_payoff",
+  "allowedMechanics": ["debris", "dock", "water", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate", "vine"],
+  "boardSize": { "width": 7, "height": 8 },
+  "targetCount": 2,
+  "densityTarget": "75-85%",
+  "targetFirstAttemptWinRate": "80-95%",
+  "intendedTensionBeat": "Water is visible but generous after the prior pressure level.",
+  "intendedReleaseBeat": "The player gets a satisfying lower-first rescue with enough margin to feel competent.",
+  "expectedPath": "Open and rescue the lower puppy first, then use obvious dock-safe clears to rescue the second puppy.",
+  "expectedFailMode": "Wrong play is mostly inefficient; repeated side clearing can still tighten water but should remain recoverable.",
+  "designNotes": "Recovery after L34. Make water readable and satisfying rather than punishing."
+}

@@ -1,0 +1,30 @@
+{
+  "levelId": "L31",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 10,
+  "actions": [
+    { "row": 5, "col": 0, "intent": "Start with the lower puppy's water-facing route instead of the safe upper puppy." },
+    { "row": 5, "col": 4, "intent": "Open the lower puppy's right side with a clean route group." },
+    { "row": 5, "col": 2, "intent": "Clear the lower route center and bring the priority puppy close to extraction." },
+    { "row": 5, "col": 6, "intent": "Use safe side material while keeping the lower route first." },
+    { "row": 4, "col": 0, "intent": "Convert the lower route before water pressure tightens." },
+    { "row": 0, "col": 4, "intent": "Stabilize the board after the first rescue setup." },
+    { "row": 2, "col": 2, "intent": "Pivot upward only after the lower puppy has been secured." },
+    { "row": 4, "col": 1, "intent": "Open the upper puppy's remaining route cleanly." },
+    { "row": 2, "col": 3, "intent": "Prepare the final upper extraction without unnecessary side clearing." },
+    { "row": 1, "col": 0, "intent": "Finish the safer upper puppy after proving lower-first priority." }
+  ],
+  "expectedEventsInOrder": [
+    "TargetOneClearAway",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "WaterRose",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": ["0", "1"],
+  "notes": "Designer golden for the first water-order teach: lower puppy first, then the safer upper puppy."
+}

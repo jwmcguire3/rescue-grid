@@ -1,0 +1,27 @@
+{
+  "levelId": "L32",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 8,
+  "actions": [
+    { "row": 2, "col": 0, "intent": "Read the lower puppy as the water priority before chasing the safer target." },
+    { "row": 0, "col": 4, "intent": "Use a safe setup clear that does not abandon the lower route." },
+    { "row": 5, "col": 1, "intent": "Pay the crate route tax next to the lower puppy." },
+    { "row": 3, "col": 6, "intent": "Keep dock pressure stable while the lower route opens." },
+    { "row": 3, "col": 1, "intent": "Finish the lower route and extract the priority puppy first." },
+    { "row": 6, "col": 1, "intent": "Pivot upward after the lower rescue is safe." },
+    { "row": 0, "col": 4, "intent": "Use the opened board state to prepare the safer upper rescue." },
+    { "row": 0, "col": 1, "intent": "Complete the upper rescue after the water-priority puppy." }
+  ],
+  "expectedEventsInOrder": [
+    "BlockerBroken",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": ["0", "1"],
+  "notes": "Designer golden for route-tax practice: pay the lower crate tax, rescue lower first, then pivot."
+}

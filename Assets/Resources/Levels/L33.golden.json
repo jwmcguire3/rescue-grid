@@ -1,0 +1,26 @@
+{
+  "levelId": "L33",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 7,
+  "actions": [
+    { "row": 1, "col": 1, "intent": "Acknowledge the tempting upper route without finishing it first." },
+    { "row": 4, "col": 3, "intent": "Commit to the lower water-priority lane." },
+    { "row": 3, "col": 2, "intent": "Break the lower-side ice support and keep pressure on the endangered puppy." },
+    { "row": 6, "col": 4, "intent": "Open the lower puppy's right side." },
+    { "row": 7, "col": 3, "intent": "Open the lower route from the flood edge." },
+    { "row": 6, "col": 5, "intent": "Extract the lower puppy before returning to the lure." },
+    { "row": 1, "col": 2, "intent": "Finish the now-safe upper puppy." }
+  ],
+  "expectedEventsInOrder": [
+    "BlockerBroken",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": ["0", "1"],
+  "notes": "Designer golden for the safe-puppy trap: resist the easy upper rescue, secure the endangered lower puppy first."
+}

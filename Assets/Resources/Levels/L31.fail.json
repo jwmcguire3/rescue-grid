@@ -1,0 +1,23 @@
+{
+  "levelId": "L31",
+  "seed": 1,
+  "pathType": "expected_fail",
+  "expectedOutcome": "LossDockOverflow",
+  "expectedLossReason": "LossDockOverflow",
+  "maxActions": 8,
+  "actions": [
+    { "row": 0, "col": 0, "intent": "Open with generic top-board clearing instead of the lower rescue." },
+    { "row": 0, "col": 2, "intent": "Continue broad clearing and build dock residue." },
+    { "row": 1, "col": 3, "intent": "Spend another action away from the water-priority puppy." },
+    { "row": 3, "col": 5, "intent": "Chase the safe upper side before securing the lower target." },
+    { "row": 4, "col": 1, "intent": "Delay the lower route and keep adding dock pressure." },
+    { "row": 0, "col": 4, "intent": "Use a non-rescue clear that leaves the dock acute." },
+    { "row": 1, "col": 3, "intent": "Take a broad route-adjacent clear too late to recover the dock." },
+    { "row": 2, "col": 1, "intent": "Overflow from generic clearing before the rescue order lesson lands." }
+  ],
+  "expectedEventsInOrder": [
+    "DockOverflowTriggered",
+    "Lost"
+  ],
+  "notes": "Verified fail: ignoring lower-first priority turns the teach board into self-authored dock overflow."
+}

@@ -22,9 +22,9 @@ namespace Rescue.Unity.Presentation
         public const float CameraPortraitOrthographicSize = 7.2f;
         public const int MobileTargetFrameRate = 60;
 
-        public static readonly Vector3 BoardPortraitPosition = new Vector3(0f, -0.25f, -2.3f);
-        public static readonly Quaternion BoardPortraitRotation = Quaternion.identity;
-        public static readonly Vector3 BoardPortraitScale = new Vector3(1.1f, 1.1f, 1.1f);
+        public static readonly Vector3 BoardPortraitPosition = new Vector3(0f, -0.25f, -0.9f);
+        public static readonly Quaternion BoardPortraitRotation = Quaternion.Euler(15.0f, 0.0f, 0.0f);
+        public static readonly Vector3 BoardPortraitScale = new Vector3(1.4f, 1.4f, 1.4f);
 
         public static readonly Vector3 DockPortraitPosition = new Vector3(0f, -0.5f, -9.85f);
         public static readonly Quaternion DockPortraitRotation = Quaternion.Euler(15.0f, 0.0f, 0.0f);

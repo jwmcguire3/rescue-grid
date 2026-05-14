@@ -1,0 +1,52 @@
+{
+  "id": "L35",
+  "name": "Dry Step Rescue",
+  "board": {
+    "width": 7,
+    "height": 8,
+    "tiles": [
+      ["A", "A", "B", "B", "C", ".", "."],
+      [".", "E", "F", "C", "C", "A", "A"],
+      ["B", "B", "T1", ".", "F", "D", "D"],
+      ["C", "C", "D", "D", "A", "A", "."],
+      ["E", ".", "C", "C", "F", "E", "E"],
+      ["A", "B", "B", "T0", "C", "C", "D"],
+      [".", "B", "B", ".", "E", "E", "."],
+      [".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 5, "col": 3 },
+    { "id": "1", "row": 2, "col": 2 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 9
+  },
+  "vine": {
+    "growthThreshold": 999,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.35,
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
+  },
+  "meta": {
+    "intent": "Release pressure after the forecast-row race with a generous lower-first water rescue.",
+    "expectedPath": "Open the lower puppy first with obvious route groups, extract it with water margin, then pivot to the upper puppy through dock-safe clears.",
+    "expectedFailMode": "The player spends repeated side clears or finishes upper progress first, making the lower rescue less comfortable but still readable.",
+    "whatItProves": "A water-order level can rebuild confidence while still ending on a real rescue payoff.",
+    "notes": "Role: release. Debris, dock, water, and target states only; empty cells are route, spawn, and mobile-readability space.",
+    "isRuleTeach": false
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "levelId": "L34",
+  "seed": 1,
+  "pathType": "golden",
+  "expectedOutcome": "Win",
+  "maxActions": 8,
+  "actions": [
+    { "row": 0, "col": 4, "intent": "Make one dock-safe setup clear while keeping the forecast race in view." },
+    { "row": 3, "col": 3, "intent": "Start the shortest meaningful lower route." },
+    { "row": 5, "col": 4, "intent": "Open the lower puppy's right side before the forecast row rises." },
+    { "row": 3, "col": 2, "intent": "Break the route ice and keep the lower rescue first." },
+    { "row": 6, "col": 3, "intent": "Complete the lower flood-edge route." },
+    { "row": 2, "col": 5, "intent": "Pivot to the upper target after securing the urgent lower puppy." },
+    { "row": 0, "col": 2, "intent": "Stabilize the board before the final extraction." },
+    { "row": 2, "col": 3, "intent": "Finish the second rescue after proving the forecast-row race." }
+  ],
+  "expectedEventsInOrder": [
+    "BlockerBroken",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "WaterWarning",
+    "WaterRose",
+    "TargetExtractionLatched",
+    "TargetExtracted",
+    "Won"
+  ],
+  "expectedExtractionOrder": ["0", "1"],
+  "notes": "Designer golden for the first pressure check: count accepted actions, rescue lower first before the forecast row claims the path."
+}

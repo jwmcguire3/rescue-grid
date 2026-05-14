@@ -1,0 +1,22 @@
+{
+  "levelId": "L34",
+  "seed": 1,
+  "pathType": "expected_fail",
+  "expectedOutcome": "LossRescuePathFlooded",
+  "expectedLossReason": "LossRescuePathFlooded",
+  "maxActions": 6,
+  "actions": [
+    { "row": 0, "col": 0, "intent": "Open with a non-route clear despite the forecast-row race." },
+    { "row": 1, "col": 0, "intent": "Spend another accepted action away from the lower route." },
+    { "row": 1, "col": 1, "intent": "Keep chasing side value instead of the urgent puppy." },
+    { "row": 3, "col": 0, "intent": "Delay the shortest lower path while water pressure tightens." },
+    { "row": 3, "col": 4, "intent": "Touch the upper-safe route instead of securing the lower flood edge." },
+    { "row": 2, "col": 0, "intent": "Use one more non-route action and let water flood the lower rescue path." }
+  ],
+  "expectedEventsInOrder": [
+    "WaterWarning",
+    "WaterRose",
+    "Lost"
+  ],
+  "notes": "Verified fail: attractive non-route clears lose the forecast-row race before the first rescue is secure."
+}

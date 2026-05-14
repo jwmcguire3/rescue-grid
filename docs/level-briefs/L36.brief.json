@@ -1,0 +1,19 @@
+{
+  "id": "L36",
+  "title": "Side Flood Variation",
+  "campaignBand": "water_rescue_order",
+  "role": "variation",
+  "primarySkill": "water_priority_in_new_geometry",
+  "secondarySkill": "route_pivot_reading",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "ice", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate", "vine"],
+  "boardSize": { "width": 8, "height": 8 },
+  "targetCount": 2,
+  "densityTarget": "80-90%",
+  "targetFirstAttemptWinRate": "70-85%",
+  "intendedTensionBeat": "The endangered puppy is not simply at the bottom; board shape makes the player read water direction and route exposure.",
+  "intendedReleaseBeat": "Correctly reading the threatened route opens a clean pivot to the safer puppy.",
+  "expectedPath": "Identify which puppy is exposed to water first, clear its route, extract, then pivot through the opened lane to finish the other.",
+  "expectedFailMode": "Player assumes the visually closest target is the priority and misses the actual water-exposed route.",
+  "designNotes": "Variation level: same water-order concept in a different geometry. Keep forecast/rise states visually unambiguous."
+}

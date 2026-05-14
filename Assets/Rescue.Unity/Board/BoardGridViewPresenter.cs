@@ -8,6 +8,7 @@ namespace Rescue.Unity.BoardPresentation
     public sealed class BoardGridViewPresenter : MonoBehaviour
     {
         private const string DefaultBoardRootName = "BoardGrid";
+        private const float MinimumCellInputColliderHeight = 0.01f;
 
         [SerializeField] private Transform? boardRoot;
         [SerializeField] private TileVisualRegistry? tileRegistry;
@@ -17,6 +18,7 @@ namespace Rescue.Unity.BoardPresentation
         [SerializeField] private bool centerBoard = true;
         [SerializeField] private Vector3 tileRotationOffset;
         [SerializeField] private Vector3 tileScaleMultiplier = Vector3.one;
+        [SerializeField] private float cellInputColliderHeight = 0.05f;
 
         private readonly Dictionary<TileCoord, Transform> cellAnchors = new Dictionary<TileCoord, Transform>();
 
@@ -55,7 +57,10 @@ namespace Rescue.Unity.BoardPresentation
                     BoardCellView anchorCellView = anchorObject.AddComponent<BoardCellView>();
                     BoxCollider anchorCollider = anchorObject.AddComponent<BoxCollider>();
                     anchorCellView.Initialize(coord);
-                    anchorCollider.size = new Vector3(cellSize, 1f, cellSize);
+                    anchorCollider.size = new Vector3(
+                        cellSize,
+                        Mathf.Max(MinimumCellInputColliderHeight, cellInputColliderHeight),
+                        cellSize);
                     anchorCollider.center = Vector3.zero;
                     Transform anchor = anchorObject.transform;
                     anchor.SetParent(root, false);

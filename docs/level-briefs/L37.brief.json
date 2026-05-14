@@ -1,0 +1,19 @@
+{
+  "id": "L37",
+  "title": "Water or Dock First",
+  "campaignBand": "water_rescue_order",
+  "role": "pressure_choice",
+  "primarySkill": "water_dock_tradeoff",
+  "secondarySkill": "dock_rescue_integration",
+  "allowedMechanics": ["debris", "dock", "water", "crate", "ice", "target_states"],
+  "forbiddenMechanics": ["reinforced_crate", "vine"],
+  "boardSize": { "width": 8, "height": 9 },
+  "targetCount": 2,
+  "densityTarget": "80-90%",
+  "targetFirstAttemptWinRate": "55-75%",
+  "intendedTensionBeat": "The water-threatened route is urgent, but taking every route clear immediately creates dock risk.",
+  "intendedReleaseBeat": "A planned dock-stabilizing clear during the water race makes the endangered rescue feel earned.",
+  "expectedPath": "Advance the urgent water route, stabilize dock with a clean triple at the right moment, then finish the endangered puppy before pivoting.",
+  "expectedFailMode": "Player either overprotects dock and loses water tempo, or rushes the route and overflows before rescue.",
+  "designNotes": "Harder tradeoff, still readable. Do not let dock become the whole level; it should serve the water-order decision."
+}

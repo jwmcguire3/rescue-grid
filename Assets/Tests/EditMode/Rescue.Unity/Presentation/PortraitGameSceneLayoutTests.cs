@@ -73,11 +73,24 @@ namespace Rescue.Unity.Presentation.Tests
         }
 
         [Test]
-        public void ResolveBoardPortraitScale_LeavesSmallBoardsAtDefaultScaleInStandardPortrait()
+        public void ResolveBoardPortraitScale_LeavesSmallBoardsAtDefaultScaleInLandscape()
         {
-            Vector3 scale = PortraitGameSceneLayout.ResolveBoardPortraitScale(6, 9.0f / 16.0f);
+            Vector3 scale = PortraitGameSceneLayout.ResolveBoardPortraitScale(6, 16.0f / 9.0f);
 
             Assert.That(scale, Is.EqualTo(PortraitGameSceneLayout.BoardPortraitScale));
+        }
+
+        [Test]
+        public void ResolveBoardPortraitScale_FitsSixColumnBoardsInStandardPortrait()
+        {
+            const float aspect = 9.0f / 16.0f;
+
+            Vector3 scale = PortraitGameSceneLayout.ResolveBoardPortraitScale(6, aspect);
+
+            float viewportWidth = PortraitGameSceneLayout.CameraPortraitOrthographicSize * 2.0f * aspect;
+            float boardWidth = 6.0f * scale.x;
+            Assert.That(scale.x, Is.LessThan(PortraitGameSceneLayout.BoardPortraitScale.x));
+            Assert.That(boardWidth, Is.LessThan(viewportWidth + 0.001f));
         }
 
         [Test]

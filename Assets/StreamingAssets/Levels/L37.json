@@ -1,0 +1,53 @@
+{
+  "id": "L37",
+  "name": "Water or Dock First",
+  "board": {
+    "width": 8,
+    "height": 9,
+    "tiles": [
+      ["A", "A", "B", "B", "C", "C", ".", "."],
+      ["E", "F", "F", "CR", "D", "A", "A", "D"],
+      ["E", "E", "T1", "C", "IA", "B", "B", "F"],
+      ["D", "D", "C", ".", "A", "A", "F", "."],
+      ["A", "B", "B", "C", "C", "E", "E", "D"],
+      ["A", "CR", "D", ".", "T0", "C", "C", "F"],
+      [".", "B", "B", "E", "E", "CR", "F", "D"],
+      [".", "A", "A", "C", "C", "F", ".", "D"],
+      [".", ".", ".", ".", ".", ".", ".", "."]
+    ]
+  },
+  "debrisTypePool": ["A", "B", "C", "D", "E", "F"],
+  "baseDistribution": null,
+  "targets": [
+    { "id": "0", "row": 5, "col": 4 },
+    { "id": "1", "row": 2, "col": 2 }
+  ],
+  "initialFloodedRows": 1,
+  "water": {
+    "riseInterval": 6
+  },
+  "vine": {
+    "growthThreshold": 999,
+    "growthPriority": []
+  },
+  "dock": {
+    "size": 7,
+    "jamEnabled": false
+  },
+  "assistance": {
+    "chance": 0.25,
+    "consecutiveEmergencyCap": 2,
+    "spawnIntegrity": {
+      "allowExactTripleSpawns": false,
+      "allowOversizedSpawnGroups": false
+    }
+  },
+  "meta": {
+    "intent": "Create a readable pressure choice where the urgent lower route must be advanced without ignoring dock stabilization.",
+    "expectedPath": "Advance the lower route, use one clean dock-stabilizing triple when the rack gets hot, extract the endangered puppy, then pivot to the upper puppy.",
+    "expectedFailMode": "The player either protects dock too much and loses water tempo, or rushes route residue into overflow before the first rescue.",
+    "whatItProves": "Dock discipline can serve water rescue order instead of replacing it as the level's main question.",
+    "notes": "Role: pressure_choice. Crates and ice are route/dock timing support; vine remains disabled and no new mechanics are introduced.",
+    "isRuleTeach": false
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "levelId": "L35",
+  "seed": 1,
+  "pathType": "expected_fail",
+  "expectedOutcome": "LossRescuePathFlooded",
+  "expectedLossReason": "LossRescuePathFlooded",
+  "maxActions": 9,
+  "actions": [
+    { "row": 0, "col": 0, "intent": "Start with safe top-board clearing instead of committing to the lower puppy." },
+    { "row": 0, "col": 2, "intent": "Continue collecting broad value while the lower route waits." },
+    { "row": 1, "col": 5, "intent": "Spend another action away from the water-facing route." },
+    { "row": 3, "col": 0, "intent": "Clear the safer upper side and delay the lower rescue beat." },
+    { "row": 3, "col": 2, "intent": "Only now touch route material, leaving too little water margin." },
+    { "row": 5, "col": 4, "intent": "Partially open the lower puppy after the dock and water clocks are already tight." },
+    { "row": 5, "col": 5, "intent": "Use a nearby side clear instead of finishing the endangered route." },
+    { "row": 1, "col": 0, "intent": "Recover dock shape but spend the last comfortable action." },
+    { "row": 0, "col": 0, "intent": "Let the next water rise flood the lower rescue path before extraction." }
+  ],
+  "expectedEventsInOrder": [
+    "WaterWarning",
+    "WaterRose",
+    "TargetRescuePathFlooded",
+    "Lost"
+  ],
+  "notes": "Verified fail: the release board is recoverable, but enough side clearing still turns lower-first confidence into a flooded rescue path."
+}
