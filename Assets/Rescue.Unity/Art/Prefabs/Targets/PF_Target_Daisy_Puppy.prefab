@@ -80,9 +80,16 @@ MonoBehaviour:
   muzzleReference: {fileID: 0}
   leftEyeReference: {fileID: 0}
   rightEyeReference: {fileID: 0}
+  leftEyelidReference: {fileID: 0}
+  rightEyelidReference: {fileID: 0}
+  leftEyeEndReference: {fileID: 0}
+  rightEyeEndReference: {fileID: 0}
   smoothSeconds: 0.16
+  forcedReleaseSmoothSeconds: 0.55
   forcedMaxYawDegrees: 80
   forcedMaxPitchDegrees: 42
+  forcedEyeMaxYawDegrees: 18
+  forcedEyeMaxPitchDegrees: 10
   forcedLookUpDegrees: 34
   forcedLookRightDegrees: 18
   forcedHeadEulerOffset: {x: -34, y: 22, z: 0}
