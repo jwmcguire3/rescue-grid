@@ -269,6 +269,82 @@ namespace Rescue.Unity.Targets.Tests
         }
 
         [Test]
+        public void TargetPuppyAnimator_DebugAnimationCompletesAndRestoresReadinessIdle()
+        {
+            TargetPuppyAnimator animator = CreateAnimatorWithUnityAnimator();
+            SetPrivateField(animator, "progressingIdleState", "ProgressingIdle");
+            AnimationClip clip = CreateClip("DebugScratch", 0.25f);
+
+            animator.ApplyReadiness(TargetReadiness.Progressing);
+
+            Assert.That(animator.PlayDebugAnimationClip(clip, repeat: false), Is.True);
+            Assert.That(animator.IsDebugAnimationPlaying, Is.True);
+            Assert.That(animator.CurrentDebugAnimationName, Is.EqualTo("DebugScratch"));
+
+            animator.AdvanceDebugAnimationForTests(0.3f);
+
+            Assert.That(animator.IsDebugAnimationPlaying, Is.False);
+            Assert.That(animator.CurrentDebugAnimationName, Is.Empty);
+            Assert.That(animator.CurrentAppliedReadiness, Is.EqualTo(TargetReadiness.Progressing));
+            Assert.That(animator.CurrentAppliedStateName, Is.EqualTo("ProgressingIdle"));
+        }
+
+        [Test]
+        public void TargetPuppyAnimator_DebugRepeatSequenceLoopsUntilStopped()
+        {
+            TargetPuppyAnimator animator = CreateAnimatorWithUnityAnimator();
+            SetPrivateField(animator, "trappedIdleState", "TrappedIdle");
+            AnimationClip first = CreateClip("DebugFirst", 0.1f);
+            AnimationClip second = CreateClip("DebugSecond", 0.1f);
+
+            animator.ApplyReadiness(TargetReadiness.Trapped);
+
+            Assert.That(animator.PlayDebugAnimationSequence(new[] { first, second }, repeat: true), Is.True);
+            Assert.That(animator.CurrentDebugAnimationName, Is.EqualTo("DebugFirst"));
+
+            animator.AdvanceDebugAnimationForTests(0.12f);
+            Assert.That(animator.IsDebugAnimationPlaying, Is.True);
+            Assert.That(animator.CurrentDebugAnimationName, Is.EqualTo("DebugSecond"));
+
+            animator.AdvanceDebugAnimationForTests(0.12f);
+            Assert.That(animator.IsDebugAnimationPlaying, Is.True);
+            Assert.That(animator.CurrentDebugAnimationName, Is.EqualTo("DebugFirst"));
+
+            animator.StopDebugAnimation();
+
+            Assert.That(animator.IsDebugAnimationPlaying, Is.False);
+            Assert.That(animator.CurrentAppliedStateName, Is.EqualTo("TrappedIdle"));
+        }
+
+        [Test]
+        public void TargetPuppyAnimator_DebugStopRestoresIdle()
+        {
+            TargetPuppyAnimator animator = CreateAnimatorWithUnityAnimator();
+            SetPrivateField(animator, "oneClearAwayIdleState", "OneClearAwayIdle");
+            AnimationClip clip = CreateClip("DebugBark", 0.25f);
+
+            animator.ApplyReadiness(TargetReadiness.OneClearAway);
+            Assert.That(animator.PlayDebugAnimationClip(clip, repeat: false), Is.True);
+
+            animator.StopDebugAnimation();
+
+            Assert.That(animator.IsDebugAnimationPlaying, Is.False);
+            Assert.That(animator.CurrentAppliedReadiness, Is.EqualTo(TargetReadiness.OneClearAway));
+            Assert.That(animator.CurrentAppliedStateName, Is.EqualTo("OneClearAwayIdle"));
+        }
+
+        [Test]
+        public void TargetPuppyAnimator_DebugAnimationMissingAnimatorOrClipDoesNotThrow()
+        {
+            TargetPuppyAnimator animator = CreateAnimator();
+
+            Assert.DoesNotThrow(() => animator.PlayDebugAnimationClip(null, repeat: false));
+            Assert.DoesNotThrow(() => animator.PlayDebugAnimationSequence(null, repeat: false));
+            Assert.That(animator.PlayDebugAnimationClip(CreateClip("NoAnimator", 0.1f), repeat: false), Is.False);
+            Assert.That(animator.IsDebugAnimationPlaying, Is.False);
+        }
+
+        [Test]
         public void TargetPuppyAnimator_DaisyPrefabExtractableLatchedDoesNotEnterExtractState()
         {
             TargetPuppyAnimator puppyAnimator = InstantiateDaisyPrefab(out Animator unityAnimator);
@@ -305,6 +381,26 @@ namespace Rescue.Unity.Targets.Tests
             GameObject gameObject = new GameObject("TargetPuppyAnimatorTestObject");
             createdObjects.Add(gameObject);
             return gameObject.AddComponent<TargetPuppyAnimator>();
+        }
+
+        private TargetPuppyAnimator CreateAnimatorWithUnityAnimator()
+        {
+            GameObject gameObject = new GameObject("TargetPuppyDebugAnimatorTestObject");
+            createdObjects.Add(gameObject);
+            gameObject.AddComponent<Animator>();
+            return gameObject.AddComponent<TargetPuppyAnimator>();
+        }
+
+        private AnimationClip CreateClip(string name, float durationSeconds)
+        {
+            AnimationClip clip = new AnimationClip { name = name };
+            clip.SetCurve(
+                string.Empty,
+                typeof(Transform),
+                "m_LocalPosition.x",
+                AnimationCurve.Linear(0f, 0f, Mathf.Max(0.01f, durationSeconds), 0f));
+            createdObjects.Add(clip);
+            return clip;
         }
 
         private TargetPuppyAnimator InstantiateDaisyPrefab(out Animator unityAnimator)

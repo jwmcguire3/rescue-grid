@@ -4,7 +4,7 @@ This panel is dev-only and only compiles when `UNITY_EDITOR` or `DEVELOPMENT_BUI
 
 ## Controls
 
-- Tabs: `Play` keeps the existing step/replay/state inspection tools, and `Tune` hosts hot-reloadable level tuning plus preset management.
+- Tabs: `Play` keeps the existing step/replay/state inspection tools, `Tune` hosts hot-reloadable level tuning plus preset management, `FX` auditions visual effects, and `Puppy` auditions live target puppy animations.
 - Level selector: lists level ids discovered from `Assets/StreamingAssets/Levels`; selecting one reloads it with the current seed.
 - Seed field: delayed integer field; committing a new value reloads the current level with that seed.
 - Randomize Seed: generates a new seed, logs it to the Unity console, and reloads reproducibly.
@@ -24,6 +24,7 @@ This panel is dev-only and only compiles when `UNITY_EDITOR` or `DEVELOPMENT_BUI
 - Event log: keeps the last 20 actions, color-coded by event type. `DebugSpawnOverrideApplied` entries are tagged as dev-only telemetry.
 - Copy State JSON: copies a bug-report wrapper containing level id, seed, timestamp, and the exported state.
 - Copy Full GameState JSON: copies the full exported `GameState` shape, including `DebugSpawnOverride`.
+- Puppy tab: choose a live target id, choose any cataloged Daisy animation clip, add clips into an ordered sequence, toggle repeat, play/stop the sequence, or force the selected puppy to look at the player camera. Debug animation playback restores the puppy's current readiness idle when it finishes or stops.
 
 ## Key Bindings
 

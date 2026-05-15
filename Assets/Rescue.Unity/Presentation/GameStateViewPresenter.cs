@@ -65,6 +65,13 @@ namespace Rescue.Unity.Presentation
                 : "dock visuals: <missing DockViewPresenter>";
         }
 
+        public bool TryGetTargetInstance(string targetId, out GameObject? targetObject)
+        {
+            targetObject = null;
+            return boardContent is not null &&
+                boardContent.TryGetTargetInstance(targetId, out targetObject);
+        }
+
         public void Rebuild(GameState state)
         {
             if (state is null)

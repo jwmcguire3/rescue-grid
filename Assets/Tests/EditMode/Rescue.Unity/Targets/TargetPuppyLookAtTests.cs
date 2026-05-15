@@ -98,11 +98,55 @@ namespace Rescue.Unity.Targets.Tests
             Assert.That(head.localRotation, Is.EqualTo(Quaternion.identity));
         }
 
+        [Test]
+        public void TargetPuppyLookAt_ForceLookAtPlayerClampsThenReturnsToNormal()
+        {
+            TargetPuppyLookAt lookAt = CreateLookAtRig(out _, out Transform neck, out Transform head, out _);
+            Camera camera = CreateCamera("PlayerCamera");
+            SetPrivateField(lookAt, "smoothSeconds", 0f);
+            camera.transform.position = new Vector3(10f, 10f, 10f);
+
+            lookAt.ApplyReadiness(TargetReadiness.OneClearAway);
+
+            Assert.That(lookAt.ForceLookAtPlayer(camera, 0.1f), Is.True);
+            lookAt.ApplyLookAtForTests(0.01f);
+
+            Assert.That(lookAt.CurrentBlend, Is.EqualTo(1f).Within(0.001f));
+            Assert.That(Mathf.Abs(lookAt.LastClampedYawDegrees), Is.LessThanOrEqualTo(lookAt.ActiveMaxYawDegrees + 0.01f));
+            Assert.That(neck.localRotation, Is.Not.EqualTo(Quaternion.identity));
+            Assert.That(head.localRotation, Is.Not.EqualTo(Quaternion.identity));
+
+            lookAt.ApplyLookAtForTests(0.2f);
+
+            Assert.That(lookAt.CurrentBlend, Is.EqualTo(lookAt.ActiveMaxYawDegrees > 0f ? 0.28f : 0f).Within(0.001f));
+        }
+
+        [Test]
+        public void TargetPuppyLookAt_ForceLookAtPlayerFailsSoftlyWhenMissingRequirements()
+        {
+            TargetPuppyLookAt missingBones = CreateLookAt();
+            Camera camera = CreateCamera("PlayerCamera");
+
+            Assert.That(missingBones.ForceLookAtPlayer(camera), Is.False);
+
+            TargetPuppyLookAt lookAt = CreateLookAtRig(out _, out _, out _, out _);
+            lookAt.PlayExtract();
+
+            Assert.That(lookAt.ForceLookAtPlayer(camera), Is.False);
+        }
+
         private TargetPuppyLookAt CreateLookAt()
         {
             GameObject gameObject = new GameObject("TargetPuppyLookAtTestObject");
             createdObjects.Add(gameObject);
             return gameObject.AddComponent<TargetPuppyLookAt>();
+        }
+
+        private Camera CreateCamera(string name)
+        {
+            GameObject gameObject = new GameObject(name);
+            createdObjects.Add(gameObject);
+            return gameObject.AddComponent<Camera>();
         }
 
         private TargetPuppyLookAt CreateLookAtRig(

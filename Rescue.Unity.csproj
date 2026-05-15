@@ -69,6 +69,7 @@
     <Compile Include="Assets\Rescue.Unity\Haptics\HapticPatternStyle.cs" />
     <Compile Include="Assets\Rescue.Unity\Board\BoardGridViewPresenter.cs" />
     <Compile Include="Assets\Rescue.Unity\Haptics\HapticPattern.cs" />
+    <Compile Include="Assets\Rescue.Unity\Debug\DebugPanel.Puppy.cs" />
     <Compile Include="Assets\Rescue.Unity\Presentation\Targets\TargetPuppyAnimator.cs" />
     <Compile Include="Assets\Rescue.Unity\Haptics\HapticEventRouter.cs" />
     <Compile Include="Assets\Rescue.Unity\Audio\MusicTrackSelection.cs" />
@@ -89,6 +90,7 @@
     <Compile Include="Assets\Rescue.Unity\Input\BoardInputPresenter.cs" />
     <Compile Include="Assets\Rescue.Unity\Board\BoardContentMarkerFactory.cs" />
     <Compile Include="Assets\Rescue.Unity\FX\FxDebugCatalog.cs" />
+    <Compile Include="Assets\Rescue.Unity\Debug\TargetPuppyAnimationCatalog.cs" />
     <Compile Include="Assets\Rescue.Unity\Presentation\ActionPlaybackSettings.cs" />
     <Compile Include="Assets\Rescue.Unity\Presentation\PortraitGameSceneLayout.cs" />
     <Compile Include="Assets\Rescue.Unity\Art\Registries\TileVisualRegistry.cs" />

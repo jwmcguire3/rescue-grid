@@ -15,6 +15,8 @@ namespace Rescue.Unity.Presentation.Targets
         private float blendVelocity;
         private float glanceCooldownRemaining;
         private float glanceRemaining;
+        private Transform? forcedLookTarget;
+        private float forcedLookRemainingSeconds;
         private bool extracting;
 
         public TargetReadiness CurrentReadiness { get; private set; } = TargetReadiness.Trapped;
@@ -59,6 +61,24 @@ namespace Rescue.Unity.Presentation.Targets
             glanceRemaining = profile.GlanceDurationSeconds;
         }
 
+        public bool ForceLookAtPlayer(Camera? camera = null, float durationSeconds = 1.35f)
+        {
+            if (extracting || headBone == null || neckBone == null)
+            {
+                return false;
+            }
+
+            Camera? targetCamera = camera == null ? Camera.main : camera;
+            if (targetCamera == null)
+            {
+                return false;
+            }
+
+            forcedLookTarget = targetCamera.transform;
+            forcedLookRemainingSeconds = Mathf.Max(0.01f, durationSeconds);
+            return true;
+        }
+
         private void Awake()
         {
             ResetGlanceTimer();
@@ -77,6 +97,8 @@ namespace Rescue.Unity.Presentation.Targets
             {
                 return;
             }
+
+            UpdateForcedLook(deltaTime);
 
             Quaternion headBase = RemovePreviousOffset(head, lastHeadOffset);
             Quaternion neckBase = RemovePreviousOffset(neck, lastNeckOffset);
@@ -132,6 +154,11 @@ namespace Rescue.Unity.Presentation.Targets
 
         private Transform? ResolveLookTarget()
         {
+            if (forcedLookRemainingSeconds > 0f && forcedLookTarget != null)
+            {
+                return forcedLookTarget;
+            }
+
             if (lookTarget != null)
             {
                 return lookTarget;
@@ -181,7 +208,28 @@ namespace Rescue.Unity.Presentation.Targets
                 return profile.ExtractionBlend;
             }
 
+            if (forcedLookRemainingSeconds > 0f && forcedLookTarget != null)
+            {
+                return 1f;
+            }
+
             return profile.BaseBlend + (glanceRemaining > 0f ? profile.GlanceBlend : 0f);
+        }
+
+        private void UpdateForcedLook(float deltaTime)
+        {
+            if (forcedLookRemainingSeconds <= 0f)
+            {
+                forcedLookTarget = null;
+                forcedLookRemainingSeconds = 0f;
+                return;
+            }
+
+            forcedLookRemainingSeconds = Mathf.Max(0f, forcedLookRemainingSeconds - Mathf.Max(0f, deltaTime));
+            if (forcedLookRemainingSeconds <= 0f)
+            {
+                forcedLookTarget = null;
+            }
         }
 
         private void ResetGlanceTimer()

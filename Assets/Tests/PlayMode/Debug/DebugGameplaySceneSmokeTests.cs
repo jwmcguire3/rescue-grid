@@ -1,4 +1,5 @@
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
+using System.Reflection;
 using NUnit.Framework;
 using Rescue.Content;
 using Rescue.Core.State;
@@ -9,6 +10,7 @@ using Rescue.PlayMode.Tests.Smoke;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
+using UnityEngine.UIElements;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -122,6 +124,42 @@ namespace Rescue.PlayMode.Tests.Debug
             dockPieces = dockRoot.Find("DockPieces");
             Assert.That(dockPieces, Is.Not.Null, "Expected the dock presenter to materialize a runtime piece container after stepping.");
             Assert.That(dockPieces.childCount, Is.GreaterThan(0), "Expected the dock presenter to generate piece visuals after a step.");
+        }
+
+        [UnityTest]
+        public System.Collections.IEnumerator DebugGameplayScene_PuppyTabCanPlayAnimationWithoutMutatingState()
+        {
+            DebugPanel panel = DebugPanel.Instance ?? DebugPanel.EnsureInstance();
+            panel.ConfigureForTest(CreateTestLevel(), seed: 17);
+
+            yield return null;
+
+            UIDocument document = panel.GetComponent<UIDocument>();
+            Button? puppyTabButton = document.rootVisualElement.Q<Button>("tab-puppy-button");
+            DropdownField? targetSelector = document.rootVisualElement.Q<DropdownField>("puppy-target-selector");
+            DropdownField? animationSelector = document.rootVisualElement.Q<DropdownField>("puppy-animation-selector");
+            Button? playButton = document.rootVisualElement.Q<Button>("puppy-play-button");
+            Button? stopButton = document.rootVisualElement.Q<Button>("puppy-stop-button");
+            Button? lookAtButton = document.rootVisualElement.Q<Button>("puppy-look-at-player-button");
+
+            Assert.That(puppyTabButton, Is.Not.Null);
+            Assert.That(targetSelector, Is.Not.Null);
+            Assert.That(animationSelector, Is.Not.Null);
+            Assert.That(playButton, Is.Not.Null);
+            Assert.That(stopButton, Is.Not.Null);
+            Assert.That(lookAtButton, Is.Not.Null);
+            Assert.That(targetSelector!.choices, Does.Contain("0"));
+            Assert.That(animationSelector!.choices.Count, Is.GreaterThan(0));
+
+            string before = panel.ExportFullGameStateJson();
+            MethodInfo playMethod = typeof(DebugPanel).GetMethod("PlayPuppyAnimationSequence", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?? throw new AssertionException("Expected puppy debug play method.");
+            playMethod.Invoke(panel, null);
+
+            yield return null;
+
+            Assert.That(panel.ExportFullGameStateJson(), Is.EqualTo(before));
+            LogAssert.NoUnexpectedReceived();
         }
 
         private static LevelJson CreateTestLevel()

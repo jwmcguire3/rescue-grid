@@ -1309,6 +1309,7 @@ namespace Rescue.Unity.Debugging
             _panelBody = panel.Q<VisualElement>("debug-panel-body");
             _minimizeButton = panel.Q<Button>("debug-minimize-button");
             BindFxDebugUi(panel);
+            BindPuppyDebugUi(panel);
 
             if (_minimizeButton is not null)
             {
@@ -1843,6 +1844,7 @@ namespace Rescue.Unity.Debugging
             SyncOverrideFields();
             RefreshTuningUi();
             RefreshFxDebugUi();
+            RefreshPuppyDebugUi();
             RefreshPlaybackDebugUi();
             UpdatePlayButtonLabel();
 

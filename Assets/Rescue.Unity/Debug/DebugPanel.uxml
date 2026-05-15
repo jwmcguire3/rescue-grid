@@ -11,6 +11,7 @@
                 <ui:Button name="tab-play-button" text="Play" class="debug-tab-button debug-tab-button-active" />
                 <ui:Button name="tab-tune-button" text="Tune" class="debug-tab-button" />
                 <ui:Button name="tab-fx-button" text="FX" class="debug-tab-button" />
+                <ui:Button name="tab-puppy-button" text="Puppy" class="debug-tab-button" />
             </ui:VisualElement>
 
             <ui:ScrollView name="play-tab-content">
@@ -170,6 +171,24 @@
                 <ui:Toggle name="fx-debug-diagnostics-toggle" text="Diagnostics Enabled" />
                 <ui:FloatField name="fx-surface-offset-field" label="Surface Offset" />
                 <ui:Vector3Field name="fx-plane-rotation-offset-field" label="Plane Rotation Offset" />
+            </ui:ScrollView>
+
+            <ui:ScrollView name="puppy-tab-content">
+                <ui:Label text="Puppy Animation" class="debug-section" />
+                <ui:DropdownField name="puppy-target-selector" label="Target" />
+                <ui:DropdownField name="puppy-animation-selector" label="Animation" />
+                <ui:VisualElement class="button-row">
+                    <ui:Button name="puppy-add-button" text="Add" />
+                    <ui:Button name="puppy-clear-button" text="Clear" />
+                </ui:VisualElement>
+                <ui:Toggle name="puppy-repeat-toggle" text="Repeat" />
+                <ui:VisualElement class="button-row">
+                    <ui:Button name="puppy-play-button" text="Play" />
+                    <ui:Button name="puppy-stop-button" text="Stop" />
+                </ui:VisualElement>
+                <ui:Button name="puppy-look-at-player-button" text="Look At Player" />
+                <ui:Label name="puppy-sequence-value" text="Sequence: &lt;selected animation only&gt;" class="debug-value" />
+                <ui:Label name="puppy-catalog-value" text="Catalog: 0 clips" class="debug-value" />
             </ui:ScrollView>
         </ui:VisualElement>
     </ui:VisualElement>

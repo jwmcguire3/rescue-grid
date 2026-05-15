@@ -21,13 +21,16 @@ namespace Rescue.Unity.Debugging
         private const string PlayTabId = "play";
         private const string TuneTabId = "tune";
         private const string FxTabId = "fx";
+        private const string PuppyTabId = "puppy";
 
         private Button? _playTabButton;
         private Button? _tuneTabButton;
         private Button? _fxTabButton;
+        private Button? _puppyTabButton;
         private VisualElement? _playTabContent;
         private VisualElement? _tuneTabContent;
         private VisualElement? _fxTabContent;
+        private VisualElement? _puppyTabContent;
         private IntegerField? _tuneWaterRiseIntervalField;
         private IntegerField? _tuneInitialFloodedRowsField;
         private FloatField? _tuneAssistanceChanceField;
@@ -79,9 +82,11 @@ namespace Rescue.Unity.Debugging
             _playTabButton = panel.Q<Button>("tab-play-button");
             _tuneTabButton = panel.Q<Button>("tab-tune-button");
             _fxTabButton = panel.Q<Button>("tab-fx-button");
+            _puppyTabButton = panel.Q<Button>("tab-puppy-button");
             _playTabContent = panel.Q<VisualElement>("play-tab-content");
             _tuneTabContent = panel.Q<VisualElement>("tune-tab-content");
             _fxTabContent = panel.Q<VisualElement>("fx-tab-content");
+            _puppyTabContent = panel.Q<VisualElement>("puppy-tab-content");
             _tuneWaterRiseIntervalField = panel.Q<IntegerField>("tune-water-rise-interval-field");
             _tuneInitialFloodedRowsField = panel.Q<IntegerField>("tune-initial-flooded-rows-field");
             _tuneAssistanceChanceField = panel.Q<FloatField>("tune-assistance-chance-field");
@@ -112,6 +117,11 @@ namespace Rescue.Unity.Debugging
             if (_fxTabButton is not null)
             {
                 _fxTabButton.clicked += () => SetActiveTab(FxTabId);
+            }
+
+            if (_puppyTabButton is not null)
+            {
+                _puppyTabButton.clicked += () => SetActiveTab(PuppyTabId);
             }
 
             ConfigureDelayedTuneField(_tuneWaterRiseIntervalField);
@@ -398,6 +408,7 @@ namespace Rescue.Unity.Debugging
             {
                 TuneTabId => TuneTabId,
                 FxTabId => FxTabId,
+                PuppyTabId => PuppyTabId,
                 _ => PlayTabId,
             };
 
@@ -416,9 +427,15 @@ namespace Rescue.Unity.Debugging
                 _fxTabContent.style.display = _activeTab == FxTabId ? DisplayStyle.Flex : DisplayStyle.None;
             }
 
+            if (_puppyTabContent is not null)
+            {
+                _puppyTabContent.style.display = _activeTab == PuppyTabId ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+
             SetTabButtonState(_playTabButton, _activeTab == PlayTabId);
             SetTabButtonState(_tuneTabButton, _activeTab == TuneTabId);
             SetTabButtonState(_fxTabButton, _activeTab == FxTabId);
+            SetTabButtonState(_puppyTabButton, _activeTab == PuppyTabId);
         }
 
         private static void SetTabButtonState(Button? button, bool isActive)
@@ -470,6 +487,7 @@ namespace Rescue.Unity.Debugging
             tabRow.Add(MakeButton("Play", "tab-play-button", out _playTabButton));
             tabRow.Add(MakeButton("Tune", "tab-tune-button", out _tuneTabButton));
             tabRow.Add(MakeButton("FX", "tab-fx-button", out _fxTabButton));
+            tabRow.Add(MakeButton("Puppy", "tab-puppy-button", out _puppyTabButton));
             body.Add(tabRow);
 
             ScrollView playScroll = new ScrollView(ScrollViewMode.Vertical) { name = "play-tab-content" };
@@ -489,6 +507,12 @@ namespace Rescue.Unity.Debugging
             _fxTabContent = fxScroll;
             body.Add(fxScroll);
             BuildFxFallbackContent(fxScroll);
+
+            ScrollView puppyScroll = new ScrollView(ScrollViewMode.Vertical) { name = "puppy-tab-content" };
+            puppyScroll.style.flexGrow = 1.0f;
+            _puppyTabContent = puppyScroll;
+            body.Add(puppyScroll);
+            BuildPuppyFallbackContent(puppyScroll);
 
             return root;
         }

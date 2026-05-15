@@ -1,5 +1,7 @@
 using Rescue.Core.State;
 using UnityEngine;
+using UnityEngine.Animations;
+using UnityEngine.Playables;
 
 namespace Rescue.Unity.Presentation.Targets
 {
@@ -33,6 +35,12 @@ namespace Rescue.Unity.Presentation.Targets
         private float progressingFidgetRemaining;
         private float oneClearAwayBarkCooldownRemaining;
         private float oneClearAwayBarkRemaining;
+        private PlayableGraph debugAnimationGraph;
+        private AnimationClip[] debugAnimationSequence = System.Array.Empty<AnimationClip>();
+        private bool debugAnimationRepeats;
+        private int debugAnimationIndex;
+        private float debugAnimationRemainingSeconds;
+        private TargetReadiness? debugRestoreReadiness;
 
         public TargetReadiness? CurrentAppliedReadiness { get; private set; }
 
@@ -42,6 +50,10 @@ namespace Rescue.Unity.Presentation.Targets
 
         public TargetPuppyLookAt? ResolvedLookAt => lookAt;
 
+        public bool IsDebugAnimationPlaying => debugAnimationGraph.IsValid();
+
+        public string CurrentDebugAnimationName { get; private set; } = string.Empty;
+
         private void Awake()
         {
             ResolveAnimator();
@@ -49,8 +61,24 @@ namespace Rescue.Unity.Presentation.Targets
             DisableRootMotion();
         }
 
+        private void OnDisable()
+        {
+            StopDebugAnimation(restoreIdle: true);
+        }
+
+        private void OnDestroy()
+        {
+            StopDebugAnimation(restoreIdle: false);
+        }
+
         private void Update()
         {
+            if (IsDebugAnimationPlaying)
+            {
+                AdvanceDebugAnimation(Time.deltaTime);
+                return;
+            }
+
             AdvanceProceduralAnimation(Time.deltaTime);
         }
 
@@ -94,6 +122,7 @@ namespace Rescue.Unity.Presentation.Targets
 
         public void PlayExtract()
         {
+            StopDebugAnimation(restoreIdle: false);
             IsExtracting = true;
             StopProceduralAnimation();
             ResolveLookAt()?.PlayExtract();
@@ -107,6 +136,70 @@ namespace Rescue.Unity.Presentation.Targets
         public void AdvanceProceduralAnimationForTests(float deltaTime)
         {
             AdvanceProceduralAnimation(Mathf.Max(0f, deltaTime));
+        }
+
+        public bool PlayDebugAnimationClip(AnimationClip? clip, bool repeat)
+        {
+            if (clip == null)
+            {
+                return false;
+            }
+
+            return PlayDebugAnimationSequence(new[] { clip }, repeat);
+        }
+
+        public bool PlayDebugAnimationSequence(System.Collections.Generic.IReadOnlyList<AnimationClip>? clips, bool repeat)
+        {
+            if (clips is null || clips.Count == 0)
+            {
+                StopDebugAnimation(restoreIdle: true);
+                return false;
+            }
+
+            ResolveAnimator();
+            DisableRootMotion();
+            if (animator == null)
+            {
+                StopDebugAnimation(restoreIdle: false);
+                return false;
+            }
+
+            System.Collections.Generic.List<AnimationClip> validClips = new System.Collections.Generic.List<AnimationClip>(clips.Count);
+            for (int i = 0; i < clips.Count; i++)
+            {
+                if (clips[i] != null)
+                {
+                    validClips.Add(clips[i]);
+                }
+            }
+
+            if (validClips.Count == 0)
+            {
+                StopDebugAnimation(restoreIdle: true);
+                return false;
+            }
+
+            StopDebugAnimation(restoreIdle: false);
+            debugRestoreReadiness = CurrentAppliedReadiness;
+            debugAnimationSequence = validClips.ToArray();
+            debugAnimationRepeats = repeat;
+            debugAnimationIndex = 0;
+            StopProceduralAnimation();
+            IsExtracting = false;
+            return PlayDebugAnimationAtIndex(debugAnimationIndex);
+        }
+
+        public void StopDebugAnimation()
+        {
+            StopDebugAnimation(restoreIdle: true);
+        }
+
+        public void AdvanceDebugAnimationForTests(float deltaTime)
+        {
+            if (IsDebugAnimationPlaying)
+            {
+                AdvanceDebugAnimation(Mathf.Max(0f, deltaTime));
+            }
         }
 
         private string ResolveReadinessStateName(TargetReadiness readiness)
@@ -215,6 +308,91 @@ namespace Rescue.Unity.Presentation.Targets
             progressingFidgetRemaining = 0f;
             oneClearAwayBarkCooldownRemaining = 0f;
             oneClearAwayBarkRemaining = 0f;
+        }
+
+        private void AdvanceDebugAnimation(float deltaTime)
+        {
+            debugAnimationRemainingSeconds -= Mathf.Max(0f, deltaTime);
+            if (debugAnimationRemainingSeconds > 0f)
+            {
+                return;
+            }
+
+            int nextIndex = debugAnimationIndex + 1;
+            if (nextIndex >= debugAnimationSequence.Length)
+            {
+                if (!debugAnimationRepeats)
+                {
+                    StopDebugAnimation(restoreIdle: true);
+                    return;
+                }
+
+                nextIndex = 0;
+            }
+
+            debugAnimationIndex = nextIndex;
+            PlayDebugAnimationAtIndex(debugAnimationIndex);
+        }
+
+        private bool PlayDebugAnimationAtIndex(int index)
+        {
+            if (index < 0 || index >= debugAnimationSequence.Length)
+            {
+                StopDebugAnimation(restoreIdle: true);
+                return false;
+            }
+
+            ResolveAnimator();
+            Animator? targetAnimator = animator;
+            AnimationClip clip = debugAnimationSequence[index];
+            if (targetAnimator == null || clip == null)
+            {
+                StopDebugAnimation(restoreIdle: true);
+                return false;
+            }
+
+            DestroyDebugAnimationGraph();
+            debugAnimationGraph = PlayableGraph.Create($"{nameof(TargetPuppyAnimator)}DebugAnimation");
+            debugAnimationGraph.SetTimeUpdateMode(DirectorUpdateMode.GameTime);
+            AnimationClipPlayable clipPlayable = AnimationClipPlayable.Create(debugAnimationGraph, clip);
+            clipPlayable.SetApplyFootIK(false);
+            clipPlayable.SetApplyPlayableIK(false);
+            clipPlayable.SetDuration(clip.length);
+            AnimationPlayableOutput output = AnimationPlayableOutput.Create(debugAnimationGraph, "DebugAnimation", targetAnimator);
+            output.SetSourcePlayable(clipPlayable);
+            debugAnimationGraph.Play();
+            debugAnimationRemainingSeconds = Mathf.Max(0.01f, clip.length);
+            CurrentDebugAnimationName = clip.name;
+            return true;
+        }
+
+        private void StopDebugAnimation(bool restoreIdle)
+        {
+            bool wasPlaying = IsDebugAnimationPlaying;
+            DestroyDebugAnimationGraph();
+            debugAnimationSequence = System.Array.Empty<AnimationClip>();
+            debugAnimationRepeats = false;
+            debugAnimationIndex = 0;
+            debugAnimationRemainingSeconds = 0f;
+            CurrentDebugAnimationName = string.Empty;
+
+            if (!restoreIdle || !wasPlaying || !debugRestoreReadiness.HasValue)
+            {
+                return;
+            }
+
+            TargetReadiness readiness = debugRestoreReadiness.Value;
+            debugRestoreReadiness = null;
+            currentAppliedStateHash = 0;
+            ApplyReadiness(readiness);
+        }
+
+        private void DestroyDebugAnimationGraph()
+        {
+            if (debugAnimationGraph.IsValid())
+            {
+                debugAnimationGraph.Destroy();
+            }
         }
 
         private void ScheduleProgressingFidget()
