@@ -235,13 +235,25 @@ namespace Rescue.Unity.Art.Tests
             TargetPuppyLookAt? puppyLookAt = daisyPrefab.GetComponent<TargetPuppyLookAt>();
 
             Assert.That(animator, Is.Not.Null);
-            Assert.That(animator!.runtimeAnimatorController, Is.SameAs(controller));
-            Assert.That(animator.applyRootMotion, Is.False);
             Assert.That(puppyAnimator, Is.Not.Null);
             Assert.That(puppyLookAt, Is.Not.Null);
-            Assert.That(daisyPrefab.transform.Find("Visual")!.localScale, Is.EqualTo(Vector3.one * 3.4417312f));
+            if (animator is null || puppyAnimator is null || puppyLookAt is null)
+            {
+                throw new AssertionException("Daisy prefab should include animator, puppy animator, and look-at components.");
+            }
 
-            SerializedObject serializedAnimator = new SerializedObject(puppyAnimator!);
+            Assert.That(animator.runtimeAnimatorController, Is.SameAs(controller));
+            Assert.That(animator.applyRootMotion, Is.False);
+            Transform? visual = daisyPrefab.transform.Find("Visual");
+            Assert.That(visual, Is.Not.Null);
+            if (visual is null)
+            {
+                throw new AssertionException("Daisy prefab should include a Visual child.");
+            }
+
+            Assert.That(visual.localScale, Is.EqualTo(Vector3.one * 3.4417312f));
+
+            SerializedObject serializedAnimator = new SerializedObject(puppyAnimator);
             Assert.That(serializedAnimator.FindProperty("animator").objectReferenceValue, Is.SameAs(animator));
             AssertSerializedString(serializedAnimator, "trappedIdleState", "Target_Trapped_Idle");
             AssertSerializedString(serializedAnimator, "progressingIdleState", "Target_Progress_Idle");
@@ -251,10 +263,15 @@ namespace Rescue.Unity.Art.Tests
             AssertSerializedString(serializedAnimator, "progressingFidgetState", "Target_Progress_Fidget");
             AssertSerializedString(serializedAnimator, "oneClearAwayBarkState", "Target_OneClearAway_Bark");
 
-            SerializedObject serializedLookAt = new SerializedObject(puppyLookAt!);
+            SerializedObject serializedLookAt = new SerializedObject(puppyLookAt);
             AssertSerializedTransformName(serializedLookAt, "headBone", "head");
             AssertSerializedTransformName(serializedLookAt, "neckBone", "neck");
+            AssertSerializedTransformName(serializedLookAt, "lookSpace", "Visual");
             Assert.That(serializedLookAt.FindProperty("lookTarget").objectReferenceValue, Is.Null);
+            Assert.That(serializedLookAt.FindProperty("forcedMaxYawDegrees").floatValue, Is.EqualTo(80f).Within(0.001f));
+            Assert.That(serializedLookAt.FindProperty("forcedMaxPitchDegrees").floatValue, Is.EqualTo(42f).Within(0.001f));
+            Assert.That(serializedLookAt.FindProperty("forcedHeadEulerOffset").vector3Value, Is.EqualTo(new Vector3(-34f, 22f, 0f)));
+            Assert.That(serializedLookAt.FindProperty("forcedNeckEulerOffset").vector3Value, Is.EqualTo(new Vector3(-10f, 8f, 0f)));
 
             string[] controllerStateNames = controller.layers[0].stateMachine.states
                 .Select(state => state.state.name)

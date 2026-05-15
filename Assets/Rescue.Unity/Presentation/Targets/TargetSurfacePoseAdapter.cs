@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace Rescue.Unity.Presentation.Targets
 {
+    [DefaultExecutionOrder(-10)]
     public sealed class TargetSurfacePoseAdapter : MonoBehaviour
     {
         private string visualChildName = string.Empty;

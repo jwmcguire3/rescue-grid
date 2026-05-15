@@ -197,7 +197,8 @@ namespace Rescue.Unity.Debugging
             }
 
             bool repeat = _puppyRepeatToggle is not null && _puppyRepeatToggle.value;
-            if (!puppyAnimator!.PlayDebugAnimationSequence(sequence, repeat))
+            if (puppyAnimator is null ||
+                !puppyAnimator.PlayDebugAnimationSequence(sequence, repeat))
             {
                 SetStatus("Selected puppy could not play the debug animation.");
                 RefreshUi();
@@ -219,7 +220,14 @@ namespace Rescue.Unity.Debugging
                 return;
             }
 
-            puppyAnimator!.StopDebugAnimation();
+            if (puppyAnimator is null)
+            {
+                SetStatus("No live target puppy selected.");
+                RefreshUi();
+                return;
+            }
+
+            puppyAnimator.StopDebugAnimation();
             SetStatus("Stopped puppy debug animation.");
             RefreshUi();
         }
@@ -233,7 +241,14 @@ namespace Rescue.Unity.Debugging
                 return;
             }
 
-            TargetPuppyLookAt? lookAt = targetObject!.GetComponentInChildren<TargetPuppyLookAt>(includeInactive: true);
+            if (targetObject is null)
+            {
+                SetStatus("No live target puppy selected.");
+                RefreshUi();
+                return;
+            }
+
+            TargetPuppyLookAt? lookAt = targetObject.GetComponentInChildren<TargetPuppyLookAt>(includeInactive: true);
             if (lookAt == null)
             {
                 SetStatus("Selected puppy has no look-at component.");
@@ -241,9 +256,10 @@ namespace Rescue.Unity.Debugging
                 return;
             }
 
-            if (!lookAt.ForceLookAtPlayer(Camera.main))
+            TargetPuppyLookAtResult result = lookAt.TryForceLookAtPlayer(Camera.main);
+            if (result != TargetPuppyLookAtResult.Success)
             {
-                SetStatus("Selected puppy could not look at the player.");
+                SetStatus(FormatPuppyLookAtFailure(result));
                 RefreshUi();
                 return;
             }
@@ -296,6 +312,17 @@ namespace Rescue.Unity.Debugging
             return presenter is not null &&
                 presenter.TryGetTargetInstance(targetId, out targetObject) &&
                 targetObject != null;
+        }
+
+        private static string FormatPuppyLookAtFailure(TargetPuppyLookAtResult result)
+        {
+            return result switch
+            {
+                TargetPuppyLookAtResult.MissingBones => "Selected puppy is missing look-at bones.",
+                TargetPuppyLookAtResult.MissingCamera => "No active player-facing camera found.",
+                TargetPuppyLookAtResult.Extracting => "Selected puppy is already extracting.",
+                _ => "Selected puppy could not look at the player.",
+            };
         }
 
         private void RefreshPuppySequenceLabel()

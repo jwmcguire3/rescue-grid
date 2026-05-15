@@ -879,6 +879,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
                     serializedPuppyLookAt.FindProperty("headBone").objectReferenceValue = FindChildTransform(art.transform, "head");
                     serializedPuppyLookAt.FindProperty("neckBone").objectReferenceValue = FindChildTransform(art.transform, "neck");
                     serializedPuppyLookAt.FindProperty("lookTarget").objectReferenceValue = null;
+                    serializedPuppyLookAt.FindProperty("lookSpace").objectReferenceValue = art.transform;
                     serializedPuppyLookAt.FindProperty("smoothSeconds").floatValue = 0.16f;
                     serializedPuppyLookAt.ApplyModifiedPropertiesWithoutUndo();
 

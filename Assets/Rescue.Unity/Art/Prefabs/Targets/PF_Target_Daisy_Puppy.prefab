@@ -76,7 +76,17 @@ MonoBehaviour:
   headBone: {fileID: 6143779412521772673}
   neckBone: {fileID: 6540825106612604912}
   lookTarget: {fileID: 0}
+  lookSpace: {fileID: 1763127382731294445}
+  muzzleReference: {fileID: 0}
+  leftEyeReference: {fileID: 0}
+  rightEyeReference: {fileID: 0}
   smoothSeconds: 0.16
+  forcedMaxYawDegrees: 80
+  forcedMaxPitchDegrees: 42
+  forcedLookUpDegrees: 34
+  forcedLookRightDegrees: 18
+  forcedHeadEulerOffset: {x: -34, y: 22, z: 0}
+  forcedNeckEulerOffset: {x: -10, y: 8, z: 0}
 --- !u!1001 &2305098082096505094
 PrefabInstance:
   m_ObjectHideFlags: 0

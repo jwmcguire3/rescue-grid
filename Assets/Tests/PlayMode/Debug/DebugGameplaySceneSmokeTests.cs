@@ -6,6 +6,7 @@ using Rescue.Core.State;
 using Rescue.Unity.BoardPresentation;
 using Rescue.Unity.Debugging;
 using Rescue.Unity.Presentation;
+using Rescue.Unity.Presentation.Targets;
 using Rescue.PlayMode.Tests.Smoke;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -141,6 +142,7 @@ namespace Rescue.PlayMode.Tests.Debug
             Button? playButton = document.rootVisualElement.Q<Button>("puppy-play-button");
             Button? stopButton = document.rootVisualElement.Q<Button>("puppy-stop-button");
             Button? lookAtButton = document.rootVisualElement.Q<Button>("puppy-look-at-player-button");
+            Label? statusLabel = document.rootVisualElement.Q<Label>("status-label");
 
             Assert.That(puppyTabButton, Is.Not.Null);
             Assert.That(targetSelector, Is.Not.Null);
@@ -148,8 +150,30 @@ namespace Rescue.PlayMode.Tests.Debug
             Assert.That(playButton, Is.Not.Null);
             Assert.That(stopButton, Is.Not.Null);
             Assert.That(lookAtButton, Is.Not.Null);
-            Assert.That(targetSelector!.choices, Does.Contain("0"));
-            Assert.That(animationSelector!.choices.Count, Is.GreaterThan(0));
+            Assert.That(statusLabel, Is.Not.Null);
+            if (targetSelector is null || animationSelector is null)
+            {
+                throw new AssertionException("Expected puppy target and animation selectors.");
+            }
+
+            Assert.That(targetSelector.choices, Does.Contain("0"));
+            Assert.That(animationSelector.choices.Count, Is.GreaterThan(0));
+
+            BoardContentViewPresenter? contentPresenter = Object.FindFirstObjectByType<BoardContentViewPresenter>();
+            Assert.That(contentPresenter, Is.Not.Null, "Expected DebugGameplay to include a BoardContentViewPresenter.");
+            if (contentPresenter is null ||
+                !contentPresenter.TryGetTargetInstance("0", out GameObject? targetObject) ||
+                targetObject is null)
+            {
+                throw new AssertionException("Expected target 0 to resolve to a live puppy object.");
+            }
+
+            TargetPuppyLookAt? lookAt = targetObject.GetComponentInChildren<TargetPuppyLookAt>(true);
+            Assert.That(lookAt, Is.Not.Null, "Expected live Daisy target to include TargetPuppyLookAt.");
+            if (lookAt is null)
+            {
+                throw new AssertionException("Expected live Daisy target to include TargetPuppyLookAt.");
+            }
 
             string before = panel.ExportFullGameStateJson();
             MethodInfo playMethod = typeof(DebugPanel).GetMethod("PlayPuppyAnimationSequence", BindingFlags.Instance | BindingFlags.NonPublic)
@@ -158,7 +182,24 @@ namespace Rescue.PlayMode.Tests.Debug
 
             yield return null;
 
+            MethodInfo lookMethod = typeof(DebugPanel).GetMethod("MakeSelectedPuppyLookAtPlayer", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?? throw new AssertionException("Expected puppy debug look-at method.");
+            lookMethod.Invoke(panel, null);
+
+            float lookAtTimeout = Time.realtimeSinceStartup + 0.75f;
+            while (lookAt.CurrentBlend < 0.9f && Time.realtimeSinceStartup < lookAtTimeout)
+            {
+                yield return null;
+            }
+
             Assert.That(panel.ExportFullGameStateJson(), Is.EqualTo(before));
+            if (statusLabel is null)
+            {
+                throw new AssertionException("Expected debug status label.");
+            }
+
+            Assert.That(statusLabel.text, Is.EqualTo("Selected puppy is looking at the player."));
+            Assert.That(lookAt.CurrentBlend, Is.GreaterThan(0.9f));
             LogAssert.NoUnexpectedReceived();
         }
 
