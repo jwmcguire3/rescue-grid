@@ -203,7 +203,7 @@ namespace Rescue.PlayMode.Tests.Smoke
 
             Assert.That(session.CurrentLevelId, Is.EqualTo("L00"));
             Assert.That(tutorial.IsVisible, Is.True, "L00 should show the tutorial cards before play.");
-            Assert.That(tutorial.CurrentCardCount, Is.EqualTo(3));
+            Assert.That(tutorial.CurrentCardCount, Is.EqualTo(4));
             Assert.That(boardInput.IsInputBlocked, Is.True, "Tutorial cards should block board input while visible.");
 
             GameState initialState = session.CurrentState ?? throw new AssertionException("Game scene did not load L00.");
@@ -229,7 +229,7 @@ namespace Rescue.PlayMode.Tests.Smoke
             session.LoadLevel("L01", session.Seed);
             yield return null;
             Assert.That(tutorial.IsVisible, Is.True, "Loading L01 should show its tutorial.");
-            Assert.That(tutorial.CurrentCardCount, Is.EqualTo(2));
+            Assert.That(tutorial.CurrentCardCount, Is.EqualTo(3));
             Assert.That(boardInput.IsInputBlocked, Is.True);
             DismissAllTutorialCards(tutorial);
             yield return null;

@@ -8,7 +8,7 @@
           "header": "L00 TUTORIAL",
           "title": "RAIN AT RESCUE ROW",
           "body": "The rain started three days ago and hasn't stopped.\n\nThe yard is filling up, and the animals need to get to higher ground before the water does.",
-          "imageResourcePath": "Rescue.Unity/UI/Tutorial/blank_placeholder"
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/rescue_row_portrait"
         },
         {
           "header": "L00 TUTORIAL",
@@ -18,9 +18,15 @@
         },
         {
           "header": "L00 TUTORIAL",
-          "title": "THINKING IS FREE",
-          "body": "The water only rises when you move. Look at the board as long as you need.\n\nEvery action matters. But no one's rushing you.",
+          "title": "TWO OR MORE",
+          "body": "Tap any connected group of 2 or more matching supplies to clear it.\n\nThe water only rises when you move, so look as long as you need. Thinking is free.",
           "imageResourcePath": "Rescue.Unity/UI/Tutorial/L00_two_are_valid_free_thinking_screeshot"
+        },
+        {
+          "header": "L00 TUTORIAL",
+          "title": "The Forecast Row",
+          "body": "The wet shimmer shows where water is going next.\n\nFlooded rows are already lost. Forecast rows are your warning.",
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/L00_forecast_row_screeshot"
         }
       ]
     },
@@ -38,6 +44,12 @@
           "header": "L01 TUTORIAL",
           "title": "CLEAR HER FOUR SIDES",
           "body": "When the path above, below, left, and right of Daisy is open, she can reach safety.\n\nCorners don't count. Just the four direct sides.",
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/L00_what_counts_as_clear_screeshot"
+        },
+        {
+          "header": "L01 TUTORIAL",
+          "title": "Crates Need a Neighbor Clear",
+          "body": "Crates don\u2019t break when you tap the crate.\n\nClear supplies beside them. The hit comes from the neighboring clear.",
           "imageResourcePath": "Rescue.Unity/UI/Tutorial/L00_what_counts_as_clear_screeshot"
         }
       ]
