@@ -56,9 +56,11 @@
     <Compile Include="Assets\Tests\EditMode\Rescue.Unity\Presentation\ActionPlaybackPipelineRegressionTests.cs" />
     <Compile Include="Assets\Tests\EditMode\Rescue.Unity\Presentation\ActionPlaybackControllerTests.cs" />
     <Compile Include="Assets\Tests\EditMode\Rescue.Unity\Presentation\PortraitGameSceneLayoutTests.cs" />
+    <Compile Include="Assets\Tests\EditMode\Rescue.Unity\Presentation\TutorialCardPresenterTests.cs" />
     <Compile Include="Assets\Tests\EditMode\Rescue.Unity\Presentation\PlayableLevelSessionTests.cs" />
     <Compile Include="Assets\Tests\EditMode\Rescue.Unity\Presentation\VictoryScreenPresenterTests.cs" />
     <Compile Include="Assets\Tests\EditMode\Rescue.Unity\Presentation\SettingsMenuPresenterTests.cs" />
+    <Compile Include="Assets\Tests\EditMode\Rescue.Unity\Presentation\TutorialDeckRegistryTests.cs" />
     <Compile Include="Assets\Tests\EditMode\Rescue.Unity\Presentation\MaeReactionPresenterTests.cs" />
   </ItemGroup>
   <ItemGroup>

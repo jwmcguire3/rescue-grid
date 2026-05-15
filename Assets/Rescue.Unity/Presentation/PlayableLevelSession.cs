@@ -71,7 +71,7 @@ namespace Rescue.Unity.Presentation
         [SerializeField] private BoardInputPresenter? boardInput;
         [SerializeField] private VictoryScreenPresenter? victoryScreen;
         [SerializeField] private LossScreenPresenter? lossScreen;
-        [SerializeField] private L00IntroImagePresenter? l00IntroImage;
+        [SerializeField] private TutorialCardPresenter? tutorialCards;
         [SerializeField] private HapticEventRouter? hapticEventRouter;
         [SerializeField] private string startingLevelId = InitialLevelId;
         [SerializeField] private int seed = InitialSeed;
@@ -81,6 +81,7 @@ namespace Rescue.Unity.Presentation
         private string currentLevelId = InitialLevelId;
         private GameState? initialState;
         private Coroutine? releaseTutorialInputBlockCoroutine;
+        private bool loadNextLevelAfterTutorialDismissed;
 
         public string CurrentLevelId => currentLevelId;
 
@@ -124,7 +125,7 @@ namespace Rescue.Unity.Presentation
             gameStateView?.Rebuild(loaded);
             boardInput?.SetCurrentState(loaded, refreshView: false);
             SyncTerminalInputLock();
-            SyncL00IntroImage();
+            SyncPreLevelTutorial();
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
             Rescue.Unity.Diagnostics.AndroidWhiteoutDiagnostics.LogLevelVisualState(levelId);
 #endif
@@ -163,16 +164,18 @@ namespace Rescue.Unity.Presentation
         public void ShowTutorialImage()
         {
             ResolveSceneReferences();
-            CancelPendingTutorialInputRelease();
-            boardInput?.SetInputBlocked(true);
-            l00IntroImage?.Show();
+            loadNextLevelAfterTutorialDismissed = false;
+            if (TutorialDeckRegistry.TryGetAnyDeck(currentLevelId, out TutorialDeck deck))
+            {
+                ShowTutorialDeck(deck);
+            }
         }
 
         public bool TryUndo()
         {
             ResolveSceneReferences();
             SyncTerminalInputLock();
-            if (IsTerminalInputLocked)
+            if (IsTerminalInputLocked || IsTutorialVisible())
             {
                 return false;
             }
@@ -200,13 +203,13 @@ namespace Rescue.Unity.Presentation
         {
             ResolveSceneReferences();
             SyncTerminalInputLock();
-            if (IsTerminalInputLocked)
+            if (IsTerminalInputLocked || IsTutorialVisible())
             {
                 return false;
             }
 
             GameState? current = CurrentState;
-            if (current is null || gameStateView is null)
+            if (current is null || gameStateView == null)
             {
                 return false;
             }
@@ -228,7 +231,7 @@ namespace Rescue.Unity.Presentation
         {
             ResolveSceneReferences();
             GameState? current = CurrentState;
-            if (current is null || gameStateView is null)
+            if (current is null || gameStateView == null)
             {
                 return false;
             }
@@ -304,21 +307,21 @@ namespace Rescue.Unity.Presentation
 
         private void OnDestroy()
         {
-            if (victoryScreen is not null)
+            if (victoryScreen != null)
             {
                 victoryScreen.ReplayRequested -= ReplayCurrentLevel;
                 victoryScreen.NextLevelRequested -= HandleNextRequested;
             }
 
-            if (lossScreen is not null)
+            if (lossScreen != null)
             {
                 lossScreen.ReplayRequested -= ReplayCurrentLevel;
                 lossScreen.TryAgainRequested -= HandleRetryRequested;
             }
 
-            if (l00IntroImage is not null)
+            if (tutorialCards != null)
             {
-                l00IntroImage.Dismissed -= HandleL00IntroDismissed;
+                tutorialCards.Dismissed -= HandleTutorialDismissed;
             }
 
             CancelPendingTutorialInputRelease();
@@ -342,7 +345,7 @@ namespace Rescue.Unity.Presentation
             }
 
             PlayableLevelSession? existing = FindAnyObjectByType<PlayableLevelSession>();
-            if (existing is not null)
+            if (existing != null)
             {
                 return existing;
             }
@@ -367,47 +370,47 @@ namespace Rescue.Unity.Presentation
 
         private void ResolveSceneReferences()
         {
-            if (gameStateView is null)
+            if (gameStateView == null)
             {
                 gameStateView = FindAnyObjectByType<GameStateViewPresenter>();
             }
 
-            if (boardInput is null)
+            if (boardInput == null)
             {
                 boardInput = FindAnyObjectByType<BoardInputPresenter>();
             }
 
-            if (victoryScreen is null)
+            if (victoryScreen == null)
             {
                 victoryScreen = VictoryScreenPresenter.EnsureInstance();
             }
 
-            if (lossScreen is null)
+            if (lossScreen == null)
             {
                 lossScreen = LossScreenPresenter.EnsureInstance();
             }
 
-            if (l00IntroImage is null)
+            if (tutorialCards == null)
             {
-                l00IntroImage = L00IntroImagePresenter.EnsureInstance();
+                tutorialCards = TutorialCardPresenter.EnsureInstance();
             }
 
-            if (hapticEventRouter is null)
+            if (hapticEventRouter == null)
             {
                 hapticEventRouter = FindAnyObjectByType<HapticEventRouter>();
             }
 
-            if (hapticEventRouter is null && gameStateView is not null)
+            if (hapticEventRouter == null && gameStateView != null)
             {
                 hapticEventRouter = gameStateView.GetComponent<HapticEventRouter>();
-                if (hapticEventRouter is null)
+                if (hapticEventRouter == null)
                 {
                     hapticEventRouter = gameStateView.gameObject.AddComponent<HapticEventRouter>();
                 }
             }
 
             BindTerminalButtons();
-            BindL00IntroImage();
+            BindTutorialCards();
         }
 
         private void RouteManualHaptic(HapticEventId eventId)
@@ -427,7 +430,7 @@ namespace Rescue.Unity.Presentation
 
         private void BindTerminalButtons()
         {
-            if (victoryScreen is not null)
+            if (victoryScreen != null)
             {
                 victoryScreen.ReplayRequested -= ReplayCurrentLevel;
                 victoryScreen.NextLevelRequested -= HandleNextRequested;
@@ -435,7 +438,7 @@ namespace Rescue.Unity.Presentation
                 victoryScreen.NextLevelRequested += HandleNextRequested;
             }
 
-            if (lossScreen is not null)
+            if (lossScreen != null)
             {
                 lossScreen.ReplayRequested -= ReplayCurrentLevel;
                 lossScreen.TryAgainRequested -= HandleRetryRequested;
@@ -444,42 +447,43 @@ namespace Rescue.Unity.Presentation
             }
         }
 
-        private void BindL00IntroImage()
+        private void BindTutorialCards()
         {
-            if (l00IntroImage is null)
+            if (tutorialCards == null)
             {
                 return;
             }
 
-            l00IntroImage.Dismissed -= HandleL00IntroDismissed;
-            l00IntroImage.Dismissed += HandleL00IntroDismissed;
+            tutorialCards.Dismissed -= HandleTutorialDismissed;
+            tutorialCards.Dismissed += HandleTutorialDismissed;
         }
 
-        private void SyncL00IntroImage()
+        private void SyncPreLevelTutorial()
         {
-            if (l00IntroImage is null)
+            if (tutorialCards == null)
             {
                 return;
             }
 
-            bool shouldShow = string.Equals(currentLevelId, InitialLevelId, StringComparison.Ordinal);
-            if (shouldShow)
+            loadNextLevelAfterTutorialDismissed = false;
+            if (TutorialDeckRegistry.TryGetDeck(currentLevelId, TutorialShowTiming.Pre, out TutorialDeck deck))
             {
-                CancelPendingTutorialInputRelease();
+                ShowTutorialDeck(deck);
+                return;
             }
 
-            boardInput?.SetInputBlocked(shouldShow);
-            if (shouldShow)
-            {
-                l00IntroImage.Show();
-            }
-            else
-            {
-                l00IntroImage.Hide();
-            }
+            tutorialCards.Hide();
+            boardInput?.SetInputBlocked(false);
         }
 
-        private void HandleL00IntroDismissed()
+        private void ShowTutorialDeck(TutorialDeck deck)
+        {
+            CancelPendingTutorialInputRelease();
+            boardInput?.SetInputBlocked(true);
+            tutorialCards?.ShowDeck(deck);
+        }
+
+        private void HandleTutorialDismissed()
         {
             CancelPendingTutorialInputRelease();
             releaseTutorialInputBlockCoroutine = StartCoroutine(ReleaseTutorialInputBlockNextFrame());
@@ -489,9 +493,14 @@ namespace Rescue.Unity.Presentation
         {
             yield return null;
             releaseTutorialInputBlockCoroutine = null;
-            if (l00IntroImage is null || !l00IntroImage.IsVisible)
+            if (tutorialCards == null || !tutorialCards.IsVisible)
             {
                 boardInput?.SetInputBlocked(false);
+                if (loadNextLevelAfterTutorialDismissed)
+                {
+                    loadNextLevelAfterTutorialDismissed = false;
+                    LoadNextLevel();
+                }
             }
         }
 
@@ -513,12 +522,25 @@ namespace Rescue.Unity.Presentation
 
         private bool IsTerminalScreenVisible()
         {
-            return (victoryScreen is not null && victoryScreen.IsVisible)
-                || (lossScreen is not null && lossScreen.IsVisible);
+            return (victoryScreen != null && victoryScreen.IsVisible)
+                || (lossScreen != null && lossScreen.IsVisible);
+        }
+
+        private bool IsTutorialVisible()
+        {
+            return tutorialCards != null && tutorialCards.IsVisible;
         }
 
         private void HandleNextRequested()
         {
+            if (TutorialDeckRegistry.TryGetDeck(currentLevelId, TutorialShowTiming.PostWin, out TutorialDeck deck))
+            {
+                victoryScreen?.Hide();
+                loadNextLevelAfterTutorialDismissed = true;
+                ShowTutorialDeck(deck);
+                return;
+            }
+
             LoadNextLevel();
         }
 

@@ -49,6 +49,7 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Rescue.Unity\Presentation\TutorialCardPresenter.cs" />
     <Compile Include="Assets\Rescue.Unity\Presentation\VictoryScreenPresenter.cs" />
     <Compile Include="Assets\Rescue.Unity\Art\Validation\MeshyAssetValidationSettings.cs" />
     <Compile Include="Assets\Rescue.Unity\Haptics\IHapticPlatformAdapter.cs" />
@@ -88,6 +89,7 @@
     <Compile Include="Assets\Rescue.Unity\Presentation\MaeReactionPresenter.cs" />
     <Compile Include="Assets\Rescue.Unity\Presentation\PlayableLevelSession.cs" />
     <Compile Include="Assets\Rescue.Unity\Input\BoardInputPresenter.cs" />
+    <Compile Include="Assets\Rescue.Unity\Presentation\TutorialDeckRegistry.cs" />
     <Compile Include="Assets\Rescue.Unity\Board\BoardContentMarkerFactory.cs" />
     <Compile Include="Assets\Rescue.Unity\FX\FxDebugCatalog.cs" />
     <Compile Include="Assets\Rescue.Unity\Debug\TargetPuppyAnimationCatalog.cs" />

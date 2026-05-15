@@ -63,6 +63,7 @@ namespace Rescue.Unity.Presentation.Tests
             DestroyAny<VictoryScreenPresenter>();
             DestroyAny<LossScreenPresenter>();
             DestroyAny<L00IntroImagePresenter>();
+            DestroyAny<TutorialCardPresenter>();
 
             PlayerPrefs.DeleteKey(AudioSettingsController.MusicVolumePrefsKey);
             PlayerPrefs.DeleteKey(AudioSettingsController.FxVolumePrefsKey);

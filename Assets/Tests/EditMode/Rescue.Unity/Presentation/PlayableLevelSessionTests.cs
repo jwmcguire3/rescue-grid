@@ -88,11 +88,15 @@ namespace Rescue.Unity.Presentation.Tests
             lossObject.AddComponent<UIDocument>();
             lossScreen = lossObject.AddComponent<LossScreenPresenter>();
 
+            GameObject tutorialObject = CreateTrackedGameObject("TutorialCards");
+            TutorialCardPresenter tutorialCards = tutorialObject.AddComponent<TutorialCardPresenter>();
+
             SetPrivateField(boardInput, "gameStateView", gameStateView);
             SetPrivateField(session, "gameStateView", gameStateView);
             SetPrivateField(session, "boardInput", boardInput);
             SetPrivateField(session, "victoryScreen", victoryScreen);
             SetPrivateField(session, "lossScreen", lossScreen);
+            SetPrivateField(session, "tutorialCards", tutorialCards);
             return session;
         }
 

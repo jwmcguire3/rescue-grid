@@ -1,0 +1,154 @@
+{
+  "decks": [
+    {
+      "levelId": "L00",
+      "showTiming": "pre",
+      "cards": [
+        {
+          "header": "L00 TUTORIAL",
+          "title": "RAIN AT RESCUE ROW",
+          "body": "The rain started three days ago and hasn't stopped.\n\nThe yard is filling up, and the animals need to get to higher ground before the water does.",
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/blank_placeholder"
+        },
+        {
+          "header": "L00 TUTORIAL",
+          "title": "CLEAR THE WAY",
+          "body": "Mae has been running Rescue Row for a long time. She knows what to do when it floods: clear the supplies, open the paths, get the animals out.\n\nTap matching groups to clear them from the yard.",
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/L00_clear_the_way_screenshot"
+        },
+        {
+          "header": "L00 TUTORIAL",
+          "title": "THINKING IS FREE",
+          "body": "The water only rises when you move. Look at the board as long as you need.\n\nEvery action matters. But no one's rushing you.",
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/L00_two_are_valid_free_thinking_screeshot"
+        }
+      ]
+    },
+    {
+      "levelId": "L01",
+      "showTiming": "pre",
+      "cards": [
+        {
+          "header": "L01 TUTORIAL",
+          "title": "DAISY",
+          "body": "Mae found her under the supply shelf the night the rain started. Small, scruffy, watches everything.\n\nShe hasn't moved from that corner since. She's waiting for someone to clear the way.",
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/blank_placeholder"
+        },
+        {
+          "header": "L01 TUTORIAL",
+          "title": "CLEAR HER FOUR SIDES",
+          "body": "When the path above, below, left, and right of Daisy is open, she can reach safety.\n\nCorners don't count. Just the four direct sides.",
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/L00_what_counts_as_clear_screeshot"
+        }
+      ]
+    },
+    {
+      "levelId": "L02",
+      "showTiming": "pre",
+      "cards": [
+        {
+          "header": "L02 TUTORIAL",
+          "title": "THE SORTING DOCK",
+          "body": "Cleared supplies don't disappear: they go to the dock. Mae sorts them when she has three of the same kind.\n\nSeven spaces. That's all the room she has.",
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/L02_dock_half_full_screeshot"
+        },
+        {
+          "header": "L02 TUTORIAL",
+          "title": "THREES SORT AWAY",
+          "body": "Three matching supplies sort themselves out of the dock automatically.\n\nEverything else stays until you match it. If the dock fills completely, there's nowhere left to put things, and the rescue stops.",
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/L02_three_sorts_dock_screeshot"
+        }
+      ]
+    },
+    {
+      "levelId": "L03",
+      "showTiming": "pre",
+      "cards": [
+        {
+          "header": "L03 TUTORIAL",
+          "title": "TWO AT ONCE",
+          "body": "Two animals need help. The water is closer to one of them.\n\nMae can't reach both at the same time. Someone has to go first.",
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/L03_two_at_once_screeshot"
+        },
+        {
+          "header": "L03 TUTORIAL",
+          "title": "THE ONE IN DANGER GOES FIRST",
+          "body": "Save the animal closest to the water before it reaches them.\n\nIf you clear the safe one first, you might run out of moves before you get back to the one who needed you more.",
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/L03_lower_puppy_emphasis_screenshot"
+        }
+      ]
+    },
+    {
+      "levelId": "L04",
+      "showTiming": "pre",
+      "cards": [
+        {
+          "header": "L04 TUTORIAL",
+          "title": "FROZEN OVER",
+          "body": "The temperature dropped last night. Some of the supplies in the yard are frozen solid.\n\nMae can't move them until the ice breaks, but she can see what's underneath.",
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/L04_frozen_over_screeshot"
+        },
+        {
+          "header": "L04 TUTORIAL",
+          "title": "BREAK THE ICE",
+          "body": "Clear a group next to a frozen tile and the ice cracks open. The supply inside joins the board.\n\nSometimes the fastest rescue path is locked under the frost. Look through the ice before you choose your move.",
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/blank_placeholder"
+        }
+      ]
+    },
+    {
+      "levelId": "L07",
+      "showTiming": "pre",
+      "cards": [
+        {
+          "header": "L07 TUTORIAL",
+          "title": "WILD VINE",
+          "body": "The rain brought the vine back. It grows fast in wet ground, and it grows toward open space.\n\nThe paths you clear for the animals? That's exactly where the vine wants to go.",
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/L07_vine_introduction_screeshot"
+        },
+        {
+          "header": "L07 TUTORIAL",
+          "title": "CUT IT BACK",
+          "body": "Clear a group next to vine to remove it. But if you leave vine alone too long, it grows into the open tiles you already cleared.\n\nWatch the tendrils. When they're reaching, you're running out of time to cut them.",
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/blank_placeholder"
+        }
+      ]
+    },
+    {
+      "levelId": "L08",
+      "showTiming": "pre",
+      "cards": [
+        {
+          "header": "L08 TUTORIAL",
+          "title": "PAST THE FENCE",
+          "body": "It's worse out there than Mae expected.\n\nThe street hasn't drained in two days. The shelter is the dry ground for three blocks in any direction.",
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/blank_placeholder"
+        },
+        {
+          "header": "L08 TUTORIAL",
+          "title": "THE VINE DOESN'T WAIT",
+          "body": "While you focus on the water, the vine keeps growing. Every few moves you don't cut it back, it takes another tile.\n\nIt reaches for rescue paths first. The space you opened for the animal, the vine fills it back in.",
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/L08_vine_creep_screeshot"
+        },
+        {
+          "header": "L08 TUTORIAL",
+          "title": "TWO PROBLEMS AT ONCE",
+          "body": "Water rises when you act. Vine grows when you don't act on it.\n\nYou can't fix both at the same time. Decide which one is closer to the animal, and handle that first.",
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/blank_placeholder"
+        }
+      ]
+    },
+    {
+      "levelId": "L10",
+      "showTiming": "postWin",
+      "cards": [
+        {
+          "header": "L10 TUTORIAL",
+          "title": "STILL STANDING",
+          "body": "That was the hardest one yet. Everything at once: water, vine, ice, and two animals counting on you.\n\nYou handled it.",
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/blank_placeholder"
+        }
+      ]
+    }
+  ]
+}

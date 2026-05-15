@@ -66,6 +66,7 @@ namespace Rescue.PlayMode.Tests.Smoke
             BoardInputPresenter boardInput = FindRequired<BoardInputPresenter>();
             SettingsMenuPresenter settings = FindRequired<SettingsMenuPresenter>();
             SettingsMenuView settingsView = FindRequired<SettingsMenuView>();
+            TutorialCardPresenter tutorial = FindRequired<TutorialCardPresenter>();
             Assert.That(settings.View, Is.SameAs(settingsView));
             Assert.That(settingsView.RestartButton, Is.Not.Null);
             Assert.That(settingsView.SettingsButton, Is.Not.Null);
@@ -81,6 +82,9 @@ namespace Rescue.PlayMode.Tests.Smoke
             {
                 Assert.That(settings.LevelChoices[i], Does.StartWith(PlayableLevelSession.LevelIds[i]));
             }
+
+            DismissAllTutorialCards(tutorial);
+            yield return null;
 
             Assert.That(session.TryRunAction(new TileCoord(4, 0)), Is.True);
             yield return WaitForPlayback();
@@ -190,27 +194,28 @@ namespace Rescue.PlayMode.Tests.Smoke
         }
 
         [UnityTest]
-        public System.Collections.IEnumerator GameScene_L00IntroImageBlocksInputUntilDismissedAndReturnsOnReload()
+        public System.Collections.IEnumerator GameScene_TutorialCardsBlockInputUntilDismissedAndReturnOnReload()
         {
             PlayableLevelSession session = FindRequired<PlayableLevelSession>();
             BoardInputPresenter boardInput = FindRequired<BoardInputPresenter>();
-            L00IntroImagePresenter intro = FindRequired<L00IntroImagePresenter>();
+            TutorialCardPresenter tutorial = FindRequired<TutorialCardPresenter>();
             SettingsMenuPresenter settings = FindRequired<SettingsMenuPresenter>();
 
             Assert.That(session.CurrentLevelId, Is.EqualTo("L00"));
-            Assert.That(intro.IsVisible, Is.True, "L00 should show the intro image before play.");
-            Assert.That(boardInput.IsInputBlocked, Is.True, "L00 intro should block board input while visible.");
+            Assert.That(tutorial.IsVisible, Is.True, "L00 should show the tutorial cards before play.");
+            Assert.That(tutorial.CurrentCardCount, Is.EqualTo(3));
+            Assert.That(boardInput.IsInputBlocked, Is.True, "Tutorial cards should block board input while visible.");
 
             GameState initialState = session.CurrentState ?? throw new AssertionException("Game scene did not load L00.");
             Assert.That(boardInput.TryRunActionAt(new TileCoord(4, 0)), Is.False, "The first board tap should be consumed by the intro gate.");
             Assert.That(session.CurrentState?.ActionCount, Is.EqualTo(initialState.ActionCount));
 
-            intro.Dismiss();
-            Assert.That(boardInput.IsInputBlocked, Is.True, "Dismissing the intro should keep board input blocked for the dismissal frame.");
+            DismissAllTutorialCards(tutorial);
+            Assert.That(boardInput.IsInputBlocked, Is.True, "Dismissing the tutorial should keep board input blocked for the dismissal frame.");
             Assert.That(boardInput.TryRunActionAt(new TileCoord(4, 0)), Is.False, "The dismissing tap should not pass through to the board.");
             yield return null;
 
-            Assert.That(intro.IsVisible, Is.False);
+            Assert.That(tutorial.IsVisible, Is.False);
             Assert.That(boardInput.IsInputBlocked, Is.False);
             Assert.That(boardInput.TryRunActionAt(new TileCoord(4, 0)), Is.True, "After dismissing the intro, L00 should accept normal board input.");
             yield return WaitForPlayback();
@@ -218,12 +223,21 @@ namespace Rescue.PlayMode.Tests.Smoke
 
             session.LoadLevel("L00", session.Seed);
             yield return null;
-            Assert.That(intro.IsVisible, Is.True, "Reloading L00 should show the intro again.");
+            Assert.That(tutorial.IsVisible, Is.True, "Reloading L00 should show the tutorial again.");
             Assert.That(boardInput.IsInputBlocked, Is.True);
 
             session.LoadLevel("L01", session.Seed);
             yield return null;
-            Assert.That(intro.IsVisible, Is.False, "Loading a non-L00 level should hide the intro.");
+            Assert.That(tutorial.IsVisible, Is.True, "Loading L01 should show its tutorial.");
+            Assert.That(tutorial.CurrentCardCount, Is.EqualTo(2));
+            Assert.That(boardInput.IsInputBlocked, Is.True);
+            DismissAllTutorialCards(tutorial);
+            yield return null;
+            Assert.That(boardInput.IsInputBlocked, Is.False);
+
+            session.LoadLevel("L05", session.Seed);
+            yield return null;
+            Assert.That(tutorial.IsVisible, Is.False, "Loading a level without tutorial cards should hide the tutorial.");
             Assert.That(boardInput.IsInputBlocked, Is.False);
 
             settings.SetOpen(true);
@@ -231,13 +245,23 @@ namespace Rescue.PlayMode.Tests.Smoke
             yield return null;
 
             Assert.That(settings.IsOpen, Is.False, "Show Tutorial should close settings before displaying the image.");
-            Assert.That(intro.IsVisible, Is.True, "Show Tutorial should reuse the L00 intro image overlay.");
-            Assert.That(boardInput.IsInputBlocked, Is.True, "Show Tutorial should block board input until dismissed.");
+            Assert.That(tutorial.IsVisible, Is.False, "Show Tutorial on a level without cards should do nothing.");
+            Assert.That(boardInput.IsInputBlocked, Is.False);
 
-            intro.Dismiss();
+            session.LoadLevel("L01", session.Seed);
+            yield return null;
+            DismissAllTutorialCards(tutorial);
+            yield return null;
+            settings.SetOpen(true);
+            settings.RequestShowTutorial();
             yield return null;
 
-            Assert.That(intro.IsVisible, Is.False);
+            Assert.That(tutorial.IsVisible, Is.True, "Show Tutorial should replay the current level tutorial.");
+            Assert.That(boardInput.IsInputBlocked, Is.True, "Show Tutorial should block board input until dismissed.");
+            DismissAllTutorialCards(tutorial);
+            yield return null;
+
+            Assert.That(tutorial.IsVisible, Is.False);
             Assert.That(boardInput.IsInputBlocked, Is.False);
         }
 
@@ -300,6 +324,8 @@ namespace Rescue.PlayMode.Tests.Smoke
             PlayableLevelSession session = FindRequired<PlayableLevelSession>();
             GameStateViewPresenter presenter = FindRequired<GameStateViewPresenter>();
             FxEventRouter fxEventRouter = FindRequired<FxEventRouter>();
+            DismissAllTutorialCards(FindRequired<TutorialCardPresenter>());
+            yield return null;
             Transform fxRoot = fxEventRouter.FxRoot ?? fxEventRouter.transform;
             int childCountBefore = fxRoot.childCount;
 
@@ -342,7 +368,10 @@ namespace Rescue.PlayMode.Tests.Smoke
             PlayableLevelSession session = FindRequired<PlayableLevelSession>();
             VictoryScreenPresenter victoryScreen = VictoryScreenPresenter.EnsureInstance();
             LossScreenPresenter lossScreen = LossScreenPresenter.EnsureInstance();
+            TutorialCardPresenter tutorial = FindRequired<TutorialCardPresenter>();
 
+            DismissAllTutorialCards(tutorial);
+            yield return null;
             Assert.That(session.TryRunAction(new TileCoord(4, 0)), Is.True);
             yield return WaitForPlayback();
             Assert.That(session.TryRunAction(new TileCoord(1, 2)), Is.True);
@@ -353,6 +382,9 @@ namespace Rescue.PlayMode.Tests.Smoke
             yield return null;
 
             Assert.That(session.CurrentLevelId, Is.EqualTo("L01"));
+            Assert.That(tutorial.IsVisible, Is.True, "Loading L01 from the victory screen should show its tutorial.");
+            DismissAllTutorialCards(tutorial);
+            yield return null;
             Assert.That(session.CurrentState, Is.Not.Null);
             GameState currentState = session.CurrentState ?? throw new AssertionException("Next level did not load a state.");
             Assert.That(currentState.ActionCount, Is.EqualTo(0));
@@ -372,6 +404,33 @@ namespace Rescue.PlayMode.Tests.Smoke
             currentState = session.CurrentState ?? throw new AssertionException("Retry did not reload a state.");
             Assert.That(currentState.ActionCount, Is.EqualTo(0));
             Assert.That(lossScreen.IsVisible, Is.False);
+        }
+
+        [UnityTest]
+        public System.Collections.IEnumerator GameScene_L10NextShowsPostWinTutorialBeforeAdvancing()
+        {
+            PlayableLevelSession session = FindRequired<PlayableLevelSession>();
+            VictoryScreenPresenter victoryScreen = VictoryScreenPresenter.EnsureInstance();
+            TutorialCardPresenter tutorial = FindRequired<TutorialCardPresenter>();
+
+            session.LoadLevel("L10", session.Seed);
+            yield return null;
+            Assert.That(tutorial.IsVisible, Is.False, "L10 should not show pre-level cards.");
+
+            victoryScreen.Show();
+            victoryScreen.RequestNextLevel();
+            yield return null;
+
+            Assert.That(victoryScreen.IsVisible, Is.False);
+            Assert.That(tutorial.IsVisible, Is.True, "L10 next should show the earned post-level card.");
+            Assert.That(tutorial.CurrentTitle, Is.EqualTo("STILL STANDING"));
+            Assert.That(session.CurrentLevelId, Is.EqualTo("L10"));
+
+            DismissAllTutorialCards(tutorial);
+            yield return null;
+
+            Assert.That(session.CurrentLevelId, Is.EqualTo("L11"));
+            Assert.That(tutorial.IsVisible, Is.False);
         }
 
         private static System.Collections.IEnumerator WaitForPlayback()
@@ -639,6 +698,16 @@ namespace Rescue.PlayMode.Tests.Smoke
             }
 
             return builder.ToString();
+        }
+
+        private static void DismissAllTutorialCards(TutorialCardPresenter tutorial)
+        {
+            int guard = 0;
+            while (tutorial.IsVisible && guard < 10)
+            {
+                tutorial.Continue();
+                guard++;
+            }
         }
 
         private static string BuildRootDiagnostics(
