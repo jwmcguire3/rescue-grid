@@ -106,6 +106,7 @@ namespace Rescue.Unity.Targets.Tests
             TargetPuppyLookAt lookAt = CreateLookAtRig(out _, out Transform neck, out Transform head, out _);
             Camera camera = CreateCamera("PlayerCamera");
             SetPrivateField(lookAt, "smoothSeconds", 0f);
+            SetPrivateField(lookAt, "forcedReleaseSmoothSeconds", 0.5f);
             camera.transform.position = new Vector3(10f, 10f, 10f);
 
             lookAt.ApplyReadiness(TargetReadiness.OneClearAway);
@@ -125,7 +126,53 @@ namespace Rescue.Unity.Targets.Tests
 
             lookAt.ApplyLookAtForTests(0.2f);
 
-            Assert.That(lookAt.CurrentBlend, Is.EqualTo(lookAt.ActiveMaxYawDegrees > 0f ? 0.28f : 0f).Within(0.001f));
+            Assert.That(lookAt.CurrentBlend, Is.LessThan(1f));
+            Assert.That(lookAt.CurrentBlend, Is.GreaterThan(0.28f));
+        }
+
+        [Test]
+        public void TargetPuppyLookAt_ForcedLookAtReleaseDecaysOverMultipleTicks()
+        {
+            TargetPuppyLookAt lookAt = CreateLookAtRigWithEyes(
+                out _,
+                out Transform neck,
+                out Transform head,
+                out _,
+                out Transform leftEye,
+                out Transform rightEye);
+            Camera camera = CreateCamera("PlayerCamera");
+            SetPrivateField(lookAt, "smoothSeconds", 0f);
+            SetPrivateField(lookAt, "forcedReleaseSmoothSeconds", 0.5f);
+            camera.transform.position = new Vector3(10f, 8f, 10f);
+
+            lookAt.ApplyReadiness(TargetReadiness.Trapped);
+            Assert.That(lookAt.ForceLookAtPlayer(camera, 0.05f), Is.True);
+            lookAt.ApplyLookAtForTests(0.01f);
+
+            Quaternion heldHead = head.localRotation;
+            Quaternion heldNeck = neck.localRotation;
+            Quaternion heldLeftEye = leftEye.localRotation;
+            Quaternion heldRightEye = rightEye.localRotation;
+            Assert.That(lookAt.CurrentBlend, Is.EqualTo(1f).Within(0.001f));
+            Assert.That(lookAt.CurrentEyeBlend, Is.EqualTo(1f).Within(0.001f));
+
+            lookAt.ApplyLookAtForTests(0.06f);
+            float firstReleaseBlend = lookAt.CurrentBlend;
+            float firstEyeReleaseBlend = lookAt.CurrentEyeBlend;
+            Assert.That(firstReleaseBlend, Is.LessThan(1f));
+            Assert.That(firstReleaseBlend, Is.GreaterThan(lookAt.CurrentReadiness == TargetReadiness.Trapped ? 0.04f : 0f));
+            Assert.That(firstEyeReleaseBlend, Is.LessThan(1f));
+            Assert.That(firstEyeReleaseBlend, Is.GreaterThan(0f));
+            Assert.That(Quaternion.Angle(head.localRotation, heldHead), Is.GreaterThan(0.01f));
+            Assert.That(Quaternion.Angle(neck.localRotation, heldNeck), Is.GreaterThan(0.01f));
+            Assert.That(Quaternion.Angle(leftEye.localRotation, heldLeftEye), Is.GreaterThan(0.01f));
+            Assert.That(Quaternion.Angle(rightEye.localRotation, heldRightEye), Is.GreaterThan(0.01f));
+
+            lookAt.ApplyLookAtForTests(0.06f);
+
+            Assert.That(lookAt.CurrentBlend, Is.LessThan(firstReleaseBlend));
+            Assert.That(lookAt.CurrentEyeBlend, Is.LessThan(firstEyeReleaseBlend));
+            Assert.That(lookAt.CurrentEyeBlend, Is.GreaterThan(0f));
         }
 
         [Test]
@@ -178,18 +225,7 @@ namespace Rescue.Unity.Targets.Tests
         [Test]
         public void TargetPuppyLookAt_DaisyPrefabForcedLookAtUsesStrongerVisibleAim()
         {
-            const string DaisyTargetPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Targets/PF_Target_Daisy_Puppy.prefab";
-            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(DaisyTargetPrefabPath);
-            Assert.That(prefab, Is.Not.Null, $"Expected Daisy prefab at '{DaisyTargetPrefabPath}'.");
-
-            GameObject instance = Object.Instantiate(prefab);
-            createdObjects.Add(instance);
-            TargetPuppyLookAt? lookAt = instance.GetComponent<TargetPuppyLookAt>();
-            Assert.That(lookAt, Is.Not.Null);
-            if (lookAt is null)
-            {
-                throw new AssertionException("Expected Daisy prefab to include TargetPuppyLookAt.");
-            }
+            GameObject instance = InstantiateDaisyPrefab(out TargetPuppyLookAt lookAt);
 
             Transform? visual = instance.transform.Find("Visual");
             Assert.That(visual, Is.Not.Null);
@@ -204,6 +240,7 @@ namespace Rescue.Unity.Targets.Tests
             Transform rightEye = FindChildTransform(instance.transform, "eye.R")
                 ?? throw new AssertionException("Expected Daisy prefab to include a right eye landmark.");
             Camera camera = CreateCamera("PlayerCamera");
+            camera.orthographic = true;
             camera.transform.SetPositionAndRotation(
                 PortraitGameSceneLayout.CameraPortraitPosition,
                 PortraitGameSceneLayout.CameraPortraitRotation);
@@ -234,19 +271,73 @@ namespace Rescue.Unity.Targets.Tests
         }
 
         [Test]
+        public void TargetPuppyLookAt_DaisyPrefabForcedLookAtImprovesEyeCameraAlignment()
+        {
+            GameObject instanceWithEyes = InstantiateDaisyPrefab(out TargetPuppyLookAt lookAtWithEyes);
+            GameObject instanceWithoutEyes = InstantiateDaisyPrefab(out TargetPuppyLookAt lookAtWithoutEyes);
+            SetPrivateField(lookAtWithEyes, "smoothSeconds", 0f);
+            SetPrivateField(lookAtWithoutEyes, "smoothSeconds", 0f);
+            SetPrivateField(lookAtWithoutEyes, "forcedEyeMaxYawDegrees", 0f);
+            SetPrivateField(lookAtWithoutEyes, "forcedEyeMaxPitchDegrees", 0f);
+
+            Transform leftEyeWithAim = FindChildTransform(instanceWithEyes.transform, "eye.L")
+                ?? throw new AssertionException("Expected Daisy prefab to include a left eye bone.");
+            Transform rightEyeWithAim = FindChildTransform(instanceWithEyes.transform, "eye.R")
+                ?? throw new AssertionException("Expected Daisy prefab to include a right eye bone.");
+            Transform leftEyeEndWithAim = FindChildTransform(instanceWithEyes.transform, "eye.L_end")
+                ?? throw new AssertionException("Expected Daisy prefab to include a left eye end landmark.");
+            Transform rightEyeEndWithAim = FindChildTransform(instanceWithEyes.transform, "eye.R_end")
+                ?? throw new AssertionException("Expected Daisy prefab to include a right eye end landmark.");
+            Transform leftEyeWithoutAim = FindChildTransform(instanceWithoutEyes.transform, "eye.L")
+                ?? throw new AssertionException("Expected Daisy prefab to include a left eye bone.");
+            Transform rightEyeWithoutAim = FindChildTransform(instanceWithoutEyes.transform, "eye.R")
+                ?? throw new AssertionException("Expected Daisy prefab to include a right eye bone.");
+            Transform leftEyeEndWithoutAim = FindChildTransform(instanceWithoutEyes.transform, "eye.L_end")
+                ?? throw new AssertionException("Expected Daisy prefab to include a left eye end landmark.");
+            Transform rightEyeEndWithoutAim = FindChildTransform(instanceWithoutEyes.transform, "eye.R_end")
+                ?? throw new AssertionException("Expected Daisy prefab to include a right eye end landmark.");
+            Camera camera = CreateCamera("PlayerCamera");
+            camera.transform.SetPositionAndRotation(
+                PortraitGameSceneLayout.CameraPortraitPosition,
+                PortraitGameSceneLayout.CameraPortraitRotation);
+
+            lookAtWithEyes.ApplyReadiness(TargetReadiness.Trapped);
+            lookAtWithoutEyes.ApplyReadiness(TargetReadiness.Trapped);
+            Assert.That(lookAtWithEyes.TryForceLookAtPlayer(camera), Is.EqualTo(TargetPuppyLookAtResult.Success));
+            Assert.That(lookAtWithoutEyes.TryForceLookAtPlayer(camera), Is.EqualTo(TargetPuppyLookAtResult.Success));
+
+            lookAtWithEyes.ApplyLookAtForTests(0.1f);
+            lookAtWithoutEyes.ApplyLookAtForTests(0.1f);
+
+            float withEyesAim = ResolveAverageEyeEndAimAngle(
+                leftEyeWithAim,
+                leftEyeEndWithAim,
+                rightEyeWithAim,
+                rightEyeEndWithAim,
+                -camera.transform.forward);
+            float withoutEyesAim = ResolveAverageEyeEndAimAngle(
+                leftEyeWithoutAim,
+                leftEyeEndWithoutAim,
+                rightEyeWithoutAim,
+                rightEyeEndWithoutAim,
+                -camera.transform.forward);
+
+            Assert.That(lookAtWithEyes.CurrentEyeBlend, Is.EqualTo(1f).Within(0.001f));
+            Assert.That(Mathf.Abs(lookAtWithEyes.LastClampedEyeYawDegrees), Is.LessThanOrEqualTo(lookAtWithEyes.ForcedEyeMaxYawDegrees + 0.01f));
+            Assert.That(Mathf.Abs(lookAtWithEyes.LastClampedEyePitchDegrees), Is.LessThanOrEqualTo(lookAtWithEyes.ForcedEyeMaxPitchDegrees + 0.01f));
+            Assert.That(
+                withEyesAim,
+                Is.LessThan(withoutEyesAim - 0.25f),
+                $"Expected Daisy eye aim to improve toward camera. WithEyes={withEyesAim:0.###}, WithoutEyes={withoutEyesAim:0.###}");
+        }
+
+        [Test]
         public void TargetPuppyLookAt_DaisyPrefabAnimatorDrivenPoseDoesNotOverSubtractForcedOffset()
         {
-            const string DaisyTargetPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Targets/PF_Target_Daisy_Puppy.prefab";
-            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(DaisyTargetPrefabPath);
-            Assert.That(prefab, Is.Not.Null, $"Expected Daisy prefab at '{DaisyTargetPrefabPath}'.");
-
-            GameObject instance = Object.Instantiate(prefab);
-            createdObjects.Add(instance);
-            TargetPuppyLookAt? lookAt = instance.GetComponent<TargetPuppyLookAt>();
+            GameObject instance = InstantiateDaisyPrefab(out TargetPuppyLookAt lookAt);
             Animator? animator = instance.GetComponentInChildren<Animator>(includeInactive: true);
-            Assert.That(lookAt, Is.Not.Null);
             Assert.That(animator, Is.Not.Null);
-            if (lookAt is null || animator is null)
+            if (animator is null)
             {
                 throw new AssertionException("Expected Daisy prefab to include look-at and animator components.");
             }
@@ -321,6 +412,31 @@ namespace Rescue.Unity.Targets.Tests
             return lookAt;
         }
 
+        private TargetPuppyLookAt CreateLookAtRigWithEyes(
+            out Transform root,
+            out Transform neck,
+            out Transform head,
+            out Transform target,
+            out Transform leftEye,
+            out Transform rightEye)
+        {
+            TargetPuppyLookAt lookAt = CreateLookAtRig(out root, out neck, out head, out target);
+
+            GameObject leftEyeObject = new GameObject("eye.L");
+            createdObjects.Add(leftEyeObject);
+            leftEyeObject.transform.SetParent(head, worldPositionStays: false);
+            leftEyeObject.transform.localPosition = new Vector3(-0.2f, 0.1f, 0.45f);
+            leftEye = leftEyeObject.transform;
+
+            GameObject rightEyeObject = new GameObject("eye.R");
+            createdObjects.Add(rightEyeObject);
+            rightEyeObject.transform.SetParent(head, worldPositionStays: false);
+            rightEyeObject.transform.localPosition = new Vector3(0.2f, 0.1f, 0.45f);
+            rightEye = rightEyeObject.transform;
+
+            return lookAt;
+        }
+
         private static void SetPrivateField(object target, string fieldName, object? value)
         {
             System.Reflection.FieldInfo? field = target.GetType().GetField(
@@ -334,6 +450,25 @@ namespace Rescue.Unity.Targets.Tests
             }
 
             field.SetValue(target, value);
+        }
+
+        private GameObject InstantiateDaisyPrefab(out TargetPuppyLookAt lookAt)
+        {
+            const string DaisyTargetPrefabPath = "Assets/Rescue.Unity/Art/Prefabs/Targets/PF_Target_Daisy_Puppy.prefab";
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(DaisyTargetPrefabPath);
+            Assert.That(prefab, Is.Not.Null, $"Expected Daisy prefab at '{DaisyTargetPrefabPath}'.");
+
+            GameObject instance = Object.Instantiate(prefab);
+            createdObjects.Add(instance);
+            TargetPuppyLookAt? component = instance.GetComponent<TargetPuppyLookAt>();
+            Assert.That(component, Is.Not.Null);
+            if (component is null)
+            {
+                throw new AssertionException("Expected Daisy prefab to include TargetPuppyLookAt.");
+            }
+
+            lookAt = component;
+            return instance;
         }
 
         private static Transform? FindChildTransform(Transform root, string childName)
@@ -370,6 +505,23 @@ namespace Rescue.Unity.Targets.Tests
             }
 
             return best;
+        }
+
+        private static float ResolveAverageEyeEndAimAngle(
+            Transform leftEye,
+            Transform leftEyeEnd,
+            Transform rightEye,
+            Transform rightEyeEnd,
+            Vector3 targetDirection)
+        {
+            return (ResolveEyeEndAimAngle(leftEye, leftEyeEnd, targetDirection) +
+                ResolveEyeEndAimAngle(rightEye, rightEyeEnd, targetDirection)) * 0.5f;
+        }
+
+        private static float ResolveEyeEndAimAngle(Transform eye, Transform eyeEnd, Vector3 targetDirection)
+        {
+            Vector3 aimDirection = (eyeEnd.position - eye.position).normalized;
+            return Vector3.Angle(aimDirection, targetDirection.normalized);
         }
     }
 }

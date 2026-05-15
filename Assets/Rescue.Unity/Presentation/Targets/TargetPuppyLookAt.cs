@@ -21,9 +21,16 @@ namespace Rescue.Unity.Presentation.Targets
         [SerializeField] private Transform? muzzleReference;
         [SerializeField] private Transform? leftEyeReference;
         [SerializeField] private Transform? rightEyeReference;
+        [SerializeField] private Transform? leftEyelidReference;
+        [SerializeField] private Transform? rightEyelidReference;
+        [SerializeField] private Transform? leftEyeEndReference;
+        [SerializeField] private Transform? rightEyeEndReference;
         [SerializeField] private float smoothSeconds = 0.16f;
+        [SerializeField] private float forcedReleaseSmoothSeconds = 0.55f;
         [SerializeField] private float forcedMaxYawDegrees = 80f;
         [SerializeField] private float forcedMaxPitchDegrees = 42f;
+        [SerializeField] private float forcedEyeMaxYawDegrees = 18f;
+        [SerializeField] private float forcedEyeMaxPitchDegrees = 10f;
         [SerializeField] private float forcedLookUpDegrees = 34f;
         [SerializeField] private float forcedLookRightDegrees = 18f;
         [SerializeField] private Vector3 forcedHeadEulerOffset = new Vector3(-34f, 22f, 0f);
@@ -31,10 +38,17 @@ namespace Rescue.Unity.Presentation.Targets
 
         private Quaternion lastHeadOffset = Quaternion.identity;
         private Quaternion lastNeckOffset = Quaternion.identity;
+        private Quaternion lastLeftEyeOffset = Quaternion.identity;
+        private Quaternion lastRightEyeOffset = Quaternion.identity;
+        private Quaternion lastLeftEyelidOffset = Quaternion.identity;
+        private Quaternion lastRightEyelidOffset = Quaternion.identity;
         private float blendVelocity;
+        private float forcedReleaseBlendVelocity;
+        private float eyeBlendVelocity;
         private float glanceCooldownRemaining;
         private float glanceRemaining;
         private Transform? forcedLookTarget;
+        private Camera? forcedLookCamera;
         private float forcedLookRemainingSeconds;
         private Animator? poseAnimator;
         private bool extracting;
@@ -43,9 +57,15 @@ namespace Rescue.Unity.Presentation.Targets
 
         public float CurrentBlend { get; private set; }
 
+        public float CurrentEyeBlend { get; private set; }
+
         public float LastClampedYawDegrees { get; private set; }
 
         public float LastClampedPitchDegrees { get; private set; }
+
+        public float LastClampedEyeYawDegrees { get; private set; }
+
+        public float LastClampedEyePitchDegrees { get; private set; }
 
         public float ActiveMaxYawDegrees => ResolveProfile(CurrentReadiness).MaxYawDegrees;
 
@@ -54,6 +74,10 @@ namespace Rescue.Unity.Presentation.Targets
         public float ForcedMaxYawDegrees => forcedMaxYawDegrees;
 
         public float ForcedMaxPitchDegrees => forcedMaxPitchDegrees;
+
+        public float ForcedEyeMaxYawDegrees => forcedEyeMaxYawDegrees;
+
+        public float ForcedEyeMaxPitchDegrees => forcedEyeMaxPitchDegrees;
 
         public float ForcedLookUpDegrees => forcedLookUpDegrees;
 
@@ -116,6 +140,7 @@ namespace Rescue.Unity.Presentation.Targets
             }
 
             forcedLookTarget = targetCamera.transform;
+            forcedLookCamera = targetCamera;
             forcedLookRemainingSeconds = Mathf.Max(0.01f, durationSeconds);
             return TargetPuppyLookAtResult.Success;
         }
@@ -140,30 +165,41 @@ namespace Rescue.Unity.Presentation.Targets
                 return;
             }
 
+            bool wasForcedLookActive = IsForcedLookActive();
             UpdateForcedLook(deltaTime);
 
             bool animatorDrivenPose = IsAnimatorDrivingPose();
             Quaternion headBase = ResolveBaseRotation(head, lastHeadOffset, animatorDrivenPose);
             Quaternion neckBase = ResolveBaseRotation(neck, lastNeckOffset, animatorDrivenPose);
+            EyePoseBases eyeBases = ResolveEyePoseBases(head, animatorDrivenPose);
             Transform? target = ResolveLookTarget();
 
             if (target == null)
             {
                 CurrentBlend = Smooth(CurrentBlend, 0f, deltaTime);
+                CurrentEyeBlend = SmoothEyeBlend(CurrentEyeBlend, 0f, deltaTime);
                 ApplyOffsets(head, neck, headBase, neckBase, Quaternion.identity, Quaternion.identity);
+                ApplyEyeOffsets(eyeBases, Quaternion.identity, Quaternion.identity, Quaternion.identity, Quaternion.identity);
                 return;
             }
 
-            bool isForcedLook = forcedLookRemainingSeconds > 0f && forcedLookTarget != null;
+            bool isForcedLook = IsForcedLookActive();
             LookProfile profile = ResolveActiveProfile(isForcedLook);
             UpdateGlance(profile, deltaTime);
 
             float targetBlend = ResolveTargetBlend(profile);
-            CurrentBlend = Smooth(CurrentBlend, targetBlend, deltaTime);
+            bool isForcedLookReleasing = forcedLookTarget != null &&
+                !isForcedLook &&
+                CurrentBlend > targetBlend + 0.001f;
+            CurrentBlend = isForcedLookReleasing || (wasForcedLookActive && !isForcedLook)
+                ? SmoothForcedRelease(CurrentBlend, targetBlend, deltaTime)
+                : Smooth(CurrentBlend, targetBlend, deltaTime);
+            CurrentEyeBlend = SmoothEyeBlend(CurrentEyeBlend, isForcedLook ? 1f : 0f, deltaTime);
 
-            if (isForcedLook)
+            if (isForcedLook || (forcedLookTarget != null && CurrentBlend > targetBlend + 0.001f))
             {
                 ApplyForcedPose(head, neck, headBase, neckBase);
+                ApplyForcedEyePose(eyeBases, target);
                 return;
             }
 
@@ -171,6 +207,7 @@ namespace Rescue.Unity.Presentation.Targets
             if (worldDirection.sqrMagnitude <= 0.0001f || CurrentBlend <= 0.0001f)
             {
                 ApplyOffsets(head, neck, headBase, neckBase, Quaternion.identity, Quaternion.identity);
+                ApplyEyeOffsets(eyeBases, Quaternion.identity, Quaternion.identity, Quaternion.identity, Quaternion.identity);
                 return;
             }
 
@@ -201,11 +238,12 @@ namespace Rescue.Unity.Presentation.Targets
                 0f);
 
             ApplyOffsets(head, neck, headBase, neckBase, headOffset, neckOffset);
+            ApplyEyeOffsets(eyeBases, Quaternion.identity, Quaternion.identity, Quaternion.identity, Quaternion.identity);
         }
 
         private Transform? ResolveLookTarget()
         {
-            if (forcedLookRemainingSeconds > 0f && forcedLookTarget != null)
+            if (forcedLookTarget != null)
             {
                 return forcedLookTarget;
             }
@@ -293,6 +331,11 @@ namespace Rescue.Unity.Presentation.Targets
             return transform;
         }
 
+        private bool IsForcedLookActive()
+        {
+            return forcedLookRemainingSeconds > 0f && forcedLookTarget != null;
+        }
+
         private void ApplyForcedPose(
             Transform head,
             Transform neck,
@@ -315,6 +358,143 @@ namespace Rescue.Unity.Presentation.Targets
                 neckBase,
                 Quaternion.Euler(headEuler),
                 Quaternion.Euler(neckEuler));
+        }
+
+        private EyePoseBases ResolveEyePoseBases(Transform head, bool animatorDrivenPose)
+        {
+            Transform? leftEye = ResolveNamedReference(ref leftEyeReference, head, "eye.L");
+            Transform? rightEye = ResolveNamedReference(ref rightEyeReference, head, "eye.R");
+            Transform? leftEyelid = ResolveNamedReference(ref leftEyelidReference, head, "eyelid.L");
+            Transform? rightEyelid = ResolveNamedReference(ref rightEyelidReference, head, "eyelid.R");
+            ResolveNamedReference(ref leftEyeEndReference, head, "eye.L_end");
+            ResolveNamedReference(ref rightEyeEndReference, head, "eye.R_end");
+
+            return new EyePoseBases(
+                leftEye,
+                rightEye,
+                leftEyelid,
+                rightEyelid,
+                leftEye == null ? Quaternion.identity : ResolveBaseRotation(leftEye, lastLeftEyeOffset, animatorDrivenPose),
+                rightEye == null ? Quaternion.identity : ResolveBaseRotation(rightEye, lastRightEyeOffset, animatorDrivenPose),
+                leftEyelid == null ? Quaternion.identity : ResolveBaseRotation(leftEyelid, lastLeftEyelidOffset, animatorDrivenPose),
+                rightEyelid == null ? Quaternion.identity : ResolveBaseRotation(rightEyelid, lastRightEyelidOffset, animatorDrivenPose));
+        }
+
+        private void ApplyForcedEyePose(EyePoseBases eyeBases, Transform target)
+        {
+            if (CurrentEyeBlend <= 0.0001f ||
+                eyeBases.LeftEye == null ||
+                eyeBases.RightEye == null)
+            {
+                LastClampedEyeYawDegrees = 0f;
+                LastClampedEyePitchDegrees = 0f;
+                ApplyEyeOffsets(eyeBases, Quaternion.identity, Quaternion.identity, Quaternion.identity, Quaternion.identity);
+                return;
+            }
+
+            Vector3 eyeCenter = (eyeBases.LeftEye.position + eyeBases.RightEye.position) * 0.5f;
+            Vector3 worldDirection = ResolveForcedEyeDesiredDirection(eyeCenter, target);
+            if (worldDirection.sqrMagnitude <= 0.0001f)
+            {
+                LastClampedEyeYawDegrees = 0f;
+                LastClampedEyePitchDegrees = 0f;
+                ApplyEyeOffsets(eyeBases, Quaternion.identity, Quaternion.identity, Quaternion.identity, Quaternion.identity);
+                return;
+            }
+
+            Transform directionSpace = ResolveDirectionSpace();
+            Vector3 localDirection = directionSpace.InverseTransformDirection(worldDirection.normalized);
+            float horizontalMagnitude = new Vector2(localDirection.x, localDirection.z).magnitude;
+            float yawDegrees = Mathf.Clamp(
+                Mathf.Atan2(localDirection.x, localDirection.z) * Mathf.Rad2Deg,
+                -forcedEyeMaxYawDegrees,
+                forcedEyeMaxYawDegrees);
+            float pitchDegrees = Mathf.Clamp(
+                Mathf.Atan2(localDirection.y, horizontalMagnitude) * Mathf.Rad2Deg,
+                -forcedEyeMaxPitchDegrees,
+                forcedEyeMaxPitchDegrees);
+
+            LastClampedEyeYawDegrees = yawDegrees;
+            LastClampedEyePitchDegrees = pitchDegrees;
+
+            Quaternion leftEyeOffset = ResolveEyeAimOffset(
+                eyeBases.LeftEye,
+                leftEyeEndReference,
+                eyeBases.LeftEyeBase,
+                target);
+            Quaternion rightEyeOffset = ResolveEyeAimOffset(
+                eyeBases.RightEye,
+                rightEyeEndReference,
+                eyeBases.RightEyeBase,
+                target);
+            Quaternion eyelidOffset = Quaternion.Euler(
+                -pitchDegrees * 0.35f * CurrentEyeBlend,
+                yawDegrees * 0.25f * CurrentEyeBlend,
+                0f);
+
+            ApplyEyeOffsets(eyeBases, leftEyeOffset, rightEyeOffset, eyelidOffset, eyelidOffset);
+        }
+
+        private Quaternion ResolveEyeAimOffset(
+            Transform? eye,
+            Transform? eyeEnd,
+            Quaternion eyeBase,
+            Transform target)
+        {
+            if (eye == null || CurrentEyeBlend <= 0.0001f || !IsFinite(eyeBase))
+            {
+                return Quaternion.identity;
+            }
+
+            Quaternion previousLocalRotation = eye.localRotation;
+            eye.localRotation = eyeBase;
+
+            Vector3 currentDirection = eyeEnd == null
+                ? eye.forward
+                : eyeEnd.position - eye.position;
+            Vector3 desiredDirection = ResolveForcedEyeDesiredDirection(eye.position, target);
+            if (currentDirection.sqrMagnitude <= 0.0001f || desiredDirection.sqrMagnitude <= 0.0001f)
+            {
+                eye.localRotation = previousLocalRotation;
+                return Quaternion.identity;
+            }
+
+            currentDirection.Normalize();
+            desiredDirection.Normalize();
+            Quaternion worldDelta = Quaternion.FromToRotation(currentDirection, desiredDirection);
+            float angle = Quaternion.Angle(Quaternion.identity, worldDelta);
+            float maxAngle = Mathf.Sqrt(
+                forcedEyeMaxYawDegrees * forcedEyeMaxYawDegrees +
+                forcedEyeMaxPitchDegrees * forcedEyeMaxPitchDegrees);
+            if (angle > maxAngle && angle > 0.0001f)
+            {
+                worldDelta = Quaternion.Slerp(Quaternion.identity, worldDelta, maxAngle / angle);
+            }
+
+            worldDelta = Quaternion.Slerp(Quaternion.identity, worldDelta, CurrentEyeBlend);
+            Quaternion targetLocal = ResolveTargetLocalRotation(eye, worldDelta * ResolveBaseWorldRotation(eye, eyeBase));
+            eye.localRotation = previousLocalRotation;
+            if (!IsFinite(targetLocal))
+            {
+                return Quaternion.identity;
+            }
+
+            Quaternion localOffset = Quaternion.Inverse(eyeBase) * targetLocal;
+            return IsFinite(localOffset) ? localOffset : Quaternion.identity;
+        }
+
+        private Vector3 ResolveForcedEyeDesiredDirection(Vector3 fromPosition, Transform target)
+        {
+            Camera? camera = forcedLookCamera;
+            if (camera != null &&
+                camera.isActiveAndEnabled &&
+                camera.gameObject.activeInHierarchy &&
+                camera.orthographic)
+            {
+                return -camera.transform.forward;
+            }
+
+            return target.position - fromPosition;
         }
 
         private bool TryApplyForcedLandmarkPose(
@@ -493,16 +673,18 @@ namespace Rescue.Unity.Presentation.Targets
         {
             if (forcedLookRemainingSeconds <= 0f)
             {
-                forcedLookTarget = null;
                 forcedLookRemainingSeconds = 0f;
+                if (CurrentBlend <= ResolveTargetBlend(ResolveProfile(CurrentReadiness)) + 0.001f &&
+                    CurrentEyeBlend <= 0.001f)
+                {
+                    forcedLookTarget = null;
+                    forcedLookCamera = null;
+                }
+
                 return;
             }
 
             forcedLookRemainingSeconds = Mathf.Max(0f, forcedLookRemainingSeconds - Mathf.Max(0f, deltaTime));
-            if (forcedLookRemainingSeconds <= 0f)
-            {
-                forcedLookTarget = null;
-            }
         }
 
         private void ResetGlanceTimer()
@@ -527,6 +709,38 @@ namespace Rescue.Unity.Presentation.Targets
             }
 
             return Mathf.SmoothDamp(current, target, ref blendVelocity, smoothSeconds, Mathf.Infinity, deltaTime);
+        }
+
+        private float SmoothForcedRelease(float current, float target, float deltaTime)
+        {
+            if (deltaTime <= 0f)
+            {
+                return current;
+            }
+
+            float smoothTime = target > current ? smoothSeconds : forcedReleaseSmoothSeconds;
+            if (smoothTime <= 0f)
+            {
+                return target;
+            }
+
+            return Mathf.SmoothDamp(current, target, ref forcedReleaseBlendVelocity, smoothTime, Mathf.Infinity, deltaTime);
+        }
+
+        private float SmoothEyeBlend(float current, float target, float deltaTime)
+        {
+            if (deltaTime <= 0f)
+            {
+                return current;
+            }
+
+            float smoothTime = target > current ? smoothSeconds : forcedReleaseSmoothSeconds;
+            if (smoothTime <= 0f)
+            {
+                return target;
+            }
+
+            return Mathf.SmoothDamp(current, target, ref eyeBlendVelocity, smoothTime, Mathf.Infinity, deltaTime);
         }
 
         private bool IsAnimatorDrivingPose()
@@ -594,6 +808,54 @@ namespace Rescue.Unity.Presentation.Targets
 
             lastHeadOffset = headOffset;
             lastNeckOffset = neckOffset;
+        }
+
+        private void ApplyEyeOffsets(
+            EyePoseBases eyeBases,
+            Quaternion leftEyeOffset,
+            Quaternion rightEyeOffset,
+            Quaternion leftEyelidOffset,
+            Quaternion rightEyelidOffset)
+        {
+            if (eyeBases.LeftEye != null)
+            {
+                eyeBases.LeftEye.localRotation = eyeBases.LeftEyeBase * leftEyeOffset;
+                lastLeftEyeOffset = leftEyeOffset;
+            }
+            else
+            {
+                lastLeftEyeOffset = Quaternion.identity;
+            }
+
+            if (eyeBases.RightEye != null)
+            {
+                eyeBases.RightEye.localRotation = eyeBases.RightEyeBase * rightEyeOffset;
+                lastRightEyeOffset = rightEyeOffset;
+            }
+            else
+            {
+                lastRightEyeOffset = Quaternion.identity;
+            }
+
+            if (eyeBases.LeftEyelid != null)
+            {
+                eyeBases.LeftEyelid.localRotation = eyeBases.LeftEyelidBase * leftEyelidOffset;
+                lastLeftEyelidOffset = leftEyelidOffset;
+            }
+            else
+            {
+                lastLeftEyelidOffset = Quaternion.identity;
+            }
+
+            if (eyeBases.RightEyelid != null)
+            {
+                eyeBases.RightEyelid.localRotation = eyeBases.RightEyelidBase * rightEyelidOffset;
+                lastRightEyelidOffset = rightEyelidOffset;
+            }
+            else
+            {
+                lastRightEyelidOffset = Quaternion.identity;
+            }
         }
 
         private static bool IsFinite(Quaternion rotation)
@@ -675,5 +937,15 @@ namespace Rescue.Unity.Presentation.Targets
 
             public float HeadPitchShare => 0.65f;
         }
+
+        private readonly record struct EyePoseBases(
+            Transform? LeftEye,
+            Transform? RightEye,
+            Transform? LeftEyelid,
+            Transform? RightEyelid,
+            Quaternion LeftEyeBase,
+            Quaternion RightEyeBase,
+            Quaternion LeftEyelidBase,
+            Quaternion RightEyelidBase);
     }
 }

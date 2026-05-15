@@ -200,6 +200,17 @@ namespace Rescue.PlayMode.Tests.Debug
 
             Assert.That(statusLabel.text, Is.EqualTo("Selected puppy is looking at the player."));
             Assert.That(lookAt.CurrentBlend, Is.GreaterThan(0.9f));
+            float heldBlend = lookAt.CurrentBlend;
+
+            float releaseTimeout = Time.realtimeSinceStartup + 2.5f;
+            while (lookAt.CurrentBlend >= heldBlend - 0.05f && Time.realtimeSinceStartup < releaseTimeout)
+            {
+                yield return null;
+            }
+
+            Assert.That(panel.ExportFullGameStateJson(), Is.EqualTo(before));
+            Assert.That(lookAt.CurrentBlend, Is.LessThan(heldBlend - 0.05f));
+            Assert.That(lookAt.CurrentBlend, Is.GreaterThan(0f));
             LogAssert.NoUnexpectedReceived();
         }
 
