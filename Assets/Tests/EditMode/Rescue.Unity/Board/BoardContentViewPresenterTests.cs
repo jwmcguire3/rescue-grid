@@ -54,7 +54,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
         }
 
         [Test]
-        public void BoardContentViewPresenter_SyncImmediatePreservesDebrisPrefabRotation()
+        public void BoardContentViewPresenter_SyncImmediateAppliesDebrisPrefabAndBoardRegistryPose()
         {
             PresenterHarness harness = CreateHarness();
             PieceVisualRegistry pieceRegistry = CreateRegistry<PieceVisualRegistry>();
@@ -64,6 +64,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
             debrisDPrefab.transform.localRotation = Quaternion.Euler(0f, 220f, 0f);
             pieceRegistry.DebrisCPrefab = debrisCPrefab;
             pieceRegistry.DebrisDPrefab = debrisDPrefab;
+            pieceRegistry.DebrisDBoardEulerOffset = new Vector3(0f, 110f, 0f);
             pieceRegistry.DebrisDBoardScaleMultiplier = 1.15f;
             SetPrivateField(harness.ContentPresenter, "pieceRegistry", pieceRegistry);
             GameState state = CreateState(ImmutableArray.Create(
@@ -79,7 +80,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Assert.That(debrisC, Is.Not.Null);
             Assert.That(debrisD, Is.Not.Null);
             Assert.That(Quaternion.Angle(Quaternion.Euler(0f, 90f, 0f), debrisC!.transform.localRotation), Is.LessThan(0.001f));
-            Assert.That(Quaternion.Angle(Quaternion.Euler(0f, 220f, 0f), debrisD!.transform.localRotation), Is.LessThan(0.001f));
+            Assert.That(Quaternion.Angle(Quaternion.Euler(0f, 330f, 0f), debrisD!.transform.localRotation), Is.LessThan(0.001f));
             Assert.That(debrisC.transform.localScale, Is.EqualTo(Vector3.one));
             Assert.That(debrisD.transform.localScale, Is.EqualTo(Vector3.one * 1.15f));
 
@@ -89,7 +90,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
             harness.ContentPresenter.ForceSyncToState(state);
 
             Assert.That(Quaternion.Angle(Quaternion.Euler(0f, 90f, 0f), debrisC.transform.localRotation), Is.LessThan(0.001f));
-            Assert.That(Quaternion.Angle(Quaternion.Euler(0f, 220f, 0f), debrisD.transform.localRotation), Is.LessThan(0.001f));
+            Assert.That(Quaternion.Angle(Quaternion.Euler(0f, 330f, 0f), debrisD.transform.localRotation), Is.LessThan(0.001f));
             Assert.That(debrisD.transform.localScale, Is.EqualTo(Vector3.one * 1.15f));
         }
 

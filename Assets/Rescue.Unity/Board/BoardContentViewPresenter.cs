@@ -562,6 +562,7 @@ namespace Rescue.Unity.BoardPresentation
             hiddenDebrisView.Coord = revealed.Coord;
             hiddenDebrisView.ContentLabel = $"Debris_{revealed.RevealedType}";
             hiddenDebrisView.BaseLocalScale = ResolveDebrisBoardScale(revealed.RevealedType);
+            hiddenDebrisView.BaseLocalRotation = ResolveDebrisBoardRotation(revealed.RevealedType, ResolveDebrisPrefab(revealed.RevealedType));
             visualRegistry.Debris.Set(revealed.Coord, hiddenDebrisView);
 
             MoveContentObjectToAnchor(hiddenDebrisView.Object, anchor, revealed.Coord, hiddenDebrisView.ContentLabel, contentYOffset, hiddenDebrisView.BaseLocalRotation);
@@ -1237,15 +1238,17 @@ namespace Rescue.Unity.BoardPresentation
                     EnsureRescuePathVisual(coord, anchor, rescuePathTile.TargetIds, targetsById);
                     return;
                 case DebrisTile debrisTile:
+                    GameObject? debrisPrefab = ResolveDebrisPrefab(debrisTile.Type);
                     expectedDebris.Add(coord);
                     EnsurePieceVisual(
                         visualRegistry.Debris,
                         coord,
                         $"Debris_{debrisTile.Type}",
-                        ResolveDebrisPrefab(debrisTile.Type),
+                        debrisPrefab,
                         anchor,
                         contentYOffset,
-                        ResolveDebrisBoardScale(debrisTile.Type));
+                        ResolveDebrisBoardScale(debrisTile.Type),
+                        ResolveDebrisBoardRotation(debrisTile.Type, debrisPrefab));
                     return;
                 case BlockerTile blockerTile:
                     expectedBlockers.Add(coord);
@@ -1260,15 +1263,17 @@ namespace Rescue.Unity.BoardPresentation
 
                     if (blockerTile.Type == BlockerType.Ice && blockerTile.Hidden is not null)
                     {
+                        GameObject? hiddenDebrisPrefab = ResolveDebrisPrefab(blockerTile.Hidden.Type);
                         expectedHiddenDebris.Add(coord);
                         EnsurePieceVisual(
                             visualRegistry.HiddenDebris,
                             coord,
                             $"HiddenDebris_{blockerTile.Hidden.Type}",
-                            ResolveDebrisPrefab(blockerTile.Hidden.Type),
+                            hiddenDebrisPrefab,
                             anchor,
                             contentYOffset * HiddenDebrisYOffsetRatio,
-                            Vector3.Scale(HiddenDebrisScale, ResolveDebrisBoardScale(blockerTile.Hidden.Type)));
+                            Vector3.Scale(HiddenDebrisScale, ResolveDebrisBoardScale(blockerTile.Hidden.Type)),
+                            ResolveDebrisBoardRotation(blockerTile.Hidden.Type, hiddenDebrisPrefab));
                     }
 
                     return;
@@ -1438,6 +1443,21 @@ namespace Rescue.Unity.BoardPresentation
             return Vector3.one * scaleMultiplier;
         }
 
+        private Quaternion ResolveDebrisBoardRotation(DebrisType debrisType, GameObject? prefab)
+        {
+            Quaternion prefabRotation = prefab != null ? prefab.transform.localRotation : Quaternion.identity;
+            return ResolveDebrisBoardRotation(debrisType, prefabRotation);
+        }
+
+        private Quaternion ResolveDebrisBoardRotation(DebrisType debrisType, Quaternion baseLocalRotation)
+        {
+            Quaternion rotationOffset = pieceRegistry is not null
+                ? pieceRegistry.GetBoardRotationOffset(debrisType)
+                : Quaternion.identity;
+
+            return baseLocalRotation * rotationOffset;
+        }
+
         private void EnsurePieceVisual(
             BoardPieceRegistry registry,
             TileCoord coord,
@@ -1446,6 +1466,22 @@ namespace Rescue.Unity.BoardPresentation
             Transform anchor,
             float yOffset,
             Vector3 scaleMultiplier)
+        {
+            Quaternion baseLocalRotation = prefab != null
+                ? prefab.transform.localRotation
+                : Quaternion.identity;
+            EnsurePieceVisual(registry, coord, contentLabel, prefab, anchor, yOffset, scaleMultiplier, baseLocalRotation);
+        }
+
+        private void EnsurePieceVisual(
+            BoardPieceRegistry registry,
+            TileCoord coord,
+            string contentLabel,
+            GameObject? prefab,
+            Transform anchor,
+            float yOffset,
+            Vector3 scaleMultiplier,
+            Quaternion baseLocalRotation)
         {
             if (registry.TryGet(coord, out BoardPieceView? existingView) &&
                 existingView is not null &&
@@ -1458,13 +1494,19 @@ namespace Rescue.Unity.BoardPresentation
                 else
                 {
                     existingView.Coord = coord;
+                    existingView.BaseLocalRotation = baseLocalRotation;
+                    if (prefab != null)
+                    {
+                        existingView.BaseLocalScale = Vector3.Scale(prefab.transform.localScale, scaleMultiplier);
+                    }
+
                     MoveContentObjectToAnchor(existingView.Object, anchor, coord, contentLabel, yOffset, existingView.BaseLocalRotation);
                     existingView.Object.transform.localScale = existingView.BaseLocalScale;
                     return;
                 }
             }
 
-            GameObject? spawnedObject = SpawnAtAnchor(coord, contentLabel, prefab, anchor, yOffset, scaleMultiplier);
+            GameObject? spawnedObject = SpawnAtAnchor(coord, contentLabel, prefab, anchor, yOffset, scaleMultiplier, baseLocalRotation);
             if (spawnedObject is null)
             {
                 return;
@@ -2591,6 +2633,21 @@ namespace Rescue.Unity.BoardPresentation
             float yOffset,
             Vector3 scaleMultiplier)
         {
+            Quaternion baseLocalRotation = prefab != null
+                ? prefab.transform.localRotation
+                : Quaternion.identity;
+            return SpawnAtAnchor(coord, contentLabel, prefab, anchor, yOffset, scaleMultiplier, baseLocalRotation);
+        }
+
+        private GameObject? SpawnAtAnchor(
+            TileCoord coord,
+            string contentLabel,
+            GameObject? prefab,
+            Transform anchor,
+            float yOffset,
+            Vector3 scaleMultiplier,
+            Quaternion baseLocalRotation)
+        {
             if (prefab == null)
             {
                 return null;
@@ -2605,7 +2662,8 @@ namespace Rescue.Unity.BoardPresentation
                 coord,
                 contentLabel,
                 yOffset,
-                scaleMultiplier);
+                scaleMultiplier,
+                baseLocalRotation);
             spawnedContent.Add(contentObject);
             return contentObject;
         }

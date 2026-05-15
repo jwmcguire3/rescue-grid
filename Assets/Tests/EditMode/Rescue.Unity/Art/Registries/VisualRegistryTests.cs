@@ -60,23 +60,27 @@ namespace Rescue.Unity.Art.Tests
             Assert.That(registry.GetDockEulerOffset(DebrisType.B), Is.EqualTo(Vector3.zero));
             Assert.That(registry.GetDockRotationOffset(DebrisType.B), Is.EqualTo(Quaternion.identity));
             Assert.That(registry.GetDockScaleMultiplier(DebrisType.B), Is.EqualTo(1f));
+            Assert.That(registry.GetBoardEulerOffset(DebrisType.B), Is.EqualTo(Vector3.zero));
+            Assert.That(registry.GetBoardRotationOffset(DebrisType.B), Is.EqualTo(Quaternion.identity));
             Assert.That(registry.GetBoardScaleMultiplier(DebrisType.B), Is.EqualTo(1f));
         }
 
         [Test]
-        public void PieceVisualRegistry_ReturnsConfiguredDockPose()
+        public void PieceVisualRegistry_ReturnsConfiguredPiecePose()
         {
             PieceVisualRegistry registry = CreateScriptableObject<PieceVisualRegistry>();
             registry.DebrisBDockEulerOffset = new Vector3(0f, 0f, 180f);
             registry.DebrisBDockScaleMultiplier = 0.9f;
             registry.DebrisDDockEulerOffset = new Vector3(0f, 0f, 180f);
             registry.DebrisDDockScaleMultiplier = 0.9f;
+            registry.DebrisDBoardEulerOffset = new Vector3(0f, 110f, 0f);
             registry.DebrisDBoardScaleMultiplier = 1.15f;
 
             Assert.That(registry.GetDockEulerOffset(DebrisType.B), Is.EqualTo(new Vector3(0f, 0f, 180f)));
             Assert.That(registry.GetDockScaleMultiplier(DebrisType.B), Is.EqualTo(0.9f));
             Assert.That(registry.GetDockEulerOffset(DebrisType.D), Is.EqualTo(new Vector3(0f, 0f, 180f)));
             Assert.That(registry.GetDockScaleMultiplier(DebrisType.D), Is.EqualTo(0.9f));
+            Assert.That(registry.GetBoardEulerOffset(DebrisType.D), Is.EqualTo(new Vector3(0f, 110f, 0f)));
             Assert.That(registry.GetBoardScaleMultiplier(DebrisType.D), Is.EqualTo(1.15f));
         }
 

@@ -156,12 +156,14 @@ namespace Rescue.Unity.Art.Tests
             Assert.That(registry.GetDockScaleMultiplier(DebrisType.B), Is.EqualTo(0.8f));
             Assert.That(registry.GetDockScaleMultiplier(DebrisType.C), Is.EqualTo(0.8f));
             Assert.That(registry.GetDockScaleMultiplier(DebrisType.D), Is.EqualTo(0.8f));
-            Assert.That(registry.GetDockScaleMultiplier(DebrisType.E), Is.EqualTo(0.8f));
+            Assert.That(registry.GetDockScaleMultiplier(DebrisType.E), Is.EqualTo(0.68f));
             Assert.That(registry.GetDockScaleMultiplier(DebrisType.F), Is.EqualTo(0.8f));
             Assert.That(registry.GetBoardScaleMultiplier(DebrisType.A), Is.EqualTo(1f));
             Assert.That(registry.GetBoardScaleMultiplier(DebrisType.D), Is.EqualTo(1.15f));
+            Assert.That(registry.GetBoardEulerOffset(DebrisType.E), Is.EqualTo(new Vector3(0f, 110f, 0f)));
             Assert.That(registry.GetDockEulerOffset(DebrisType.A), Is.EqualTo(new Vector3(0f, 180f, 0f)));
             Assert.That(registry.GetDockEulerOffset(DebrisType.D), Is.EqualTo(new Vector3(0f, 270f, 0f)));
+            Assert.That(registry.GetDockEulerOffset(DebrisType.E), Is.EqualTo(new Vector3(0f, 110f, 0f)));
             Assert.That(registry.GetDockEulerOffset(DebrisType.F), Is.EqualTo(new Vector3(0f, 90f, 0f)));
         }
 

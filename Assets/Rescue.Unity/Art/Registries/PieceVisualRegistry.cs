@@ -16,6 +16,12 @@ namespace Rescue.Unity.Art.Registries
         [SerializeField] private GameObject? fallbackPrefab;
 
         [Header("Board Pose Overrides")]
+        [SerializeField] private Vector3 debrisABoardEulerOffset;
+        [SerializeField] private Vector3 debrisBBoardEulerOffset;
+        [SerializeField] private Vector3 debrisCBoardEulerOffset;
+        [SerializeField] private Vector3 debrisDBoardEulerOffset;
+        [SerializeField] private Vector3 debrisEBoardEulerOffset;
+        [SerializeField] private Vector3 debrisFBoardEulerOffset;
         [SerializeField] private float debrisABoardScaleMultiplier = 1f;
         [SerializeField] private float debrisBBoardScaleMultiplier = 1f;
         [SerializeField] private float debrisCBoardScaleMultiplier = 1f;
@@ -77,6 +83,42 @@ namespace Rescue.Unity.Art.Registries
         {
             get => fallbackPrefab;
             set => fallbackPrefab = value;
+        }
+
+        public Vector3 DebrisABoardEulerOffset
+        {
+            get => debrisABoardEulerOffset;
+            set => debrisABoardEulerOffset = value;
+        }
+
+        public Vector3 DebrisBBoardEulerOffset
+        {
+            get => debrisBBoardEulerOffset;
+            set => debrisBBoardEulerOffset = value;
+        }
+
+        public Vector3 DebrisCBoardEulerOffset
+        {
+            get => debrisCBoardEulerOffset;
+            set => debrisCBoardEulerOffset = value;
+        }
+
+        public Vector3 DebrisDBoardEulerOffset
+        {
+            get => debrisDBoardEulerOffset;
+            set => debrisDBoardEulerOffset = value;
+        }
+
+        public Vector3 DebrisEBoardEulerOffset
+        {
+            get => debrisEBoardEulerOffset;
+            set => debrisEBoardEulerOffset = value;
+        }
+
+        public Vector3 DebrisFBoardEulerOffset
+        {
+            get => debrisFBoardEulerOffset;
+            set => debrisFBoardEulerOffset = value;
         }
 
         public float DebrisABoardScaleMultiplier
@@ -217,6 +259,25 @@ namespace Rescue.Unity.Art.Registries
             };
 
             return ResolveScaleMultiplier(scaleMultiplier);
+        }
+
+        public Quaternion GetBoardRotationOffset(DebrisType type)
+        {
+            return Quaternion.Euler(GetBoardEulerOffset(type));
+        }
+
+        public Vector3 GetBoardEulerOffset(DebrisType type)
+        {
+            return type switch
+            {
+                DebrisType.A => debrisABoardEulerOffset,
+                DebrisType.B => debrisBBoardEulerOffset,
+                DebrisType.C => debrisCBoardEulerOffset,
+                DebrisType.D => debrisDBoardEulerOffset,
+                DebrisType.E => debrisEBoardEulerOffset,
+                DebrisType.F => debrisFBoardEulerOffset,
+                _ => Vector3.zero,
+            };
         }
 
         public Quaternion GetDockRotationOffset(DebrisType type)

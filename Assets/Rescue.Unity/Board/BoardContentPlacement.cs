@@ -117,7 +117,8 @@ namespace Rescue.Unity.BoardPresentation
             TileCoord coord,
             string contentLabel,
             float yOffset,
-            Vector3 scaleMultiplier)
+            Vector3 scaleMultiplier,
+            Quaternion baseLocalRotation)
         {
             Transform parent = ResolveContentParent(contentRoot, anchor);
             GameObject contentObject = UnityEngine.Object.Instantiate(prefab, parent);
@@ -133,7 +134,7 @@ namespace Rescue.Unity.BoardPresentation
                 anchor,
                 coord,
                 yOffset,
-                prefab.transform.localRotation);
+                baseLocalRotation);
             contentTransform.localScale = Vector3.Scale(prefab.transform.localScale, scaleMultiplier);
             return contentObject;
         }
