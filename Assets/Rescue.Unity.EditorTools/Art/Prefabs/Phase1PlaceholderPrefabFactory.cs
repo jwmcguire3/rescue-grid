@@ -74,7 +74,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
         private static readonly AssetSizingProfile CrateSizingProfile = new AssetSizingProfile(0.96f);
         private static readonly AssetSizingProfile IceSizingProfile = new AssetSizingProfile(0.96f);
         private static readonly AssetSizingProfile VineSizingProfile = new AssetSizingProfile(0.92f);
-        private static readonly AssetSizingProfile TargetSizingProfile = new AssetSizingProfile(0.90f);
+        private static readonly AssetSizingProfile TargetSizingProfile = new AssetSizingProfile(1.80f);
         private static readonly AssetSizingProfile RowOverlaySizingProfile = new AssetSizingProfile(1.0f);
         [MenuItem("Rescue Grid/Art/Create Phase 1 Placeholder Prefabs")]
         public static void CreateDefaultPhase1Placeholders()
@@ -542,6 +542,12 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             pieceRegistry.DebrisEPrefab = productionAssets.DebrisEPrefab ?? placeholderAssets.DebrisEPrefab;
             pieceRegistry.DebrisFPrefab = productionAssets.DebrisFPrefab ?? placeholderAssets.DebrisFPrefab;
             pieceRegistry.FallbackPrefab = productionAssets.DebrisAPrefab ?? placeholderAssets.DebrisAPrefab;
+            pieceRegistry.DebrisABoardScaleMultiplier = 1f;
+            pieceRegistry.DebrisBBoardScaleMultiplier = 1f;
+            pieceRegistry.DebrisCBoardScaleMultiplier = 1f;
+            pieceRegistry.DebrisDBoardScaleMultiplier = 1.15f;
+            pieceRegistry.DebrisEBoardScaleMultiplier = 1f;
+            pieceRegistry.DebrisFBoardScaleMultiplier = 1f;
             pieceRegistry.DebrisADockScaleMultiplier = 0.8f;
             pieceRegistry.DebrisBDockScaleMultiplier = 0.8f;
             pieceRegistry.DebrisCDockScaleMultiplier = 0.8f;
@@ -549,7 +555,7 @@ namespace Rescue.Unity.EditorTools.Art.Prefabs
             pieceRegistry.DebrisEDockScaleMultiplier = 0.8f;
             pieceRegistry.DebrisFDockScaleMultiplier = 0.8f;
             pieceRegistry.DebrisADockEulerOffset = new Vector3(0f, 180f, 0f);
-            pieceRegistry.DebrisDDockEulerOffset = new Vector3(0f, 180f, 0f);
+            pieceRegistry.DebrisDDockEulerOffset = new Vector3(0f, 270f, 0f);
             pieceRegistry.DebrisFDockEulerOffset = new Vector3(0f, 90f, 0f);
             EditorUtility.SetDirty(pieceRegistry);
 

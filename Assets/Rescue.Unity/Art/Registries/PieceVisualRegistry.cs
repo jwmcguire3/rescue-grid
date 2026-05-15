@@ -15,6 +15,14 @@ namespace Rescue.Unity.Art.Registries
         [SerializeField] private GameObject? debrisFPrefab;
         [SerializeField] private GameObject? fallbackPrefab;
 
+        [Header("Board Pose Overrides")]
+        [SerializeField] private float debrisABoardScaleMultiplier = 1f;
+        [SerializeField] private float debrisBBoardScaleMultiplier = 1f;
+        [SerializeField] private float debrisCBoardScaleMultiplier = 1f;
+        [SerializeField] private float debrisDBoardScaleMultiplier = 1f;
+        [SerializeField] private float debrisEBoardScaleMultiplier = 1f;
+        [SerializeField] private float debrisFBoardScaleMultiplier = 1f;
+
         [Header("Dock Pose Overrides")]
         [SerializeField] private Vector3 debrisADockEulerOffset;
         [SerializeField] private Vector3 debrisBDockEulerOffset;
@@ -71,6 +79,42 @@ namespace Rescue.Unity.Art.Registries
             set => fallbackPrefab = value;
         }
 
+        public float DebrisABoardScaleMultiplier
+        {
+            get => ResolveScaleMultiplier(debrisABoardScaleMultiplier);
+            set => debrisABoardScaleMultiplier = value;
+        }
+
+        public float DebrisBBoardScaleMultiplier
+        {
+            get => ResolveScaleMultiplier(debrisBBoardScaleMultiplier);
+            set => debrisBBoardScaleMultiplier = value;
+        }
+
+        public float DebrisCBoardScaleMultiplier
+        {
+            get => ResolveScaleMultiplier(debrisCBoardScaleMultiplier);
+            set => debrisCBoardScaleMultiplier = value;
+        }
+
+        public float DebrisDBoardScaleMultiplier
+        {
+            get => ResolveScaleMultiplier(debrisDBoardScaleMultiplier);
+            set => debrisDBoardScaleMultiplier = value;
+        }
+
+        public float DebrisEBoardScaleMultiplier
+        {
+            get => ResolveScaleMultiplier(debrisEBoardScaleMultiplier);
+            set => debrisEBoardScaleMultiplier = value;
+        }
+
+        public float DebrisFBoardScaleMultiplier
+        {
+            get => ResolveScaleMultiplier(debrisFBoardScaleMultiplier);
+            set => debrisFBoardScaleMultiplier = value;
+        }
+
         public Vector3 DebrisADockEulerOffset
         {
             get => debrisADockEulerOffset;
@@ -109,37 +153,37 @@ namespace Rescue.Unity.Art.Registries
 
         public float DebrisADockScaleMultiplier
         {
-            get => ResolveDockScaleMultiplier(debrisADockScaleMultiplier);
+            get => ResolveScaleMultiplier(debrisADockScaleMultiplier);
             set => debrisADockScaleMultiplier = value;
         }
 
         public float DebrisBDockScaleMultiplier
         {
-            get => ResolveDockScaleMultiplier(debrisBDockScaleMultiplier);
+            get => ResolveScaleMultiplier(debrisBDockScaleMultiplier);
             set => debrisBDockScaleMultiplier = value;
         }
 
         public float DebrisCDockScaleMultiplier
         {
-            get => ResolveDockScaleMultiplier(debrisCDockScaleMultiplier);
+            get => ResolveScaleMultiplier(debrisCDockScaleMultiplier);
             set => debrisCDockScaleMultiplier = value;
         }
 
         public float DebrisDDockScaleMultiplier
         {
-            get => ResolveDockScaleMultiplier(debrisDDockScaleMultiplier);
+            get => ResolveScaleMultiplier(debrisDDockScaleMultiplier);
             set => debrisDDockScaleMultiplier = value;
         }
 
         public float DebrisEDockScaleMultiplier
         {
-            get => ResolveDockScaleMultiplier(debrisEDockScaleMultiplier);
+            get => ResolveScaleMultiplier(debrisEDockScaleMultiplier);
             set => debrisEDockScaleMultiplier = value;
         }
 
         public float DebrisFDockScaleMultiplier
         {
-            get => ResolveDockScaleMultiplier(debrisFDockScaleMultiplier);
+            get => ResolveScaleMultiplier(debrisFDockScaleMultiplier);
             set => debrisFDockScaleMultiplier = value;
         }
 
@@ -157,6 +201,22 @@ namespace Rescue.Unity.Art.Registries
             };
 
             return RegistryWarnings.ResolvePrefab(this, $"DebrisType.{type}", assignedPrefab, fallbackPrefab);
+        }
+
+        public float GetBoardScaleMultiplier(DebrisType type)
+        {
+            float scaleMultiplier = type switch
+            {
+                DebrisType.A => debrisABoardScaleMultiplier,
+                DebrisType.B => debrisBBoardScaleMultiplier,
+                DebrisType.C => debrisCBoardScaleMultiplier,
+                DebrisType.D => debrisDBoardScaleMultiplier,
+                DebrisType.E => debrisEBoardScaleMultiplier,
+                DebrisType.F => debrisFBoardScaleMultiplier,
+                _ => 1f,
+            };
+
+            return ResolveScaleMultiplier(scaleMultiplier);
         }
 
         public Quaternion GetDockRotationOffset(DebrisType type)
@@ -191,10 +251,10 @@ namespace Rescue.Unity.Art.Registries
                 _ => 1f,
             };
 
-            return ResolveDockScaleMultiplier(scaleMultiplier);
+            return ResolveScaleMultiplier(scaleMultiplier);
         }
 
-        private static float ResolveDockScaleMultiplier(float scaleMultiplier)
+        private static float ResolveScaleMultiplier(float scaleMultiplier)
         {
             return scaleMultiplier > 0f ? scaleMultiplier : 1f;
         }

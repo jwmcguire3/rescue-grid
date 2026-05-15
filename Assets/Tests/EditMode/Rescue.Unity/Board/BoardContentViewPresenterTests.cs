@@ -64,6 +64,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
             debrisDPrefab.transform.localRotation = Quaternion.Euler(0f, 220f, 0f);
             pieceRegistry.DebrisCPrefab = debrisCPrefab;
             pieceRegistry.DebrisDPrefab = debrisDPrefab;
+            pieceRegistry.DebrisDBoardScaleMultiplier = 1.15f;
             SetPrivateField(harness.ContentPresenter, "pieceRegistry", pieceRegistry);
             GameState state = CreateState(ImmutableArray.Create(
                 ImmutableArray.Create<Tile>(
@@ -79,13 +80,17 @@ namespace Rescue.Unity.BoardPresentation.Tests
             Assert.That(debrisD, Is.Not.Null);
             Assert.That(Quaternion.Angle(Quaternion.Euler(0f, 90f, 0f), debrisC!.transform.localRotation), Is.LessThan(0.001f));
             Assert.That(Quaternion.Angle(Quaternion.Euler(0f, 220f, 0f), debrisD!.transform.localRotation), Is.LessThan(0.001f));
+            Assert.That(debrisC.transform.localScale, Is.EqualTo(Vector3.one));
+            Assert.That(debrisD.transform.localScale, Is.EqualTo(Vector3.one * 1.15f));
 
             debrisC.transform.localRotation = Quaternion.identity;
             debrisD.transform.localRotation = Quaternion.identity;
+            debrisD.transform.localScale = Vector3.one;
             harness.ContentPresenter.ForceSyncToState(state);
 
             Assert.That(Quaternion.Angle(Quaternion.Euler(0f, 90f, 0f), debrisC.transform.localRotation), Is.LessThan(0.001f));
             Assert.That(Quaternion.Angle(Quaternion.Euler(0f, 220f, 0f), debrisD.transform.localRotation), Is.LessThan(0.001f));
+            Assert.That(debrisD.transform.localScale, Is.EqualTo(Vector3.one * 1.15f));
         }
 
         [Test]
@@ -380,6 +385,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
             if (visual is not null)
             {
                 string visualDiagnostics = $"right={visual.right}, up={visual.up}, forward={visual.forward}, localEuler={visual.localEulerAngles}";
+                Assert.That(Quaternion.Angle(visual.localRotation, Quaternion.Euler(0f, 160f, 0f)), Is.LessThan(0.001f), visualDiagnostics);
                 Assert.That(Vector3.Dot(visual.up.normalized, Vector3.up), Is.GreaterThan(0.99f), $"Daisy's visual up axis should belong to the board surface normal. {visualDiagnostics}");
                 Assert.That(Mathf.Abs(Vector3.Dot(visual.forward.normalized, Vector3.up)), Is.LessThan(0.01f), $"Daisy's visual forward axis should stay in the board plane. {visualDiagnostics}");
             }
@@ -2424,6 +2430,7 @@ namespace Rescue.Unity.BoardPresentation.Tests
             }
 
             string visualDiagnostics = $"right={visual.right}, up={visual.up}, forward={visual.forward}, localEuler={visual.localEulerAngles}";
+            Assert.That(Quaternion.Angle(visual.localRotation, Quaternion.Euler(0f, 160f, 0f)), Is.LessThan(0.001f), visualDiagnostics);
             Assert.That(Vector3.Dot(visual.up.normalized, Vector3.up), Is.GreaterThan(0.99f), $"Daisy's visual up axis should belong to the board surface normal. {visualDiagnostics}");
             Assert.That(Mathf.Abs(Vector3.Dot(visual.forward.normalized, Vector3.up)), Is.LessThan(0.01f), $"Daisy's visual forward axis should stay in the board plane. {visualDiagnostics}");
 

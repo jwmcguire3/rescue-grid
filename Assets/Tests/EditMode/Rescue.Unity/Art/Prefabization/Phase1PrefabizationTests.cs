@@ -158,8 +158,10 @@ namespace Rescue.Unity.Art.Tests
             Assert.That(registry.GetDockScaleMultiplier(DebrisType.D), Is.EqualTo(0.8f));
             Assert.That(registry.GetDockScaleMultiplier(DebrisType.E), Is.EqualTo(0.8f));
             Assert.That(registry.GetDockScaleMultiplier(DebrisType.F), Is.EqualTo(0.8f));
+            Assert.That(registry.GetBoardScaleMultiplier(DebrisType.A), Is.EqualTo(1f));
+            Assert.That(registry.GetBoardScaleMultiplier(DebrisType.D), Is.EqualTo(1.15f));
             Assert.That(registry.GetDockEulerOffset(DebrisType.A), Is.EqualTo(new Vector3(0f, 180f, 0f)));
-            Assert.That(registry.GetDockEulerOffset(DebrisType.D), Is.EqualTo(new Vector3(0f, 180f, 0f)));
+            Assert.That(registry.GetDockEulerOffset(DebrisType.D), Is.EqualTo(new Vector3(0f, 270f, 0f)));
             Assert.That(registry.GetDockEulerOffset(DebrisType.F), Is.EqualTo(new Vector3(0f, 90f, 0f)));
         }
 
@@ -237,6 +239,7 @@ namespace Rescue.Unity.Art.Tests
             Assert.That(animator.applyRootMotion, Is.False);
             Assert.That(puppyAnimator, Is.Not.Null);
             Assert.That(puppyLookAt, Is.Not.Null);
+            Assert.That(daisyPrefab.transform.Find("Visual")!.localScale, Is.EqualTo(Vector3.one * 3.4417312f));
 
             SerializedObject serializedAnimator = new SerializedObject(puppyAnimator!);
             Assert.That(serializedAnimator.FindProperty("animator").objectReferenceValue, Is.SameAs(animator));
@@ -277,8 +280,8 @@ namespace Rescue.Unity.Art.Tests
                 Bounds localBounds = CalculateLocalRendererBounds(prefabRoot);
                 string summary = $"center={localBounds.center}, size={localBounds.size}";
 
-                Assert.That(localBounds.size.x, Is.LessThanOrEqualTo(0.78f), summary);
-                Assert.That(localBounds.size.z, Is.LessThanOrEqualTo(0.78f), summary);
+                Assert.That(localBounds.size.x, Is.LessThanOrEqualTo(1.56f), summary);
+                Assert.That(localBounds.size.z, Is.LessThanOrEqualTo(1.56f), summary);
             }
             finally
             {

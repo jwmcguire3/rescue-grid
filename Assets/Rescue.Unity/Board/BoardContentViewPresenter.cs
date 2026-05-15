@@ -58,7 +58,7 @@ namespace Rescue.Unity.BoardPresentation
         private static readonly Vector3 TargetOneClearAwayScale = new Vector3(1.08f, 1.08f, 1.08f);
         private static readonly Vector3 TargetExtractableScale = new Vector3(1.16f, 1.16f, 1.16f);
         private static readonly Vector3 TargetDistressedScale = new Vector3(1.08f, 1.08f, 1.08f);
-        private static readonly Quaternion TargetVisualSurfaceLocalRotation = Quaternion.Euler(0f, 180f, 0f);
+        private static readonly Quaternion TargetVisualSurfaceLocalRotation = Quaternion.Euler(0f, 160f, 0f);
 
         [SerializeField] private BoardGridViewPresenter? gridView;
         [SerializeField] private PieceVisualRegistry? pieceRegistry;
@@ -561,11 +561,11 @@ namespace Rescue.Unity.BoardPresentation
 
             hiddenDebrisView.Coord = revealed.Coord;
             hiddenDebrisView.ContentLabel = $"Debris_{revealed.RevealedType}";
-            hiddenDebrisView.BaseLocalScale = Vector3.one;
+            hiddenDebrisView.BaseLocalScale = ResolveDebrisBoardScale(revealed.RevealedType);
             visualRegistry.Debris.Set(revealed.Coord, hiddenDebrisView);
 
             MoveContentObjectToAnchor(hiddenDebrisView.Object, anchor, revealed.Coord, hiddenDebrisView.ContentLabel, contentYOffset, hiddenDebrisView.BaseLocalRotation);
-            hiddenDebrisView.Object.transform.localScale = Vector3.one;
+            hiddenDebrisView.Object.transform.localScale = hiddenDebrisView.BaseLocalScale;
 
             if (!Application.isPlaying || !isActiveAndEnabled || effectiveDurationSeconds <= 0f)
             {
@@ -600,7 +600,7 @@ namespace Rescue.Unity.BoardPresentation
                     ResolveDebrisPrefab(type),
                     anchor,
                     contentYOffset,
-                    Vector3.one);
+                    ResolveDebrisBoardScale(type));
 
                 if (debrisObject is null)
                 {
@@ -1245,7 +1245,7 @@ namespace Rescue.Unity.BoardPresentation
                         ResolveDebrisPrefab(debrisTile.Type),
                         anchor,
                         contentYOffset,
-                        Vector3.one);
+                        ResolveDebrisBoardScale(debrisTile.Type));
                     return;
                 case BlockerTile blockerTile:
                     expectedBlockers.Add(coord);
@@ -1268,7 +1268,7 @@ namespace Rescue.Unity.BoardPresentation
                             ResolveDebrisPrefab(blockerTile.Hidden.Type),
                             anchor,
                             contentYOffset * HiddenDebrisYOffsetRatio,
-                            HiddenDebrisScale);
+                            Vector3.Scale(HiddenDebrisScale, ResolveDebrisBoardScale(blockerTile.Hidden.Type)));
                     }
 
                     return;
@@ -1407,6 +1407,11 @@ namespace Rescue.Unity.BoardPresentation
                 else
                 {
                     existingView.Coord = coord;
+                    if (prefab != null)
+                    {
+                        existingView.BaseLocalScale = Vector3.Scale(prefab.transform.localScale, scaleMultiplier);
+                    }
+
                     MoveContentObjectToAnchor(existingView.Object, anchor, coord, contentLabel, yOffset, existingView.BaseLocalRotation);
                     existingView.Object.transform.localScale = existingView.BaseLocalScale;
                     return;
@@ -1422,6 +1427,15 @@ namespace Rescue.Unity.BoardPresentation
             }
 
             registry.Set(coord, new BoardPieceView(coord, contentLabel, spawnedObject, spawnedObject.transform.localScale, spawnedObject.transform.localRotation));
+        }
+
+        private Vector3 ResolveDebrisBoardScale(DebrisType debrisType)
+        {
+            float scaleMultiplier = pieceRegistry is not null
+                ? pieceRegistry.GetBoardScaleMultiplier(debrisType)
+                : 1f;
+
+            return Vector3.one * scaleMultiplier;
         }
 
         private void EnsurePieceVisual(

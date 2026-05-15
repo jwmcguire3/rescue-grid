@@ -19,10 +19,16 @@ MonoBehaviour:
   debrisEPrefab: {fileID: 3913966246088344501, guid: 4dda2698a5741ed42980f19a9cb5d9b3, type: 3}
   debrisFPrefab: {fileID: 7164185029372604201, guid: 363be031db9c4fdaaecb0eb9a713bea1, type: 3}
   fallbackPrefab: {fileID: 355894138586572587, guid: 92a0a1a4a5d26e945a5086b63da007b7, type: 3}
+  debrisABoardScaleMultiplier: 1
+  debrisBBoardScaleMultiplier: 1
+  debrisCBoardScaleMultiplier: 1
+  debrisDBoardScaleMultiplier: 1.15
+  debrisEBoardScaleMultiplier: 1
+  debrisFBoardScaleMultiplier: 1
   debrisADockEulerOffset: {x: 0, y: 180, z: 0}
   debrisBDockEulerOffset: {x: 0, y: 0, z: 0}
   debrisCDockEulerOffset: {x: 0, y: 0, z: 0}
-  debrisDDockEulerOffset: {x: 0, y: 180, z: 0}
+  debrisDDockEulerOffset: {x: 0, y: 270, z: 0}
   debrisEDockEulerOffset: {x: 0, y: 0, z: 0}
   debrisFDockEulerOffset: {x: 0, y: 90, z: 0}
   debrisADockScaleMultiplier: 0.8

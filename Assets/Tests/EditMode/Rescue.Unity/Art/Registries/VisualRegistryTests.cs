@@ -60,6 +60,7 @@ namespace Rescue.Unity.Art.Tests
             Assert.That(registry.GetDockEulerOffset(DebrisType.B), Is.EqualTo(Vector3.zero));
             Assert.That(registry.GetDockRotationOffset(DebrisType.B), Is.EqualTo(Quaternion.identity));
             Assert.That(registry.GetDockScaleMultiplier(DebrisType.B), Is.EqualTo(1f));
+            Assert.That(registry.GetBoardScaleMultiplier(DebrisType.B), Is.EqualTo(1f));
         }
 
         [Test]
@@ -70,11 +71,13 @@ namespace Rescue.Unity.Art.Tests
             registry.DebrisBDockScaleMultiplier = 0.9f;
             registry.DebrisDDockEulerOffset = new Vector3(0f, 0f, 180f);
             registry.DebrisDDockScaleMultiplier = 0.9f;
+            registry.DebrisDBoardScaleMultiplier = 1.15f;
 
             Assert.That(registry.GetDockEulerOffset(DebrisType.B), Is.EqualTo(new Vector3(0f, 0f, 180f)));
             Assert.That(registry.GetDockScaleMultiplier(DebrisType.B), Is.EqualTo(0.9f));
             Assert.That(registry.GetDockEulerOffset(DebrisType.D), Is.EqualTo(new Vector3(0f, 0f, 180f)));
             Assert.That(registry.GetDockScaleMultiplier(DebrisType.D), Is.EqualTo(0.9f));
+            Assert.That(registry.GetBoardScaleMultiplier(DebrisType.D), Is.EqualTo(1.15f));
         }
 
         [Test]
