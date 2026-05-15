@@ -6,8 +6,8 @@ namespace Rescue.Unity.BoardPresentation
     internal static class BoardContentMarkerFactory
     {
         private const string RescuePathPawName = "RescuePathPaw";
-        private const string RescuePathPawModelResourcePath = "Meshy_AI_Teal_Paw_0513020745_texture";
-        private const string RescuePathPawTextureResourcePath = "Textures/Meshy_AI_Teal_Paw_0513020745_texture";
+        private const string RescuePathPawModelResourcePath = "Meshy_AI_Teal_Paw_Print_0514033022_texture";
+        private const string RescuePathPawTextureResourcePath = "Textures/Meshy_AI_Teal_Paw_Print_0514033022_texture";
         private const string TargetReadabilityMarkerName = "TargetReadabilityMarker";
         private const int TargetMarkerCircleSegments = 32;
         private const float RescuePathPawTargetFootprint = 0.72f;

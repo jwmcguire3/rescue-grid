@@ -144,8 +144,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Rescue.Unity\Debug\DebugPanel.uxml" />
+    <None Include="Assets\Rescue.Unity\Art\UI\Fonts\Source\RobotoSlab-LICENSE.txt" />
     <None Include="Assets\Rescue.Unity\Debug\DebugPanel.uss" />
+    <None Include="Assets\Rescue.Unity\Art\UI\Fonts\Source\DMSans-OFL.txt" />
     <None Include="Assets\Rescue.Unity\Rescue.Unity.asmdef" />
+    <None Include="Assets\Rescue.Unity\Art\UI\Fonts\Source\Rye-OFL.txt" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="Assets\Editor\BrandingSettingsUtility.cs" />
     <Compile Include="Assets\Editor\BuildScripts.cs" />
+    <Compile Include="Assets\Editor\SettingsMenuFontAssetGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\MobileDependencyResolver\Editor\Google.VersionHandler.dll" />
