@@ -7,26 +7,27 @@
         {
           "header": "L00 TUTORIAL",
           "title": "RAIN AT RESCUE ROW",
-          "body": "The rain started three days ago and hasn't stopped.\n\nThe yard is filling up, and the animals need to get to higher ground before the water does.",
-          "imageResourcePath": "Rescue.Unity/UI/Tutorial/rescue_row_portrait"
+          "body": "The rain started three days ago and hasn't stopped.\n\nThe yard is filling up, and the animals need cleared area before the water reaches them.",
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/background.WideRatio"
         },
+        
         {
           "header": "L00 TUTORIAL",
-          "title": "CLEAR THE WAY",
-          "body": "Mae has been running Rescue Row for a long time. She knows what to do when it floods: clear the supplies, open the paths, get the animals out.\n\nTap matching groups to clear them from the yard.",
-          "imageResourcePath": "Rescue.Unity/UI/Tutorial/L00_clear_the_way_screenshot"
-        },
-        {
-          "header": "L00 TUTORIAL",
-          "title": "TWO OR MORE",
-          "body": "Tap any connected group of 2 or more matching supplies to clear it.\n\nThe water only rises when you move, so look as long as you need. Thinking is free.",
+          "title": "TAP TWO OR MORE",
+          "body": "Tap any connected group of 2 or more matching supplies to clear it.\n\nThe water only rises when you move, so look as long as you need.",
           "imageResourcePath": "Rescue.Unity/UI/Tutorial/L00_two_are_valid_free_thinking_screeshot"
         },
         {
           "header": "L00 TUTORIAL",
-          "title": "The Forecast Row",
-          "body": "The wet shimmer shows where water is going next.\n\nFlooded rows are already lost. Forecast rows are your warning.",
+          "title": "RISING WATER LEVELS",
+          "body": "The light blue shallow water shows where it will flood next and rises each turn.\n\nFlooded rows are already lost.",
           "imageResourcePath": "Rescue.Unity/UI/Tutorial/L00_forecast_row_screeshot"
+        },
+		{
+          "header": "L00 TUTORIAL",
+          "title": "CLEAR THE WAY",
+          "body": "Clear tiles in all four directions around Daisy.",
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/L00_clear_the_way_screenshot"
         }
       ]
     },
@@ -40,16 +41,17 @@
           "body": "Mae found her under the supply shelf the night the rain started. Small, scruffy, watches everything.\n\nShe hasn't moved from that corner since. She's waiting for someone to clear the way.",
           "imageResourcePath": "Rescue.Unity/UI/Tutorial/blank_placeholder"
         },
-        {
-          "header": "L01 TUTORIAL",
-          "title": "CLEAR HER FOUR SIDES",
-          "body": "When the path above, below, left, and right of Daisy is open, she can reach safety.\n\nCorners don't count. Just the four direct sides.",
-          "imageResourcePath": "Rescue.Unity/UI/Tutorial/L00_what_counts_as_clear_screeshot"
-        },
+        
         {
           "header": "L01 TUTORIAL",
           "title": "Crates Need a Neighbor Clear",
           "body": "Crates don\u2019t break when you tap the crate.\n\nClear supplies beside them. The hit comes from the neighboring clear.",
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/L00_what_counts_as_clear_screeshot"
+        },
+		{
+          "header": "L01 TUTORIAL",
+          "title": "CLEAR HER FOUR SIDES",
+          "body": "When the path above, below, left, and right of Daisy is open, she can reach safety.\n\nCorners don't count. Just the four direct sides.",
           "imageResourcePath": "Rescue.Unity/UI/Tutorial/L00_what_counts_as_clear_screeshot"
         }
       ]
@@ -61,7 +63,7 @@
         {
           "header": "L02 TUTORIAL",
           "title": "THE SORTING DOCK",
-          "body": "Cleared supplies don't disappear: they go to the dock. Mae sorts them when she has three of the same kind.\n\nSeven spaces. That's all the room she has.",
+          "body": "Cleared supplies get put in the dock. Mae sorts them when she has three of the same kind.\n\nSeven spaces. That's all the room she has.",
           "imageResourcePath": "Rescue.Unity/UI/Tutorial/L02_dock_half_full_screeshot"
         },
         {
@@ -78,7 +80,7 @@
       "cards": [
         {
           "header": "L03 TUTORIAL",
-          "title": "TWO AT ONCE",
+          "title": "MULTIPLE RESCUES",
           "body": "Two animals need help. The water is closer to one of them.\n\nMae can't reach both at the same time. Someone has to go first.",
           "imageResourcePath": "Rescue.Unity/UI/Tutorial/L03_two_at_once_screeshot"
         },
@@ -97,14 +99,14 @@
         {
           "header": "L04 TUTORIAL",
           "title": "FROZEN OVER",
-          "body": "The temperature dropped last night. Some of the supplies in the yard are frozen solid.\n\nMae can't move them until the ice breaks, but she can see what's underneath.",
+          "body": "The temperature dropped last night. Some of the supplies in the yard are frozen solid.\n\nMae can't move them until the ice breaks, but sometimes she can see what's underneath.",
           "imageResourcePath": "Rescue.Unity/UI/Tutorial/L04_frozen_over_screeshot"
         },
         {
           "header": "L04 TUTORIAL",
           "title": "BREAK THE ICE",
-          "body": "Clear a group next to a frozen tile and the ice cracks open. The supply inside joins the board.\n\nSometimes the fastest rescue path is locked under the frost. Look through the ice before you choose your move.",
-          "imageResourcePath": "Rescue.Unity/UI/Tutorial/blank_placeholder"
+          "body": "Clear a group next to a frozen tile and the ice cracks open. The supply inside joins the board.\n\nSometimes the fastest rescue path is locked under the frost.
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/L04_frozen_over_screeshot"
         }
       ]
     },
@@ -115,38 +117,14 @@
         {
           "header": "L07 TUTORIAL",
           "title": "WILD VINE",
-          "body": "The rain brought the vine back. It grows fast in wet ground, and it grows toward open space.\n\nThe paths you clear for the animals? That's exactly where the vine wants to go.",
+          "body": "The rain brought the vine back. It grows fast in wet ground, and it grows toward safe space.\n\nThe paths you clear for the animals? That's exactly where the vine wants to go.",
           "imageResourcePath": "Rescue.Unity/UI/Tutorial/L07_vine_introduction_screeshot"
         },
         {
           "header": "L07 TUTORIAL",
           "title": "CUT IT BACK",
           "body": "Clear a group next to vine to remove it. But if you leave vine alone too long, it grows into the open tiles you already cleared.\n\nWatch the tendrils. When they're reaching, you're running out of time to cut them.",
-          "imageResourcePath": "Rescue.Unity/UI/Tutorial/blank_placeholder"
-        }
-      ]
-    },
-    {
-      "levelId": "L08",
-      "showTiming": "pre",
-      "cards": [
-        {
-          "header": "L08 TUTORIAL",
-          "title": "PAST THE FENCE",
-          "body": "It's worse out there than Mae expected.\n\nThe street hasn't drained in two days. The shelter is the dry ground for three blocks in any direction.",
-          "imageResourcePath": "Rescue.Unity/UI/Tutorial/blank_placeholder"
-        },
-        {
-          "header": "L08 TUTORIAL",
-          "title": "THE VINE DOESN'T WAIT",
-          "body": "While you focus on the water, the vine keeps growing. Every few moves you don't cut it back, it takes another tile.\n\nIt reaches for rescue paths first. The space you opened for the animal, the vine fills it back in.",
           "imageResourcePath": "Rescue.Unity/UI/Tutorial/L08_vine_creep_screeshot"
-        },
-        {
-          "header": "L08 TUTORIAL",
-          "title": "TWO PROBLEMS AT ONCE",
-          "body": "Water rises when you act. Vine grows when you don't act on it.\n\nYou can't fix both at the same time. Decide which one is closer to the animal, and handle that first.",
-          "imageResourcePath": "Rescue.Unity/UI/Tutorial/blank_placeholder"
         }
       ]
     },

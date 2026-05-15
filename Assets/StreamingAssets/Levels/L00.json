@@ -7,8 +7,8 @@
     "tiles": [
       ["CR", "CR", "CR", "C", "C", "."],
       [".", "D", "B", ".", "F", "F"],
-      ["T0", "CR", "B", ".", "D", "."],
-      ["CR", "D", "CR", ".", "D", "F"],
+      ["T0", "B", "B", ".", "D", "."],
+      ["A", "D", "CR", ".", "D", "F"],
       ["A", "A", "D", "D", ".", "F"],
       ["C", "C", ".", ".", "F", "F"],
       [".", ".", "C", "C", ".", "."]
@@ -37,10 +37,10 @@
   },
   "meta": {
     "intent": "Teach the core rule through contrast: thinking is free, but the first valid action releases the held water and makes danger advance.",
-    "expectedPath": "Tap the visible lower-left A pair at row 4, col 0, watch the first flood row appear, then tap the B pair at row 1, col 2 to pop the side blocker and free the puppy.",
+    "expectedPath": "Tap the visible lower-left A group at row 3, col 0 to open the puppy's lower side and watch the first flood row appear, take the stabilizing D clear that appears after gravity, then tap the B group at row 2, col 1 to open the puppy's right side and free the puppy.",
     "expectedFailMode": "The player treats the board like static cleanup and misses the authored contrast between planning time and action time.",
     "whatItProves": "The player can learn the prototype's defining timing rule through interaction instead of explanation.",
-    "notes": "The opening A group remains beside the future flood edge, but the board now carries real surrounding material so the rule teach reads as gameplay instead of an empty diagram.",
+    "notes": "The opening A and B groups now form the puppy's rescue route directly, keeping the rule teach clear without visually boxing the puppy in with crates.",
     "isRuleTeach": true
   }
 }

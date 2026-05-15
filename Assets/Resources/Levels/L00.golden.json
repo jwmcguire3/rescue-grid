@@ -3,17 +3,22 @@
   "seed": 1,
   "pathType": "golden",
   "expectedOutcome": "Win",
-  "maxActions": 2,
+  "maxActions": 3,
   "actions": [
     {
-      "row": 4,
+      "row": 3,
       "col": 0,
-      "intent": "Clear the framed lower-left pair to release the held water and teach that acting advances danger."
+      "intent": "Clear the framed lower-left route group to release the held water and teach that acting advances danger."
     },
     {
-      "row": 1,
-      "col": 2,
-      "intent": "Clear the side rescue route so the puppy extracts immediately after the action-based water lesson lands."
+      "row": 4,
+      "col": 4,
+      "intent": "Clear the stabilizing debris group created by gravity while keeping dock pressure harmless."
+    },
+    {
+      "row": 2,
+      "col": 1,
+      "intent": "Clear the side rescue route so the puppy extracts after the action-based water lesson lands."
     }
   ],
   "expectedEventsInOrder": [
