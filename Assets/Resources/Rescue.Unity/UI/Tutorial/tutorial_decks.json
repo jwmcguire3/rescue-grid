@@ -39,14 +39,14 @@
           "header": "L01 TUTORIAL",
           "title": "DAISY",
           "body": "Mae found her under the supply shelf the night the rain started. Small, scruffy, watches everything.\n\nShe hasn't moved from that corner since. She's waiting for someone to clear the way.",
-          "imageResourcePath": "Rescue.Unity/UI/Tutorial/blank_placeholder"
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/dog_hero_shot"
         },
         
         {
           "header": "L01 TUTORIAL",
           "title": "Crates Need a Neighbor Clear",
           "body": "Crates don\u2019t break when you tap the crate.\n\nClear supplies beside them. The hit comes from the neighboring clear.",
-          "imageResourcePath": "Rescue.Unity/UI/Tutorial/L00_what_counts_as_clear_screeshot"
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/crate_neighbor"
         },
 		{
           "header": "L01 TUTORIAL",
@@ -100,7 +100,7 @@
           "header": "L04 TUTORIAL",
           "title": "FROZEN OVER",
           "body": "The temperature dropped last night. Some of the supplies in the yard are frozen solid.\n\nMae can't move them until the ice breaks, but sometimes she can see what's underneath.",
-          "imageResourcePath": "Rescue.Unity/UI/Tutorial/L04_frozen_over_screeshot"
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/froze_1"
         },
         {
           "header": "L04 TUTORIAL",
@@ -136,7 +136,7 @@
           "header": "L10 TUTORIAL",
           "title": "STILL STANDING",
           "body": "That was the hardest one yet. Everything at once: water, vine, ice, and two animals counting on you.\n\nYou handled it.",
-          "imageResourcePath": "Rescue.Unity/UI/Tutorial/blank_placeholder"
+          "imageResourcePath": "Rescue.Unity/UI/Tutorial/L10_mae_hold_daisy"
         }
       ]
     }

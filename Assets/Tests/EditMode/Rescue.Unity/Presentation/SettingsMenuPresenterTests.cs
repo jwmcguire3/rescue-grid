@@ -82,6 +82,7 @@ namespace Rescue.Unity.Presentation.Tests
             SettingsMenuView view = presenter.View;
             Assert.That(view.RestartButton, Is.Not.Null);
             Assert.That(view.SettingsButton, Is.Not.Null);
+            Assert.That(view.DismissBackdropButton, Is.Not.Null);
             Assert.That(view.ResumeButton, Is.Not.Null);
             Assert.That(view.ShowTutorialButton, Is.Not.Null);
             Assert.That(view.LevelDropdown, Is.Not.Null);
@@ -130,6 +131,7 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(panelRect.anchorMax, Is.EqualTo(new Vector2(0.5f, 0.5f)));
             Assert.That(panelRect.pivot, Is.EqualTo(new Vector2(0.5f, 0.5f)));
             Assert.That(panelRect.anchoredPosition, Is.EqualTo(Vector2.zero));
+            AssertDismissBackdropSitsBehindPanel(view);
 
             AssertContainedInPanel(view, "SettingsTitle");
             AssertContainedInPanel(view, "ResumeButton");
@@ -142,7 +144,7 @@ namespace Rescue.Unity.Presentation.Tests
             AssertContainedInPanel(view, "HapticsStrengthRow");
             AssertBottomPaddingInPanel(view, "HapticsStrengthRow", 80f);
             AssertHorizontalPaddingInPanel(view, "SettingsTitle", 68f, 150f);
-            AssertHorizontalPaddingInPanel(view, "ResumeButton", 390f, 40f);
+            AssertHorizontalPaddingInPanel(view, "ResumeButton", 366f, 50f);
             AssertHorizontalPaddingInPanel(view, "ShowTutorialButton", 68f, 68f);
             AssertHorizontalPaddingInPanel(view, "LevelDropdownRow", 68f, 68f);
             AssertHorizontalPaddingInPanel(view, "MusicSliderRow", 68f, 68f);
@@ -289,6 +291,23 @@ namespace Rescue.Unity.Presentation.Tests
             presenter.RequestRestart();
 
             Assert.That(presenter.IsOpen, Is.False);
+        }
+
+        [Test]
+        public void SettingsMenuPresenter_BackdropTapClosesSettingsMenu()
+        {
+            SettingsMenuPresenter presenter = CreatePresenter(out _);
+
+            presenter.SetOpen(true);
+
+            SettingsMenuView view = presenter.View;
+            Assert.That(view.DismissBackdropButton.gameObject.activeSelf, Is.True);
+
+            view.DismissBackdropButton.onClick.Invoke();
+
+            Assert.That(presenter.IsOpen, Is.False);
+            Assert.That(view.DismissBackdropButton.gameObject.activeSelf, Is.False);
+            Assert.That(view.PanelRoot.activeSelf, Is.False);
         }
 
         [Test]
@@ -513,8 +532,26 @@ namespace Rescue.Unity.Presentation.Tests
             Assert.That(resumeLabel, Is.Null, "The settings panel should not show the old RESUME plaque.");
 
             RectTransform closeRect = (RectTransform)closeButton.transform;
-            Assert.That(closeRect.sizeDelta.x, Is.EqualTo(44f).Within(0.001f));
-            Assert.That(closeRect.sizeDelta.y, Is.EqualTo(44f).Within(0.001f));
+            Assert.That(closeRect.anchoredPosition.x, Is.EqualTo(366f).Within(0.001f));
+            Assert.That(closeRect.anchoredPosition.y, Is.EqualTo(-40f).Within(0.001f));
+            Assert.That(closeRect.sizeDelta.x, Is.EqualTo(64f).Within(0.001f));
+            Assert.That(closeRect.sizeDelta.y, Is.EqualTo(64f).Within(0.001f));
+        }
+
+        private static void AssertDismissBackdropSitsBehindPanel(SettingsMenuView view)
+        {
+            Button backdrop = view.DismissBackdropButton;
+            Image backdropImage = backdrop.GetComponent<Image>();
+            Assert.That(backdropImage, Is.Not.Null, "Dismiss backdrop should provide a full-screen raycast target.");
+            Assert.That(backdropImage.color.a, Is.LessThan(0.01f), "Dismiss backdrop should be visually transparent.");
+            Assert.That(backdropImage.raycastTarget, Is.True);
+
+            RectTransform backdropRect = (RectTransform)backdrop.transform;
+            Assert.That(backdropRect.anchorMin, Is.EqualTo(Vector2.zero));
+            Assert.That(backdropRect.anchorMax, Is.EqualTo(Vector2.one));
+            Assert.That(backdropRect.offsetMin, Is.EqualTo(Vector2.zero));
+            Assert.That(backdropRect.offsetMax, Is.EqualTo(Vector2.zero));
+            Assert.That(backdrop.transform.GetSiblingIndex(), Is.LessThan(view.PanelRoot.transform.GetSiblingIndex()), "Backdrop should sit behind the settings panel so panel controls remain interactive.");
         }
 
         private static void AssertSettingsMenuFonts(SettingsMenuView view)

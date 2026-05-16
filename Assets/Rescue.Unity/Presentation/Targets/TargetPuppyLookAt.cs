@@ -93,9 +93,13 @@ namespace Rescue.Unity.Presentation.Targets
 
         public void ApplyReadiness(TargetReadiness readiness)
         {
+            bool readinessChanged = CurrentReadiness != readiness;
             CurrentReadiness = readiness;
             extracting = readiness is TargetReadiness.ExtractableLatched or TargetReadiness.Extracted;
-            ResetGlanceTimer();
+            if (readinessChanged)
+            {
+                ResetGlanceTimer();
+            }
         }
 
         public void PlayExtract()
@@ -198,12 +202,12 @@ namespace Rescue.Unity.Presentation.Targets
 
             if (isForcedLook || (forcedLookTarget != null && CurrentBlend > targetBlend + 0.001f))
             {
-                ApplyForcedPose(head, neck, headBase, neckBase);
+                ApplyForcedPose(head, neck, headBase, neckBase, target);
                 ApplyForcedEyePose(eyeBases, target);
                 return;
             }
 
-            Vector3 worldDirection = target.position - head.position;
+            Vector3 worldDirection = ResolveLookWorldDirection(head.position, target);
             if (worldDirection.sqrMagnitude <= 0.0001f || CurrentBlend <= 0.0001f)
             {
                 ApplyOffsets(head, neck, headBase, neckBase, Quaternion.identity, Quaternion.identity);
@@ -340,9 +344,10 @@ namespace Rescue.Unity.Presentation.Targets
             Transform head,
             Transform neck,
             Quaternion headBase,
-            Quaternion neckBase)
+            Quaternion neckBase,
+            Transform target)
         {
-            if (TryApplyForcedLandmarkPose(head, neck, headBase, neckBase))
+            if (TryApplyForcedLandmarkPose(head, neck, headBase, neckBase, target))
             {
                 return;
             }
@@ -485,13 +490,41 @@ namespace Rescue.Unity.Presentation.Targets
 
         private Vector3 ResolveForcedEyeDesiredDirection(Vector3 fromPosition, Transform target)
         {
+            return ResolveLookWorldDirection(fromPosition, target);
+        }
+
+        private Vector3 ResolveLookWorldDirection(Vector3 fromPosition, Transform target)
+        {
             Camera? camera = forcedLookCamera;
             if (camera != null &&
+                forcedLookTarget == target &&
                 camera.isActiveAndEnabled &&
                 camera.gameObject.activeInHierarchy &&
                 camera.orthographic)
             {
                 return -camera.transform.forward;
+            }
+
+            if (Application.isPlaying)
+            {
+                Camera? mainCamera = Camera.main;
+                if (mainCamera != null &&
+                    mainCamera.transform == target &&
+                    mainCamera.isActiveAndEnabled &&
+                    mainCamera.gameObject.activeInHierarchy &&
+                    mainCamera.orthographic)
+                {
+                    return -mainCamera.transform.forward;
+                }
+            }
+
+            Camera? targetCamera = target.GetComponent<Camera>();
+            if (targetCamera != null &&
+                targetCamera.isActiveAndEnabled &&
+                targetCamera.gameObject.activeInHierarchy &&
+                targetCamera.orthographic)
+            {
+                return -targetCamera.transform.forward;
             }
 
             return target.position - fromPosition;
@@ -501,7 +534,8 @@ namespace Rescue.Unity.Presentation.Targets
             Transform head,
             Transform neck,
             Quaternion headBase,
-            Quaternion neckBase)
+            Quaternion neckBase,
+            Transform target)
         {
             Transform? muzzle = ResolveNamedReference(ref muzzleReference, head, "nose");
             if (muzzle == null || CurrentBlend <= 0.0001f)
@@ -524,49 +558,43 @@ namespace Rescue.Unity.Presentation.Targets
             }
 
             muzzleDirection.Normalize();
-            Vector3 dogRight = ResolveDogRight(head);
-            Vector3 dogUp = Vector3.Cross(muzzleDirection, dogRight);
-            if (dogUp.sqrMagnitude <= 0.0001f)
+            Vector3 desiredDirection = ResolveLookWorldDirection(muzzle.position, target);
+            if (desiredDirection.sqrMagnitude <= 0.0001f)
             {
-                dogUp = ResolveDirectionSpace().up;
+                return false;
             }
 
-            dogUp.Normalize();
-            if (Vector3.Dot(dogUp, ResolveDirectionSpace().up) < 0f)
+            desiredDirection.Normalize();
+            Quaternion desiredDelta = Quaternion.FromToRotation(muzzleDirection, desiredDirection);
+            float maxDegrees = Mathf.Sqrt(
+                forcedMaxYawDegrees * forcedMaxYawDegrees +
+                forcedMaxPitchDegrees * forcedMaxPitchDegrees);
+            float angle = Quaternion.Angle(Quaternion.identity, desiredDelta);
+            if (angle > maxDegrees && angle > 0.0001f)
             {
-                dogUp = -dogUp;
+                desiredDelta = Quaternion.Slerp(Quaternion.identity, desiredDelta, maxDegrees / angle);
             }
 
-            Quaternion rightDelta = ResolveSignedDelta(dogUp, forcedLookRightDegrees * CurrentBlend, muzzleDirection, dogRight);
-            Vector3 rightAdjustedMuzzle = rightDelta * muzzleDirection;
-            Quaternion upDelta = ResolveSignedDelta(dogRight, forcedLookUpDegrees * CurrentBlend, rightAdjustedMuzzle, dogUp);
-            Quaternion headWorldDelta = upDelta * rightDelta;
-            Quaternion neckWorldDelta = Quaternion.Slerp(Quaternion.identity, headWorldDelta, 0.28f);
+            desiredDelta = Quaternion.Slerp(Quaternion.identity, desiredDelta, CurrentBlend);
+            Quaternion neckWorldDelta = Quaternion.Slerp(Quaternion.identity, desiredDelta, 0.28f);
+            Quaternion headWorldDelta = Quaternion.Slerp(Quaternion.identity, desiredDelta, 0.72f);
 
             if (!TryApplyWorldDeltas(head, neck, headBase, neckBase, headWorldDelta, neckWorldDelta))
             {
                 return false;
             }
 
-            LastClampedYawDegrees = forcedLookRightDegrees * CurrentBlend;
-            LastClampedPitchDegrees = forcedLookUpDegrees * CurrentBlend;
+            Vector3 localDirection = ResolveDirectionSpace().InverseTransformDirection(desiredDirection);
+            float horizontalMagnitude = new Vector2(localDirection.x, localDirection.z).magnitude;
+            LastClampedYawDegrees = Mathf.Clamp(
+                Mathf.Atan2(localDirection.x, localDirection.z) * Mathf.Rad2Deg,
+                -forcedMaxYawDegrees,
+                forcedMaxYawDegrees);
+            LastClampedPitchDegrees = Mathf.Clamp(
+                Mathf.Atan2(localDirection.y, horizontalMagnitude) * Mathf.Rad2Deg,
+                -forcedMaxPitchDegrees,
+                forcedMaxPitchDegrees);
             return true;
-        }
-
-        private Vector3 ResolveDogRight(Transform head)
-        {
-            Transform? leftEye = ResolveNamedReference(ref leftEyeReference, head, "eye.L");
-            Transform? rightEye = ResolveNamedReference(ref rightEyeReference, head, "eye.R");
-            if (leftEye != null && rightEye != null)
-            {
-                Vector3 eyeRight = rightEye.position - leftEye.position;
-                if (eyeRight.sqrMagnitude > 0.0001f)
-                {
-                    return eyeRight.normalized;
-                }
-            }
-
-            return head.right;
         }
 
         private static Transform? ResolveNamedReference(ref Transform? reference, Transform root, string childName)
@@ -587,25 +615,6 @@ namespace Rescue.Unity.Presentation.Targets
             }
 
             return null;
-        }
-
-        private static Quaternion ResolveSignedDelta(
-            Vector3 axis,
-            float degrees,
-            Vector3 currentDirection,
-            Vector3 desiredDirection)
-        {
-            if (axis.sqrMagnitude <= 0.0001f || Mathf.Abs(degrees) <= 0.0001f)
-            {
-                return Quaternion.identity;
-            }
-
-            Quaternion positive = Quaternion.AngleAxis(degrees, axis.normalized);
-            Quaternion negative = Quaternion.AngleAxis(-degrees, axis.normalized);
-            return Vector3.Dot(positive * currentDirection, desiredDirection) >=
-                Vector3.Dot(negative * currentDirection, desiredDirection)
-                ? positive
-                : negative;
         }
 
         private bool TryApplyWorldDeltas(

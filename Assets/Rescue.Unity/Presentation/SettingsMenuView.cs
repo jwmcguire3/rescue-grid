@@ -35,6 +35,7 @@ namespace Rescue.Unity.Presentation
 
         [Header("Panel")]
         [SerializeField] private GameObject? panelRoot;
+        [SerializeField] private Button? dismissBackdropButton;
         [SerializeField] private Button? resumeButton;
         [SerializeField] private Button? showTutorialButton;
         [SerializeField] private TMP_Dropdown? levelDropdown;
@@ -81,6 +82,8 @@ namespace Rescue.Unity.Presentation
         public Button SettingsButton => Require(settingsButton, nameof(settingsButton));
 
         public GameObject PanelRoot => Require(panelRoot, nameof(panelRoot));
+
+        public Button DismissBackdropButton => Require(dismissBackdropButton, nameof(dismissBackdropButton));
 
         public Button ResumeButton => Require(resumeButton, nameof(resumeButton));
 
@@ -134,7 +137,7 @@ namespace Rescue.Unity.Presentation
 
         public void EnsureBuilt()
         {
-            if (restartButton is null || settingsButton is null || panelRoot is null)
+            if (restartButton is null || settingsButton is null || panelRoot is null || dismissBackdropButton is null)
             {
                 BuildDefaultHierarchy();
             }
@@ -142,6 +145,7 @@ namespace Rescue.Unity.Presentation
 
         public void SetOpen(bool open)
         {
+            DismissBackdropButton.gameObject.SetActive(open);
             PanelRoot.SetActive(open);
         }
 
@@ -237,6 +241,8 @@ namespace Rescue.Unity.Presentation
             settingsButton = CreatePlaqueButton(topRow.transform, "SettingsButton", "SETTINGS", settingsButtonSprite, Cream, DarkInk, new Vector2(188f, SettingsPlaqueHeight), amberPawSprite);
             restartButton = CreatePlaqueButton(topRow.transform, "RestartButton", "RESTART", restartButtonSprite, Teal, Cream, new Vector2(208f, TopPlaqueHeight), tealPawSprite);
 
+            dismissBackdropButton = CreateDismissBackdropButton(root);
+
             panelRoot = CreateChild("SettingsPanel", root);
             RectTransform panelRect = panelRoot.GetComponent<RectTransform>();
             panelRect.anchorMin = new Vector2(0.5f, 0.5f);
@@ -258,7 +264,7 @@ namespace Rescue.Unity.Presentation
             title.fontStyle = FontStyles.Bold;
             SetPanelRect(title.rectTransform, PanelContentLeft, 54f, 260f, 58f);
             resumeButton = CreateCloseButton(panelRoot.transform);
-            SetPanelRect((RectTransform)resumeButton.transform, 396f, 40f, 44f, 44f);
+            SetPanelRect((RectTransform)resumeButton.transform, 366f, 40f, 64f, 64f);
             showTutorialButton = CreatePlaqueButton(panelRoot.transform, "ShowTutorialButton", "SHOW TUTORIAL", amberPlaqueSprite, Amber, DarkInk, new Vector2(0f, 68f), amberPawSprite);
             SetPanelRect((RectTransform)showTutorialButton.transform, PanelContentLeft, 118f, PanelContentWidth, 66f);
 
@@ -296,6 +302,7 @@ namespace Rescue.Unity.Presentation
             hapticsStrengthValueLabel = CreateLabel(strengthRow.transform, "HapticsStrengthValue", "100%", 22f, Cream, TextAlignmentOptions.MidlineRight);
             hapticsStrengthValueLabel.gameObject.AddComponent<LayoutElement>().preferredWidth = 60f;
 
+            dismissBackdropButton.gameObject.SetActive(false);
             panelRoot.SetActive(false);
         }
 
@@ -394,6 +401,22 @@ namespace Rescue.Unity.Presentation
         private Button CreateCloseButton(Transform parent)
         {
             GameObject buttonObject = CreateChild("ResumeButton", parent);
+            Image image = buttonObject.AddComponent<Image>();
+            image.type = Image.Type.Simple;
+            image.color = new Color(1f, 1f, 1f, 0.001f);
+            image.raycastTarget = true;
+
+            Button button = buttonObject.AddComponent<Button>();
+            button.targetGraphic = image;
+            return button;
+        }
+
+        private static Button CreateDismissBackdropButton(Transform parent)
+        {
+            GameObject buttonObject = CreateChild("SettingsDismissBackdrop", parent);
+            RectTransform rect = buttonObject.GetComponent<RectTransform>();
+            Stretch(rect);
+
             Image image = buttonObject.AddComponent<Image>();
             image.type = Image.Type.Simple;
             image.color = new Color(1f, 1f, 1f, 0.001f);

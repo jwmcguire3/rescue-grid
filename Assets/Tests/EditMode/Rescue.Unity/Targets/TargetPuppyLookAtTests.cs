@@ -81,6 +81,25 @@ namespace Rescue.Unity.Targets.Tests
         }
 
         [Test]
+        public void TargetPuppyLookAt_ReapplyingSameReadinessPreservesAmbientGlance()
+        {
+            TargetPuppyLookAt lookAt = CreateLookAtRig(out _, out _, out _, out Transform target);
+            SetPrivateField(lookAt, "smoothSeconds", 0f);
+            target.position = new Vector3(10f, 2f, 10f);
+
+            lookAt.ApplyReadiness(TargetReadiness.OneClearAway);
+            lookAt.ForceGlanceForTests();
+            lookAt.ApplyLookAtForTests(0.1f);
+            float glancingBlend = lookAt.CurrentBlend;
+
+            lookAt.ApplyReadiness(TargetReadiness.OneClearAway);
+            lookAt.ApplyLookAtForTests(0.1f);
+
+            Assert.That(glancingBlend, Is.GreaterThan(0.8f));
+            Assert.That(lookAt.CurrentBlend, Is.EqualTo(glancingBlend).Within(0.001f));
+        }
+
+        [Test]
         public void TargetPuppyLookAt_ExtractionDisablesInfluence()
         {
             TargetPuppyLookAt lookAt = CreateLookAtRig(out _, out Transform neck, out Transform head, out Transform target);
@@ -227,47 +246,32 @@ namespace Rescue.Unity.Targets.Tests
         {
             GameObject instance = InstantiateDaisyPrefab(out TargetPuppyLookAt lookAt);
 
-            Transform? visual = instance.transform.Find("Visual");
-            Assert.That(visual, Is.Not.Null);
             SetPrivateField(lookAt, "smoothSeconds", 0f);
 
             Transform head = FindChildTransform(instance.transform, "head")
                 ?? throw new AssertionException("Expected Daisy prefab to include a head bone.");
             Transform nose = FindChildTransform(instance.transform, "nose")
                 ?? throw new AssertionException("Expected Daisy prefab to include a nose landmark.");
-            Transform leftEye = FindChildTransform(instance.transform, "eye.L")
-                ?? throw new AssertionException("Expected Daisy prefab to include a left eye landmark.");
-            Transform rightEye = FindChildTransform(instance.transform, "eye.R")
-                ?? throw new AssertionException("Expected Daisy prefab to include a right eye landmark.");
             Camera camera = CreateCamera("PlayerCamera");
             camera.orthographic = true;
             camera.transform.SetPositionAndRotation(
                 PortraitGameSceneLayout.CameraPortraitPosition,
                 PortraitGameSceneLayout.CameraPortraitRotation);
 
-            float before = ResolveBestHeadAimAngle(head, camera.transform.position);
+            Vector3 desiredDirection = -camera.transform.forward;
+            float before = ResolveBestHeadAimAngleToDirection(head, desiredDirection);
             Vector3 beforeNosePosition = nose.position;
-            Vector3 beforeMuzzleDirection = (nose.position - head.position).normalized;
-            Vector3 dogRight = (rightEye.position - leftEye.position).normalized;
-            Vector3 dogUp = Vector3.Cross(beforeMuzzleDirection, dogRight).normalized;
-            if (Vector3.Dot(dogUp, visual!.up) < 0f)
-            {
-                dogUp = -dogUp;
-            }
 
             lookAt.ApplyReadiness(TargetReadiness.Trapped);
             Assert.That(lookAt.TryForceLookAtPlayer(camera), Is.EqualTo(TargetPuppyLookAtResult.Success));
             lookAt.ApplyLookAtForTests(0.1f);
-            float after = ResolveBestHeadAimAngle(head, camera.transform.position);
+            float after = ResolveBestHeadAimAngleToDirection(head, desiredDirection);
             Vector3 noseMotion = nose.position - beforeNosePosition;
 
-            Assert.That(lookAt.LastClampedYawDegrees, Is.EqualTo(lookAt.ForcedLookRightDegrees).Within(0.01f));
-            Assert.That(lookAt.LastClampedPitchDegrees, Is.EqualTo(lookAt.ForcedLookUpDegrees).Within(0.01f));
             Assert.That(Mathf.Abs(lookAt.LastClampedYawDegrees), Is.LessThanOrEqualTo(lookAt.ForcedMaxYawDegrees + 0.01f));
-            Assert.That(after, Is.LessThan(before - 1f), $"Expected Daisy head aim to improve. Before={before:0.###}, after={after:0.###}");
+            Assert.That(Mathf.Abs(lookAt.LastClampedPitchDegrees), Is.LessThanOrEqualTo(lookAt.ForcedMaxPitchDegrees + 0.01f));
+            Assert.That(after, Is.LessThan(before - 1f), $"Expected Daisy head aim to improve toward the camera ray. Before={before:0.###}, after={after:0.###}");
             Assert.That(noseMotion.magnitude, Is.GreaterThan(0.02f), "Expected forced look-at to visibly move Daisy's nose.");
-            Assert.That(Vector3.Dot(noseMotion, dogUp), Is.GreaterThan(0.005f), "Expected Daisy's nose to move up.");
-            Assert.That(Vector3.Dot(noseMotion, dogRight), Is.GreaterThan(0.005f), "Expected Daisy's nose to move to her right.");
         }
 
         [Test]
@@ -488,6 +492,12 @@ namespace Rescue.Unity.Targets.Tests
         private static float ResolveBestHeadAimAngle(Transform head, Vector3 targetPosition)
         {
             Vector3 direction = (targetPosition - head.position).normalized;
+            return ResolveBestHeadAimAngleToDirection(head, direction);
+        }
+
+        private static float ResolveBestHeadAimAngleToDirection(Transform head, Vector3 targetDirection)
+        {
+            Vector3 direction = targetDirection.normalized;
             Vector3[] axes =
             {
                 head.forward,

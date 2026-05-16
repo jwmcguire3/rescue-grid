@@ -303,6 +303,7 @@ namespace Rescue.Unity.Presentation
 
             view.RestartButton.onClick.AddListener(RequestRestart);
             view.SettingsButton.onClick.AddListener(Toggle);
+            view.DismissBackdropButton.onClick.AddListener(RequestResume);
             view.ResumeButton.onClick.AddListener(RequestResume);
             view.ShowTutorialButton.onClick.AddListener(RequestShowTutorial);
             view.LevelDropdown.onValueChanged.AddListener(HandleLevelDropdownChanged);
@@ -324,6 +325,7 @@ namespace Rescue.Unity.Presentation
 
             view.RestartButton.onClick.RemoveListener(RequestRestart);
             view.SettingsButton.onClick.RemoveListener(Toggle);
+            view.DismissBackdropButton.onClick.RemoveListener(RequestResume);
             view.ResumeButton.onClick.RemoveListener(RequestResume);
             view.ShowTutorialButton.onClick.RemoveListener(RequestShowTutorial);
             view.LevelDropdown.onValueChanged.RemoveListener(HandleLevelDropdownChanged);
