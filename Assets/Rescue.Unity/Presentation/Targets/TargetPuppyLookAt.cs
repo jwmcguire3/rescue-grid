@@ -195,7 +195,11 @@ namespace Rescue.Unity.Presentation.Targets
             bool isForcedLookReleasing = forcedLookTarget != null &&
                 !isForcedLook &&
                 CurrentBlend > targetBlend + 0.001f;
-            CurrentBlend = isForcedLookReleasing || (wasForcedLookActive && !isForcedLook)
+            bool isAmbientLookReleasing = !isForcedLook &&
+                CurrentBlend > targetBlend + 0.001f;
+            CurrentBlend = isForcedLookReleasing ||
+                isAmbientLookReleasing ||
+                (wasForcedLookActive && !isForcedLook)
                 ? SmoothForcedRelease(CurrentBlend, targetBlend, deltaTime)
                 : Smooth(CurrentBlend, targetBlend, deltaTime);
             CurrentEyeBlend = SmoothEyeBlend(CurrentEyeBlend, isForcedLook ? 1f : 0f, deltaTime);
@@ -204,6 +208,14 @@ namespace Rescue.Unity.Presentation.Targets
             {
                 ApplyForcedPose(head, neck, headBase, neckBase, target);
                 ApplyForcedEyePose(eyeBases, target);
+                return;
+            }
+
+            if (glanceRemaining > 0f &&
+                IsOrthographicCameraLookTarget(target) &&
+                TryApplyLandmarkPose(head, neck, headBase, neckBase, target, forcedMaxYawDegrees, forcedMaxPitchDegrees))
+            {
+                ApplyEyeOffsets(eyeBases, Quaternion.identity, Quaternion.identity, Quaternion.identity, Quaternion.identity);
                 return;
             }
 
@@ -347,7 +359,7 @@ namespace Rescue.Unity.Presentation.Targets
             Quaternion neckBase,
             Transform target)
         {
-            if (TryApplyForcedLandmarkPose(head, neck, headBase, neckBase, target))
+            if (TryApplyLandmarkPose(head, neck, headBase, neckBase, target, forcedMaxYawDegrees, forcedMaxPitchDegrees))
             {
                 return;
             }
@@ -530,12 +542,36 @@ namespace Rescue.Unity.Presentation.Targets
             return target.position - fromPosition;
         }
 
-        private bool TryApplyForcedLandmarkPose(
+        private bool IsOrthographicCameraLookTarget(Transform target)
+        {
+            if (Application.isPlaying)
+            {
+                Camera? mainCamera = Camera.main;
+                if (mainCamera != null &&
+                    mainCamera.transform == target &&
+                    mainCamera.isActiveAndEnabled &&
+                    mainCamera.gameObject.activeInHierarchy &&
+                    mainCamera.orthographic)
+                {
+                    return true;
+                }
+            }
+
+            Camera? targetCamera = target.GetComponent<Camera>();
+            return targetCamera != null &&
+                targetCamera.isActiveAndEnabled &&
+                targetCamera.gameObject.activeInHierarchy &&
+                targetCamera.orthographic;
+        }
+
+        private bool TryApplyLandmarkPose(
             Transform head,
             Transform neck,
             Quaternion headBase,
             Quaternion neckBase,
-            Transform target)
+            Transform target,
+            float maxYawDegrees,
+            float maxPitchDegrees)
         {
             Transform? muzzle = ResolveNamedReference(ref muzzleReference, head, "nose");
             if (muzzle == null || CurrentBlend <= 0.0001f)
@@ -567,8 +603,8 @@ namespace Rescue.Unity.Presentation.Targets
             desiredDirection.Normalize();
             Quaternion desiredDelta = Quaternion.FromToRotation(muzzleDirection, desiredDirection);
             float maxDegrees = Mathf.Sqrt(
-                forcedMaxYawDegrees * forcedMaxYawDegrees +
-                forcedMaxPitchDegrees * forcedMaxPitchDegrees);
+                maxYawDegrees * maxYawDegrees +
+                maxPitchDegrees * maxPitchDegrees);
             float angle = Quaternion.Angle(Quaternion.identity, desiredDelta);
             if (angle > maxDegrees && angle > 0.0001f)
             {
@@ -588,12 +624,12 @@ namespace Rescue.Unity.Presentation.Targets
             float horizontalMagnitude = new Vector2(localDirection.x, localDirection.z).magnitude;
             LastClampedYawDegrees = Mathf.Clamp(
                 Mathf.Atan2(localDirection.x, localDirection.z) * Mathf.Rad2Deg,
-                -forcedMaxYawDegrees,
-                forcedMaxYawDegrees);
+                -maxYawDegrees,
+                maxYawDegrees);
             LastClampedPitchDegrees = Mathf.Clamp(
                 Mathf.Atan2(localDirection.y, horizontalMagnitude) * Mathf.Rad2Deg,
-                -forcedMaxPitchDegrees,
-                forcedMaxPitchDegrees);
+                -maxPitchDegrees,
+                maxPitchDegrees);
             return true;
         }
 
@@ -891,8 +927,8 @@ namespace Rescue.Unity.Presentation.Targets
                     BaseBlend: 0.12f,
                     GlanceBlend: 0.38f,
                     ExtractionBlend: 0.02f,
-                    GlanceCooldownMinSeconds: 2.5f,
-                    GlanceCooldownMaxSeconds: 5.5f,
+                    GlanceCooldownMinSeconds: 4f,
+                    GlanceCooldownMaxSeconds: 7.5f,
                     GlanceDurationSeconds: 1.15f),
                 TargetReadiness.OneClearAway => new LookProfile(
                     MaxYawDegrees: 28f,
@@ -901,8 +937,8 @@ namespace Rescue.Unity.Presentation.Targets
                     BaseBlend: 0.28f,
                     GlanceBlend: 0.58f,
                     ExtractionBlend: 0.04f,
-                    GlanceCooldownMinSeconds: 0.9f,
-                    GlanceCooldownMaxSeconds: 2.4f,
+                    GlanceCooldownMinSeconds: 1.8f,
+                    GlanceCooldownMaxSeconds: 3.8f,
                     GlanceDurationSeconds: 1.35f),
                 TargetReadiness.ExtractableLatched or TargetReadiness.Extracted => new LookProfile(
                     MaxYawDegrees: 10f,
@@ -915,15 +951,15 @@ namespace Rescue.Unity.Presentation.Targets
                     GlanceCooldownMaxSeconds: 999f,
                     GlanceDurationSeconds: 0f),
                 _ => new LookProfile(
-                    MaxYawDegrees: 8f,
-                    MaxPitchDegrees: 8f,
-                    HeadDownPitchDegrees: -12f,
-                    BaseBlend: 0.04f,
-                    GlanceBlend: 0.18f,
+                    MaxYawDegrees: 14f,
+                    MaxPitchDegrees: 12f,
+                    HeadDownPitchDegrees: -8f,
+                    BaseBlend: 0.08f,
+                    GlanceBlend: 0.34f,
                     ExtractionBlend: 0f,
-                    GlanceCooldownMinSeconds: 6f,
-                    GlanceCooldownMaxSeconds: 10f,
-                    GlanceDurationSeconds: 0.75f),
+                    GlanceCooldownMinSeconds: 7f,
+                    GlanceCooldownMaxSeconds: 12f,
+                    GlanceDurationSeconds: 1.1f),
             };
         }
 

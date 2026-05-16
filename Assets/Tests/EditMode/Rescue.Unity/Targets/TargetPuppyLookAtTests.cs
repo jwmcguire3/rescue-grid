@@ -100,6 +100,27 @@ namespace Rescue.Unity.Targets.Tests
         }
 
         [Test]
+        public void TargetPuppyLookAt_AmbientGlanceReleaseSettlesGradually()
+        {
+            TargetPuppyLookAt lookAt = CreateLookAtRig(out _, out _, out _, out Transform target);
+            SetPrivateField(lookAt, "smoothSeconds", 0f);
+            SetPrivateField(lookAt, "forcedReleaseSmoothSeconds", 0.55f);
+            target.position = new Vector3(10f, 2f, 10f);
+
+            lookAt.ApplyReadiness(TargetReadiness.Trapped);
+            lookAt.ForceGlanceForTests();
+            lookAt.ApplyLookAtForTests(0.1f);
+            float glancingBlend = lookAt.CurrentBlend;
+
+            lookAt.ApplyLookAtForTests(0.95f);
+            lookAt.ApplyLookAtForTests(0.06f);
+
+            Assert.That(glancingBlend, Is.GreaterThan(0.3f));
+            Assert.That(lookAt.CurrentBlend, Is.LessThan(glancingBlend));
+            Assert.That(lookAt.CurrentBlend, Is.GreaterThan(0.2f));
+        }
+
+        [Test]
         public void TargetPuppyLookAt_ExtractionDisablesInfluence()
         {
             TargetPuppyLookAt lookAt = CreateLookAtRig(out _, out Transform neck, out Transform head, out Transform target);
@@ -272,6 +293,39 @@ namespace Rescue.Unity.Targets.Tests
             Assert.That(Mathf.Abs(lookAt.LastClampedPitchDegrees), Is.LessThanOrEqualTo(lookAt.ForcedMaxPitchDegrees + 0.01f));
             Assert.That(after, Is.LessThan(before - 1f), $"Expected Daisy head aim to improve toward the camera ray. Before={before:0.###}, after={after:0.###}");
             Assert.That(noseMotion.magnitude, Is.GreaterThan(0.02f), "Expected forced look-at to visibly move Daisy's nose.");
+        }
+
+        [Test]
+        public void TargetPuppyLookAt_DaisyPrefabAmbientGlanceAimsTowardOrthographicCamera()
+        {
+            GameObject instance = InstantiateDaisyPrefab(out TargetPuppyLookAt lookAt);
+            SetPrivateField(lookAt, "smoothSeconds", 0f);
+
+            Transform head = FindChildTransform(instance.transform, "head")
+                ?? throw new AssertionException("Expected Daisy prefab to include a head bone.");
+            Transform nose = FindChildTransform(instance.transform, "nose")
+                ?? throw new AssertionException("Expected Daisy prefab to include a nose landmark.");
+            Camera camera = CreateCamera("PlayerCamera");
+            camera.orthographic = true;
+            camera.transform.SetPositionAndRotation(
+                PortraitGameSceneLayout.CameraPortraitPosition,
+                PortraitGameSceneLayout.CameraPortraitRotation);
+            SetPrivateField(lookAt, "lookTarget", camera.transform);
+
+            Vector3 desiredDirection = -camera.transform.forward;
+            float before = ResolveBestHeadAimAngleToDirection(head, desiredDirection);
+            Vector3 beforeNosePosition = nose.position;
+
+            lookAt.ApplyReadiness(TargetReadiness.Trapped);
+            lookAt.ForceGlanceForTests();
+            lookAt.ApplyLookAtForTests(0.1f);
+
+            float after = ResolveBestHeadAimAngleToDirection(head, desiredDirection);
+            Vector3 noseMotion = nose.position - beforeNosePosition;
+
+            Assert.That(lookAt.CurrentBlend, Is.LessThan(1f));
+            Assert.That(after, Is.LessThan(before - 0.25f), $"Expected ambient glance to improve Daisy head aim toward the camera ray. Before={before:0.###}, after={after:0.###}");
+            Assert.That(noseMotion.magnitude, Is.GreaterThan(0.005f), "Expected ambient glance to visibly move Daisy's nose.");
         }
 
         [Test]
