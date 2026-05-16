@@ -171,7 +171,7 @@ namespace Rescue.PlayMode.Tests.Smoke
             Assert.That(boardContentRoot.childCount, Is.GreaterThan(0));
             Assert.That(waterRoot.childCount, Is.GreaterThan(0));
             AssertCameraUsesFrontTableOrthographicView();
-            AssertBoardStageLayout(boardRoot, boardContentRoot, waterRoot, dockRoot);
+            AssertBoardStageLayout(boardRoot, boardContentRoot, waterRoot, dockRoot, currentState.Board.Width);
             AssertBoardFitsGameplayViewport(boardRoot, currentState.Board.Width, currentState.Board.Height);
             AssertCameraRaysHitVisibleCells(boardRoot, currentState.Board.Width, currentState.Board.Height);
             AssertDirectionalLightMatchesStaging();
@@ -372,10 +372,15 @@ namespace Rescue.PlayMode.Tests.Smoke
 
             DismissAllTutorialCards(tutorial);
             yield return null;
-            Assert.That(session.TryRunAction(new TileCoord(4, 0)), Is.True);
-            yield return WaitForPlayback();
-            Assert.That(session.TryRunAction(new TileCoord(1, 2)), Is.True);
-            yield return WaitForPlayback();
+            SolveScriptJson l00Solve = SmokeTestHarness.LoadSolve("L00");
+            for (int i = 0; i < l00Solve.Actions.Length; i++)
+            {
+                Assert.That(
+                    session.TryRunAction(new TileCoord(l00Solve.Actions[i].Row, l00Solve.Actions[i].Col)),
+                    Is.True,
+                    $"L00 solve action {i} should be valid.");
+                yield return WaitForPlayback();
+            }
 
             Assert.That(victoryScreen.IsVisible, Is.True, "L00 expected path should reach the victory screen.");
             victoryScreen.RequestNextLevel();
@@ -525,7 +530,7 @@ namespace Rescue.PlayMode.Tests.Smoke
             AssertNoCompetingGameplayCamera(camera, diagnostics);
         }
 
-        private static void AssertBoardStageLayout(Transform boardRoot, Transform boardContentRoot, Transform waterRoot, Transform dockRoot)
+        private static void AssertBoardStageLayout(Transform boardRoot, Transform boardContentRoot, Transform waterRoot, Transform dockRoot, int boardWidth)
         {
             Transform? viewRoot = GameObject.Find("GameStateViewRoot")?.transform;
             Transform? stageRoot = boardRoot.parent;
@@ -554,7 +559,8 @@ namespace Rescue.PlayMode.Tests.Smoke
             Assert.That(Quaternion.Angle(waterRoot.localRotation, Quaternion.identity), Is.LessThan(0.1f), diagnostics);
             Assert.That(Vector3.Distance(dockRoot.localPosition, PortraitGameSceneLayout.DockPortraitPosition), Is.LessThan(0.001f), diagnostics);
             Assert.That(Quaternion.Angle(dockRoot.localRotation, PortraitGameSceneLayout.DockPortraitRotation), Is.LessThan(0.1f), $"DockRoot should match the portrait staged dock tilt.\n{diagnostics}");
-            Assert.That(Vector3.Distance(dockRoot.localScale, PortraitGameSceneLayout.DockPortraitScale), Is.LessThan(0.001f), diagnostics);
+            Vector3 expectedDockScale = PortraitGameSceneLayout.ResolveDockPortraitScale(boardWidth, (float)Screen.width / Screen.height);
+            Assert.That(Vector3.Distance(dockRoot.localScale, expectedDockScale), Is.LessThan(0.001f), diagnostics);
             AssertPlanarAxesAgree(stageRoot, dockRoot, diagnostics);
         }
 

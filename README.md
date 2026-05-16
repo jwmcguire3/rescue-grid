@@ -333,15 +333,23 @@ See `docs/distribution.md` for platform install notes and telemetry collection, 
 
 Phase 2A is the active workstream. It is about readability, animation/feedback, level-authoring throughput, and one capture-quality proof moment; it should not add mechanics. See `docs/phase_2a_plan.md`.
 
-Near-term Phase 2A work:
+Current Phase 2A status:
 
-- Strengthen `TargetOneClearAway`, `WaterWarning`, `VinePreviewChanged`, and `VineGrown` as player-facing presentation where playtesting shows ambiguity.
-- Tune persistent next-flood-row forecast readability across L00-L28.
-- Make dock overflow, Dock Jam, win, and loss causality unmistakable.
-- Tune invalid-tap reject bump/audio while preserving zero state change.
-- Continue strengthening Daisy target readiness, look-at, and extraction so puppy state changes read as rescue beats rather than generic board cleanup.
-- Improve Mae reaction and aftercare support only where it improves clarity or emotional grounding.
-- Improve level-authoring and capture workflows where they are fragile or slow.
+- APK is the current playtest surface.
+- Tutorial cards teach mechanics across the level flow.
+- L00-L10 carry the main proof burden; later levels exist for players who want to keep going.
+- Puppy rescue/readiness animation is implemented and in tuning.
+- Water and vine are readable enough for current APK playtesting, with animation polish still available.
+- Dock attention is the main known usability risk because players often do not watch it. Moving dock presentation higher on the phone screen is a likely follow-up before adding extra debris pressure.
+- Capture clips are useful for sharing and milestone records, but APK cold-player interpretation is the deciding proof.
+
+Near-term Phase 2A / next-phase handoff work:
+
+- Retest previously addressed cold-player notes with fresh players.
+- Resolve or explicitly carry dock visibility/attention as the top usability risk.
+- Keep tuning puppy, water, and vine animation only where cold-player interpretation needs it.
+- Avoid adding another debris type until dock visibility has been tested, unless cold-player results show the game is too easy even when the dock is noticed.
+- Record a short APK clip when useful for communication, not as a blocker to moving forward.
 
 Out of scope for Phase 2A:
 

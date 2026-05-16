@@ -83,6 +83,39 @@ Production pipeline:
 - README / phase docs reflect the Phase 2A boundary.
 - AGENTS.md protects against scope expansion and broad refactors.
 
+## Current Status
+
+Phase 2A is in APK-first cold-player iteration. The active proof surface is the
+installed APK, not editor-only playback. Multiple cold players have played the
+current build, tutorial cards now introduce mechanics across the level flow, and
+observed readability notes have received at least one implementation pass. Some
+addressed notes still need retesting with new cold players.
+
+Current production stance:
+
+- L00-L10 carry the main proof burden for the cold-player read.
+- Later authored levels exist so engaged players can continue beyond the proof
+  packet; they should not all carry equal Phase 2A exit burden.
+- Puppy target animation has full state and rescue-beat shifts. Remaining work
+  is animation tuning, not core readability.
+- Water is readable and action-based, but its animation remains a polish target.
+- Vine growth is implemented, visible in motion, and introduced by tutorial
+  cards. Final vine presentation polish can continue later unless retesting
+  shows confusion.
+- Dock pressure/attention is the main known readability risk. Players often do
+  not watch the dock, likely because phone-hand placement can cover or devalue
+  the bottom placement. Moving the dock higher on the screen is a candidate
+  follow-up. Adding another debris type should wait unless retesting shows the
+  game is too easy after the dock visibility problem is addressed.
+- A short capture clip is useful for communication and milestone records, but it
+  is not required to decide whether APK playtest readiness is good enough to move
+  beyond Phase 2A.
+
+Phase 2A can be considered functionally complete when the latest APK passes the
+technical gates, first-10-level cold-player interpretation is broadly landing,
+and the remaining dock visibility risk is either addressed or explicitly carried
+as the first next-phase usability item.
+
 ## Operating Rules
 
 1. No new mechanics until the current loop reads.

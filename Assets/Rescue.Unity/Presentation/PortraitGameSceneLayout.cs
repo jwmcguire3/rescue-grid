@@ -16,6 +16,7 @@ namespace Rescue.Unity.Presentation
         private const float BoardPortraitViewportWidthUsage = 0.94f;
         private const float BoardCellSize = 1.0f;
         private const float MinimumBoardPortraitScale = 0.66f;
+        private const int Phase1DockSlotCount = 7;
 
         public static readonly Vector3 CameraPortraitPosition = new Vector3(0f, 20.0f, -14.0f);
         public static readonly Quaternion CameraPortraitRotation = Quaternion.Euler(60.0f, 0.0f, 0.0f);
@@ -75,6 +76,21 @@ namespace Rescue.Unity.Presentation
                 ResolveBoardPortraitScale(boardWidth, ResolveScreenAspect()));
         }
 
+        public static void ApplyDockStageLayout(int boardWidth)
+        {
+            GameObject? dockStage = GameObject.Find(DockRootName);
+            if (dockStage is null)
+            {
+                return;
+            }
+
+            ApplyStageTransform(
+                DockRootName,
+                DockPortraitPosition,
+                DockPortraitRotation,
+                ResolveDockPortraitScale(boardWidth, ResolveScreenAspect()));
+        }
+
         public static Vector3 ResolveBoardPortraitScale(int boardWidth, float aspect)
         {
             float defaultUniformScale = BoardPortraitScale.x;
@@ -96,6 +112,25 @@ namespace Rescue.Unity.Presentation
                 MinimumBoardPortraitScale,
                 defaultUniformScale);
 
+            return new Vector3(uniformScale, uniformScale, uniformScale);
+        }
+
+        public static Vector3 ResolveDockPortraitScale(int boardWidth, float aspect)
+        {
+            if (boardWidth <= 0)
+            {
+                return DockPortraitScale;
+            }
+
+            Vector3 boardScale = ResolveBoardPortraitScale(boardWidth, aspect);
+            float boardVisualWidth = boardWidth * BoardCellSize * boardScale.x;
+            float dockWorldWidthAtUnitScale = Phase1DockSlotCount * BoardCellSize;
+            if (boardVisualWidth <= 0f || dockWorldWidthAtUnitScale <= 0f)
+            {
+                return DockPortraitScale;
+            }
+
+            float uniformScale = boardVisualWidth / dockWorldWidthAtUnitScale;
             return new Vector3(uniformScale, uniformScale, uniformScale);
         }
 

@@ -7,6 +7,7 @@ namespace Rescue.Unity.Presentation.Tests
     public sealed class PortraitGameSceneLayoutTests
     {
         private GameObject? cameraObject;
+        private GameObject? dockStageObject;
         private Texture2D? spriteTexture;
         private Sprite? sprite;
 
@@ -26,6 +27,11 @@ namespace Rescue.Unity.Presentation.Tests
             if (cameraObject is not null)
             {
                 Object.DestroyImmediate(cameraObject);
+            }
+
+            if (dockStageObject is not null)
+            {
+                Object.DestroyImmediate(dockStageObject);
             }
         }
 
@@ -117,6 +123,56 @@ namespace Rescue.Unity.Presentation.Tests
             float boardWidth = 8.0f * scale.x;
             Assert.That(scale.x, Is.LessThan(PortraitGameSceneLayout.BoardPortraitScale.x));
             Assert.That(boardWidth, Is.LessThan(viewportWidth + 0.001f));
+        }
+
+        [Test]
+        public void ResolveDockPortraitScale_MatchesSevenColumnBoardWidth()
+        {
+            const float aspect = 9.0f / 16.0f;
+
+            Vector3 boardScale = PortraitGameSceneLayout.ResolveBoardPortraitScale(7, aspect);
+            Vector3 dockScale = PortraitGameSceneLayout.ResolveDockPortraitScale(7, aspect);
+
+            Assert.That(7.0f * dockScale.x, Is.EqualTo(7.0f * boardScale.x).Within(0.001f));
+        }
+
+        [Test]
+        public void ResolveDockPortraitScale_ChangesWithBoardWidth()
+        {
+            const float aspect = 16.0f / 9.0f;
+
+            Vector3 sixColumnDockScale = PortraitGameSceneLayout.ResolveDockPortraitScale(6, aspect);
+            Vector3 nineColumnDockScale = PortraitGameSceneLayout.ResolveDockPortraitScale(9, aspect);
+
+            Assert.That(Mathf.Abs(sixColumnDockScale.x - nineColumnDockScale.x), Is.GreaterThan(0.001f));
+            Assert.That(7.0f * sixColumnDockScale.x, Is.EqualTo(6.0f * PortraitGameSceneLayout.ResolveBoardPortraitScale(6, aspect).x).Within(0.001f));
+            Assert.That(7.0f * nineColumnDockScale.x, Is.EqualTo(9.0f * PortraitGameSceneLayout.ResolveBoardPortraitScale(9, aspect).x).Within(0.001f));
+        }
+
+        [Test]
+        public void ResolveDockPortraitScale_UsesFittedBoardScaleInNarrowPortrait()
+        {
+            const float aspect = 9.0f / 20.0f;
+
+            Vector3 boardScale = PortraitGameSceneLayout.ResolveBoardPortraitScale(9, aspect);
+            Vector3 dockScale = PortraitGameSceneLayout.ResolveDockPortraitScale(9, aspect);
+
+            Assert.That(boardScale.x, Is.LessThan(PortraitGameSceneLayout.BoardPortraitScale.x));
+            Assert.That(7.0f * dockScale.x, Is.EqualTo(9.0f * boardScale.x).Within(0.001f));
+        }
+
+        [Test]
+        public void ApplyDockStageLayout_ScalesDockRootToBoardWidth()
+        {
+            dockStageObject = new GameObject("DockRoot");
+
+            PortraitGameSceneLayout.ApplyDockStageLayout(6);
+
+            Vector3 expectedScale = PortraitGameSceneLayout.ResolveDockPortraitScale(6, PortraitGameSceneLayout.ResolveScreenAspect());
+            Assert.That(dockStageObject.transform.localPosition, Is.EqualTo(PortraitGameSceneLayout.DockPortraitPosition));
+            Assert.That(Quaternion.Angle(dockStageObject.transform.localRotation, PortraitGameSceneLayout.DockPortraitRotation), Is.LessThan(0.1f));
+            Assert.That(dockStageObject.transform.localScale, Is.EqualTo(expectedScale));
+            Assert.That(7.0f * dockStageObject.transform.localScale.x, Is.EqualTo(6.0f * PortraitGameSceneLayout.ResolveBoardPortraitScale(6, PortraitGameSceneLayout.ResolveScreenAspect()).x).Within(0.001f));
         }
 
         private Camera CreateCamera()

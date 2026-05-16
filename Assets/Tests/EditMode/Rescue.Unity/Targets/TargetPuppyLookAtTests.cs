@@ -121,23 +121,33 @@ namespace Rescue.Unity.Targets.Tests
         }
 
         [Test]
-        public void TargetPuppyLookAt_ExtractionDisablesInfluence()
+        public void TargetPuppyLookAt_ExtractionReleasesInfluenceGradually()
         {
             TargetPuppyLookAt lookAt = CreateLookAtRig(out _, out Transform neck, out Transform head, out Transform target);
             SetPrivateField(lookAt, "smoothSeconds", 0f);
+            SetPrivateField(lookAt, "forcedReleaseSmoothSeconds", 0.55f);
             target.position = new Vector3(10f, 10f, 10f);
 
             lookAt.ApplyReadiness(TargetReadiness.OneClearAway);
             lookAt.ForceGlanceForTests();
             lookAt.ApplyLookAtForTests(0.1f);
-            Assert.That(lookAt.CurrentBlend, Is.GreaterThan(0f));
+            float activeBlend = lookAt.CurrentBlend;
+            Assert.That(activeBlend, Is.GreaterThan(0f));
+            Assert.That(neck.localRotation, Is.Not.EqualTo(Quaternion.identity));
+            Assert.That(head.localRotation, Is.Not.EqualTo(Quaternion.identity));
 
             lookAt.PlayExtract();
             lookAt.ApplyLookAtForTests(0.1f);
 
-            Assert.That(lookAt.CurrentBlend, Is.EqualTo(0f).Within(0.001f));
-            Assert.That(neck.localRotation, Is.EqualTo(Quaternion.identity));
-            Assert.That(head.localRotation, Is.EqualTo(Quaternion.identity));
+            Assert.That(lookAt.CurrentBlend, Is.LessThan(activeBlend));
+            Assert.That(lookAt.CurrentBlend, Is.GreaterThan(0f));
+            Assert.That(lookAt.TryForceLookAtPlayer(CreateCamera("PlayerCamera")), Is.EqualTo(TargetPuppyLookAtResult.Extracting));
+
+            lookAt.ApplyLookAtForTests(1.5f);
+
+            Assert.That(lookAt.CurrentBlend, Is.LessThan(0.1f));
+            Assert.That(Quaternion.Angle(neck.localRotation, Quaternion.identity), Is.LessThan(2f));
+            Assert.That(Quaternion.Angle(head.localRotation, Quaternion.identity), Is.LessThan(2f));
         }
 
         [Test]

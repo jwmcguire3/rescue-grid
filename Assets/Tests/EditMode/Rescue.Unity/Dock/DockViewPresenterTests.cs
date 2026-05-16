@@ -286,6 +286,36 @@ namespace Rescue.Unity.UI.Tests
         }
 
         [Test]
+        public void DockViewPresenter_DockPiecesInheritDockRootScale()
+        {
+            GameObject presenterObject = CreateTrackedObject("DockPresenter");
+            presenterObject.transform.localScale = new Vector3(1.6f, 1.6f, 1.6f);
+            DockViewPresenter presenter = presenterObject.AddComponent<DockViewPresenter>();
+            Transform pieceContainer = new GameObject("DockPieces").transform;
+            pieceContainer.SetParent(presenterObject.transform, false);
+            Track(pieceContainer.gameObject);
+
+            for (int i = 0; i < 7; i++)
+            {
+                CreateTrackedAnchor(presenterObject.transform, i);
+            }
+
+            GameObject fallbackPrefab = CreateTrackedObject("FallbackPiecePrefab");
+            fallbackPrefab.transform.localScale = new Vector3(2f, 3f, 4f);
+            SetPrivateField(presenter, "pieceContainer", pieceContainer);
+            SetPrivateField(presenter, "fallbackPiecePrefab", fallbackPrefab);
+
+            presenter.Rebuild(CreateState(DebrisType.A, null, null, null, null, null, null));
+
+            GameObject? dockPiece = presenter.GetTrackedSlotObject(0);
+            Assert.That(dockPiece, Is.Not.Null);
+            Assert.That(dockPiece!.transform.localScale, Is.EqualTo(new Vector3(2f, 3f, 4f)));
+            Assert.That(dockPiece.transform.lossyScale.x, Is.EqualTo(3.2f).Within(0.001f));
+            Assert.That(dockPiece.transform.lossyScale.y, Is.EqualTo(4.8f).Within(0.001f));
+            Assert.That(dockPiece.transform.lossyScale.z, Is.EqualTo(6.4f).Within(0.001f));
+        }
+
+        [Test]
         public void DockViewPresenter_OffsetsDockPiecesToLocalRight()
         {
             GameObject presenterObject = CreateTrackedObject("DockPresenter");
